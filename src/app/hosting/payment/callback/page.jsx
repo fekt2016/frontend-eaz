@@ -1,0 +1,24 @@
+import Link from "next/link";
+import { FaCheckCircle } from "react-icons/fa";
+
+export default function HostingPaymentCallbackPage() {
+  return (
+    <div className="min-h-screen bg-white px-4 pt-24 pb-24 flex items-center justify-center">
+      <div className="mx-auto max-w-md text-center">
+        <FaCheckCircle className="text-emerald-500 text-5xl mx-auto mb-6" />
+        <h1 className="font-display text-2xl font-bold text-gray-900 mb-2">Payment successful</h1>
+        <p className="text-gray-500 text-sm mb-8">
+          Your hosting order has been received. We&apos;ll activate your account shortly and send you an email confirmation.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/dashboard" className="rounded-full bg-gray-900 px-6 py-3 font-semibold text-white hover:bg-gray-700 transition">
+            Go to Dashboard
+          </Link>
+          <Link href="/hosting" className="rounded-full border border-gray-200 px-6 py-3 font-semibold text-gray-700 hover:border-gray-400 transition">
+            Back to Hosting
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
