@@ -5,12 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
-const TLD_PRICES = {
-  ".com": 85, ".net": 75, ".org": 70, ".io": 180,
-  ".co": 120, ".online": 65, ".tech": 130, ".xyz": 45,
-  ".info": 70, ".biz": 75, ".me": 90,
-};
-
 function ResultRow({ result, onSelect }) {
   return (
     <div className={`flex items-center justify-between p-4 rounded-2xl border transition ${
@@ -22,14 +16,15 @@ function ResultRow({ result, onSelect }) {
         <p className="text-sm font-semibold text-gray-900">{result.domain}</p>
         {result.available && (
           <p className="text-xs text-gray-400 mt-0.5">
-            GH₵{result.price ?? TLD_PRICES[result.tld] ?? "—"}<span className="ml-1">/yr</span>
+            {result.price ? <>GH₵{result.price}<span className="ml-1">/yr</span></> : "—"}
           </p>
         )}
       </div>
       {result.available ? (
         <button
           onClick={() => onSelect(result)}
-          className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition"
+          disabled={!result.price}
+          className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition disabled:opacity-40"
         >
           Register
         </button>
@@ -63,7 +58,7 @@ function DomainsContentInner() {
         return {
           domain: r.domain,
           available: r.available,
-          price: r.price ?? TLD_PRICES[tld] ?? 85,
+          price: r.price ?? null,
           tld,
         };
       });
@@ -89,8 +84,7 @@ function DomainsContentInner() {
   };
 
   const handleSelect = (result) => {
-    const price = result.price ?? TLD_PRICES[result.tld] ?? 85;
-    router.push(`/domains/checkout?domain=${encodeURIComponent(result.domain)}&price=${price}`);
+    router.push(`/domains/checkout?domain=${encodeURIComponent(result.domain)}&price=${result.price}`);
   };
 
   return (
