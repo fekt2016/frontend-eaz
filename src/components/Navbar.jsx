@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
+import { useAuth } from "@/context/AuthContext";
 
 const links = [
   { href: "/", label: "Home" },
@@ -16,9 +17,16 @@ const links = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   if (pathname?.startsWith("/auth")) return null;
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
@@ -33,20 +41,32 @@ export default function Navbar() {
               key={href}
               href={href}
               className={`text-sm font-medium transition ${
-                pathname === href
-                  ? "text-amber-500"
-                  : "text-gray-600 hover:text-gray-900"
+                pathname === href ? "text-amber-500" : "text-gray-600 hover:text-gray-900"
               }`}
             >
               {label}
             </Link>
           ))}
-          <Link
-            href="/book-consultation"
-            className="text-sm font-medium px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition"
-          >
-            Book a Call
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <Link href="/dashboard" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition">
+                <FaUserCircle size={16} className="text-amber-500" />
+                {user.name.split(" ")[0]}
+              </Link>
+              <button onClick={handleLogout} className="text-sm font-medium px-4 py-2 rounded-full border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-gray-900 transition">
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Link href="/auth/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition">
+                Sign In
+              </Link>
+              <Link href="/book-consultation" className="text-sm font-medium px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition">
+                Book a Call
+              </Link>
+            </div>
+          )}
         </div>
 
         <button
@@ -73,13 +93,25 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <Link
-            href="/book-consultation"
-            className="block mt-3 text-center py-3 rounded-full bg-gray-900 text-white text-sm font-medium"
-            onClick={() => setOpen(false)}
-          >
-            Book a Free Consultation
-          </Link>
+          {user ? (
+            <>
+              <Link href="/dashboard" className="block py-2.5 text-sm font-medium text-gray-700 border-b border-gray-50" onClick={() => setOpen(false)}>
+                Dashboard
+              </Link>
+              <button onClick={() => { handleLogout(); setOpen(false); }} className="block w-full text-left py-2.5 text-sm font-medium text-gray-700">
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/login" className="block py-2.5 text-sm font-medium text-gray-700 border-b border-gray-50" onClick={() => setOpen(false)}>
+                Sign In
+              </Link>
+              <Link href="/book-consultation" className="block mt-3 text-center py-3 rounded-full bg-gray-900 text-white text-sm font-medium" onClick={() => setOpen(false)}>
+                Book a Free Consultation
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>
