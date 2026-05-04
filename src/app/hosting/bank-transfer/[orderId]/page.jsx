@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 const BANK_DETAILS = {
   bankName: "GT Bank Ghana",
@@ -8,6 +11,8 @@ const BANK_DETAILS = {
 };
 
 export default function BankTransferPage() {
+  const { orderId } = useParams();
+
   return (
     <div className="min-h-screen bg-white px-4 pt-24 pb-24">
       <div className="mx-auto max-w-xl">
@@ -35,7 +40,7 @@ export default function BankTransferPage() {
             ))}
             <div className="flex justify-between pt-2">
               <span className="text-gray-500">Reference</span>
-              <span className="font-mono text-amber-500">Your order ID will appear here</span>
+              <span className="font-mono text-amber-500">{orderId}</span>
             </div>
           </div>
           <p className="mt-4 text-xs text-gray-400">Use your order reference when making the transfer so we can match your payment.</p>

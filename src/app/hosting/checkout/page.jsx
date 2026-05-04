@@ -1,10 +1,12 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { SHARED_PLANS } from "@/data/hostingHostingData";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
+import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
 
@@ -39,6 +41,9 @@ function StepIndicator({ step }) {
 
 function HostingCheckoutPageInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user } = useAuth();
+
   const type = searchParams.get("type") || "shared";
   const tier = searchParams.get("tier") || "deluxe";
   const billingParam = searchParams.get("billing") || "monthly";
@@ -46,9 +51,20 @@ function HostingCheckoutPageInner() {
   const [step, setStep] = useState(1);
   const [billingCycle, setBillingCycle] = useState(billingParam === "annual" ? "annual" : "monthly");
   const [addons, setAddons] = useState([]);
-  const [customer, setCustomer] = useState({ name: "", email: "", phone: "", address: "", city: "", country: "Ghana" });
+  const [domain, setDomain] = useState("");
+  const [customer, setCustomer] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: "",
+    address: "",
+    city: "",
+    country: "Ghana",
+  });
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [network, setNetwork] = useState("mtn");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const planName = TIER_TO_NAME[(tier || "").toLowerCase()];
   const plan = SHARED_PLANS.find((p) => p.name === planName) || SHARED_PLANS[0];
@@ -59,12 +75,42 @@ function HostingCheckoutPageInner() {
 
   const toggleAddon = (id) => setAddons((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     setError("");
     if (!customer.name || !customer.email || !customer.phone) { setError("Please fill in name, email, and phone."); return; }
     if (!paymentMethod) { setError("Please select a payment method."); return; }
-    // TODO: POST /hosting/orders
-    setError("Payment gateway not connected yet.");
+    if (paymentMethod === "mobile_money" && !mobileNumber) { setError("Please enter your mobile money number."); return; }
+
+    setLoading(true);
+    try {
+      const res = await api.post("/hosting/orders", {
+        planType: type,
+        tier: tier.toLowerCase(),
+        billingCycle,
+        addons: addons.map((id) => {
+          const a = ADDONS.find((x) => x.id === id);
+          return { id, name: a?.name, price: a?.price ?? 0 };
+        }),
+        customer,
+        paymentMethod,
+        ...(domain && { domain }),
+        ...(paymentMethod === "mobile_money" && { mobileNumber, network }),
+      });
+
+      const { authorizationUrl, orderId } = res.data;
+
+      if (paymentMethod === "bank_transfer") {
+        router.push(`/hosting/bank-transfer/${orderId}`);
+      } else if (authorizationUrl) {
+        window.location.href = authorizationUrl;
+      } else {
+        router.push("/hosting/order-confirmation");
+      }
+    } catch (err) {
+      setError(err.message || "Order failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -80,6 +126,8 @@ function HostingCheckoutPageInner() {
 
         <div className="grid gap-8 lg:grid-cols-[1fr,320px]">
           <div className="space-y-6">
+
+            {/* STEP 1 — Plan + Add-ons */}
             {step === 1 && (
               <>
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
@@ -121,6 +169,7 @@ function HostingCheckoutPageInner() {
               </>
             )}
 
+            {/* STEP 2 — Customer Details */}
             {step === 2 && (
               <>
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
@@ -139,6 +188,10 @@ function HostingCheckoutPageInner() {
                       <input type="tel" value={customer.phone} onChange={(e) => setCustomer((c) => ({ ...c, phone: e.target.value }))} placeholder="+233 XX XXX XXXX" className={inputCls} />
                     </div>
                     <div className="sm:col-span-2">
+                      <label className="mb-1.5 block text-xs font-medium text-gray-700">Domain name <span className="text-gray-400">(optional — add later)</span></label>
+                      <input type="text" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="yourbusiness.com" className={inputCls} />
+                    </div>
+                    <div className="sm:col-span-2">
                       <label className="mb-1.5 block text-xs font-medium text-gray-700">Address</label>
                       <input type="text" value={customer.address} onChange={(e) => setCustomer((c) => ({ ...c, address: e.target.value }))} placeholder="Street address" className={inputCls} />
                     </div>
@@ -150,11 +203,13 @@ function HostingCheckoutPageInner() {
                 </div>
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setStep(1)} className="rounded-full border border-gray-200 px-6 py-2.5 text-sm font-semibold text-gray-700 hover:border-gray-400 transition">Back</button>
-                  <button type="button" onClick={() => setStep(3)} className="flex-1 rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition">Continue to Payment</button>
+                  <button type="button" onClick={() => { if (!customer.name || !customer.email || !customer.phone) { setError("Please fill in name, email, and phone."); return; } setError(""); setStep(3); }} className="flex-1 rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition">Continue to Payment</button>
                 </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
               </>
             )}
 
+            {/* STEP 3 — Payment */}
             {step === 3 && (
               <>
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
@@ -163,7 +218,7 @@ function HostingCheckoutPageInner() {
                     {[
                       { id: "paystack_card", icon: "💳", title: "Pay with Card", desc: "Visa, Mastercard via Paystack" },
                       { id: "mobile_money", icon: "📱", title: "Mobile Money", desc: "MTN MoMo or Vodafone Cash" },
-                      { id: "bank_transfer", icon: "🏦", title: "Bank Transfer", desc: "Manual bank transfer" },
+                      { id: "bank_transfer", icon: "🏦", title: "Bank Transfer", desc: "Manual bank transfer — activate within 2–4 hrs" },
                     ].map((m) => (
                       <button key={m.id} type="button" onClick={() => setPaymentMethod(m.id)}
                         className={`w-full rounded-xl border p-4 text-left transition ${paymentMethod === m.id ? "border-amber-300 bg-amber-50" : "border-gray-100 bg-white hover:border-gray-200"}`}>
@@ -173,15 +228,34 @@ function HostingCheckoutPageInner() {
                       </button>
                     ))}
                   </div>
+
+                  {paymentMethod === "mobile_money" && (
+                    <div className="mt-4 space-y-3">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-700">Mobile Money Number</label>
+                        <input type="tel" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} placeholder="0240000000" className={inputCls} />
+                      </div>
+                      <div className="flex gap-2">
+                        {["mtn", "vod"].map((n) => (
+                          <button key={n} type="button" onClick={() => setNetwork(n)}
+                            className={`flex-1 rounded-xl border py-2 text-sm font-medium transition ${network === n ? "border-amber-300 bg-amber-50 text-amber-700" : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"}`}>
+                            {n === "mtn" ? "MTN MoMo" : "Vodafone Cash"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
+
                 {error && <p className="text-sm text-red-500">{error}</p>}
+
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setStep(2)} className="rounded-full border border-gray-200 px-6 py-2.5 text-sm font-semibold text-gray-700 hover:border-gray-400 transition">Back</button>
-                  <button type="button" onClick={handlePlaceOrder} className="flex-1 rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition">
-                    {paymentMethod === "bank_transfer" ? "Place Order — Pay via Bank Transfer" : `Pay GH₵ ${total} Securely`}
+                  <button type="button" onClick={handlePlaceOrder} disabled={loading} className="flex-1 rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition disabled:opacity-60">
+                    {loading ? "Processing..." : paymentMethod === "bank_transfer" ? "Place Order — Pay via Bank Transfer" : `Pay GH₵ ${total} Securely`}
                   </button>
                 </div>
-                <div className="flex flex-wrap gap-4 pt-4 text-xs text-gray-400">
+                <div className="flex flex-wrap gap-4 pt-2 text-xs text-gray-400">
                   <span>🔒 256-bit SSL Secured</span>
                   <span>✓ Instant Activation (card/MM)</span>
                   <span>📋 Invoice Emailed</span>
@@ -191,6 +265,7 @@ function HostingCheckoutPageInner() {
             )}
           </div>
 
+          {/* Order summary sidebar */}
           <div className="lg:sticky lg:top-24 h-fit">
             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Order Summary</h3>
