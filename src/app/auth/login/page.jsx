@@ -2,9 +2,10 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { z } from "zod";
+import { useAuth } from "@/context/AuthContext";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 
 const schema = z.object({
@@ -12,15 +13,11 @@ const schema = z.object({
   password: z.string().min(1),
 });
 
-function safeRedirect(path) {
-  if (!path || typeof path !== "string") return null;
-  const p = path.trim();
-  return p.startsWith("/") && !p.startsWith("//") ? p : null;
-}
-
 const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
 
 function LoginPageInner() {
+  const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -33,11 +30,14 @@ function LoginPageInner() {
     const result = schema.safeParse({ email, password });
     if (!result.success) { setError("Invalid email or password."); return; }
     setLoading(true);
-    // TODO: POST /auth/login
-    setTimeout(() => {
+    try {
+      await login(email, password);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err.message || "Invalid email or password.");
+    } finally {
       setLoading(false);
-      setError("Authentication not connected yet.");
-    }, 600);
+    }
   };
 
   return (

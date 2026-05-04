@@ -2,25 +2,40 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaCheckCircle } from "react-icons/fa";
+import { useRouter, useParams } from "next/navigation";
+import { FaCheckCircle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { z } from "zod";
+import { api } from "@/lib/api";
 
 const schema = z.object({ password: z.string().min(8) });
-
 const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
 
 export default function ResetPasswordPage() {
+  const { token } = useParams();
+  const router = useRouter();
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (password !== confirmPassword) { setError("Passwords do not match."); return; }
     const result = schema.safeParse({ password });
     if (!result.success) { setError("Password must be at least 8 characters."); return; }
-    // TODO: PATCH /auth/reset-password/:token
-    setSuccess(true);
+    setLoading(true);
+    try {
+      await api.patch(`/auth/reset-password/${token}`, { password });
+      setSuccess(true);
+      setTimeout(() => router.push("/auth/login"), 2500);
+    } catch (err) {
+      setError(err.message || "Invalid or expired reset link.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,17 +52,26 @@ export default function ResetPasswordPage() {
             <div className="text-center py-4">
               <FaCheckCircle className="text-emerald-500 text-3xl mx-auto mb-3" />
               <p className="font-semibold text-gray-900 mb-1">Password updated!</p>
-              <p className="text-gray-500 text-sm">You can now sign in with your new password.</p>
+              <p className="text-gray-500 text-sm">Redirecting you to sign in...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1.5">New password</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" className={inputCls} required />
+                <div className="relative">
+                  <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" className={`${inputCls} pr-12`} required />
+                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition">
+                    {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">Confirm password</label>
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat password" className={inputCls} required />
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
-              <button type="submit" className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm">
-                Reset Password
+              <button type="submit" disabled={loading} className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm disabled:opacity-60">
+                {loading ? "Saving..." : "Reset Password"}
               </button>
             </form>
           )}

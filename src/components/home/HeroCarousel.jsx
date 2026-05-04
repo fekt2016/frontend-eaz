@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaPalette, FaSearch, FaBullhorn, FaStar, FaHashtag,
@@ -18,6 +19,7 @@ const slides = [
     href: "/services/web-design",
     accent: "#F5A623",
     bg: "#fffbf5",
+    image: "/images/hero/web-design.png",
   },
   {
     icon: FaSearch,
@@ -28,6 +30,7 @@ const slides = [
     href: "/services/seo",
     accent: "#10b981",
     bg: "#f0fdf4",
+    image: "/images/hero/seo.png",
   },
   {
     icon: FaBullhorn,
@@ -38,6 +41,7 @@ const slides = [
     href: "/services/web-marketing",
     accent: "#3b82f6",
     bg: "#eff6ff",
+    image: "/images/hero/paid-ads.png",
   },
   {
     icon: FaStar,
@@ -48,6 +52,7 @@ const slides = [
     href: "/services/web-design",
     accent: "#8b5cf6",
     bg: "#f5f3ff",
+    image: "/images/hero/branding.png",
   },
   {
     icon: FaHashtag,
@@ -58,6 +63,7 @@ const slides = [
     href: "/services/web-marketing",
     accent: "#ec4899",
     bg: "#fdf2f8",
+    image: "/images/hero/social-media.png",
   },
   {
     icon: FaEnvelope,
@@ -68,6 +74,7 @@ const slides = [
     href: "/services/web-marketing",
     accent: "#f59e0b",
     bg: "#fffbeb",
+    image: "/images/hero/email-marketing.png",
   },
   {
     icon: FaMobileAlt,
@@ -78,6 +85,7 @@ const slides = [
     href: "/services/phone-repair",
     accent: "#06b6d4",
     bg: "#ecfeff",
+    image: "/images/hero/phone-repair.png",
   },
 ];
 
@@ -90,7 +98,7 @@ export default function HeroCarousel() {
 
   useEffect(() => {
     if (paused) return;
-    const t = setInterval(next, 5000);
+    const t = setInterval(next, 6000);
     return () => clearInterval(t);
   }, [paused, next]);
 
@@ -109,7 +117,7 @@ export default function HeroCarousel() {
   return (
     <section
       className="relative overflow-hidden"
-      style={{ minHeight: "78vh", background: slide.bg, transition: "background 0.6s ease" }}
+      style={{ minHeight: "85vh", background: slide.bg, transition: "background 0.8s ease" }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       aria-label="Hero carousel"
@@ -117,78 +125,118 @@ export default function HeroCarousel() {
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -16 }}
-          transition={{ duration: 0.55, ease: "easeInOut" }}
-          className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6 }}
+          className="absolute inset-0 flex items-center"
         >
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
-            style={{ background: `${slide.accent}18` }}
-          >
-            <Icon size={36} style={{ color: slide.accent }} />
-          </div>
-
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: slide.accent }}>
-            {slide.service}
-          </p>
-
-          <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl text-gray-900 mb-4 max-w-3xl leading-tight">
-            {slide.headline}
-          </h1>
-
-          <p className="text-gray-500 text-lg max-w-xl mb-8 leading-relaxed">
-            {slide.description}
-          </p>
-
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Link
-              href={slide.href}
-              className="px-6 py-3 rounded-full text-white text-sm font-semibold transition hover:opacity-90"
-              style={{ background: slide.accent }}
+          <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center w-full">
+            <motion.div
+              initial={{ x: -30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-left"
             >
-              {slide.cta}
-            </Link>
-            <Link
-              href="/book-consultation"
-              className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-white transition"
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+                style={{ background: `${slide.accent}18` }}
+              >
+                <Icon size={28} style={{ color: slide.accent }} />
+              </div>
+
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: slide.accent }}>
+                {slide.service}
+              </p>
+
+              <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl text-gray-900 mb-6 leading-tight">
+                {slide.headline}
+              </h1>
+
+              <p className="text-gray-500 text-lg max-w-lg mb-10 leading-relaxed">
+                {slide.description}
+              </p>
+
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href={slide.href}
+                  className="px-8 py-4 rounded-full text-white text-sm font-bold transition hover:scale-105 active:scale-95 shadow-lg shadow-gray-200"
+                  style={{ background: slide.accent }}
+                >
+                  {slide.cta}
+                </Link>
+                <Link
+                  href="/book-consultation"
+                  className="px-8 py-4 rounded-full border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-white transition hover:border-gray-400"
+                >
+                  Free Consultation
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ x: 30, opacity: 0, scale: 0.95 }}
+              animate={{ x: 0, opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="relative hidden md:block"
             >
-              Free Consultation
-            </Link>
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-8 border-white/50 backdrop-blur-sm">
+                <Image
+                  src={slide.image}
+                  alt={slide.headline}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              {/* Floating decorative element */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl bg-white/80 backdrop-blur shadow-xl p-4 flex flex-col justify-center border border-gray-100"
+              >
+                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
+                  <FaStar className="text-emerald-600" size={16} />
+                </div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase">Success Rate</p>
+                <p className="text-lg font-black text-gray-900">99.9%</p>
+              </motion.div>
+            </motion.div>
           </div>
         </motion.div>
       </AnimatePresence>
 
       {/* Arrows */}
-      <button
-        type="button"
-        onClick={prev}
-        aria-label="Previous slide"
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-400 transition"
-      >
-        <FaChevronLeft size={14} />
-      </button>
-      <button
-        type="button"
-        onClick={next}
-        aria-label="Next slide"
-        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-400 transition"
-      >
-        <FaChevronRight size={14} />
-      </button>
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 z-10 pointer-events-none">
+        <button
+          type="button"
+          onClick={prev}
+          aria-label="Previous slide"
+          className="w-12 h-12 rounded-full bg-white/80 backdrop-blur border border-gray-200 shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:scale-110 transition pointer-events-auto"
+        >
+          <FaChevronLeft size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={next}
+          aria-label="Next slide"
+          className="w-12 h-12 rounded-full bg-white/80 backdrop-blur border border-gray-200 shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:scale-110 transition pointer-events-auto"
+        >
+          <FaChevronRight size={16} />
+        </button>
+      </div>
 
       {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-10">
         {slides.map((_, i) => (
           <button
             key={i}
             type="button"
             aria-label={`Go to slide ${i + 1}`}
             onClick={() => setCurrent(i)}
-            className="h-1.5 rounded-full transition-all duration-300"
+            className="h-2 rounded-full transition-all duration-500"
             style={{
-              width: i === current ? "24px" : "8px",
+              width: i === current ? "32px" : "8px",
               background: i === current ? slide.accent : "#d1d5db",
             }}
           />

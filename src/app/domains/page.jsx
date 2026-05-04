@@ -1,19 +1,100 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { api } from "@/lib/api";
+
+const TLD_PRICES = {
+  ".com": 85, ".net": 75, ".org": 70, ".io": 180,
+  ".africa": 95, ".com.gh": 60, ".gh": 60,
+};
+
+function ResultRow({ result, onSelect }) {
+  return (
+    <div className={`flex items-center justify-between p-4 rounded-2xl border transition ${
+      result.available
+        ? "border-emerald-100 bg-emerald-50"
+        : "border-gray-100 bg-gray-50 opacity-60"
+    }`}>
+      <div>
+        <p className="text-sm font-semibold text-gray-900">{result.domain}</p>
+        {result.available && (
+          <p className="text-xs text-gray-400 mt-0.5">
+            GH₵{result.price ?? TLD_PRICES[result.tld] ?? "—"}<span className="ml-1">/yr</span>
+          </p>
+        )}
+      </div>
+      {result.available ? (
+        <button
+          onClick={() => onSelect(result)}
+          className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition"
+        >
+          Register
+        </button>
+      ) : (
+        <span className="text-xs text-gray-400 font-medium">Taken</span>
+      )}
+    </div>
+  );
+}
 
 function DomainsContentInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const name = searchParams.get("name") || "";
   const [query, setQuery] = useState(name);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [searched, setSearched] = useState(false);
+
+  const doSearch = async (searchQuery) => {
+    if (!searchQuery.trim()) return;
+    setLoading(true);
+    setError("");
+    setSearched(true);
+    try {
+      const res = await api.get(`/domain/search?domain=${encodeURIComponent(searchQuery.trim())}`);
+      const { domain, available, price, suggestions = [] } = res;
+      const primaryTld = domain.includes(".") ? "." + domain.split(".").slice(1).join(".") : ".com";
+      const primary = {
+        domain,
+        available,
+        price: price ?? TLD_PRICES[primaryTld],
+        tld: primaryTld,
+      };
+      const others = suggestions
+        .filter((d) => d !== domain)
+        .slice(0, 6)
+        .map((d) => {
+          const tld = d.includes(".") ? "." + d.split(".").slice(1).join(".") : ".com";
+          return { domain: d, available: true, price: TLD_PRICES[tld], tld };
+        });
+      setResults([primary, ...others]);
+    } catch (err) {
+      setError(err.message || "Search failed. Please try again.");
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (name) doSearch(name);
+  }, [name]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     const trimmed = query.trim();
-    if (trimmed) router.push(`/domains?name=${encodeURIComponent(trimmed)}`);
+    if (trimmed) {
+      router.push(`/domains?name=${encodeURIComponent(trimmed)}`);
+    }
+  };
+
+  const handleSelect = (result) => {
+    const price = result.price ?? TLD_PRICES[result.tld] ?? 85;
+    router.push(`/domains/checkout?domain=${encodeURIComponent(result.domain)}&price=${price}`);
   };
 
   return (
@@ -32,16 +113,40 @@ function DomainsContentInner() {
             placeholder="yourbusiness.com"
             className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white"
           />
-          <button type="submit" className="px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition">
-            Search
+          <button type="submit" disabled={loading} className="px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition disabled:opacity-60">
+            {loading ? "Searching..." : "Search"}
           </button>
         </form>
 
-        <div className="p-8 rounded-2xl border border-gray-100 bg-gray-50 text-center">
-          <p className="text-gray-400 text-sm">
-            {name ? `Domain search coming soon. Searching for "${name}"...` : "Enter a domain name above to check availability."}
-          </p>
-        </div>
+        {error && (
+          <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-sm mb-6">{error}</div>
+        )}
+
+        {loading && (
+          <div className="flex justify-center py-12">
+            <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+          </div>
+        )}
+
+        {!loading && results.length > 0 && (
+          <div className="space-y-3">
+            {results.map((r) => (
+              <ResultRow key={r.domain} result={r} onSelect={handleSelect} />
+            ))}
+          </div>
+        )}
+
+        {!loading && searched && results.length === 0 && !error && (
+          <div className="p-8 rounded-2xl border border-gray-100 bg-gray-50 text-center">
+            <p className="text-gray-400 text-sm">No results found. Try a different name.</p>
+          </div>
+        )}
+
+        {!searched && !loading && (
+          <div className="p-8 rounded-2xl border border-gray-100 bg-gray-50 text-center">
+            <p className="text-gray-400 text-sm">Enter a domain name above to check availability.</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -51,7 +156,7 @@ export default function DomainsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-gray-400 text-sm animate-pulse">Loading...</p>
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
       </div>
     }>
       <DomainsContentInner />

@@ -3,17 +3,28 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FaCheckCircle } from "react-icons/fa";
+import { api } from "@/lib/api";
 
 const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: POST /auth/forgot-password
-    setSent(true);
+    setError("");
+    setLoading(true);
+    try {
+      await api.post("/auth/forgot-password", { email });
+      setSent(true);
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,8 +49,9 @@ export default function ForgotPasswordPage() {
                 <label className="block text-xs font-medium text-gray-700 mb-1.5">Email address</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} required />
               </div>
-              <button type="submit" className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm">
-                Send Reset Link
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              <button type="submit" disabled={loading} className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm disabled:opacity-60">
+                {loading ? "Sending..." : "Send Reset Link"}
               </button>
             </form>
           )}
