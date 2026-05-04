@@ -58,22 +58,17 @@ function DomainsContentInner() {
     setSearched(true);
     try {
       const res = await api.get(`/domain/search?domain=${encodeURIComponent(searchQuery.trim())}`);
-      const { domain, available, price, suggestions = [] } = res;
-      const primaryTld = domain.includes(".") ? "." + domain.split(".").slice(1).join(".") : ".com";
-      const primary = {
-        domain,
-        available,
-        price: price ?? TLD_PRICES[primaryTld],
-        tld: primaryTld,
-      };
-      const others = suggestions
-        .filter((d) => d !== domain)
-        .slice(0, 6)
-        .map((d) => {
-          const tld = d.includes(".") ? "." + d.split(".").slice(1).join(".") : ".com";
-          return { domain: d, available: true, price: TLD_PRICES[tld], tld };
-        });
-      setResults([primary, ...others]);
+      const { results: allResults = [] } = res;
+      const mapped = allResults.map((r) => {
+        const tld = r.domain.includes(".") ? "." + r.domain.split(".").slice(1).join(".") : ".com";
+        return {
+          domain: r.domain,
+          available: r.available,
+          price: r.price ?? TLD_PRICES[tld] ?? 85,
+          tld,
+        };
+      });
+      setResults(mapped);
     } catch (err) {
       setError(err.message || "Search failed. Please try again.");
       setResults([]);
