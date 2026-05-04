@@ -7,7 +7,9 @@ import { api } from "@/lib/api";
 
 const TLD_PRICES = {
   ".com": 85, ".net": 75, ".org": 70, ".io": 180,
-  ".africa": 95, ".com.gh": 60, ".gh": 60,
+  ".africa": 95, ".com.gh": 60, ".gh": 60, ".org.gh": 60,
+  ".co": 120, ".online": 65, ".tech": 130, ".xyz": 45,
+  ".info": 70, ".biz": 75, ".me": 90,
 };
 
 function ResultRow({ result, onSelect }) {
