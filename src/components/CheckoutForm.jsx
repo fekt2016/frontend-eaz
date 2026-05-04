@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { z } from "zod";
+import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
 
@@ -16,9 +18,10 @@ const schema = z.object({
 });
 
 export default function CheckoutForm({ domain, price }) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const { user } = useAuth();
+  const [firstName, setFirstName] = useState(user?.name?.split(" ")[0] || "");
+  const [lastName, setLastName] = useState(user?.name?.split(" ").slice(1).join(" ") || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -32,41 +35,82 @@ export default function CheckoutForm({ domain, price }) {
     e.preventDefault();
     setError("");
     const result = schema.safeParse({ firstName, lastName, email, phone, address, city, years });
-    if (!result.success) {
-      setError("Please fill required fields.");
-      return;
-    }
+    if (!result.success) { setError("Please fill in all required fields."); return; }
     setLoading(true);
-    // TODO: POST /domain/payment
-    setTimeout(() => {
+    try {
+      const res = await api.post("/domain/payment", {
+        domain,
+        email,
+        amount: total,
+        currency: "GHS",
+        firstName,
+        lastName,
+        phone,
+        years,
+        registrantInfo: { firstName, lastName, address, city, country: "GH", postalCode: "00233" },
+      });
+      const { authorizationUrl } = res.data;
+      if (authorizationUrl) {
+        window.location.href = authorizationUrl;
+      } else {
+        setError("Could not initialize payment. Please try again.");
+      }
+    } catch (err) {
+      setError(err.message || "Payment failed. Please try again.");
+    } finally {
       setLoading(false);
-      setError("Payment gateway not connected yet.");
-    }, 600);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className={inputCls} required />
-        <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className={inputCls} required />
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1.5">First name</label>
+          <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className={inputCls} required />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1.5">Last name</label>
+          <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className={inputCls} required />
+        </div>
       </div>
-      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className={inputCls} required />
-      <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone" className={inputCls} />
-      <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Address" className={inputCls} />
-      <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" className={inputCls} />
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1.5">Years (1–10)</label>
+        <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} required />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1.5">Phone</label>
+        <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+233 00 000 0000" className={inputCls} />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1.5">Address</label>
+        <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" className={inputCls} />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1.5">City</label>
+        <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Accra" className={inputCls} />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1.5">Registration period</label>
         <select value={years} onChange={(e) => setYears(Number(e.target.value))} className={inputCls}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((y) => (
-            <option key={y} value={y}>{y} year{y > 1 ? "s" : ""} — ${(price * y).toFixed(2)}</option>
+          {[1, 2, 3, 4, 5].map((y) => (
+            <option key={y} value={y}>{y} year{y > 1 ? "s" : ""} — GH₵{(price * y).toFixed(0)}</option>
           ))}
         </select>
       </div>
-      <p className="text-amber-500 font-semibold">Total: ${total.toFixed(2)}</p>
+
+      <div className="flex items-center justify-between pt-2">
+        <span className="text-sm text-gray-500">Total</span>
+        <span className="text-lg font-bold text-amber-500">GH₵{total.toFixed(0)}</span>
+      </div>
+
       {error && <p className="text-red-500 text-sm">{error}</p>}
-      <button type="submit" disabled={loading} className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition disabled:opacity-50">
-        {loading ? "Processing..." : "Pay with Paystack"}
+
+      <button type="submit" disabled={loading} className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition disabled:opacity-50 text-sm">
+        {loading ? "Redirecting to payment..." : "Pay with Paystack"}
       </button>
+
+      <p className="text-center text-xs text-gray-400">Secured by Paystack · MTN MoMo · Vodafone Cash · Card</p>
     </form>
   );
 }

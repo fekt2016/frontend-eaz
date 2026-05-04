@@ -2,7 +2,7 @@
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { use, useState } from "react";
+import { useState } from "react";
 import { FaCheckCircle, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { serviceDetails } from "@/data/serviceDetails";
 
@@ -32,7 +32,7 @@ function FAQ({ items }) {
 }
 
 export default function ServiceDetailPage({ params }) {
-  const { slug } = use(params);
+  const { slug } = params;
   const service = serviceDetails.find((s) => s.slug === slug);
   if (!service) notFound();
   const Icon = service.icon;
