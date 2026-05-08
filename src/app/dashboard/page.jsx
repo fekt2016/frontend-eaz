@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
-  FaServer, FaGlobe, FaShieldAlt, FaExternalLinkAlt,
-  FaDownload, FaUpload, FaCheckCircle, FaClock, FaTimesCircle,
-  FaChevronRight, FaUserCircle, FaCog,
+  FaServer, FaGlobe, FaShieldAlt,
+  FaClock, FaChevronRight, FaUserCircle, FaExternalLinkAlt,
 } from "react-icons/fa";
-
-const CPANEL_URL = process.env.NEXT_PUBLIC_CPANEL_URL || "https://your-server-ip:2083";
 
 const statusConfig = {
   active:    { label: "Active",    cls: "bg-emerald-50 text-emerald-700 border-emerald-100", dot: "bg-emerald-500" },
@@ -71,19 +69,10 @@ function HostingCard({ order }) {
       )}
 
       {isActive && order.cpanelUsername && (
-        <div className="mb-4 px-3 py-2.5 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-emerald-600 font-medium">cPanel Username</p>
-            <p className="text-sm font-mono text-emerald-800 font-semibold">{order.cpanelUsername}</p>
-          </div>
-          <a
-            href={CPANEL_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition"
-          >
-            cPanel <FaExternalLinkAlt size={9} />
-          </a>
+        <div className="mb-4 px-3 py-2.5 rounded-xl bg-emerald-50 border border-emerald-100">
+          <p className="text-xs text-emerald-600 font-medium">cPanel Username</p>
+          <p className="text-sm font-mono text-emerald-800 font-semibold">{order.cpanelUsername}</p>
+          <p className="text-xs text-emerald-700/80 mt-1">Open cPanel from the order page — we sign you in securely.</p>
         </div>
       )}
 
@@ -94,15 +83,13 @@ function HostingCard({ order }) {
         >
           View Details
         </Link>
-        {isActive && (
-          <a
-            href={CPANEL_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center text-xs font-semibold py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition flex items-center justify-center gap-1.5"
+        {isActive && order.cpanelUsername && (
+          <Link
+            href={`/dashboard/hosting/${order._id}`}
+            className="flex-1 text-center text-xs font-semibold py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition"
           >
-            Login to cPanel <FaExternalLinkAlt size={9} />
-          </a>
+            Manage hosting
+          </Link>
         )}
       </div>
     </div>
@@ -128,13 +115,21 @@ function DomainCard({ order }) {
   );
 }
 
-export default function Dashboard() {
+function DashboardContent() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [hosting, setHosting] = useState([]);
   const [domains, setDomains] = useState([]);
   const [loadingHosting, setLoadingHosting] = useState(true);
   const [loadingDomains, setLoadingDomains] = useState(true);
   const [tab, setTab] = useState("overview");
+
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t === "hosting" || t === "domains" || t === "overview") {
+      setTab(t);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     api.get("/hosting/orders")
@@ -176,9 +171,14 @@ export default function Dashboard() {
             </div>
           </div>
           {user?.role === "admin" && (
-            <Link href="/dashboard/admin/hosting" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition">
-              <FaShieldAlt size={12} /> Admin Panel
-            </Link>
+            <div className="flex gap-2">
+              <Link href="/dashboard/admin/users" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition">
+                <FaUserCircle size={12} /> Manage Users
+              </Link>
+              <Link href="/dashboard/admin/hosting" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition">
+                <FaShieldAlt size={12} /> Hosting Panel
+              </Link>
+            </div>
           )}
         </div>
 
@@ -267,25 +267,23 @@ export default function Dashboard() {
                   { href: "/hosting", icon: FaServer, label: "Order Hosting", color: "text-amber-500 bg-amber-50" },
                   { href: "/domains", icon: FaGlobe, label: "Register Domain", color: "text-blue-500 bg-blue-50" },
                   { href: "/contact", icon: FaShieldAlt, label: "Get Support", color: "text-emerald-500 bg-emerald-50" },
-                  { href: CPANEL_URL, icon: FaExternalLinkAlt, label: "cPanel Login", color: "text-purple-500 bg-purple-50", external: true },
-                ].map(({ href, icon: Icon, label, color, external }) => (
-                  external ? (
-                    <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                      className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-2 hover:border-gray-200 hover:shadow-sm transition text-center cursor-pointer">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-                        <Icon size={16} />
-                      </div>
-                      <span className="text-xs font-medium text-gray-700">{label}</span>
-                    </a>
-                  ) : (
-                    <Link key={label} href={href}
-                      className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-2 hover:border-gray-200 hover:shadow-sm transition text-center">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-                        <Icon size={16} />
-                      </div>
-                      <span className="text-xs font-medium text-gray-700">{label}</span>
-                    </Link>
-                  )
+                  {
+                    href: "/dashboard?tab=hosting",
+                    icon: FaExternalLinkAlt,
+                    label: "cPanel (my orders)",
+                    color: "text-purple-500 bg-purple-50",
+                  },
+                ].map(({ href, icon: Icon, label, color }) => (
+                  <Link
+                    key={label}
+                    href={href}
+                    className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-2 hover:border-gray-200 hover:shadow-sm transition text-center"
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
+                      <Icon size={16} />
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">{label}</span>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -352,5 +350,22 @@ export default function Dashboard() {
 
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-gray-50 min-h-screen flex items-center justify-center px-4">
+          <div className="flex flex-col items-center gap-3 text-gray-500">
+            <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
+            <p className="text-sm">Loading dashboard…</p>
+          </div>
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

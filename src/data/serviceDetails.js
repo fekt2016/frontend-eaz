@@ -5,8 +5,6 @@ import {
   FaSearch,
   FaMobileAlt,
   FaChartLine,
-  FaEnvelope,
-  FaBullhorn,
 } from "react-icons/fa";
 
 export const serviceDetails = [

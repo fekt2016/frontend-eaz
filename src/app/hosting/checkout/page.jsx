@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { SHARED_PLANS } from "@/data/hostingHostingData";
+import { SHARED_PLANS, WORDPRESS_PLANS } from "@/data/hostingHostingData";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -18,8 +18,208 @@ const ADDONS = [
   { id: "domain-privacy", name: "Domain Privacy Protection", price: 10 },
 ];
 
-const TIER_TO_NAME = { deluxe: "Deluxe", professional: "Professional", enterprise: "Enterprise", ultimate: "Ultimate" };
+const TIER_TO_NAME = {
+  deluxe: "Deluxe", professional: "Professional", enterprise: "Enterprise", ultimate: "Ultimate",
+  starter: "WP Starter", business: "WP Business", agency: "WP Agency",
+};
 
+// ── Domain Checker Component ──────────────────────────────────────────────────
+function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomainRegistrationFee }) {
+  const [query, setQuery] = useState(domain || "");
+  const [status, setStatus] = useState(null); // null | 'checking' | 'available' | 'taken' | 'owned' | 'error'
+  const [domainInfo, setDomainInfo] = useState(null);
+  const debounceRef = useRef(null);
+
+  const checkDomain = useCallback(async (value) => {
+    const cleaned = value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "");
+    if (!cleaned || !cleaned.includes(".") || cleaned.length < 4) {
+      setStatus(null);
+      setDomainInfo(null);
+      return;
+    }
+
+    setStatus("checking");
+    setDomainInfo(null);
+
+    try {
+      // Check if already ordered by this user
+      const ordersRes = await api.get("/domains/orders").catch(() => ({ data: [] }));
+      const orders = ordersRes?.data?.data || ordersRes?.data || [];
+      const existing = orders.find(
+        (o) => o.domain?.toLowerCase() === cleaned && ["pending", "completed", "active"].includes(o.status)
+      );
+      if (existing) {
+        setStatus("owned");
+        setDomainInfo({ domain: cleaned, existingOrder: existing });
+        setDomain(cleaned);
+        return;
+      }
+
+      // Check availability via Namecheap
+      const res = await api.get(`/domains/search?domain=${encodeURIComponent(cleaned)}`);
+      const results = res.data?.results || res.data?.data?.results || [];
+      const match = results.find((r) => r.domain === cleaned || r.domain?.startsWith(cleaned.split(".")[0]));
+
+      if (!match) {
+        setStatus("error");
+        return;
+      }
+
+      if (match.available) {
+        setStatus("available");
+        setDomainInfo(match);
+        setDomain(cleaned);
+        setDomainRegistrationFee(match.price || 0);
+      } else {
+        setStatus("taken");
+        setDomainInfo(match);
+        setDomain("");
+        setDomainRegistrationFee(0);
+      }
+    } catch {
+      setStatus("error");
+    }
+  }, [setDomain]);
+
+  const handleInput = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    setStatus(null);
+    setDomainInfo(null);
+    if (domainMode === "own") {
+      setDomain(val.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, ""));
+      return;
+    }
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => checkDomain(val), 700);
+  };
+
+  const handleCheck = () => {
+    clearTimeout(debounceRef.current);
+    checkDomain(query);
+  };
+
+  const statusBadge = () => {
+    if (status === "checking") return <span className="flex items-center gap-1.5 text-xs text-gray-400"><span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />Checking availability…</span>;
+    if (status === "available") return <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">✓ Available{domainInfo?.price ? ` — GH₵${domainInfo.price}/yr` : ""}</span>;
+    if (status === "taken") return <span className="text-xs font-semibold text-red-500">✗ Already registered — try a different name or TLD</span>;
+    if (status === "owned") return <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600">★ You already ordered this domain</span>;
+    if (status === "error") return <span className="text-xs text-gray-400">Could not check — enter manually or skip</span>;
+    return null;
+  };
+
+  return (
+    <div className="space-y-3">
+      <label className="block text-xs font-medium text-gray-700">
+        Domain for this hosting account
+      </label>
+
+      {/* Mode selector */}
+      <div className="flex gap-2">
+        {[
+          { key: "new", label: "Register new domain" },
+          { key: "own", label: "I already own one" },
+          { key: "skip", label: "Skip for now" },
+        ].map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => {
+              setDomainMode(key);
+              setStatus(null);
+              setDomainInfo(null);
+              setDomainRegistrationFee(0);
+              if (key === "skip") setDomain("");
+            }}
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+              domainMode === key
+                ? "border-gray-900 bg-gray-900 text-white"
+                : "border-gray-200 text-gray-500 hover:border-gray-400"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {domainMode === "skip" && (
+        <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-xs text-gray-500 space-y-1">
+          <p className="font-medium text-gray-600">No domain? No problem.</p>
+          <p>Your hosting account will be set up on a temporary URL so you can access cPanel straight away. You can connect your own domain at any time from your dashboard.</p>
+        </div>
+      )}
+
+      {domainMode === "new" && (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={query}
+              onChange={handleInput}
+              placeholder="yourbusiness.com"
+              className={`${inputCls} flex-1`}
+            />
+            <button
+              type="button"
+              onClick={handleCheck}
+              disabled={status === "checking"}
+              className="rounded-xl bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-gray-700 transition disabled:opacity-60"
+            >
+              Check
+            </button>
+          </div>
+          {statusBadge()}
+
+          {status === "available" && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-700">
+              <p className="font-semibold mb-0.5">Great choice! This domain is available.</p>
+              <p className="text-emerald-600">
+                {domainInfo?.price ? `Domain registration (GH₵${domainInfo.price}/yr) will be added to your order total. ` : ""}
+                We&apos;ll register it and automatically point it to your hosting — no extra steps needed.
+              </p>
+            </div>
+          )}
+
+          {status === "taken" && (
+            <div className="rounded-xl border border-red-100 bg-red-50 p-3 text-xs text-red-600">
+              <p className="font-semibold mb-1">This domain is taken.</p>
+              <p>Try a variation like <span className="font-mono">{query.split(".")[0]}-gh.com</span> or use a different extension like <span className="font-mono">.net</span> or <span className="font-mono">.com.gh</span></p>
+            </div>
+          )}
+
+          {status === "owned" && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+              <p className="font-semibold">You already ordered this domain through EazWorld.</p>
+              <p className="mt-0.5 text-amber-600">It will be linked to this hosting account automatically.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {domainMode === "own" && (
+        <div className="space-y-3">
+          <input
+            type="text"
+            value={query}
+            onChange={handleInput}
+            placeholder="yourdomain.com"
+            className={inputCls}
+          />
+          <div className="rounded-xl border border-amber-100 bg-amber-50 p-3 text-xs text-amber-800 space-y-2">
+            <p className="font-semibold">After checkout, update your domain&apos;s nameservers to:</p>
+            <div className="flex flex-col gap-1 font-mono text-amber-900">
+              <span>NS1: <strong>{process.env.NEXT_PUBLIC_NAMESERVER_1 || "ns1.eazworld.com"}</strong></span>
+              <span>NS2: <strong>{process.env.NEXT_PUBLIC_NAMESERVER_2 || "ns2.eazworld.com"}</strong></span>
+            </div>
+            <p className="text-amber-700">Log in to your domain registrar (e.g. Namecheap, GoDaddy) and replace the existing nameservers with the ones above. DNS changes take 24–48 hrs to fully propagate.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Step Indicator ────────────────────────────────────────────────────────────
 function StepIndicator({ step }) {
   const steps = ["Plan Summary", "Your Details", "Payment"];
   return (
@@ -39,6 +239,7 @@ function StepIndicator({ step }) {
   );
 }
 
+// ── Main Checkout ─────────────────────────────────────────────────────────────
 function HostingCheckoutPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -52,6 +253,8 @@ function HostingCheckoutPageInner() {
   const [billingCycle, setBillingCycle] = useState(billingParam === "annual" ? "annual" : "monthly");
   const [addons, setAddons] = useState([]);
   const [domain, setDomain] = useState("");
+  const [domainMode, setDomainMode] = useState("new"); // 'new' | 'own' | 'skip'
+  const [domainRegistrationFee, setDomainRegistrationFee] = useState(0);
   const [customer, setCustomer] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -67,11 +270,13 @@ function HostingCheckoutPageInner() {
   const [loading, setLoading] = useState(false);
 
   const planName = TIER_TO_NAME[(tier || "").toLowerCase()];
-  const plan = SHARED_PLANS.find((p) => p.name === planName) || SHARED_PLANS[0];
+  const allPlans = [...SHARED_PLANS, ...WORDPRESS_PLANS];
+  const plan = allPlans.find((p) => p.name === planName) || SHARED_PLANS[0];
   const addonsTotal = addons.reduce((sum, id) => sum + (ADDONS.find((a) => a.id === id)?.price ?? 0), 0);
   const basePrice = billingCycle === "annual" ? plan.annualPrice : plan.monthlyPrice;
   const saving = plan.monthlyPrice * 12 - plan.annualPrice;
-  const total = basePrice + addonsTotal;
+  const domainFee = domainMode === "new" && domain ? domainRegistrationFee : 0;
+  const total = basePrice + addonsTotal + domainFee;
 
   const toggleAddon = (id) => setAddons((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
 
@@ -93,7 +298,12 @@ function HostingCheckoutPageInner() {
         }),
         customer,
         paymentMethod,
+        domainMode,
         ...(domain && { domain }),
+        ...(domainMode === "new" && domain && domainRegistrationFee > 0 && {
+          domainRegistrationFee,
+          domainRegistrationYears: 1,
+        }),
         ...(paymentMethod === "mobile_money" && { mobileNumber, network }),
       });
 
@@ -151,6 +361,7 @@ function HostingCheckoutPageInner() {
                     <button type="button" onClick={() => setBillingCycle("annual")} className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${billingCycle === "annual" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>Annual (Save GH₵ {saving})</button>
                   </div>
                 </div>
+
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
                   <h2 className="font-display text-lg font-semibold text-gray-900 mb-4">Add-ons</h2>
                   <ul className="space-y-3">
@@ -165,11 +376,14 @@ function HostingCheckoutPageInner() {
                     ))}
                   </ul>
                 </div>
-                <button type="button" onClick={() => setStep(2)} className="w-full rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition">Continue to Details</button>
+
+                <button type="button" onClick={() => setStep(2)} className="w-full rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition">
+                  Continue to Details
+                </button>
               </>
             )}
 
-            {/* STEP 2 — Customer Details */}
+            {/* STEP 2 — Customer Details + Domain */}
             {step === 2 && (
               <>
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
@@ -187,11 +401,7 @@ function HostingCheckoutPageInner() {
                       <label className="mb-1.5 block text-xs font-medium text-gray-700">Phone *</label>
                       <input type="tel" value={customer.phone} onChange={(e) => setCustomer((c) => ({ ...c, phone: e.target.value }))} placeholder="+233 XX XXX XXXX" className={inputCls} />
                     </div>
-                    <div className="sm:col-span-2">
-                      <label className="mb-1.5 block text-xs font-medium text-gray-700">Domain name <span className="text-gray-400">(optional — add later)</span></label>
-                      <input type="text" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="yourbusiness.com" className={inputCls} />
-                    </div>
-                    <div className="sm:col-span-2">
+                    <div>
                       <label className="mb-1.5 block text-xs font-medium text-gray-700">Address</label>
                       <input type="text" value={customer.address} onChange={(e) => setCustomer((c) => ({ ...c, address: e.target.value }))} placeholder="Street address" className={inputCls} />
                     </div>
@@ -201,9 +411,32 @@ function HostingCheckoutPageInner() {
                     </div>
                   </div>
                 </div>
+
+                {/* Domain Checker */}
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
+                  <h2 className="font-display text-lg font-semibold text-gray-900 mb-1">Domain Name</h2>
+                  <p className="text-xs text-gray-400 mb-4">Link a domain to your hosting account. You can also do this later from the dashboard.</p>
+                  <DomainChecker
+                    domain={domain}
+                    setDomain={setDomain}
+                    domainMode={domainMode}
+                    setDomainMode={setDomainMode}
+                    setDomainRegistrationFee={setDomainRegistrationFee}
+                  />
+                </div>
+
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setStep(1)} className="rounded-full border border-gray-200 px-6 py-2.5 text-sm font-semibold text-gray-700 hover:border-gray-400 transition">Back</button>
-                  <button type="button" onClick={() => { if (!customer.name || !customer.email || !customer.phone) { setError("Please fill in name, email, and phone."); return; } setError(""); setStep(3); }} className="flex-1 rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition">Continue to Payment</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!customer.name || !customer.email || !customer.phone) { setError("Please fill in name, email, and phone."); return; }
+                      setError(""); setStep(3);
+                    }}
+                    className="flex-1 rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition"
+                  >
+                    Continue to Payment
+                  </button>
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
               </>
@@ -247,12 +480,21 @@ function HostingCheckoutPageInner() {
                   )}
                 </div>
 
+                {/* Domain summary */}
+                {domain && (
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Domain</span>
+                    <span className="font-medium text-gray-900">{domain}</span>
+                  </div>
+                )}
+
                 {error && <p className="text-sm text-red-500">{error}</p>}
 
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setStep(2)} className="rounded-full border border-gray-200 px-6 py-2.5 text-sm font-semibold text-gray-700 hover:border-gray-400 transition">Back</button>
-                  <button type="button" onClick={handlePlaceOrder} disabled={loading} className="flex-1 rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition disabled:opacity-60">
-                    {loading ? "Processing..." : paymentMethod === "bank_transfer" ? "Place Order — Pay via Bank Transfer" : `Pay GH₵ ${total} Securely`}
+                  <button type="button" onClick={handlePlaceOrder} disabled={loading}
+                    className="flex-1 rounded-full bg-gray-900 py-3 font-semibold text-white hover:bg-gray-700 transition disabled:opacity-60">
+                    {loading ? "Processing…" : paymentMethod === "bank_transfer" ? "Place Order — Pay via Bank Transfer" : `Pay GH₵ ${total} Securely`}
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-4 pt-2 text-xs text-gray-400">
@@ -266,19 +508,41 @@ function HostingCheckoutPageInner() {
           </div>
 
           {/* Order summary sidebar */}
-          <div className="lg:sticky lg:top-24 h-fit">
+          <div className="lg:sticky lg:top-24 h-fit space-y-4">
             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Order Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500">Plan</span><span className="text-gray-900">{plan.name}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-gray-900 capitalize">{type}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Billing</span><span className="text-gray-900">{billingCycle === "annual" ? "Annual" : "Monthly"}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span className="text-gray-900">GH₵ {basePrice}{billingCycle === "annual" ? "/yr" : "/mo"}</span></div>
-                {addonsTotal > 0 && <div className="flex justify-between"><span className="text-gray-500">Add-ons</span><span className="text-gray-900">GH₵ {addonsTotal}</span></div>}
+                {addonsTotal > 0 && <div className="flex justify-between"><span className="text-gray-500">Add-ons</span><span className="text-gray-900">+GH₵ {addonsTotal}</span></div>}
+                {domain && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">
+                      {domainMode === "new" ? "Domain (register)" : "Domain"}
+                    </span>
+                    <span className="text-gray-900 truncate max-w-[140px]">{domain}</span>
+                  </div>
+                )}
+                {domainMode === "new" && domainFee > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Domain fee</span>
+                    <span className="text-gray-900">+GH₵ {domainFee}/yr</span>
+                  </div>
+                )}
                 <div className="border-t border-gray-200 pt-3 flex justify-between font-semibold text-base">
                   <span className="text-gray-900">Total</span>
                   <span className="text-amber-500">GH₵ {total}</span>
                 </div>
               </div>
+            </div>
+
+            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-400 space-y-1.5">
+              <p>✓ 30-day money-back guarantee</p>
+              <p>✓ Free SSL on all plans</p>
+              <p>✓ 24/7 expert support</p>
+              <p>✓ No setup fees</p>
             </div>
           </div>
         </div>

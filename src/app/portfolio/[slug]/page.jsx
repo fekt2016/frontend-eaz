@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { FaArrowLeft, FaCheckCircle, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import { PROJECTS } from "@/data/portfolioData";
 import CountUpNumber from "@/components/caseStudy/CountUpNumber";
@@ -199,10 +200,11 @@ export default function CaseStudyPage({ params }) {
           className="absolute inset-0 transition-transform duration-75"
           style={{ transform: `translateY(${parallaxY}px)`, willChange: "transform" }}
         >
-          <img
+          <Image
             src={project.heroImage || project.thumbnail}
             alt={project.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
             style={{ minHeight: "80vh" }}
           />
         </div>
@@ -447,7 +449,7 @@ export default function CaseStudyPage({ params }) {
             className="relative rounded-2xl overflow-hidden cursor-pointer aspect-[16/8] mb-4 group"
             onClick={() => openLightbox(0)}
           >
-            <img src={images[0]} alt={`${project.title} hero`} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <Image src={images[0]} alt={`${project.title} hero`} fill className="object-cover group-hover:scale-105 transition duration-500" />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition" />
             <div className="absolute bottom-4 right-4 bg-black/50 text-white text-xs px-3 py-1.5 rounded-full">Click to expand</div>
           </div>
@@ -458,7 +460,7 @@ export default function CaseStudyPage({ params }) {
                 className="relative rounded-2xl overflow-hidden cursor-pointer aspect-[4/3] group"
                 onClick={() => openLightbox(idx + 1)}
               >
-                <img src={img} alt={`${project.title} screen ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <Image src={img} alt={`${project.title} screen ${idx + 1}`} fill className="object-cover group-hover:scale-105 transition duration-500" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition" />
               </div>
             ))}
@@ -559,7 +561,7 @@ export default function CaseStudyPage({ params }) {
                 <button type="button" onClick={() => router.push(`/portfolio/${prevProject.slug}`)} className="group text-left p-4 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transition">
                   <p className="text-xs text-gray-400 mb-2">← Previous Project</p>
                   <div className="flex gap-3">
-                    <img src={prevProject.thumbnail} alt={prevProject.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                    <Image src={prevProject.thumbnail} alt={prevProject.title} width={64} height={64} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                     <div>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-1 ${CATEGORY_COLORS[prevProject.category] || "bg-gray-100 text-gray-600"}`}>{prevProject.category}</span>
                       <p className="font-semibold text-gray-900 text-sm group-hover:text-amber-500 transition">{prevProject.title}</p>
@@ -572,7 +574,7 @@ export default function CaseStudyPage({ params }) {
                 <button type="button" onClick={() => router.push(`/portfolio/${nextProject.slug}`)} className="group text-left p-4 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transition">
                   <p className="text-xs text-gray-400 mb-2 text-right">Next Project →</p>
                   <div className="flex gap-3">
-                    <img src={nextProject.thumbnail} alt={nextProject.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                    <Image src={nextProject.thumbnail} alt={nextProject.title} width={64} height={64} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                     <div>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-1 ${CATEGORY_COLORS[nextProject.category] || "bg-gray-100 text-gray-600"}`}>{nextProject.category}</span>
                       <p className="font-semibold text-gray-900 text-sm group-hover:text-amber-500 transition">{nextProject.title}</p>

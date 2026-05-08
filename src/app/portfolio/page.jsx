@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { FaSearch } from "react-icons/fa";
 import { PROJECTS, CATEGORIES } from "@/data/portfolioData";
 import { usePortfolioFilter } from "@/hooks/usePortfolio";
@@ -58,9 +58,11 @@ export default function PortfolioPage() {
                 href={`/portfolio/${project.slug}`}
                 className="group flex items-center gap-3 p-3 rounded-2xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm transition"
               >
-                <img
+                <Image
                   src={project.thumbnail}
                   alt={project.title}
+                  width={56}
+                  height={56}
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                 />
                 <div className="min-w-0">
@@ -154,10 +156,11 @@ export default function PortfolioPage() {
                   }`}
                 >
                   <div className="relative overflow-hidden aspect-[16/10]">
-                    <img
+                    <Image
                       src={project.thumbnail}
                       alt={project.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                     <div className="absolute left-3 top-3 flex gap-2">

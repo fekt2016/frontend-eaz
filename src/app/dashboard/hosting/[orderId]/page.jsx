@@ -2,11 +2,14 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { FaDownload, FaUpload, FaCheckCircle } from "react-icons/fa";
+import { useParams, useRouter } from "next/navigation";
+import { FaDownload, FaUpload, FaCheckCircle, FaExternalLinkAlt, FaTrash, FaRedo } from "react-icons/fa";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const NS1 = process.env.NEXT_PUBLIC_NAMESERVER_1 || "ns1.eazworld.com";
+const NS2 = process.env.NEXT_PUBLIC_NAMESERVER_2 || "ns2.eazworld.com";
 
 const statusColors = {
   pending: "bg-amber-50 text-amber-700 border-amber-100",
@@ -18,12 +21,23 @@ const statusColors = {
 
 export default function HostingOrderDetailPage() {
   const { orderId } = useParams();
+  const router = useRouter();
+  const { user } = useAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [renewLoading, setRenewLoading] = useState(false);
   const fileRef = useRef(null);
+
+  const fetchOrder = async () => {
+    const res = await api.get(`/hosting/orders/${orderId}`);
+    setOrder(res.data);
+  };
 
   useEffect(() => {
     api.get(`/hosting/orders/${orderId}`)
@@ -32,8 +46,71 @@ export default function HostingOrderDetailPage() {
       .finally(() => setLoading(false));
   }, [orderId]);
 
+  const handleRefreshStatus = async () => {
+    setRefreshing(true);
+    try {
+      await fetchOrder();
+    } catch {
+      // ignore
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const handleInvoiceDownload = () => {
     window.open(`${BASE_URL}/hosting/orders/${orderId}/invoice`, "_blank");
+  };
+
+  const handleCpanelLogin = async () => {
+    setLoginLoading(true);
+    try {
+      const res = await api.get(`/hosting/orders/${orderId}/cpanel-login`);
+      if (res.data?.url) {
+        const openInNewTab = process.env.NEXT_PUBLIC_CPANEL_OPEN_IN_NEW_TAB === "true";
+        if (openInNewTab) {
+          window.open(res.data.url, "_blank", "noopener,noreferrer");
+        } else {
+          window.location.href = res.data.url;
+        }
+      }
+    } catch (err) {
+      alert(err?.message || "Failed to generate login session. Please try again later.");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleRenew = async () => {
+    setRenewLoading(true);
+    try {
+      const res = await api.post(`/hosting/orders/${orderId}/renew`, {
+        paymentMethod: "paystack_card",
+      });
+      const { authorizationUrl, orderId: renewalOrderId } = res.data;
+      if (authorizationUrl) {
+        window.location.href = authorizationUrl;
+      } else {
+        // bank transfer fallback
+        router.push(`/hosting/bank-transfer/${renewalOrderId}`);
+      }
+    } catch (err) {
+      alert(err?.message || "Failed to start renewal. Please try again.");
+    } finally {
+      setRenewLoading(false);
+    }
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!confirm("Are you sure you want to delete this order from the system? This action cannot be undone.")) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/hosting/orders/${orderId}`);
+      router.push("/dashboard");
+    } catch (err) {
+      alert(err?.message || "Failed to delete order.");
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const handleProofUpload = async (e) => {
@@ -79,6 +156,16 @@ export default function HostingOrderDetailPage() {
 
   const isBankTransfer = order.paymentMethod === "bank_transfer";
   const canUploadProof = isBankTransfer && order.status === "pending" && !order.proofUploadUrl;
+  const isAdmin = user?.role === "admin";
+  const isTempDomain = !order.domain || (order.domain.endsWith(".eazworld.com") && order.domain.split(".").length === 3);
+  const showNameservers = order.domain && !isTempDomain;
+
+  const expiresAt = order.expiresAt ? new Date(order.expiresAt) : null;
+  const now = new Date();
+  const daysLeft = expiresAt ? Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24)) : null;
+  const isExpired = daysLeft !== null && daysLeft <= 0;
+  const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 7;
+  const canRenew = order.status === "active" || (order.status === "cancelled" && order.cpanelUsername);
 
   return (
     <div className="min-h-screen bg-white px-4 pt-24 pb-24">
@@ -133,11 +220,124 @@ export default function HostingOrderDetailPage() {
                 <dd className="font-medium text-gray-900">{new Date(order.paidAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</dd>
               </div>
             )}
+            {expiresAt && (
+              <div className="flex justify-between">
+                <dt className="text-gray-400">Expires</dt>
+                <dd className={`font-medium ${isExpired ? "text-red-600" : isExpiringSoon ? "text-amber-600" : "text-gray-900"}`}>
+                  {expiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  {isExpired && " — Expired"}
+                  {isExpiringSoon && !isExpired && ` — ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`}
+                </dd>
+              </div>
+            )}
+            {order.renewedAt && (
+              <div className="flex justify-between">
+                <dt className="text-gray-400">Last renewed</dt>
+                <dd className="font-medium text-gray-900">{new Date(order.renewedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</dd>
+              </div>
+            )}
           </dl>
         </div>
 
+        {/* Nameserver instructions — own domain orders only */}
+        {showNameservers && (
+          <div className="rounded-2xl border border-amber-100 bg-amber-50 p-6 mb-5">
+            <h2 className="text-sm font-semibold text-amber-900 mb-1">📡 Point your domain</h2>
+            <p className="text-xs text-amber-700 mb-3">
+              Update the nameservers for <strong className="font-mono">{order.domain}</strong> at your registrar to:
+            </p>
+            <div className="space-y-2 text-sm font-mono">
+              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-amber-100">
+                <span className="text-gray-400 font-sans text-xs">NS1</span>
+                <span className="font-semibold text-gray-900">{NS1}</span>
+              </div>
+              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-amber-100">
+                <span className="text-gray-400 font-sans text-xs">NS2</span>
+                <span className="font-semibold text-gray-900">{NS2}</span>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-amber-700">DNS propagation takes 24–48 hours. Your cPanel is accessible immediately via the button below once your account is active.</p>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="space-y-3">
+
+          {/* Expired warning */}
+          {isExpired && (
+            <div className="p-4 rounded-2xl bg-red-50 border border-red-100">
+              <p className="text-sm font-semibold text-red-700 mb-1">Your hosting has expired</p>
+              <p className="text-xs text-red-600">Your account has been suspended. Renew now to restore it instantly — your data is safe for 30 days.</p>
+            </div>
+          )}
+
+          {/* Expiring soon warning */}
+          {isExpiringSoon && !isExpired && (
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100">
+              <p className="text-sm font-semibold text-amber-700 mb-1">Expiring in {daysLeft} day{daysLeft === 1 ? "" : "s"}</p>
+              <p className="text-xs text-amber-600">Renew now to avoid any interruption to your website.</p>
+            </div>
+          )}
+
+          {/* Renew button */}
+          {canRenew && (
+            <button
+              onClick={handleRenew}
+              disabled={renewLoading}
+              className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-sm font-bold transition disabled:opacity-60 ${
+                isExpired
+                  ? "bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-100"
+                  : isExpiringSoon
+                    ? "bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-100"
+                    : "border border-gray-200 text-gray-700 hover:border-gray-400"
+              }`}
+            >
+              {renewLoading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <FaRedo size={12} />
+              )}
+              {isExpired ? "Renew & Restore Hosting" : "Renew Subscription"}
+            </button>
+          )}
+
+          {/* Manage Hosting — only for active hosting */}
+          {order.status === "active" && order.cpanelUsername && (
+            <button
+              onClick={handleCpanelLogin}
+              disabled={loginLoading}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition disabled:opacity-60 shadow-lg shadow-amber-100"
+            >
+              {loginLoading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <FaExternalLinkAlt size={12} />
+              )}
+              Manage Hosting (cPanel)
+            </button>
+          )}
+
+          {/* Provisioning status — paid but not active yet */}
+          {order.status === "paid" && (
+            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100">
+              <p className="text-sm text-blue-700">
+                {order.provisioningStatus === "failed"
+                  ? "Provisioning failed. Please contact support or try again later."
+                  : "Your payment is confirmed. We’re provisioning your hosting account now."}
+              </p>
+              <button
+                onClick={handleRefreshStatus}
+                disabled={refreshing}
+                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-blue-200 text-sm font-semibold text-blue-700 hover:border-blue-300 transition disabled:opacity-60"
+              >
+                {refreshing ? (
+                  <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin" />
+                ) : null}
+                Refresh status
+              </button>
+            </div>
+          )}
+
           {/* Invoice download — only for paid/active orders */}
           {(order.status === "paid" || order.status === "active") && (
             <button
@@ -171,6 +371,18 @@ export default function HostingOrderDetailPage() {
               <FaCheckCircle className="text-emerald-500 shrink-0" />
               <p className="text-sm text-emerald-700">Payment proof uploaded. We&apos;ll verify and activate your account within 24 hours.</p>
             </div>
+          )}
+
+          {/* Admin Delete Button */}
+          {isAdmin && (
+            <button
+              onClick={handleDeleteOrder}
+              disabled={deleteLoading}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-red-100 text-red-500 text-sm font-medium hover:bg-red-50 transition mt-8"
+            >
+              <FaTrash size={12} />
+              {deleteLoading ? "Deleting..." : "Delete Order from System"}
+            </button>
           )}
         </div>
       </div>
