@@ -3,11 +3,11 @@ import { FaCheckCircle } from "react-icons/fa";
 
 export default function PaymentSuccess() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4 pt-24">
+    <div className="min-h-[60vh] bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4 pt-24">
       <div className="max-w-md text-center">
         <FaCheckCircle className="text-emerald-500 text-5xl mx-auto mb-6" />
-        <h1 className="font-display font-bold text-4xl text-gray-900 mb-4">Payment Successful</h1>
-        <p className="text-gray-500 mb-8">Thank you. Your domain order is being processed. You can track it from your dashboard.</p>
+        <h1 className="font-display font-bold text-4xl text-gray-900 dark:text-white mb-4">Payment Successful</h1>
+        <p className="text-gray-500 dark:text-slate-400 mb-8">Thank you. Your domain order is being processed. You can track it from your dashboard.</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/dashboard"
@@ -17,7 +17,7 @@ export default function PaymentSuccess() {
           </Link>
           <Link
             href="/domains"
-            className="inline-block px-6 py-3 rounded-full border border-gray-200 text-gray-700 font-semibold hover:border-gray-400 transition"
+            className="inline-block px-6 py-3 rounded-full border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold hover:border-gray-400 dark:hover:border-slate-500 transition"
           >
             Search More Domains
           </Link>

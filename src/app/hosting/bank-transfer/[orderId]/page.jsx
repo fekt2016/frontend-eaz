@@ -31,19 +31,19 @@ export default function BankTransferPage() {
   const showNameservers = domain && !isTempDomain;
 
   return (
-    <div className="min-h-screen bg-white px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
       <div className="mx-auto max-w-xl">
-        <Link href="/hosting" className="mb-6 inline-block text-sm text-gray-400 hover:text-gray-700 transition">
+        <Link href="/hosting" className="mb-6 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           ← Back to Hosting
         </Link>
-        <h1 className="font-display text-2xl font-bold text-gray-900 mb-2">Pay by Bank Transfer</h1>
-        <p className="text-gray-500 text-sm mb-8">
+        <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-2">Pay by Bank Transfer</h1>
+        <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">
           Complete your payment using the details below. Your order will be activated within 2–4 hours after we verify the transfer.
         </p>
 
         {/* Bank details */}
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 mb-6">
-          <h2 className="font-display text-lg font-semibold text-gray-900 mb-4">Bank details</h2>
+        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 mb-6">
+          <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-4">Bank details</h2>
           <div className="space-y-3 text-sm">
             {[
               { label: "Bank", value: BANK_DETAILS.bankName },
@@ -51,17 +51,17 @@ export default function BankTransferPage() {
               { label: "Account number", value: BANK_DETAILS.accountNumber, mono: true },
               { label: "Branch", value: BANK_DETAILS.branch },
             ].map(({ label, value, mono }) => (
-              <div key={label} className="flex justify-between border-b border-gray-100 pb-2">
-                <span className="text-gray-500">{label}</span>
-                <span className={mono ? "font-mono text-gray-900" : "text-gray-900"}>{value}</span>
+              <div key={label} className="flex justify-between border-b border-gray-100 dark:border-slate-700 pb-2">
+                <span className="text-gray-500 dark:text-slate-400">{label}</span>
+                <span className={mono ? "font-mono text-gray-900 dark:text-white" : "text-gray-900 dark:text-white"}>{value}</span>
               </div>
             ))}
             <div className="flex justify-between pt-2">
-              <span className="text-gray-500">Reference</span>
+              <span className="text-gray-500 dark:text-slate-400">Reference</span>
               <span className="font-mono text-amber-500">{orderId}</span>
             </div>
           </div>
-          <p className="mt-4 text-xs text-gray-400">Use your order reference when making the transfer so we can match your payment.</p>
+          <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">Use your order reference when making the transfer so we can match your payment.</p>
         </div>
 
         {/* Nameserver card — only for own-domain orders */}
@@ -90,9 +90,9 @@ export default function BankTransferPage() {
         )}
 
         {/* What happens next */}
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 mb-8">
-          <h2 className="font-display text-lg font-semibold text-gray-900 mb-2">What happens next?</h2>
-          <ul className="text-sm text-gray-500 space-y-2">
+        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 mb-8">
+          <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-2">What happens next?</h2>
+          <ul className="text-sm text-gray-500 dark:text-slate-400 space-y-2">
             <li>1. Transfer the exact order amount to the account above with your order reference.</li>
             <li>2. We&apos;ll confirm your payment within 2–4 hours.</li>
             {showNameservers && <li>3. Update your nameservers (above) while you wait — saves time once hosting is active.</li>}
@@ -101,7 +101,7 @@ export default function BankTransferPage() {
         </div>
 
         <div className="flex flex-wrap gap-4">
-          <Link href="/hosting" className="rounded-full border border-gray-200 px-6 py-2.5 text-sm font-semibold text-gray-700 hover:border-gray-400 transition">Back to Hosting</Link>
+          <Link href="/hosting" className="rounded-full border border-gray-200 dark:border-slate-700 px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition">Back to Hosting</Link>
           <Link href="/dashboard" className="rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 transition">Go to Dashboard</Link>
         </div>
       </div>

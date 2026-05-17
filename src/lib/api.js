@@ -11,7 +11,11 @@ async function request(path, options = {}) {
 
   if (!res.ok) {
     const message = data?.error || data?.message || `Request failed (${res.status})`;
-    throw new Error(message);
+    const err = new Error(message);
+    // Attach field-level errors (Zod / Mongoose validation) so forms can highlight fields
+    if (Array.isArray(data?.errors)) err.errors = data.errors;
+    err.status = res.status;
+    throw err;
   }
 
   return data;

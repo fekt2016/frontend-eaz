@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { FaCheckCircle } from "react-icons/fa";
 import { api } from "@/lib/api";
+import { sanitizeEmail } from "@/lib/sanitize";
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
+const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ export default function ForgotPasswordPage() {
     setError("");
     setLoading(true);
     try {
-      await api.post("/auth/forgot-password", { email });
+      await api.post("/auth/forgot-password", { email: sanitizeEmail(email) });
       setSent(true);
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
@@ -28,25 +29,25 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="font-display font-black text-2xl text-gray-900">EazWorld</Link>
-          <h1 className="font-display font-bold text-2xl text-gray-900 mt-6 mb-1">Reset your password</h1>
-          <p className="text-gray-400 text-sm">Enter your email and we&apos;ll send a reset link</p>
+          <Link href="/" className="font-display font-black text-2xl text-gray-900 dark:text-white">EazWorld</Link>
+          <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mt-6 mb-1">Reset your password</h1>
+          <p className="text-gray-400 dark:text-slate-500 text-sm">Enter your email and we&apos;ll send a reset link</p>
         </div>
 
-        <div className="p-8 rounded-2xl border border-gray-100 bg-gray-50">
+        <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           {sent ? (
             <div className="text-center py-4">
               <FaCheckCircle className="text-emerald-500 text-3xl mx-auto mb-3" />
-              <p className="font-semibold text-gray-900 mb-1">Check your inbox</p>
-              <p className="text-gray-500 text-sm">If that email exists in our system, we&apos;ve sent a reset link.</p>
+              <p className="font-semibold text-gray-900 dark:text-white mb-1">Check your inbox</p>
+              <p className="text-gray-500 dark:text-slate-400 text-sm">If that email exists in our system, we&apos;ve sent a reset link.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Email address</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email address</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} required />
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -57,7 +58,7 @@ export default function ForgotPasswordPage() {
           )}
 
           <div className="text-center mt-5">
-            <Link href="/auth/login" className="text-sm text-gray-400 hover:text-gray-700 transition">← Back to Sign In</Link>
+            <Link href="/auth/login" className="text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Back to Sign In</Link>
           </div>
         </div>
       </div>

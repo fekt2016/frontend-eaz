@@ -16,7 +16,7 @@ export default function Hosting() {
   const [billing, setBilling] = useState("monthly");
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
 
       {/* ── HERO ── */}
       <section className="relative overflow-hidden bg-gray-900 px-4 pt-32 pb-20 text-white">
@@ -57,14 +57,14 @@ export default function Hosting() {
       </section>
 
       {/* ── FEATURES BAR ── */}
-      <section className="border-b border-gray-100 bg-gray-50 px-4 py-12">
+      <section className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-4 py-12">
         <div className="mx-auto max-w-6xl grid gap-5 sm:grid-cols-2 md:grid-cols-4">
           {HOSTING_FEATURES.map((f) => (
-            <div key={f.title} className="flex items-start gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div key={f.title} className="flex items-start gap-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
               <span className="text-2xl">{f.icon}</span>
               <div>
-                <p className="text-sm font-semibold text-gray-900">{f.title}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{f.description}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">{f.title}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{f.description}</p>
               </div>
             </div>
           ))}
@@ -78,10 +78,10 @@ export default function Hosting() {
           {/* Section header */}
           <div className="text-center mb-10">
             <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Hosting Plans</p>
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 mb-3">
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-3">
               Choose Your Perfect Plan
             </h2>
-            <p className="text-gray-500 text-sm max-w-xl mx-auto">
+            <p className="text-gray-500 dark:text-slate-400 text-sm max-w-xl mx-auto">
               All plans include free SSL, cPanel, daily backups, and 24/7 support.
               Cancel or upgrade anytime.
             </p>
@@ -89,16 +89,16 @@ export default function Hosting() {
 
           {/* Billing toggle */}
           <div className="flex justify-center mb-8">
-            <div className="inline-flex rounded-full bg-gray-100 p-1">
+            <div className="inline-flex rounded-full bg-gray-100 dark:bg-slate-800 p-1">
               <button
                 onClick={() => setBilling("monthly")}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition ${billing === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+                className={`rounded-full px-5 py-2 text-sm font-medium transition ${billing === "monthly" ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400"}`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setBilling("annual")}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition ${billing === "annual" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+                className={`rounded-full px-5 py-2 text-sm font-medium transition ${billing === "annual" ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400"}`}
               >
                 Annual
                 <span className="ml-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Save up to 20%</span>
@@ -117,8 +117,8 @@ export default function Hosting() {
                 onClick={() => setTab(key)}
                 className={`rounded-full px-5 py-2 text-sm font-semibold border transition ${
                   tab === key
-                    ? "border-gray-900 bg-gray-900 text-white"
-                    : "border-gray-200 text-gray-600 hover:border-gray-400"
+                    ? "border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900"
+                    : "border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-400 dark:hover:border-slate-500"
                 }`}
               >
                 {label}
@@ -146,26 +146,26 @@ export default function Hosting() {
       </section>
 
       {/* ── COMPARISON TABLE ── */}
-      <section id="compare" className="bg-gray-50 border-y border-gray-100 px-4 py-20">
+      <section id="compare" className="bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800 px-4 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-10">
             <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Compare Plans</p>
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900">
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               Shared Hosting Side by Side
             </h2>
           </div>
-          <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
             <table className="min-w-[640px] w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400">Feature</th>
+                <tr className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 dark:text-slate-500">Feature</th>
                   {SHARED_PLANS.map((p) => (
                     <th
                       key={p.name}
-                      className={`px-5 py-4 text-left text-xs font-bold ${p.featured ? "text-amber-500" : "text-gray-900"}`}
+                      className={`px-5 py-4 text-left text-xs font-bold ${p.featured ? "text-amber-500" : "text-gray-900 dark:text-white"}`}
                     >
                       {p.name}
-                      {p.featured && <span className="ml-1.5 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] text-amber-700">Popular</span>}
+                      {p.featured && <span className="ml-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] text-amber-700 dark:text-amber-400">Popular</span>}
                     </th>
                   ))}
                 </tr>
@@ -186,16 +186,16 @@ export default function Hosting() {
                   { label: "cPanel", feat: "Managed with cPanel" },
                   { label: "24/7 Support", feat: "24/7 Support" },
                 ].map((row, i) => (
-                  <tr key={row.label} className={`border-t border-gray-50 ${i % 2 === 0 ? "" : "bg-gray-50/50"}`}>
-                    <td className="px-5 py-3 text-[0.82rem] font-medium text-gray-500">{row.label}</td>
+                  <tr key={row.label} className={`border-t border-gray-50 dark:border-slate-800 ${i % 2 === 0 ? "" : "bg-gray-50/50 dark:bg-slate-800/30"}`}>
+                    <td className="px-5 py-3 text-[0.82rem] font-medium text-gray-500 dark:text-slate-400">{row.label}</td>
                     {SHARED_PLANS.map((p) => {
                       if (row.key === "price") {
-                        return <td key={p.name} className="px-5 py-3 text-[0.82rem] font-semibold text-gray-900">GH₵{p.monthlyPrice}/mo</td>;
+                        return <td key={p.name} className="px-5 py-3 text-[0.82rem] font-semibold text-gray-900 dark:text-white">GH₵{p.monthlyPrice}/mo</td>;
                       }
                       if (row.key) {
                         const val = p.specs.find(s => s.label === row.key)?.value ?? "—";
                         return (
-                          <td key={p.name} className={`px-5 py-3 text-[0.82rem] font-medium ${val === "UNLIMITED" ? "text-amber-500 font-semibold" : "text-gray-900"}`}>
+                          <td key={p.name} className={`px-5 py-3 text-[0.82rem] font-medium ${val === "UNLIMITED" ? "text-amber-500 font-semibold" : "text-gray-900 dark:text-white"}`}>
                             {val}
                           </td>
                         );
@@ -203,7 +203,7 @@ export default function Hosting() {
                       const ok = p.features.includes(row.feat);
                       return (
                         <td key={p.name} className="px-5 py-3 text-sm">
-                          {ok ? <span className="font-bold text-emerald-500">✓</span> : <span className="text-gray-200 font-bold">✗</span>}
+                          {ok ? <span className="font-bold text-emerald-500">✓</span> : <span className="text-gray-200 dark:text-slate-700 font-bold">✗</span>}
                         </td>
                       );
                     })}
@@ -220,7 +220,7 @@ export default function Hosting() {
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Why EazWorld</p>
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900">
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               Hosting You Can Actually Trust
             </h2>
           </div>
@@ -233,10 +233,10 @@ export default function Hosting() {
               { icon: "🔄", title: "Free Migration", desc: "Moving from another host? We handle the migration for free — zero downtime guaranteed." },
               { icon: "💰", title: "30-Day Money Back", desc: "Not satisfied? Get a full refund within 30 days. No questions asked." },
             ].map((item) => (
-              <div key={item.title} className="rounded-2xl border border-gray-100 p-6 hover:border-amber-200 hover:shadow-sm transition">
+              <div key={item.title} className="rounded-2xl border border-gray-100 dark:border-slate-800 p-6 hover:border-amber-200 dark:hover:border-amber-900/30 hover:shadow-sm transition">
                 <span className="text-3xl mb-3 block">{item.icon}</span>
-                <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
-                <p className="text-sm text-gray-500">{item.desc}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-slate-400">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -287,8 +287,8 @@ function PlanCard({ plan, billing, planType }) {
   return (
     <div className={`relative flex flex-col rounded-2xl border p-6 transition hover:-translate-y-1 hover:shadow-md ${
       plan.featured
-        ? "border-amber-300 bg-amber-50 shadow-md shadow-amber-100/50"
-        : "border-gray-100 bg-white"
+        ? "border-amber-300 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-500/40 shadow-md shadow-amber-100/50"
+        : "border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900"
     }`}>
       {plan.badge && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-[11px] font-bold text-white whitespace-nowrap">
@@ -297,14 +297,14 @@ function PlanCard({ plan, billing, planType }) {
       )}
 
       <div className="mb-4">
-        <h3 className="text-base font-bold text-gray-900">{plan.name}</h3>
-        <p className="text-xs text-gray-400 mt-0.5">{plan.tagline}</p>
+        <h3 className="text-base font-bold text-gray-900 dark:text-white">{plan.name}</h3>
+        <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{plan.tagline}</p>
       </div>
 
       <div className="mb-4">
         <div className="flex items-end gap-1">
           <span className="text-3xl font-black text-amber-500">{plan.symbol}{price}</span>
-          <span className="text-xs text-gray-400 mb-1">/{billing === "annual" ? "yr" : "mo"}</span>
+          <span className="text-xs text-gray-400 dark:text-slate-500 mb-1">/{billing === "annual" ? "yr" : "mo"}</span>
         </div>
         {billing === "annual" && (
           <p className="text-[11px] text-emerald-600 font-medium">Save {plan.symbol}{saving}/yr</p>
@@ -314,19 +314,19 @@ function PlanCard({ plan, billing, planType }) {
       <div className="space-y-2 mb-4">
         {plan.specs.map((s) => (
           <div key={s.label} className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">{s.label}</span>
-            <span className={`text-xs font-semibold ${s.value === "UNLIMITED" ? "text-amber-500" : "text-gray-900"}`}>
+            <span className="text-xs text-gray-500 dark:text-slate-400">{s.label}</span>
+            <span className={`text-xs font-semibold ${s.value === "UNLIMITED" ? "text-amber-500" : "text-gray-900 dark:text-white"}`}>
               {s.value}
             </span>
           </div>
         ))}
       </div>
 
-      <div className="h-px bg-gray-100 mb-4" />
+      <div className="h-px bg-gray-100 dark:bg-slate-800 mb-4" />
 
       <ul className="flex-1 space-y-1.5 mb-5">
         {plan.features.slice(0, 7).map((f) => (
-          <li key={f} className="flex items-start gap-2 text-[0.78rem] text-gray-500">
+          <li key={f} className="flex items-start gap-2 text-[0.78rem] text-gray-500 dark:text-slate-400">
             <span className="mt-0.5 text-amber-500 shrink-0">✓</span>
             {/^free\s+/i.test(f) ? (
               <span><span className="font-bold text-amber-500">FREE</span> {f.replace(/^free\s+/i, "")}</span>
@@ -334,7 +334,7 @@ function PlanCard({ plan, billing, planType }) {
           </li>
         ))}
         {plan.features.length > 7 && (
-          <li className="text-[0.78rem] text-gray-400 pl-4">+{plan.features.length - 7} more features</li>
+          <li className="text-[0.78rem] text-gray-400 dark:text-slate-500 pl-4">+{plan.features.length - 7} more features</li>
         )}
       </ul>
 
@@ -343,7 +343,7 @@ function PlanCard({ plan, billing, planType }) {
         className={`w-full rounded-full py-2.5 text-sm font-semibold transition ${
           plan.featured
             ? "bg-gray-900 text-white hover:bg-gray-700"
-            : "border border-gray-200 text-gray-700 hover:border-amber-400 hover:text-amber-500"
+            : "border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-amber-400 dark:hover:border-amber-500 hover:text-amber-500"
         }`}
       >
         {plan.buttonText}

@@ -21,9 +21,9 @@ export const metadata = {
 
 export default function SEOPage() {
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-4 pt-28 pb-24">
-        <Link href="/services" className="text-gray-400 text-sm hover:text-gray-700 transition mb-8 inline-block">
+        <Link href="/services" className="text-gray-400 dark:text-slate-500 text-sm hover:text-gray-700 dark:hover:text-slate-300 transition mb-8 inline-block">
           ← Back to Services
         </Link>
 
@@ -33,8 +33,8 @@ export default function SEOPage() {
             <FaSearch size={26} className="text-emerald-600" />
           </div>
           <div>
-            <h1 className="font-display font-black text-4xl text-gray-900 mb-2">SEO Services</h1>
-            <p className="text-gray-500 leading-relaxed">
+            <h1 className="font-display font-black text-4xl text-gray-900 dark:text-white mb-2">SEO Services</h1>
+            <p className="text-gray-500 dark:text-slate-400 leading-relaxed">
               Improve your search engine rankings and grow organic traffic with our comprehensive SEO services — built for Ghanaian and African businesses.
             </p>
           </div>
@@ -42,18 +42,18 @@ export default function SEOPage() {
 
         {/* Overview */}
         <section className="mb-10">
-          <h2 className="font-display font-bold text-2xl text-gray-900 mb-3">Search Engine Optimisation</h2>
-          <p className="text-gray-500 leading-relaxed">
+          <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-3">Search Engine Optimisation</h2>
+          <p className="text-gray-500 dark:text-slate-400 leading-relaxed">
             Comprehensive SEO services to improve your search engine rankings. We optimise your website for better visibility, organic traffic, and higher conversion rates — with a focus on what works in the Ghanaian market.
           </p>
         </section>
 
         {/* Features */}
-        <section className="mb-12 p-7 rounded-2xl bg-gray-50 border border-gray-100">
-          <h2 className="font-display font-bold text-xl text-gray-900 mb-5">What We Offer</h2>
+        <section className="mb-12 p-7 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-700">
+          <h2 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-5">What We Offer</h2>
           <ul className="space-y-3">
             {SEO_FEATURES.map((item) => (
-              <li key={item} className="flex items-start gap-3 text-gray-600 text-sm">
+              <li key={item} className="flex items-start gap-3 text-gray-600 dark:text-slate-400 text-sm">
                 <FaCheckCircle size={13} className="text-amber-500 mt-0.5 flex-shrink-0" />
                 {item}
               </li>
@@ -69,7 +69,7 @@ export default function SEOPage() {
           >
             Get a Free SEO Audit →
           </Link>
-          <p className="text-gray-400 text-sm mt-3">No commitment. We&apos;ll show you exactly what to fix.</p>
+          <p className="text-gray-400 dark:text-slate-500 text-sm mt-3">No commitment. We&apos;ll show you exactly what to fix.</p>
         </div>
       </div>
     </div>

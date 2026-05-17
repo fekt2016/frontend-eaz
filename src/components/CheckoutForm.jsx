@@ -4,8 +4,9 @@ import { useState } from "react";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
+const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800";
 
 const schema = z.object({
   firstName: z.string().min(1),
@@ -34,20 +35,26 @@ export default function CheckoutForm({ domain, price }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const result = schema.safeParse({ firstName, lastName, email, phone, address, city, years });
+    const cleanFirst   = sanitizeName(firstName);
+    const cleanLast    = sanitizeName(lastName);
+    const cleanEmail   = sanitizeEmail(email);
+    const cleanPhone   = sanitizePhone(phone);
+    const cleanAddress = sanitizeText(address, 200);
+    const cleanCity    = sanitizeText(city, 100);
+    const result = schema.safeParse({ firstName: cleanFirst, lastName: cleanLast, email: cleanEmail, phone: cleanPhone, address: cleanAddress, city: cleanCity, years });
     if (!result.success) { setError("Please fill in all required fields."); return; }
     setLoading(true);
     try {
       const res = await api.post("/domain/payment", {
         domain,
-        email,
-        amount: total,
-        currency: "GHS",
-        firstName,
-        lastName,
-        phone,
+        email:     cleanEmail,
+        amount:    total,
+        currency:  "GHS",
+        firstName: cleanFirst,
+        lastName:  cleanLast,
+        phone:     cleanPhone,
         years,
-        registrantInfo: { firstName, lastName, address, city, country: "GH", postalCode: "00233" },
+        registrantInfo: { firstName: cleanFirst, lastName: cleanLast, address: cleanAddress, city: cleanCity, country: "GH", postalCode: "00233" },
       });
       const { authorizationUrl } = res.data;
       if (authorizationUrl) {
@@ -66,32 +73,32 @@ export default function CheckoutForm({ domain, price }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">First name</label>
+          <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">First name</label>
           <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className={inputCls} required />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">Last name</label>
+          <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Last name</label>
           <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className={inputCls} required />
         </div>
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
+        <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email</label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} required />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1.5">Phone</label>
+        <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Phone</label>
         <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+233 00 000 0000" className={inputCls} />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1.5">Address</label>
+        <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Address</label>
         <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" className={inputCls} />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1.5">City</label>
+        <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">City</label>
         <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Accra" className={inputCls} />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1.5">Registration period</label>
+        <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Registration period</label>
         <select value={years} onChange={(e) => setYears(Number(e.target.value))} className={inputCls}>
           {[1, 2, 3, 4, 5].map((y) => (
             <option key={y} value={y}>{y} year{y > 1 ? "s" : ""} — GH₵{(price * y).toFixed(0)}</option>
@@ -100,7 +107,7 @@ export default function CheckoutForm({ domain, price }) {
       </div>
 
       <div className="flex items-center justify-between pt-2">
-        <span className="text-sm text-gray-500">Total</span>
+        <span className="text-sm text-gray-500 dark:text-slate-400">Total</span>
         <span className="text-lg font-bold text-amber-500">GH₵{total.toFixed(0)}</span>
       </div>
 
@@ -110,7 +117,7 @@ export default function CheckoutForm({ domain, price }) {
         {loading ? "Redirecting to payment..." : "Pay with Paystack"}
       </button>
 
-      <p className="text-center text-xs text-gray-400">Secured by Paystack · MTN MoMo · Vodafone Cash · Card</p>
+      <p className="text-center text-xs text-gray-400 dark:text-slate-500">Secured by Paystack · MTN MoMo · Vodafone Cash · Card</p>
     </form>
   );
 }

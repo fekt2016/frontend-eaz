@@ -8,6 +8,7 @@ import {
   FaPalette, FaSearch, FaBullhorn, FaStar, FaHashtag,
   FaEnvelope, FaMobileAlt, FaChevronLeft, FaChevronRight,
 } from "react-icons/fa";
+import { useTheme } from "@/context/ThemeContext";
 
 const slides = [
   {
@@ -19,7 +20,6 @@ const slides = [
     href: "/services/web-design",
     accent: "#F5A623",
     bg: "#fffbf5",
-    image: "/images/hero/web-design.png",
   },
   {
     icon: FaSearch,
@@ -30,7 +30,6 @@ const slides = [
     href: "/services/seo",
     accent: "#10b981",
     bg: "#f0fdf4",
-    image: "/images/hero/seo.png",
   },
   {
     icon: FaBullhorn,
@@ -38,10 +37,9 @@ const slides = [
     headline: "Ads That Actually Convert",
     description: "Google and Meta campaigns targeted precisely to your audience — every cedi of your budget working hard.",
     cta: "Run Better Ads",
-    href: "/services/web-marketing",
+    href: "/services/paid-ads",
     accent: "#3b82f6",
     bg: "#eff6ff",
-    image: "/images/hero/paid-ads.png",
   },
   {
     icon: FaStar,
@@ -49,10 +47,9 @@ const slides = [
     headline: "A Brand Worth Remembering",
     description: "Logo, identity, and brand strategy that tells your story clearly and sets you apart from the competition.",
     cta: "Build Your Brand",
-    href: "/services/web-design",
+    href: "/services/branding",
     accent: "#8b5cf6",
     bg: "#f5f3ff",
-    image: "/images/hero/branding.png",
   },
   {
     icon: FaHashtag,
@@ -60,10 +57,9 @@ const slides = [
     headline: "Grow Your Audience Daily",
     description: "Consistent, creative social media management that builds community, trust, and engagement around your brand.",
     cta: "Grow Social",
-    href: "/services/web-marketing",
+    href: "/services/social-media",
     accent: "#ec4899",
     bg: "#fdf2f8",
-    image: "/images/hero/social-media.png",
   },
   {
     icon: FaEnvelope,
@@ -71,10 +67,9 @@ const slides = [
     headline: "Turn Subscribers Into Buyers",
     description: "Strategic email campaigns that nurture leads, re-engage customers, and drive repeat revenue on autopilot.",
     cta: "Start Email",
-    href: "/services/web-marketing",
+    href: "/services/email",
     accent: "#f59e0b",
     bg: "#fffbeb",
-    image: "/images/hero/email-marketing.png",
   },
   {
     icon: FaMobileAlt,
@@ -85,13 +80,13 @@ const slides = [
     href: "/services/phone-repair",
     accent: "#06b6d4",
     bg: "#ecfeff",
-    image: "/images/hero/phone-repair.png",
   },
 ];
 
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const { isDark } = useTheme();
 
   const next = useCallback(() => setCurrent((c) => (c + 1) % slides.length), []);
   const prev = useCallback(() => setCurrent((c) => (c - 1 + slides.length) % slides.length), []);
@@ -114,10 +109,15 @@ export default function HeroCarousel() {
   const slide = slides[current];
   const Icon = slide.icon;
 
+  // In dark mode use a deep dark bg with a subtle tint of the accent colour
+  const heroBg = isDark
+    ? `linear-gradient(135deg, #020617 0%, ${slide.accent}0d 100%)`
+    : slide.bg;
+
   return (
     <section
       className="relative overflow-hidden"
-      style={{ minHeight: "85vh", background: slide.bg, transition: "background 0.8s ease" }}
+      style={{ minHeight: "85vh", background: heroBg, transition: "background 0.8s ease" }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       aria-label="Hero carousel"
@@ -140,7 +140,7 @@ export default function HeroCarousel() {
             >
               <div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
-                style={{ background: `${slide.accent}18` }}
+                style={{ background: `${slide.accent}20` }}
               >
                 <Icon size={28} style={{ color: slide.accent }} />
               </div>
@@ -149,25 +149,25 @@ export default function HeroCarousel() {
                 {slide.service}
               </p>
 
-              <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl text-gray-900 mb-6 leading-tight">
+              <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl text-gray-900 dark:text-white mb-6 leading-tight">
                 {slide.headline}
               </h1>
 
-              <p className="text-gray-500 text-lg max-w-lg mb-10 leading-relaxed">
+              <p className="text-gray-500 dark:text-slate-400 text-lg max-w-lg mb-10 leading-relaxed">
                 {slide.description}
               </p>
 
               <div className="flex flex-wrap gap-4">
                 <Link
                   href={slide.href}
-                  className="px-8 py-4 rounded-full text-white text-sm font-bold transition hover:scale-105 active:scale-95 shadow-lg shadow-gray-200"
+                  className="px-8 py-4 rounded-full text-white text-sm font-bold transition hover:scale-105 active:scale-95 shadow-lg"
                   style={{ background: slide.accent }}
                 >
                   {slide.cta}
                 </Link>
                 <Link
                   href="/book-consultation"
-                  className="px-8 py-4 rounded-full border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-white transition hover:border-gray-400"
+                  className="px-8 py-4 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-semibold hover:bg-white/10 dark:hover:bg-white/10 hover:border-gray-400 dark:hover:border-slate-500 transition"
                 >
                   Free Consultation
                 </Link>
@@ -180,11 +180,12 @@ export default function HeroCarousel() {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="relative hidden md:block"
             >
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-8 border-white/50 backdrop-blur-sm">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-8 border-white/30 dark:border-white/10 backdrop-blur-sm">
                 <Image
-                  src={slide.image}
+                  src={slide.image || "/images/hero/web-design.png"}
                   alt={slide.headline}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                   priority
                 />
@@ -193,13 +194,13 @@ export default function HeroCarousel() {
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl bg-white/80 backdrop-blur shadow-xl p-4 flex flex-col justify-center border border-gray-100"
+                className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur shadow-xl p-4 flex flex-col justify-center border border-gray-100 dark:border-slate-700"
               >
-                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
-                  <FaStar className="text-emerald-600" size={16} />
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mb-2">
+                  <FaStar className="text-emerald-600 dark:text-emerald-400" size={16} />
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase">Success Rate</p>
-                <p className="text-lg font-black text-gray-900">99.9%</p>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase">Success Rate</p>
+                <p className="text-lg font-black text-gray-900 dark:text-white">99.9%</p>
               </motion.div>
             </motion.div>
           </div>
@@ -212,7 +213,7 @@ export default function HeroCarousel() {
           type="button"
           onClick={prev}
           aria-label="Previous slide"
-          className="w-12 h-12 rounded-full bg-white/80 backdrop-blur border border-gray-200 shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:scale-110 transition pointer-events-auto"
+          className="w-12 h-12 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur border border-gray-200 dark:border-slate-700 shadow-lg flex items-center justify-center text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:scale-110 transition pointer-events-auto"
         >
           <FaChevronLeft size={16} />
         </button>
@@ -220,7 +221,7 @@ export default function HeroCarousel() {
           type="button"
           onClick={next}
           aria-label="Next slide"
-          className="w-12 h-12 rounded-full bg-white/80 backdrop-blur border border-gray-200 shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:scale-110 transition pointer-events-auto"
+          className="w-12 h-12 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur border border-gray-200 dark:border-slate-700 shadow-lg flex items-center justify-center text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:scale-110 transition pointer-events-auto"
         >
           <FaChevronRight size={16} />
         </button>
@@ -237,7 +238,7 @@ export default function HeroCarousel() {
             className="h-2 rounded-full transition-all duration-500"
             style={{
               width: i === current ? "32px" : "8px",
-              background: i === current ? slide.accent : "#d1d5db",
+              background: i === current ? slide.accent : isDark ? "#475569" : "#d1d5db",
             }}
           />
         ))}

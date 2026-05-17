@@ -57,10 +57,10 @@ function isLikelyPdf(url) {
 
 function StatCard({ label, value, hint, accent }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">{label}</p>
-      <p className={`mt-2 text-2xl font-bold tabular-nums ${accent || "text-gray-900"}`}>{value ?? "—"}</p>
-      {hint && <p className="mt-1 text-xs text-gray-500 leading-snug">{hint}</p>}
+    <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <p className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{label}</p>
+      <p className={`mt-2 text-2xl font-bold tabular-nums ${accent || "text-gray-900 dark:text-white"}`}>{value ?? "—"}</p>
+      {hint && <p className="mt-1 text-xs text-gray-500 dark:text-slate-500 leading-snug">{hint}</p>}
     </div>
   );
 }
@@ -202,26 +202,26 @@ export default function AdminHostingOrdersPage() {
   if (authLoading || user?.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
           <div>
-            <Link href="/dashboard" className="mb-4 inline-block text-sm text-gray-400 hover:text-gray-700 transition">
+            <Link href="/dashboard" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
               ← Back to Dashboard
             </Link>
             <div className="flex items-center gap-3 mb-2">
-              <span className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center">
-                <FaServer size={20} className="text-amber-600" />
+              <span className="w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <FaServer size={20} className="text-amber-600 dark:text-amber-400" />
               </span>
               <div>
-                <h1 className="font-display text-2xl font-bold text-gray-900">Hosting — Admin</h1>
-                <p className="text-gray-500 text-sm mt-0.5">Fulfillment pipeline, proofs, provisioning, and cPanel access.</p>
+                <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Hosting — Admin</h1>
+                <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5">Fulfillment pipeline, proofs, provisioning, and cPanel access.</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 mt-3">
               <Link
                 href="/dashboard/admin/users"
-                className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 hover:border-gray-300 transition"
+                className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600 transition"
               >
                 Manage users
               </Link>
@@ -229,7 +229,7 @@ export default function AdminHostingOrdersPage() {
                 type="button"
                 onClick={handleRefreshAll}
                 disabled={loading && summaryLoading}
-                className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 hover:border-gray-300 transition disabled:opacity-50"
+                className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600 transition disabled:opacity-50"
               >
                 <FaRedo size={11} /> Refresh metrics & list
               </button>
@@ -243,7 +243,7 @@ export default function AdminHostingOrdersPage() {
             {attentionAlerts.map((msg, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-300"
               >
                 <FaExclamationTriangle className="shrink-0 mt-0.5 text-amber-600" />
                 <span>{msg}</span>
@@ -287,16 +287,16 @@ export default function AdminHostingOrdersPage() {
         </div>
 
         {/* Toolbar */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm mb-4">
+        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm mb-4">
           <div className="flex flex-col lg:flex-row lg:items-center gap-4">
             <div className="relative flex-1 min-w-[12rem]">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={13} />
               <input
                 type="search"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search email, name, domain, Paystack ref, Mongo order ID…"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300 dark:focus:border-amber-600"
               />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -307,8 +307,8 @@ export default function AdminHostingOrdersPage() {
                   onClick={() => setStatusFilter(opt.value)}
                   className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${
                     statusFilter === opt.value
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300"
+                      ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white"
+                      : "bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"
                   }`}
                 >
                   {opt.label}
@@ -316,28 +316,28 @@ export default function AdminHostingOrdersPage() {
               ))}
             </div>
           </div>
-          <p className="mt-3 text-[11px] text-gray-400">
-            <FaClipboardList className="inline mr-1 -mt-px" size={11} /> Up to <strong className="text-gray-600">200</strong> rows per request —
+          <p className="mt-3 text-[11px] text-gray-400 dark:text-slate-500">
+            <FaClipboardList className="inline mr-1 -mt-px" size={11} /> Up to <strong className="text-gray-600 dark:text-slate-400">200</strong> rows per request —
             tighten filters if you rely on pagination later.
           </p>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-500">
+          <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-500 dark:text-slate-400">
             <FaSpinner className="animate-spin text-2xl text-amber-500" />
             <span className="text-sm">Loading orders…</span>
           </div>
         ) : orders.length === 0 ? (
-          <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm">
-            <p className="text-gray-500 text-sm mb-2">No orders match this view.</p>
-            <p className="text-xs text-gray-400">Adjust filters or clear search.</p>
+          <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-sm">
+            <p className="text-gray-500 dark:text-slate-400 text-sm mb-2">No orders match this view.</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">Adjust filters or clear search.</p>
           </div>
         ) : (
-          <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+          <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-[1000px] w-full text-sm">
                 <thead>
-                  <tr className="text-left border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                     <th className="px-4 py-3 whitespace-nowrap">Proof</th>
                     <th className="px-4 py-3 whitespace-nowrap">Customer</th>
                     <th className="px-4 py-3 whitespace-nowrap">Plan</th>
@@ -349,11 +349,11 @@ export default function AdminHostingOrdersPage() {
                     <th className="px-4 py-3 whitespace-nowrap text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                   {orders.map((order) => {
                     const risky = order.status === "paid" && order.provisioningStatus === "failed";
                     return (
-                      <tr key={order._id} className={risky ? "bg-red-50/40" : "hover:bg-gray-50/80"}>
+                      <tr key={order._id} className={risky ? "bg-red-50/40 dark:bg-red-900/10" : "hover:bg-gray-50/80 dark:hover:bg-slate-800/50"}>
                         <td className="px-4 py-3 align-middle w-28">
                           {order.proofUploadUrl ? (
                             isLikelyPdf(order.proofUploadUrl) ? (
@@ -371,31 +371,31 @@ export default function AdminHostingOrdersPage() {
                                 <img
                                   src={order.proofUploadUrl}
                                   alt=""
-                                  className="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                                  className="h-12 w-12 rounded-lg object-cover border border-gray-200 dark:border-slate-700"
                                 />
                               </a>
                             )
                           ) : (
-                            <span className="text-xs text-gray-300">—</span>
+                            <span className="text-xs text-gray-300 dark:text-slate-600">—</span>
                           )}
                         </td>
                         <td className="px-4 py-3 align-top">
-                          <p className="font-medium text-gray-900 truncate max-w-[14rem]" title={order.customer?.email}>
+                          <p className="font-medium text-gray-900 dark:text-white truncate max-w-[14rem]" title={order.customer?.email}>
                             {order.customer?.name || "—"}
                           </p>
-                          <p className="text-xs text-gray-500 truncate max-w-[14rem]" title={order.customer?.email}>{order.customer?.email}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400 truncate max-w-[14rem]" title={order.customer?.email}>{order.customer?.email}</p>
                           {order.domain && (
-                            <p className="text-xs font-mono text-gray-600 mt-1 truncate max-w-[14rem]" title={order.domain}>{order.domain}</p>
+                            <p className="text-xs font-mono text-gray-600 dark:text-slate-400 mt-1 truncate max-w-[14rem]" title={order.domain}>{order.domain}</p>
                           )}
                         </td>
                         <td className="px-4 py-3 align-top capitalize">
-                          <Link href={`/dashboard/hosting/${order._id}`} className="font-semibold text-gray-900 hover:text-amber-600 hover:underline">
+                          <Link href={`/dashboard/hosting/${order._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 hover:underline">
                             {order.planType} · {order.tier}
                           </Link>
-                          <p className="text-xs text-gray-400 capitalize">{order.billingCycle}</p>
+                          <p className="text-xs text-gray-400 dark:text-slate-500 capitalize">{order.billingCycle}</p>
                         </td>
-                        <td className="px-4 py-3 align-top whitespace-nowrap font-medium">GH₵{order.amount}</td>
-                        <td className="px-4 py-3 align-top capitalize text-xs text-gray-600">
+                        <td className="px-4 py-3 align-top whitespace-nowrap font-medium text-gray-900 dark:text-white">GH₵{order.amount}</td>
+                        <td className="px-4 py-3 align-top capitalize text-xs text-gray-600 dark:text-slate-400">
                           {(order.paymentMethod || "").replace(/_/g, " ")}
                         </td>
                         <td className="px-4 py-3 align-middle">
@@ -411,22 +411,22 @@ export default function AdminHostingOrdersPage() {
                           <div className="space-y-1">
                             <ProvisioningBadge order={order} />
                             {order.provisioningStatus === "failed" && order.provisioningError && (
-                              <p className="text-[10px] text-red-600 leading-snug max-w-[14rem]" title={order.provisioningError}>
+                              <p className="text-[10px] text-red-600 dark:text-red-400 leading-snug max-w-[14rem]" title={order.provisioningError}>
                                 {order.provisioningError}
                               </p>
                             )}
                             {order.cpanelUsername && (
-                              <p className="text-[10px] font-mono text-gray-600">u:{order.cpanelUsername}</p>
+                              <p className="text-[10px] font-mono text-gray-600 dark:text-slate-400">u:{order.cpanelUsername}</p>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 align-top text-xs text-gray-500 whitespace-nowrap">
+                        <td className="px-4 py-3 align-top text-xs text-gray-500 dark:text-slate-500 whitespace-nowrap">
                           <span className="block">Created</span>
-                          <span className="text-gray-800">{formatDate(order.createdAt)}</span>
+                          <span className="text-gray-800 dark:text-slate-300">{formatDate(order.createdAt)}</span>
                           {order.paidAt && (
                             <>
                               <span className="block mt-1">Paid</span>
-                              <span className="text-gray-800">{formatDate(order.paidAt)}</span>
+                              <span className="text-gray-800 dark:text-slate-300">{formatDate(order.paidAt)}</span>
                             </>
                           )}
                         </td>
@@ -434,7 +434,7 @@ export default function AdminHostingOrdersPage() {
                           <div className="flex flex-wrap items-center justify-end gap-1.5">
                             <Link
                               href={`/dashboard/hosting/${order._id}`}
-                              className="text-xs font-semibold px-2.5 py-1.5 rounded-full border border-gray-200 hover:border-gray-300 text-gray-800"
+                              className="text-xs font-semibold px-2.5 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 text-gray-800 dark:text-slate-300"
                             >
                               Open
                             </Link>
@@ -454,7 +454,7 @@ export default function AdminHostingOrdersPage() {
                                 type="button"
                                 onClick={() => handleStatusUpdate(order._id, "paid")}
                                 disabled={updating === order._id}
-                                className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50"
+                                className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50"
                               >
                                 {updating === order._id ? "…" : "Mark paid"}
                               </button>
@@ -474,7 +474,7 @@ export default function AdminHostingOrdersPage() {
                               title="Delete"
                               onClick={() => handleDelete(order._id)}
                               disabled={deleting === order._id}
-                              className="p-1.5 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                              className="p-1.5 rounded-full text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50"
                             >
                               {deleting === order._id ? <FaSpinner size={13} className="animate-spin" /> : <FaTrash size={13} />}
                             </button>

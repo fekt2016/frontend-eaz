@@ -7,6 +7,11 @@
   --foreground: #111827;
 }
 
+.dark {
+  --background: #020617;
+  --foreground: #f1f5f9;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -15,6 +20,7 @@ body {
   color: var(--foreground);
   background: var(--background);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @layer utilities {

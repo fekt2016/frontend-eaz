@@ -37,16 +37,16 @@ const STATUS_OPTIONS = [
 ];
 
 const typeColors = {
-  welcome:             "bg-blue-50 text-blue-700",
-  password_reset:      "bg-purple-50 text-purple-700",
-  contact_admin:       "bg-orange-50 text-orange-700",
-  contact_autoreply:   "bg-orange-50 text-orange-600",
-  order_confirmation:  "bg-amber-50 text-amber-700",
-  payment_received:    "bg-emerald-50 text-emerald-700",
-  hosting_credentials: "bg-teal-50 text-teal-700",
-  renewal_reminder:    "bg-indigo-50 text-indigo-700",
-  expired_notice:      "bg-red-50 text-red-700",
-  other:               "bg-gray-50 text-gray-600",
+  welcome:             "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  password_reset:      "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  contact_admin:       "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+  contact_autoreply:   "bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
+  order_confirmation:  "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  payment_received:    "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  hosting_credentials: "bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
+  renewal_reminder:    "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+  expired_notice:      "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  other:               "bg-gray-50 text-gray-600 dark:bg-slate-800 dark:text-slate-400",
 };
 
 function fmtDate(d) {
@@ -107,21 +107,21 @@ export default function AdminEmailLogsPage() {
   if (authLoading || user?.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}
         <div className="mb-8">
-          <Link href="/dashboard/admin" className="mb-4 inline-block text-sm text-gray-400 hover:text-gray-700 transition">
+          <Link href="/dashboard/admin" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
             ← Admin Overview
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <span className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center">
-              <FaEnvelope size={17} className="text-blue-600" />
+            <span className="w-11 h-11 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <FaEnvelope size={17} className="text-blue-600 dark:text-blue-400" />
             </span>
             <div>
-              <h1 className="font-display text-2xl font-bold text-gray-900">Email Logs</h1>
-              <p className="text-gray-400 text-sm">Every email sent by EazWorld — deliveries, failures, and more.</p>
+              <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Email Logs</h1>
+              <p className="text-gray-400 dark:text-slate-500 text-sm">Every email sent by EazWorld — deliveries, failures, and more.</p>
             </div>
           </div>
         </div>
@@ -134,36 +134,36 @@ export default function AdminEmailLogsPage() {
             { label: "Failed",       value: summary.failed, accent: "text-red-600" },
             { label: "Sent today",   value: summary.today,  accent: "text-blue-700" },
           ].map(({ label, value, accent }) => (
-            <div key={label} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">{label}</p>
+            <div key={label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{label}</p>
               <p className={`mt-2 text-2xl font-bold tabular-nums ${accent}`}>{value}</p>
             </div>
           ))}
         </div>
 
         {/* Toolbar */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm mb-4">
+        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm mb-4">
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
 
             {/* Search */}
             <div className="relative flex-1">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={12} />
               <input
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by recipient email…"
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-300"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-300"
               />
             </div>
 
             {/* Type filter */}
             <div className="relative">
-              <FaFilter className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={11} />
+              <FaFilter className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={11} />
               <select
                 value={typeFilter}
                 onChange={(e) => setType(e.target.value)}
-                className="appearance-none pl-8 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-300 text-gray-700"
+                className="appearance-none pl-8 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-300"
               >
                 {TYPE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -175,12 +175,12 @@ export default function AdminEmailLogsPage() {
             <div className="flex gap-2">
               {STATUS_OPTIONS.map((s) => (
                 <button key={s.value} type="button" onClick={() => setStatus(s.value)}
-                  className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${statusFilter === s.value ? "bg-gray-900 text-white border-gray-900" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300"}`}>
+                  className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${statusFilter === s.value ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white" : "bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"}`}>
                   {s.label}
                 </button>
               ))}
               <button type="button" onClick={() => fetchLogs(1)} disabled={loading}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300 transition disabled:opacity-50">
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
                 <FaRedo size={10} className={loading ? "animate-spin" : ""} /> Refresh
               </button>
             </div>
@@ -189,14 +189,14 @@ export default function AdminEmailLogsPage() {
 
         {/* Table */}
         {loading ? (
-          <div className="flex items-center justify-center py-20 gap-3 text-gray-400">
+          <div className="flex items-center justify-center py-20 gap-3 text-gray-400 dark:text-slate-500">
             <FaSpinner className="animate-spin text-2xl text-blue-500" />
             <span className="text-sm">Loading logs…</span>
           </div>
         ) : logs.length === 0 ? (
-          <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm">
-            <FaEnvelope className="mx-auto text-gray-200 mb-3" size={32} />
-            <p className="text-gray-400 text-sm">No email logs found.</p>
+          <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-sm">
+            <FaEnvelope className="mx-auto text-gray-200 dark:text-slate-700 mb-3" size={32} />
+            <p className="text-gray-400 dark:text-slate-500 text-sm">No email logs found.</p>
             {(typeFilter !== "all" || statusFilter !== "all" || search) && (
               <button onClick={() => { setType("all"); setStatus("all"); setSearch(""); }}
                 className="mt-3 text-xs text-blue-500 hover:text-blue-600 underline">
@@ -206,11 +206,11 @@ export default function AdminEmailLogsPage() {
           </div>
         ) : (
           <>
-            <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-[700px] w-full text-sm">
                   <thead>
-                    <tr className="text-left border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3">Recipient</th>
                       <th className="px-4 py-3">Subject</th>
@@ -218,17 +218,17 @@ export default function AdminEmailLogsPage() {
                       <th className="px-4 py-3 whitespace-nowrap">Date &amp; Time</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                     {logs.map((log) => (
-                      <tr key={log._id} className="hover:bg-gray-50/80">
+                      <tr key={log._id} className="hover:bg-gray-50/80 dark:hover:bg-slate-800/50">
                         {/* Status */}
                         <td className="px-4 py-3">
                           {log.status === "sent" ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                               <FaCheckCircle size={11} /> Sent
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600" title={log.error || ""}>
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400" title={log.error || ""}>
                               <FaTimesCircle size={11} /> Failed
                             </span>
                           )}
@@ -236,7 +236,7 @@ export default function AdminEmailLogsPage() {
 
                         {/* Recipient */}
                         <td className="px-4 py-3">
-                          <span className="text-gray-900 font-medium truncate max-w-[200px] block">{log.to}</span>
+                          <span className="text-gray-900 dark:text-white font-medium truncate max-w-[200px] block">{log.to}</span>
                           {log.status === "failed" && log.error && (
                             <p className="text-xs text-red-400 mt-0.5 truncate max-w-[200px]" title={log.error}>{log.error}</p>
                           )}
@@ -244,18 +244,18 @@ export default function AdminEmailLogsPage() {
 
                         {/* Subject */}
                         <td className="px-4 py-3">
-                          <span className="text-gray-700 truncate max-w-[240px] block" title={log.subject}>{log.subject}</span>
+                          <span className="text-gray-700 dark:text-slate-300 truncate max-w-[240px] block" title={log.subject}>{log.subject}</span>
                         </td>
 
                         {/* Type badge */}
                         <td className="px-4 py-3">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${typeColors[log.type] || "bg-gray-50 text-gray-600"}`}>
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${typeColors[log.type] || "bg-gray-50 text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
                             {TYPE_LABELS[log.type] || log.type}
                           </span>
                         </td>
 
                         {/* Date */}
-                        <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-slate-500 whitespace-nowrap">
                           {fmtDate(log.createdAt)}
                         </td>
                       </tr>
@@ -268,21 +268,21 @@ export default function AdminEmailLogsPage() {
             {/* Pagination */}
             {pages > 1 && (
               <div className="flex items-center justify-between mt-4 px-1">
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 dark:text-slate-500">
                   Showing {logs.length} of {total} logs
                 </p>
                 <div className="flex gap-2">
                   <button
                     disabled={page <= 1 || loading}
                     onClick={() => fetchLogs(page - 1)}
-                    className="text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:border-gray-300 disabled:opacity-40 transition">
+                    className="text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 disabled:opacity-40 transition">
                     ← Previous
                   </button>
-                  <span className="text-xs text-gray-400 self-center">Page {page} of {pages}</span>
+                  <span className="text-xs text-gray-400 dark:text-slate-500 self-center">Page {page} of {pages}</span>
                   <button
                     disabled={page >= pages || loading}
                     onClick={() => fetchLogs(page + 1)}
-                    className="text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:border-gray-300 disabled:opacity-40 transition">
+                    className="text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 disabled:opacity-40 transition">
                     Next →
                   </button>
                 </div>

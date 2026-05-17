@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Private areas — no indexing
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://eazworld.com/sitemap.xml
