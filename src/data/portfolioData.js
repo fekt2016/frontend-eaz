@@ -16,12 +16,12 @@ export const PROJECTS = [
     tags: ["Next.js", "React", "Paystack", "MongoDB", "Tailwind CSS"],
     shortDesc:
       "Full-stack e-commerce platform built and managed by EazWorld — live at saiisai.com.",
-    thumbnail: "https://api.microlink.io/?url=https://saiisai.com&screenshot=true&meta=false&embed=screenshot.url",
-    heroImage: "https://api.microlink.io/?url=https://saiisai.com&screenshot=true&meta=false&embed=screenshot.url",
+    thumbnail: "/images/saiisai-placeholder.svg",
+    heroImage: "/images/saiisai-placeholder.svg",
     images: [
-      "https://api.microlink.io/?url=https://saiisai.com&screenshot=true&meta=false&embed=screenshot.url",
-      "https://api.microlink.io/?url=https://saiisai.com&screenshot=true&meta=false&embed=screenshot.url",
-      "https://api.microlink.io/?url=https://saiisai.com&screenshot=true&meta=false&embed=screenshot.url",
+      "/images/saiisai-placeholder.svg",
+      "/images/saiisai-placeholder.svg",
+      "/images/saiisai-placeholder.svg",
     ],
     year: "2024",
     duration: "Ongoing",

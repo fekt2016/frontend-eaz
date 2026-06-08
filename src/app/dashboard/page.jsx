@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 import {
   FaServer, FaGlobe, FaShieldAlt,
   FaClock, FaChevronRight, FaUserCircle, FaExternalLinkAlt,
-  FaCalendarAlt, FaFileAlt, FaUsers, FaEnvelope,
+  FaCalendarAlt, FaFileAlt, FaUsers, FaEnvelope, FaTools,
 } from "react-icons/fa";
 
 const statusConfig = {
@@ -175,7 +175,7 @@ function DashboardContent() {
             <Link href="/dashboard/settings" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition">
               <FaUserCircle size={12} /> Settings
             </Link>
-            {user?.role === "admin" && (
+            {(user?.role === "admin" || user?.role === "superadmin") && (
               <Link href="/dashboard/admin" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition">
                 <FaShieldAlt size={12} /> Admin Panel
               </Link>
@@ -184,29 +184,51 @@ function DashboardContent() {
         </div>
 
         {/* Admin Panel shortcuts — only shown to admins */}
-        {user?.role === "admin" && (
-          <div className="mb-8 rounded-2xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 p-5">
-            <p className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-4">Admin Panel</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[
-                { href: "/dashboard/admin",               icon: FaShieldAlt,    label: "Overview" },
-                { href: "/dashboard/admin/consultations", icon: FaCalendarAlt,  label: "Consultations" },
-                { href: "/dashboard/admin/chats",         icon: FaFileAlt,      label: "Chat Sessions" },
-                { href: "/dashboard/admin/reviews",       icon: FaEnvelope,     label: "Reviews" },
-                { href: "/dashboard/admin/blog",          icon: FaFileAlt,      label: "Blog Posts" },
-                { href: "/dashboard/admin/hosting",       icon: FaServer,       label: "Hosting Orders" },
-                { href: "/dashboard/admin/domains",       icon: FaGlobe,        label: "Domain Orders" },
-                { href: "/dashboard/admin/users",         icon: FaUsers,        label: "Users" },
-              ].map(({ href, icon: Icon, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white dark:bg-slate-900 border border-amber-100 dark:border-amber-900/30 hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-sm transition text-center"
-                >
-                  <Icon size={16} className="text-amber-500" />
-                  <span className="text-xs font-medium text-gray-700 dark:text-slate-300">{label}</span>
-                </Link>
-              ))}
+        {(user?.role === "admin" || user?.role === "superadmin") && (
+          <div className="mb-8 space-y-4">
+            {/* POS — prominent card */}
+            <Link
+              href="/pos"
+              className="flex items-center justify-between p-5 rounded-2xl bg-gray-900 dark:bg-gray-900 border border-gray-800 hover:border-amber-500/50 hover:bg-gray-800 transition group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+                  <FaTools size={20} className="text-amber-400" />
+                </div>
+                <div>
+                  <p className="font-bold text-white text-base">Repair Shop POS</p>
+                  <p className="text-sm text-gray-400 mt-0.5">Jobs · Sales · Inventory · Staff · Reports</p>
+                </div>
+              </div>
+              <span className="text-sm font-semibold text-amber-400 group-hover:translate-x-1 transition-transform">
+                Open POS →
+              </span>
+            </Link>
+
+            {/* Admin panel shortcuts */}
+            <div className="rounded-2xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 p-5">
+              <p className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-4">Admin Panel</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {[
+                  { href: "/dashboard/admin",               icon: FaShieldAlt,    label: "Overview" },
+                  { href: "/dashboard/admin/consultations", icon: FaCalendarAlt,  label: "Consultations" },
+                  { href: "/dashboard/admin/chats",         icon: FaFileAlt,      label: "Chat Sessions" },
+                  { href: "/dashboard/admin/reviews",       icon: FaEnvelope,     label: "Reviews" },
+                  { href: "/dashboard/admin/blog",          icon: FaFileAlt,      label: "Blog Posts" },
+                  { href: "/dashboard/admin/hosting",       icon: FaServer,       label: "Hosting Orders" },
+                  { href: "/dashboard/admin/domains",       icon: FaGlobe,        label: "Domain Orders" },
+                  { href: "/dashboard/admin/users",         icon: FaUsers,        label: "Users" },
+                ].map(({ href, icon: Icon, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white dark:bg-slate-900 border border-amber-100 dark:border-amber-900/30 hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-sm transition text-center"
+                  >
+                    <Icon size={16} className="text-amber-500" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-slate-300">{label}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         )}

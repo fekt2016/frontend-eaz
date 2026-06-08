@@ -98,7 +98,7 @@ export default function ServicesPage() {
             </ul>
 
             <Link
-              href="/portfolio/saiisai"
+              href="/portfolio/saiisai-platform"
               className="inline-flex px-6 py-3 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition"
             >
               Read the Full Case Study →

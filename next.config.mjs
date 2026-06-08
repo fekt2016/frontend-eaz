@@ -34,8 +34,9 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https://res.cloudinary.com https://picsum.photos https://images.unsplash.com https://logo.clearbit.com https://api.microlink.io",
-              // Allow localhost backend in dev; production uses relative /api/v1 rewrites only
-              `connect-src 'self' https://api.paystack.co https://checkout.paystack.com${!isProd ? " http://localhost:5000 ws://localhost:3000" : ""}`,
+              // API calls go through Next.js rewrites (/api/v1) so the browser only ever
+              // talks to 'self' — no need to whitelist the backend IP/domain here.
+              `connect-src 'self' https://api.paystack.co https://checkout.paystack.com${!isProd ? " ws://localhost:3000" : ""}`,
               "frame-src https://checkout.paystack.com",
               "object-src 'none'",
               "base-uri 'self'",

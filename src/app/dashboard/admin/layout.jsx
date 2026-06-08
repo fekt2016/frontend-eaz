@@ -45,14 +45,16 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  const isAllowed = ["admin", "superadmin"].includes(user?.role);
+
   useEffect(() => {
-    if (!loading && user?.role !== "admin") router.replace("/dashboard");
-  }, [user, loading, router]);
+    if (!loading && !isAllowed) router.replace("/dashboard");
+  }, [user, loading, router, isAllowed]);
 
   // Close sidebar on route change (mobile)
   useEffect(() => { setOpen(false); }, [pathname]);
 
-  if (loading || user?.role !== "admin") return null;
+  if (loading || !isAllowed) return null;
 
   const isActive = (href) =>
     href === "/dashboard/admin"

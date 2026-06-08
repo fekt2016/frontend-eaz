@@ -30,10 +30,22 @@ export function sanitizeName(value, maxLength = 100) {
     .slice(0, maxLength);
 }
 
-/** Phone: keep only digits, +, -, (, ), spaces */
+/**
+ * Normalize a Ghana phone number to 0XXXXXXXXX (10 digits, local format).
+ * Strips spaces/dashes, converts +233/233 prefix to leading 0.
+ * Returns the normalized string, or the raw digits if format is unrecognized.
+ */
 export function sanitizePhone(value) {
   if (value == null) return '';
-  return String(value).trim().replace(/[^0-9+\-()\s]/g, '').slice(0, 20);
+  let digits = String(value).replace(/\D/g, '');
+  if (digits.startsWith('233') && digits.length === 12) digits = '0' + digits.slice(3);
+  if (digits.length === 9) digits = '0' + digits;
+  return digits.slice(0, 10);
+}
+
+/** Use in onChange to allow only digit input (strips non-digits while typing) */
+export function formatPhoneInput(value) {
+  return String(value).replace(/\D/g, '').slice(0, 10);
 }
 
 /** Domain: lowercase + only valid hostname characters */
@@ -57,6 +69,27 @@ export function sanitizeMessage(value, maxLength = 5000) {
     .replace(/<[^>]*on\w+\s*=/gi, '')  // strip tags with event handlers
     .replace(/javascript:/gi, '')
     .slice(0, maxLength);
+}
+
+/**
+ * Validate password strength.
+ * Returns an array of { rule, met } objects so UI can show a checklist.
+ */
+export function getPasswordRules(password) {
+  return [
+    { rule: "At least 8 characters",          met: password.length >= 8 },
+    { rule: "One uppercase letter (A–Z)",      met: /[A-Z]/.test(password) },
+    { rule: "One lowercase letter (a–z)",      met: /[a-z]/.test(password) },
+    { rule: "One number (0–9)",                met: /[0-9]/.test(password) },
+    { rule: "One symbol (@, #, $, ! …)",       met: /[^A-Za-z0-9]/.test(password) },
+  ];
+}
+
+/** Returns error string if invalid, null if valid */
+export function validatePassword(password) {
+  const rules = getPasswordRules(password);
+  const failed = rules.find((r) => !r.met);
+  return failed ? failed.rule : null;
 }
 
 /** Sanitise a whole form-data object given a field→type map */

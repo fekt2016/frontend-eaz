@@ -1,8 +1,6 @@
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
+import ConditionalLayout from "@/components/ConditionalLayout";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -50,10 +48,7 @@ export default function RootLayout({ children }) {
       <body className="font-sans antialiased text-gray-900 dark:text-slate-100 bg-gray-50 dark:bg-slate-950 min-h-screen flex flex-col">
         <ThemeProvider>
           <AuthProvider>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <ChatWidget />
+            <ConditionalLayout>{children}</ConditionalLayout>
           </AuthProvider>
         </ThemeProvider>
       </body>

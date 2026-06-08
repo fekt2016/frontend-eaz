@@ -11,7 +11,9 @@ async function getMaintenanceStatus() {
   if (_maintCache && now - _maintCachedAt < MAINT_TTL_MS) return _maintCache;
 
   try {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+    const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')
+      || (process.env.NODE_ENV === 'production' ? null : 'http://localhost:5000');
+    if (!apiBase) return { active: false, message: '', scheduledEnd: null };
     const res  = await fetch(`${apiBase}/api/v1/settings`, { cache: 'no-store' });
     const json = await res.json();
     if (json.success) {
@@ -42,14 +44,17 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
-  // ── Determine if the requester is an admin (bypass maintenance) ─────────────
-  // Use jwtVerify (cryptographic) — jwtDecode does NOT verify the signature
+  // ── Verify token and extract role ──────────────────────────────────────────
+  const ADMIN_ROLES    = ["admin", "superadmin"];
+  const POS_ROLES      = ["superadmin", "admin", "staff", "cashier", "technician"];
   let isAdmin = false;
+  let userRole = null;
   if (token) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET);
       const { payload } = await jwtVerify(token, secret);
-      isAdmin = payload?.role === "admin";
+      userRole = payload?.role;
+      isAdmin  = ADMIN_ROLES.includes(userRole);
     } catch { /* invalid / forged token — treat as guest */ }
   }
 
@@ -77,14 +82,18 @@ export async function middleware(request) {
   }
 
   if (pathname.startsWith("/dashboard/admin") && token) {
-    try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-      const { payload } = await jwtVerify(token, secret);
-      if (payload?.role !== "admin") {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
-      }
-    } catch {
-      return NextResponse.redirect(new URL("/auth/login", request.url));
+    if (!ADMIN_ROLES.includes(userRole)) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  // ── POS auth guard ───────────────────────────────────────────────────────────
+  if (pathname.startsWith("/pos")) {
+    if (!token) {
+      return NextResponse.redirect(new URL(`/auth/login?redirect=${pathname}`, request.url));
+    }
+    if (!POS_ROLES.includes(userRole)) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 

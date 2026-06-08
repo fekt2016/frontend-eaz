@@ -39,7 +39,10 @@ function LoginPageInner() {
         router.push(`/auth/verify-2fa?email=${encodeURIComponent(email)}`);
         return;
       }
-      router.push("/dashboard");
+      const role = res?.data?.user?.role;
+      if (role === "technician" || role === "admin") router.push("/pos/technician");
+      else if (["superadmin", "staff", "cashier"].includes(role)) router.push("/pos/sell");
+      else router.push("/dashboard");
     } catch (err) {
       // If account not verified, redirect to verify page
       if (err.requiresVerification) {

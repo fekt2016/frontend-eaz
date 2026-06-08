@@ -1,20 +1,13 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useMemo } from "react";
+import { FaCheck, FaTimes } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
-import { sanitizeName, sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
-
-const schema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  password: z.string().min(8),
-});
+import { sanitizeName, sanitizeEmail, sanitizePhone, getPasswordRules, validatePassword } from "@/lib/sanitize";
 
 const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800";
 
@@ -32,6 +25,9 @@ function RegisterPageInner() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const passwordRules = useMemo(() => getPasswordRules(password), [password]);
+  const passwordStrong = passwordRules.every((r) => r.met);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -40,8 +36,9 @@ function RegisterPageInner() {
     const cleanName  = sanitizeName(name);
     const cleanEmail = sanitizeEmail(email);
     const cleanPhone = sanitizePhone(phone);
-    const result = schema.safeParse({ name: cleanName, email: cleanEmail, phone: cleanPhone, password });
-    if (!result.success) { setError("Invalid input. Password must be at least 8 characters."); return; }
+    const pwError = validatePassword(password);
+    if (pwError) { setError(pwError); return; }
+    if (!cleanName || !cleanEmail) { setError("Name and email are required."); return; }
     setLoading(true);
     try {
       const res = await register(cleanName, cleanEmail, cleanPhone, password);
@@ -89,6 +86,22 @@ function RegisterPageInner() {
                   {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
                 </button>
               </div>
+              {/* Password strength checklist */}
+              {password.length > 0 && (
+                <div className="mt-2.5 space-y-1.5 bg-gray-50 dark:bg-slate-800/50 rounded-xl p-3">
+                  {passwordRules.map(({ rule, met }) => (
+                    <div key={rule} className="flex items-center gap-2">
+                      {met
+                        ? <FaCheck size={10} className="text-emerald-500 flex-shrink-0" />
+                        : <FaTimes size={10} className="text-red-400 flex-shrink-0" />
+                      }
+                      <span className={`text-xs ${met ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-slate-400"}`}>
+                        {rule}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Confirm password</label>
@@ -109,7 +122,7 @@ function RegisterPageInner() {
               </span>
             </label>
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button type="submit" disabled={loading} className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm disabled:opacity-60">
+            <button type="submit" disabled={loading || !passwordStrong} className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm disabled:opacity-60">
               {loading ? "Creating account..." : "Create Account"}
             </button>
           </form>
