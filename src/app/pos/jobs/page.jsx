@@ -31,7 +31,6 @@ export default function JobsPage() {
   const [status,  setStatus]  = useState("all");
   const [q,       setQ]       = useState("");
   const [page,    setPage]    = useState(1);
-  const [error,   setError]   = useState("");
   const limit = 20;
 
   const fetchJobs = useCallback(async () => {

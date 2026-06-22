@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import { printRepairReceipt } from "@/lib/printReceipt";
 import {
   FaArrowLeft, FaWrench, FaPhone, FaUser, FaCalendarAlt,
-  FaMoneyBillWave, FaPrint, FaCheckCircle, FaClock, FaExclamationTriangle,
+  FaPrint, FaCheckCircle, FaClock, FaExclamationTriangle,
 } from "react-icons/fa";
 
 const STATUS_COLORS = {
@@ -63,7 +63,6 @@ export default function CustomerDetailPage() {
   const totalSpent    = jobs.reduce((s, j) => s + jobTotal(j), 0);
   const completedJobs = jobs.filter(j => j.status === "collected");
   const activeJobs    = jobs.filter(j => !["collected","cancelled"].includes(j.status));
-  const cancelledJobs = jobs.filter(j => j.status === "cancelled");
 
   // Devices repaired (unique brand+model combos)
   const devices = [...new Set(
@@ -205,8 +204,7 @@ export default function CustomerDetailPage() {
         ) : (
           <div className="divide-y divide-gray-800">
             {filtered.map(job => {
-              const amount   = jobTotal(job);
-              const isActive = !["collected","cancelled"].includes(job.status);
+              const amount = jobTotal(job);
               return (
                 <div key={job._id} className="px-5 py-4 hover:bg-gray-800/30 transition">
                   <div className="flex items-start justify-between gap-3">

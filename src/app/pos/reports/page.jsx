@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import Link from "next/link";
 import {
   FaChartBar, FaMoneyBillWave, FaWrench, FaUsers,
-  FaExclamationTriangle, FaCheckCircle, FaMobileAlt, FaSpinner, FaReceipt, FaBalanceScale,
+  FaExclamationTriangle, FaCheckCircle, FaSpinner, FaReceipt, FaBalanceScale,
 } from "react-icons/fa";
 
 const STATUS_COLORS = {

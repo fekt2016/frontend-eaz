@@ -10,8 +10,6 @@ export function printRepairReceipt(job, payments = []) {
 
   const fmt  = (n) => `GH₵${Number(n || 0).toFixed(2)}`;
   const date = new Date().toLocaleString("en-GH", { dateStyle: "medium", timeStyle: "short" });
-  const line = "--------------------------------";
-  const dline= "================================";
 
   const partsRows = (job.parts || []).map(p =>
     `<tr>

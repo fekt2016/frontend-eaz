@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaTimesCircle, FaWrench } from "react-icons/fa";
+import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 const WARRANTY_COLORS = {
   active:        "bg-green-500/15 text-green-400 border-green-500/30",
