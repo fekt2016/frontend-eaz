@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { api } from "@/lib/api";
 import { FaCamera, FaTrash, FaTimes, FaExpand, FaSpinner } from "react-icons/fa";
 
@@ -101,9 +102,10 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
           >
             {photos.map((photo, i) => (
               <div key={photo._id} className="relative group aspect-square rounded-xl overflow-hidden bg-gray-800">
-                <img
+                <Image
                   src={photo.url}
                   alt={photo.caption || `Photo ${i + 1}`}
+                  fill
                   className="w-full h-full object-cover"
                 />
                 {/* Overlay */}
@@ -182,9 +184,11 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
               className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl transition"
             >›</button>
           )}
-          <img
-            src={photos[lightbox]?.url}
+          <Image
+            src={photos[lightbox]?.url || ""}
             alt={photos[lightbox]?.caption || "Device photo"}
+            width={800}
+            height={600}
             className="max-w-full max-h-full rounded-xl object-contain"
             onClick={e => e.stopPropagation()}
           />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { FaShieldAlt, FaWrench, FaCheckCircle, FaClock, FaTimesCircle, FaMobileAlt } from "react-icons/fa";
 
@@ -233,7 +234,7 @@ export default function TrackPage() {
             <div className="grid grid-cols-3 gap-2">
               {job.photos.map((photo, i) => (
                 <a key={i} href={photo.url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-xl overflow-hidden bg-gray-800 block">
-                  <img src={photo.url} alt={photo.caption || `Photo ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition duration-200" />
+                  <Image src={photo.url} alt={photo.caption || `Photo ${i + 1}`} width={200} height={200} className="w-full h-full object-cover hover:scale-105 transition duration-200" />
                 </a>
               ))}
             </div>

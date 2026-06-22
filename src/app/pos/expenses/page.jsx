@@ -286,7 +286,7 @@ export default function ExpensesPage() {
           <div className="py-16 text-center">
             <FaReceipt size={24} className="text-gray-700 mx-auto mb-3" />
             <p className="text-gray-400 font-medium">No expenses found</p>
-            {isSuperAdmin && <p className="text-gray-600 text-sm mt-1">Click "Add Expense" to log your first expense.</p>}
+            {isSuperAdmin && <p className="text-gray-600 text-sm mt-1">Click &quot;Add Expense&quot; to log your first expense.</p>}
           </div>
         ) : (
           <div className="divide-y divide-gray-800">

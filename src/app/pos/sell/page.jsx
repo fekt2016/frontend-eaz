@@ -79,90 +79,6 @@ export default function SellPage() {
     }
   }, [cart, showPay, completedSale, focusScan]);
 
-  // ── Keyboard shortcuts ───────────────────────────────────────────────────────
-  useEffect(() => {
-    const handler = (e) => {
-      if (completedSale) return;
-
-      if (e.key === "F2") { e.preventDefault(); focusScan(); }
-
-      if (e.key === "Escape") {
-        setScanInput(""); setResults([]); setScanError("");
-        if (showPay) setShowPay(false);
-        focusScan();
-      }
-
-      if ((e.key === "F4" || (e.key === "Enter" && !scanInput.trim())) && canCheckout && !showPay) {
-        e.preventDefault();
-        openPayment();
-      }
-
-      // + / - adjust last cart item
-      if (!showPay && document.activeElement === scanRef.current) {
-        const last = cart.length - 1;
-        if (e.key === "+" && last >= 0) { e.preventDefault(); changeQty(cart[last].partId, 1); }
-        if (e.key === "-" && last >= 0) { e.preventDefault(); changeQty(cart[last].partId, -1); }
-        if (e.key === "Delete" && last >= 0) { e.preventDefault(); removeFromCart(cart[last].partId); }
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [cart, showPay, completedSale, canCheckout, scanInput, focusScan]);
-
-  // ── Barcode scanner hook (hardware scanner via keyboard wedge) ──────────────
-  useBarcodeScanner(async (code) => {
-    if (showPay || completedSale) return;
-    await handleScanOrSearch(code);
-  }, { active: !showPay && !completedSale, minLength: 3 });
-
-  // ── Scan / search logic ──────────────────────────────────────────────────────
-  const handleScanOrSearch = useCallback(async (code) => {
-    if (!code?.trim()) return;
-    setScanning(true);
-    setScanError("");
-    setResults([]);
-
-    try {
-      const res = await api.get(`/pos/scan/${encodeURIComponent(code.trim())}`);
-      if (res.type === "product") {
-        addToCart(res.data);
-        setScanInput("");
-      } else {
-        // repair job found — show info, don't add to cart
-        setScanError(`Repair job found: ${res.data.jobNumber} — ${res.data.status}`);
-      }
-    } catch {
-      // Not an exact scan match — fall back to search
-      try {
-        const search = await api.get(`/pos/inventory?q=${encodeURIComponent(code.trim())}&retail=true&limit=8`);
-        if (search.data.length === 1) {
-          addToCart(search.data[0]);
-          setScanInput("");
-        } else if (search.data.length > 1) {
-          setResults(search.data);
-        } else {
-          setScanError("No product found for: " + code);
-        }
-      } catch {
-        setScanError("Scan error. Try again.");
-      }
-    } finally {
-      setScanning(false);
-    }
-  }, [showPay, completedSale]);
-
-  // ── Search as user types (debounced) ─────────────────────────────────────────
-  useEffect(() => {
-    if (!scanInput.trim() || scanInput.length < 2) { setResults([]); return; }
-    const t = setTimeout(async () => {
-      try {
-        const res = await api.get(`/pos/inventory?q=${encodeURIComponent(scanInput)}&limit=8`);
-        setResults(res.data);
-      } catch { /* silent */ }
-    }, 200);
-    return () => clearTimeout(t);
-  }, [scanInput]);
-
   // ── Cart operations ──────────────────────────────────────────────────────────
   const addToCart = (part) => {
     setScanError("");
@@ -209,12 +125,96 @@ export default function SellPage() {
   };
 
   // ── Payment ──────────────────────────────────────────────────────────────────
-  const openPayment = () => {
+  const openPayment = useCallback(() => {
     setPayError("");
     setAmountPaid(payMethod === "momo" || payMethod === "card" ? total.toFixed(2) : "");
     setShowPay(true);
     setTimeout(() => amountPaidRef.current?.focus(), 100);
-  };
+  }, [payMethod, total]);
+
+  // ── Keyboard shortcuts ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      if (completedSale) return;
+
+      if (e.key === "F2") { e.preventDefault(); focusScan(); }
+
+      if (e.key === "Escape") {
+        setScanInput(""); setResults([]); setScanError("");
+        if (showPay) setShowPay(false);
+        focusScan();
+      }
+
+      if ((e.key === "F4" || (e.key === "Enter" && !scanInput.trim())) && canCheckout && !showPay) {
+        e.preventDefault();
+        openPayment();
+      }
+
+      // + / - adjust last cart item
+      if (!showPay && document.activeElement === scanRef.current) {
+        const last = cart.length - 1;
+        if (e.key === "+" && last >= 0) { e.preventDefault(); changeQty(cart[last].partId, 1); }
+        if (e.key === "-" && last >= 0) { e.preventDefault(); changeQty(cart[last].partId, -1); }
+        if (e.key === "Delete" && last >= 0) { e.preventDefault(); removeFromCart(cart[last].partId); }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [cart, showPay, completedSale, canCheckout, scanInput, focusScan, openPayment]);
+
+  // ── Barcode scanner hook (hardware scanner via keyboard wedge) ──────────────
+  useBarcodeScanner(async (code) => {
+    if (showPay || completedSale) return;
+    await handleScanOrSearch(code);
+  }, { active: !showPay && !completedSale, minLength: 3 });
+
+  // ── Scan / search logic ──────────────────────────────────────────────────────
+  const handleScanOrSearch = useCallback(async (code) => {
+    if (!code?.trim()) return;
+    setScanning(true);
+    setScanError("");
+    setResults([]);
+
+    try {
+      const res = await api.get(`/pos/scan/${encodeURIComponent(code.trim())}`);
+      if (res.type === "product") {
+        addToCart(res.data);
+        setScanInput("");
+      } else {
+        // repair job found — show info, don't add to cart
+        setScanError(`Repair job found: ${res.data.jobNumber} — ${res.data.status}`);
+      }
+    } catch {
+      // Not an exact scan match — fall back to search
+      try {
+        const search = await api.get(`/pos/inventory?q=${encodeURIComponent(code.trim())}&retail=true&limit=8`);
+        if (search.data.length === 1) {
+          addToCart(search.data[0]);
+          setScanInput("");
+        } else if (search.data.length > 1) {
+          setResults(search.data);
+        } else {
+          setScanError("No product found for: " + code);
+        }
+      } catch {
+        setScanError("Scan error. Try again.");
+      }
+    } finally {
+      setScanning(false);
+    }
+  }, []);
+
+  // ── Search as user types (debounced) ─────────────────────────────────────────
+  useEffect(() => {
+    if (!scanInput.trim() || scanInput.length < 2) { setResults([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const res = await api.get(`/pos/inventory?q=${encodeURIComponent(scanInput)}&limit=8`);
+        setResults(res.data);
+      } catch { /* silent */ }
+    }, 200);
+    return () => clearTimeout(t);
+  }, [scanInput]);
 
   const completeSale = async () => {
     if (!amountPaid || paid < total) {
