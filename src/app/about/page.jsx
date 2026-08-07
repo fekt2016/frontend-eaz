@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { FaCheckCircle } from "react-icons/fa";
 
 const values = [
   { title: "Quality First", desc: "We don't ship until we're proud of it. Every detail matters." },

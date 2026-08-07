@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FaCheckCircle } from "react-icons/fa";
 import HeroCarousel from "@/components/home/HeroCarousel";
 import ServicesGrid from "@/components/home/ServicesGrid";
+import ShopSection from "@/components/home/ShopSection";
 import Testimonials from "@/components/home/Testimonials";
 import CtaSection from "@/components/home/CtaSection";
 import { posts } from "@/content/blog/posts";
@@ -90,6 +91,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ShopSection />
 
       <Testimonials />
 

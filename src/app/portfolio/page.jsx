@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { FaSearch } from "react-icons/fa";
 import { PROJECTS, CATEGORIES } from "@/data/portfolioData";

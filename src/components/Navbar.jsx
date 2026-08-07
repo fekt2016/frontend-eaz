@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
+import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 const links = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
   { href: "/hosting", label: "Hosting" },
   { href: "/domains", label: "Domains" },
+  { href: "/shop", label: "Shop" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
@@ -21,6 +23,7 @@ export default function Navbar() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { count, openCart } = useCart();
 
   if (pathname?.startsWith("/auth")) return null;
 
@@ -48,6 +51,19 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
+          <button
+            type="button"
+            onClick={openCart}
+            className="relative p-2 text-gray-600 hover:text-gray-900 transition"
+            aria-label="Open cart"
+          >
+            <FaShoppingCart size={18} />
+            {count > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white">
+                {count}
+              </span>
+            )}
+          </button>
           {user ? (
             <div className="flex items-center gap-3">
               <Link href="/dashboard" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition">
@@ -70,14 +86,29 @@ export default function Navbar() {
           )}
         </div>
 
-        <button
-          type="button"
-          className="md:hidden p-2 text-gray-600"
-          onClick={() => setOpen(!open)}
-          aria-label="Menu"
-        >
-          {open ? <FaTimes size={18} /> : <FaBars size={18} />}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={openCart}
+            className="md:hidden relative p-2 text-gray-600 hover:text-gray-900 transition"
+            aria-label="Open cart"
+          >
+            <FaShoppingCart size={18} />
+            {count > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white">
+                {count}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            className="md:hidden p-2 text-gray-600"
+            onClick={() => setOpen(!open)}
+            aria-label="Menu"
+          >
+            {open ? <FaTimes size={18} /> : <FaBars size={18} />}
+          </button>
+        </div>
       </div>
 
       {open && (

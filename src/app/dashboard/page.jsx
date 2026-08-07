@@ -6,8 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
   FaServer, FaGlobe, FaShieldAlt, FaExternalLinkAlt,
-  FaDownload, FaUpload, FaCheckCircle, FaClock, FaTimesCircle,
-  FaChevronRight, FaUserCircle, FaCog,
+  FaClock, FaChevronRight, FaUserCircle,
 } from "react-icons/fa";
 
 const CPANEL_URL = process.env.NEXT_PUBLIC_CPANEL_URL || "https://your-server-ip:2083";
