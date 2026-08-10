@@ -9,13 +9,14 @@ import {
   FaTools, FaHome, FaWrench, FaUsers, FaBoxes,
   FaChartBar, FaUsersCog, FaBars, FaTimes, FaSignOutAlt, FaBarcode, FaExternalLinkAlt, FaShieldAlt, FaReceipt, FaTruck,
 } from "react-icons/fa";
+import { adminNav } from "../dashboard/dashboardNav";
 
 // roles: if undefined, visible to all POS roles
 // superadmin = full access; admin = repair steps only; staff = full except staff mgmt; cashier = sales; technician = repairs
 const NAV = [
   { label: "Sell",       href: "/pos/sell",        icon: FaBarcode,  roles: ["superadmin","cashier","staff"] },
   { label: "Dashboard",  href: "/pos/dashboard",   icon: FaHome,     roles: ["superadmin","admin","staff"] },
-  { label: "My Jobs",    href: "/pos/technician",  icon: FaWrench,   roles: ["technician"] },
+  { label: "My Jobs",    href: "/pos",             icon: FaWrench,   roles: ["technician"] },
   { label: "Jobs",       href: "/pos/jobs",        icon: FaWrench,   roles: ["superadmin","staff"] },
   { label: "Customers",  href: "/pos/customers",   icon: FaUsers,    roles: ["superadmin","staff","cashier"] },
   { label: "Inventory",  href: "/pos/inventory",   icon: FaBoxes,    roles: ["superadmin","staff"] },
@@ -67,6 +68,65 @@ export default function PosShell({ children }) {
 
   const visibleNav = NAV.filter(n => !n.roles || n.roles.includes(user.role));
 
+  // Technicians get a horizontal top navigation bar instead of the left sidebar.
+  if (user.role === "technician") {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col">
+        <header className="sticky top-0 z-40 bg-gray-900 border-b border-gray-800">
+          <div className="flex items-center gap-4 px-4 sm:px-6 py-3">
+            <Link href="/pos" className="flex items-center gap-2.5 flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
+                <FaTools size={13} className="text-white" />
+              </div>
+              <div className="hidden sm:block">
+                <p className="font-bold text-white text-sm leading-none">EazRepair</p>
+                <p className="text-gray-500 text-xs">POS System</p>
+              </div>
+            </Link>
+
+            <nav className="flex items-center gap-1 flex-1 overflow-x-auto">
+              {visibleNav.map(({ label, href, icon: Icon }) => {
+                const active = pathname === href || (!["/pos", "/pos/dashboard"].includes(href) && pathname.startsWith(href));
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${
+                      active
+                        ? "bg-amber-500/15 text-amber-400"
+                        : "text-gray-400 hover:text-white hover:bg-gray-800"
+                    }`}
+                  >
+                    <Icon size={14} className="flex-shrink-0" />
+                    <span>{label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-semibold text-white truncate max-w-[120px]">{user.name}</p>
+                <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+              </div>
+              <button
+                onClick={() => { logout(); router.push("/auth/login"); }}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition"
+              >
+                <FaSignOutAlt size={13} />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto p-5 lg:p-7">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 flex">
 
@@ -86,7 +146,7 @@ export default function PosShell({ children }) {
       `}>
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
-          <Link href={user.role === "technician" ? "/pos/technician" : "/pos/dashboard"} className="flex items-center gap-2.5">
+          <Link href={user.role === "technician" ? "/pos" : "/pos/dashboard"} className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
               <FaTools size={13} className="text-white" />
             </div>
@@ -103,7 +163,7 @@ export default function PosShell({ children }) {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {visibleNav.map(({ label, href, icon: Icon }) => {
-            const active = pathname === href || (href !== "/pos/dashboard" && pathname.startsWith(href));
+            const active = pathname === href || (!["/pos", "/pos/dashboard"].includes(href) && pathname.startsWith(href));
             return (
               <Link
                 key={href}
@@ -125,6 +185,29 @@ export default function PosShell({ children }) {
               </Link>
             );
           })}
+
+          {/* Shared admin dashboard nav — jump back to the admin dashboard */}
+          {["admin", "superadmin"].includes(user.role) && (
+            <div className="mt-4 pt-4 border-t border-gray-800">
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Admin Dashboard</p>
+              {adminNav.filter((i) => i.href !== "/pos").map(({ label, href, icon: Icon }) => {
+                const active = pathname === href || pathname.startsWith(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+                      active ? "bg-amber-500/15 text-amber-400" : "text-gray-400 hover:text-white hover:bg-gray-800"
+                    }`}
+                  >
+                    <Icon size={14} className="flex-shrink-0" />
+                    <span className="flex-1">{label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </nav>
 
         {/* Footer */}

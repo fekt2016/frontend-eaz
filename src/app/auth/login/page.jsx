@@ -40,7 +40,7 @@ function LoginPageInner() {
         return;
       }
       const role = res?.data?.user?.role;
-      if (role === "technician" || role === "admin") router.push("/pos/technician");
+      if (role === "technician" || role === "admin") router.push("/pos");
       else if (["superadmin", "staff", "cashier"].includes(role)) router.push("/pos/sell");
       else router.push("/dashboard");
     } catch (err) {

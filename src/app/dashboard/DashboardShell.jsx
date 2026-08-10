@@ -4,32 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import {
-  FaTachometerAlt, FaUserCircle, FaTools, FaStore, FaCalendarAlt, FaComments,
-  FaStar, FaFileAlt, FaServer, FaGlobe, FaUsers, FaEnvelope,
-  FaBars, FaTimes, FaChevronRight,
-} from "react-icons/fa";
-
-// Shared for every /dashboard route.
-const baseNav = [
-  { href: "/dashboard", icon: FaTachometerAlt, label: "Overview" },
-  { href: "/dashboard/settings", icon: FaUserCircle, label: "Settings" },
-];
-
-// Admin/staff only.
-const adminNav = [
-  { href: "/dashboard/admin-overview", icon: FaTachometerAlt, label: "Admin Overview" },
-  { href: "/pos", icon: FaTools, label: "Repair Shop POS" },
-  { href: "/commerce", icon: FaStore, label: "Commerce" },
-  { href: "/dashboard/consultations", icon: FaCalendarAlt, label: "Consultations" },
-  { href: "/dashboard/chats", icon: FaComments, label: "Chat Sessions" },
-  { href: "/dashboard/reviews", icon: FaStar, label: "Reviews" },
-  { href: "/dashboard/blog", icon: FaFileAlt, label: "Blog Posts" },
-  { href: "/dashboard/hosting-orders", icon: FaServer, label: "Hosting Orders" },
-  { href: "/dashboard/domain-orders", icon: FaGlobe, label: "Domain Orders" },
-  { href: "/dashboard/users", icon: FaUsers, label: "Users" },
-  { href: "/dashboard/emails", icon: FaEnvelope, label: "Email Logs" },
-];
+import { FaBars, FaTimes, FaChevronRight } from "react-icons/fa";
+import { baseNav, adminNav } from "./dashboardNav";
 
 function SidebarLink({ href, icon: Icon, label, active, onClick }) {
   return (
