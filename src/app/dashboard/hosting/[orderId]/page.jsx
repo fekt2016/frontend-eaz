@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { FaDownload, FaUpload, FaCheckCircle, FaExternalLinkAlt, FaTrash, FaRedo } from "react-icons/fa";
+import { FaDownload, FaUpload, FaCheckCircle, FaExternalLinkAlt, FaTrash, FaRedo, FaKey } from "react-icons/fa";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -17,6 +17,8 @@ const statusColors = {
   active: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-900/30",
   cancelled: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",
   failed: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",
+  suspended: "bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-900/30",
+  terminated: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",
 };
 
 export default function HostingOrderDetailPage() {
@@ -32,6 +34,8 @@ export default function HostingOrderDetailPage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [renewLoading, setRenewLoading] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [newCreds, setNewCreds] = useState(null);
   const fileRef = useRef(null);
 
   const fetchOrder = async () => {
@@ -100,6 +104,19 @@ export default function HostingOrderDetailPage() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!confirm("Generate a new cPanel password? Your current password will stop working immediately.")) return;
+    setPwLoading(true);
+    try {
+      const res = await api.post(`/hosting/orders/${orderId}/password`, {});
+      setNewCreds(res.data); // { username, password } — shown once
+    } catch (err) {
+      alert(err?.message || "Failed to reset the hosting password. Please try again later.");
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
   const handleDeleteOrder = async () => {
     if (!confirm("Are you sure you want to delete this order from the system? This action cannot be undone.")) return;
     setDeleteLoading(true);
@@ -165,7 +182,7 @@ export default function HostingOrderDetailPage() {
   const daysLeft = expiresAt ? Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24)) : null;
   const isExpired = daysLeft !== null && daysLeft <= 0;
   const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 7;
-  const canRenew = order.status === "active" || (order.status === "cancelled" && order.cpanelUsername);
+  const canRenew = order.status === "active" || (["cancelled", "suspended"].includes(order.status) && order.cpanelUsername);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
@@ -315,6 +332,34 @@ export default function HostingOrderDetailPage() {
               )}
               Manage Hosting (cPanel)
             </button>
+          )}
+
+          {/* Reset cPanel password — active hosting only */}
+          {order.status === "active" && order.cpanelUsername && (
+            <button
+              onClick={handleResetPassword}
+              disabled={pwLoading}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-60"
+            >
+              {pwLoading ? (
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
+              ) : (
+                <FaKey size={12} />
+              )}
+              Reset cPanel Password
+            </button>
+          )}
+
+          {/* Newly generated credentials — shown once */}
+          {newCreds && (
+            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30">
+              <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300 mb-2">New cPanel credentials</p>
+              <div className="space-y-1 text-sm font-mono">
+                <div className="flex justify-between"><span className="text-gray-500 font-sans text-xs">Username</span><span className="font-semibold text-gray-900 dark:text-white">{newCreds.username}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500 font-sans text-xs">Password</span><span className="font-semibold text-gray-900 dark:text-white break-all">{newCreds.password}</span></div>
+              </div>
+              <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-400">Save these now — for your security this password won&apos;t be shown again.</p>
+            </div>
           )}
 
           {/* Provisioning status — paid but not active yet */}

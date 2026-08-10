@@ -21,7 +21,9 @@ const statusColors = {
   pending: "bg-amber-50 text-amber-700 ring-amber-100",
   paid: "bg-blue-50 text-blue-700 ring-blue-100",
   active: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  suspended: "bg-orange-50 text-orange-700 ring-orange-100",
   cancelled: "bg-red-50 text-red-700 ring-red-100",
+  terminated: "bg-red-50 text-red-700 ring-red-100",
   failed: "bg-red-50 text-red-700 ring-red-100",
 };
 
@@ -30,6 +32,8 @@ const FILTER_OPTIONS = [
   { value: "pending", label: "Pending review" },
   { value: "paid", label: "Paid (provisioning)" },
   { value: "active", label: "Active" },
+  { value: "suspended", label: "Suspended" },
+  { value: "terminated", label: "Terminated" },
 ];
 
 function buildOrdersQuery(statusFilter, search) {
@@ -155,6 +159,21 @@ export default function AdminHostingOrdersPage() {
       await fetchSummary();
     } catch (err) {
       alert(err.message || "Update failed");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleLifecycle = async (orderId, action) => {
+    if (action === "terminate" && !confirm("Terminate this hosting account? This permanently deletes the cPanel account and all its data. This cannot be undone.")) return;
+    setUpdating(orderId);
+    try {
+      const body = action === "terminate" ? { confirm: true } : {};
+      await api.post(`/hosting/orders/${orderId}/${action}`, body);
+      await fetchOrders();
+      await fetchSummary();
+    } catch (err) {
+      alert(err.message || `${action} failed`);
     } finally {
       setUpdating(null);
     }
@@ -449,6 +468,26 @@ export default function AdminHostingOrdersPage() {
                                 cPanel
                               </button>
                             )}
+                            {order.status === "active" && order.cpanelUsername && (
+                              <button
+                                type="button"
+                                onClick={() => handleLifecycle(order._id, "suspend")}
+                                disabled={updating === order._id}
+                                className="text-xs font-semibold px-2.5 py-1.5 rounded-full border border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-900/40 dark:text-orange-400 disabled:opacity-50"
+                              >
+                                {updating === order._id ? "…" : "Suspend"}
+                              </button>
+                            )}
+                            {order.status === "suspended" && (
+                              <button
+                                type="button"
+                                onClick={() => handleLifecycle(order._id, "unsuspend")}
+                                disabled={updating === order._id}
+                                className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                              >
+                                {updating === order._id ? "…" : "Unsuspend"}
+                              </button>
+                            )}
                             {order.status === "pending" && (
                               <button
                                 type="button"
@@ -467,6 +506,16 @@ export default function AdminHostingOrdersPage() {
                                 className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                               >
                                 {updating === order._id ? "…" : "Retry"}
+                              </button>
+                            )}
+                            {["active", "suspended"].includes(order.status) && order.cpanelUsername && (
+                              <button
+                                type="button"
+                                onClick={() => handleLifecycle(order._id, "terminate")}
+                                disabled={updating === order._id}
+                                className="text-xs font-semibold px-2.5 py-1.5 rounded-full border border-red-200 text-red-700 hover:bg-red-50 dark:border-red-900/40 dark:text-red-400 disabled:opacity-50"
+                              >
+                                {updating === order._id ? "…" : "Terminate"}
                               </button>
                             )}
                             <button
