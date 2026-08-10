@@ -320,14 +320,14 @@ export default function AdminOverviewPage() {
         {/* Quick nav */}
         <div className="flex flex-wrap gap-2 mb-8">
           {[
-            { href: "/dashboard/admin/consultations", label: consultations.new > 0 ? `Consultations (${consultations.new} new)` : "Consultations" },
-            { href: "/dashboard/admin/chats",         label: "Chat Sessions" },
-            { href: "/dashboard/admin/reviews",       label: "Reviews" },
-            { href: "/dashboard/admin/blog",          label: "Blog Posts" },
-            { href: "/dashboard/admin/hosting",       label: "Hosting Orders" },
-            { href: "/dashboard/admin/domains",       label: "Domain Orders" },
-            { href: "/dashboard/admin/users",         label: "Users" },
-            { href: "/dashboard/admin/emails",        label: "Email Logs" },
+            { href: "/dashboard/consultations", label: consultations.new > 0 ? `Consultations (${consultations.new} new)` : "Consultations" },
+            { href: "/dashboard/chats",         label: "Chat Sessions" },
+            { href: "/dashboard/reviews",       label: "Reviews" },
+            { href: "/dashboard/blog",          label: "Blog Posts" },
+            { href: "/dashboard/hosting-orders",       label: "Hosting Orders" },
+            { href: "/dashboard/domain-orders",       label: "Domain Orders" },
+            { href: "/dashboard/users",         label: "Users" },
+            { href: "/dashboard/emails",        label: "Email Logs" },
           ].map(({ href, label }) => (
             <Link key={href} href={href}
               className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-amber-300 dark:hover:border-amber-700/50 hover:text-amber-700 dark:hover:text-amber-400 transition">
@@ -351,13 +351,13 @@ export default function AdminOverviewPage() {
                 {consultations.new > 0 && (
                   <div className="flex items-center gap-2 rounded-xl border border-violet-200 dark:border-violet-900/40 bg-violet-50 dark:bg-violet-900/20 px-4 py-3 text-sm text-violet-900 dark:text-violet-300">
                     <FaCalendarAlt className="shrink-0 text-violet-500" size={14} />
-                    <span><strong>{consultations.new}</strong> new consultation booking{consultations.new > 1 ? "s" : ""} — <Link href="/dashboard/admin/consultations" className="underline">review now</Link></span>
+                    <span><strong>{consultations.new}</strong> new consultation booking{consultations.new > 1 ? "s" : ""} — <Link href="/dashboard/consultations" className="underline">review now</Link></span>
                   </div>
                 )}
                 {d.hosting?.pending > 0 && (
                   <div className="flex items-center gap-2 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-300">
                     <FaExclamationTriangle className="shrink-0 text-amber-500" size={14} />
-                    <span><strong>{d.hosting.pending}</strong> hosting order{d.hosting.pending > 1 ? "s" : ""} pending review — <Link href="/dashboard/admin/hosting" className="underline">review now</Link></span>
+                    <span><strong>{d.hosting.pending}</strong> hosting order{d.hosting.pending > 1 ? "s" : ""} pending review — <Link href="/dashboard/hosting-orders" className="underline">review now</Link></span>
                   </div>
                 )}
                 {d.hosting?.expiringIn7Days > 0 && (
@@ -392,7 +392,7 @@ export default function AdminOverviewPage() {
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white">{consultations.new} new</span>
                   )}
                 </div>
-                <Link href="/dashboard/admin/consultations" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">
+                <Link href="/dashboard/consultations" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">
                   Manage all <FaChevronRight size={9} />
                 </Link>
               </div>
@@ -402,7 +402,7 @@ export default function AdminOverviewPage() {
                 ) : consultations.recent.map((c) => (
                   <Link
                     key={c._id}
-                    href="/dashboard/admin/consultations"
+                    href="/dashboard/consultations"
                     className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
                   >
                     <div>
@@ -427,7 +427,7 @@ export default function AdminOverviewPage() {
               <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50 dark:border-slate-800">
                   <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Hosting Orders</h2>
-                  <Link href="/dashboard/admin/hosting" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
+                  <Link href="/dashboard/hosting-orders" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
                 </div>
                 <div className="divide-y divide-gray-50 dark:divide-slate-800">
                   {(d.recentHostingOrders || []).length === 0 ? (
@@ -451,7 +451,7 @@ export default function AdminOverviewPage() {
               <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50 dark:border-slate-800">
                   <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Domain Orders</h2>
-                  <Link href="/dashboard/admin/domains" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
+                  <Link href="/dashboard/domain-orders" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
                 </div>
                 <div className="divide-y divide-gray-50 dark:divide-slate-800">
                   {(d.recentDomainOrders || []).length === 0 ? (

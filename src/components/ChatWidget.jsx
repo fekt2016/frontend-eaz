@@ -188,7 +188,7 @@ function HumanRequestForm({ user, onSubmit, onCancel }) {
 // ─── Admin shortcut badge ─────────────────────────────────────────────────────
 function AdminChatBadge() {
   return (
-    <Link href="/dashboard/admin/chats"
+    <Link href="/dashboard/chats"
       className="fixed bottom-5 right-4 sm:right-6 z-50 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all">
       <FaUserShield size={14} /><span>Admin Chats</span>
     </Link>

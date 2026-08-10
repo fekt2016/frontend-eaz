@@ -18,16 +18,17 @@ const baseNav = [
 
 // Admin/staff only.
 const adminNav = [
+  { href: "/dashboard/admin-overview", icon: FaTachometerAlt, label: "Admin Overview" },
   { href: "/pos", icon: FaTools, label: "Repair Shop POS" },
   { href: "/commerce", icon: FaStore, label: "Commerce" },
-  { href: "/dashboard/admin/consultations", icon: FaCalendarAlt, label: "Consultations" },
-  { href: "/dashboard/admin/chats", icon: FaComments, label: "Chat Sessions" },
-  { href: "/dashboard/admin/reviews", icon: FaStar, label: "Reviews" },
-  { href: "/dashboard/admin/blog", icon: FaFileAlt, label: "Blog Posts" },
-  { href: "/dashboard/admin/hosting", icon: FaServer, label: "Hosting Orders" },
-  { href: "/dashboard/admin/domains", icon: FaGlobe, label: "Domain Orders" },
-  { href: "/dashboard/admin/users", icon: FaUsers, label: "Users" },
-  { href: "/dashboard/admin/emails", icon: FaEnvelope, label: "Email Logs" },
+  { href: "/dashboard/consultations", icon: FaCalendarAlt, label: "Consultations" },
+  { href: "/dashboard/chats", icon: FaComments, label: "Chat Sessions" },
+  { href: "/dashboard/reviews", icon: FaStar, label: "Reviews" },
+  { href: "/dashboard/blog", icon: FaFileAlt, label: "Blog Posts" },
+  { href: "/dashboard/hosting-orders", icon: FaServer, label: "Hosting Orders" },
+  { href: "/dashboard/domain-orders", icon: FaGlobe, label: "Domain Orders" },
+  { href: "/dashboard/users", icon: FaUsers, label: "Users" },
+  { href: "/dashboard/emails", icon: FaEnvelope, label: "Email Logs" },
 ];
 
 function SidebarLink({ href, icon: Icon, label, active, onClick }) {

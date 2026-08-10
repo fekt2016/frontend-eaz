@@ -81,7 +81,19 @@ export async function middleware(request) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
-  if (pathname.startsWith("/dashboard/admin") && token) {
+  // Admin-only dashboard pages (flat routes under /dashboard).
+  const ADMIN_DASHBOARD_PATHS = [
+    "/dashboard/admin-overview",
+    "/dashboard/consultations",
+    "/dashboard/chats",
+    "/dashboard/reviews",
+    "/dashboard/blog",
+    "/dashboard/hosting-orders",
+    "/dashboard/domain-orders",
+    "/dashboard/users",
+    "/dashboard/emails",
+  ];
+  if (token && ADMIN_DASHBOARD_PATHS.some((p) => pathname.startsWith(p))) {
     if (!ADMIN_ROLES.includes(userRole)) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }

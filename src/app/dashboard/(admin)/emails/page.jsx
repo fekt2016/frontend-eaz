@@ -112,7 +112,7 @@ export default function AdminEmailLogsPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <Link href="/dashboard/admin" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
+          <Link href="/dashboard/admin-overview" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
             ← Admin Overview
           </Link>
           <div className="flex items-center gap-3 mb-2">

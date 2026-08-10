@@ -220,7 +220,7 @@ export default function AdminHostingOrdersPage() {
             </div>
             <div className="flex flex-wrap gap-2 mt-3">
               <Link
-                href="/dashboard/admin/users"
+                href="/dashboard/users"
                 className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600 transition"
               >
                 Manage users
