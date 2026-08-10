@@ -23,15 +23,27 @@ export function AuthProvider({ children }) {
   useEffect(() => { fetchMe(); }, [fetchMe]);
 
   const login = async (email, password) => {
-    const res = await api.post("/auth/login", { email, password });
-    setUser(res.data?.user || null);
-    return res;
+    try {
+      const res = await api.post("/auth/login", { email, password });
+      // 2FA required — don't set user yet
+      if (res.data?.requiresTwoFactor) return res;
+      setUser(res.data?.user || null);
+      return res;
+    } catch (err) {
+      // Attach requiresVerification flag so login page can redirect
+      if (err.message?.toLowerCase().includes('verify')) {
+        const error = new Error(err.message);
+        error.requiresVerification = true;
+        throw error;
+      }
+      throw err;
+    }
   };
 
   const register = async (name, email, phone, password) => {
     const res = await api.post("/auth/register", { name, email, phone, password });
-    setUser(res.data?.user || null);
-    return res;
+    // Don't set user yet — account needs verification first
+    return res.data;
   };
 
   const logout = async () => {
@@ -40,7 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refetch: fetchMe }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout, refetch: fetchMe }}>
       {children}
     </AuthContext.Provider>
   );

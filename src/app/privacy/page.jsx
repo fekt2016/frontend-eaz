@@ -87,7 +87,7 @@ const sections = [
       "• Deletion: Request deletion of your personal data (subject to legal obligations).",
       "• Opt-out: Unsubscribe from marketing emails at any time using the link in any email.",
       "• Data portability: Receive your data in a commonly used format.",
-      "To exercise any of these rights, contact us at hello@eazworld.com.",
+      "To exercise any of these rights, contact us at info@eazworld.co.",
     ],
   },
   {
@@ -119,9 +119,9 @@ const sections = [
     title: "11. Contact Us",
     content: [
       "For questions about this Privacy Policy or to exercise your rights:",
-      "Email: hello@eazworld.com",
-      "Address: 123 Digital Avenue, Osu, Accra, Ghana",
-      "Phone: +233 (0) 00 000 0000",
+      "Email: info@eazworld.co",
+      "Address: E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra, Ghana",
+      "Phone: +233 24 438 8190 / +233 23 522 2207",
       "We aim to respond to all privacy inquiries within 30 days.",
     ],
   },
@@ -129,24 +129,24 @@ const sections = [
 
 export default function Privacy() {
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-4 pt-28 pb-24">
         <div className="mb-10">
-          <Link href="/" className="text-gray-400 hover:text-gray-700 transition text-sm">← Back to Home</Link>
+          <Link href="/" className="text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">← Back to Home</Link>
         </div>
-        <h1 className="font-display font-bold text-4xl text-gray-900 mb-2">Privacy Policy</h1>
-        <p className="text-gray-400 text-sm mb-2">Last updated: 1 May 2025</p>
-        <p className="text-gray-500 mb-10 leading-relaxed">
+        <h1 className="font-display font-bold text-4xl text-gray-900 dark:text-white mb-2">Privacy Policy</h1>
+        <p className="text-gray-400 dark:text-slate-500 text-sm mb-2">Last updated: 1 May 2025</p>
+        <p className="text-gray-500 dark:text-slate-400 mb-10 leading-relaxed">
           EazWorld (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard data when you use our website at eazworld.com and our services.
         </p>
 
         <div className="space-y-10">
           {sections.map((section) => (
             <section key={section.title}>
-              <h2 className="font-display font-bold text-xl text-gray-900 mb-3 pb-2 border-b border-gray-100">{section.title}</h2>
+              <h2 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-3 pb-2 border-b border-gray-100 dark:border-slate-800">{section.title}</h2>
               <div className="space-y-2">
                 {section.content.map((line, i) => (
-                  <p key={i} className={`text-sm leading-relaxed ${line.startsWith("•") ? "text-gray-500 pl-4" : "text-gray-700"}`}>
+                  <p key={i} className={`text-sm leading-relaxed ${line.startsWith("•") ? "text-gray-500 dark:text-slate-400 pl-4" : "text-gray-700 dark:text-slate-300"}`}>
                     {line}
                   </p>
                 ))}
@@ -155,9 +155,9 @@ export default function Privacy() {
           ))}
         </div>
 
-        <div className="mt-12 p-6 rounded-2xl bg-gray-50 border border-gray-100 text-center">
-          <p className="text-gray-900 font-semibold mb-1">Have a privacy concern?</p>
-          <p className="text-gray-500 text-sm mb-4">We take data privacy seriously. Contact us and we&apos;ll respond within 30 days.</p>
+        <div className="mt-12 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-700 text-center">
+          <p className="text-gray-900 dark:text-white font-semibold mb-1">Have a privacy concern?</p>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">We take data privacy seriously. Contact us and we&apos;ll respond within 30 days.</p>
           <Link href="/contact" className="px-5 py-2.5 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm">
             Contact Us
           </Link>

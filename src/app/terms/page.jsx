@@ -120,33 +120,33 @@ const sections = [
     title: "12. Contact Information",
     content: [
       "For questions about these Terms of Service:",
-      "Email: hello@eazworld.com",
-      "Address: 123 Digital Avenue, Osu, Accra, Ghana",
-      "Phone: +233 (0) 00 000 0000",
+      "Email: info@eazworld.co",
+      "Address: E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra, Ghana",
+      "Phone: +233 24 438 8190 / +233 23 522 2207",
     ],
   },
 ];
 
 export default function Terms() {
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-4 pt-28 pb-24">
         <div className="mb-10">
-          <Link href="/" className="text-gray-400 hover:text-gray-700 transition text-sm">← Back to Home</Link>
+          <Link href="/" className="text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">← Back to Home</Link>
         </div>
-        <h1 className="font-display font-bold text-4xl text-gray-900 mb-2">Terms of Service</h1>
-        <p className="text-gray-400 text-sm mb-2">Last updated: 1 May 2025</p>
-        <p className="text-gray-500 mb-10 leading-relaxed">
+        <h1 className="font-display font-bold text-4xl text-gray-900 dark:text-white mb-2">Terms of Service</h1>
+        <p className="text-gray-400 dark:text-slate-500 text-sm mb-2">Last updated: 1 May 2025</p>
+        <p className="text-gray-500 dark:text-slate-400 mb-10 leading-relaxed">
           Please read these Terms of Service carefully before using EazWorld&apos;s website or services. By using our services, you agree to be bound by these terms.
         </p>
 
         <div className="space-y-10">
           {sections.map((section) => (
             <section key={section.title}>
-              <h2 className="font-display font-bold text-xl text-gray-900 mb-3 pb-2 border-b border-gray-100">{section.title}</h2>
+              <h2 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-3 pb-2 border-b border-gray-100 dark:border-slate-800">{section.title}</h2>
               <div className="space-y-2">
                 {section.content.map((line, i) => (
-                  <p key={i} className={`text-sm leading-relaxed ${line.startsWith("•") ? "text-gray-500 pl-4" : "text-gray-700"}`}>
+                  <p key={i} className={`text-sm leading-relaxed ${line.startsWith("•") ? "text-gray-500 dark:text-slate-400 pl-4" : "text-gray-700 dark:text-slate-300"}`}>
                     {line}
                   </p>
                 ))}
@@ -155,12 +155,12 @@ export default function Terms() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-wrap gap-4 justify-center text-xs text-gray-400">
-          <Link href="/privacy" className="hover:text-gray-700 transition">Privacy Policy</Link>
+        <div className="mt-12 flex flex-wrap gap-4 justify-center text-xs text-gray-400 dark:text-slate-500">
+          <Link href="/privacy" className="hover:text-gray-700 dark:hover:text-slate-300 transition">Privacy Policy</Link>
           <span>·</span>
-          <Link href="/contact" className="hover:text-gray-700 transition">Contact Us</Link>
+          <Link href="/contact" className="hover:text-gray-700 dark:hover:text-slate-300 transition">Contact Us</Link>
           <span>·</span>
-          <Link href="/" className="hover:text-gray-700 transition">Home</Link>
+          <Link href="/" className="hover:text-gray-700 dark:hover:text-slate-300 transition">Home</Link>
         </div>
       </div>
     </div>

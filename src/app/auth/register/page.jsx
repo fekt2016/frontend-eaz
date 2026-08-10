@@ -1,21 +1,15 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useMemo } from "react";
+import { FaCheck, FaTimes } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
+import { sanitizeName, sanitizeEmail, sanitizePhone, getPasswordRules, validatePassword } from "@/lib/sanitize";
 
-const schema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  password: z.string().min(8),
-});
-
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
+const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800";
 
 function RegisterPageInner() {
   const { register } = useAuth();
@@ -31,17 +25,29 @@ function RegisterPageInner() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const passwordRules = useMemo(() => getPasswordRules(password), [password]);
+  const passwordStrong = passwordRules.every((r) => r.met);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) { setError("Passwords do not match."); return; }
     if (!agreed) { setError("You must agree to the terms and conditions."); return; }
-    const result = schema.safeParse({ name, email, phone, password });
-    if (!result.success) { setError("Invalid input. Password must be at least 8 characters."); return; }
+    const cleanName  = sanitizeName(name);
+    const cleanEmail = sanitizeEmail(email);
+    const cleanPhone = sanitizePhone(phone);
+    const pwError = validatePassword(password);
+    if (pwError) { setError(pwError); return; }
+    if (!cleanName || !cleanEmail) { setError("Name and email are required."); return; }
     setLoading(true);
     try {
-      await register(name, email, phone, password);
-      router.push("/dashboard");
+      const res = await register(cleanName, cleanEmail, cleanPhone, password);
+      // If account requires verification, redirect to verify page
+      if (res?.requiresVerification) {
+        router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {
@@ -50,47 +56,63 @@ function RegisterPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="font-display font-black text-2xl text-gray-900">EazWorld</Link>
-          <h1 className="font-display font-bold text-2xl text-gray-900 mt-6 mb-1">Create your account</h1>
-          <p className="text-gray-400 text-sm">Join thousands of businesses in Accra</p>
+          <Link href="/" className="font-display font-black text-2xl text-gray-900 dark:text-white">EazWorld</Link>
+          <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mt-6 mb-1">Create your account</h1>
+          <p className="text-gray-400 dark:text-slate-500 text-sm">Join thousands of businesses in Accra</p>
         </div>
 
-        <div className="p-8 rounded-2xl border border-gray-100 bg-gray-50">
+        <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">Full name</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Full name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputCls} required />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">Email address</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email address</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} required />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">Phone number <span className="text-gray-400">(optional)</span></label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Phone number <span className="text-gray-400 dark:text-slate-500">(optional)</span></label>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+233 00 000 0000" className={inputCls} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">Password</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Password</label>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" className={`${inputCls} pr-12`} required />
-                <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition" aria-label={showPassword ? "Hide" : "Show"}>
+                <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition" aria-label={showPassword ? "Hide" : "Show"}>
                   {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
                 </button>
               </div>
+              {/* Password strength checklist */}
+              {password.length > 0 && (
+                <div className="mt-2.5 space-y-1.5 bg-gray-50 dark:bg-slate-800/50 rounded-xl p-3">
+                  {passwordRules.map(({ rule, met }) => (
+                    <div key={rule} className="flex items-center gap-2">
+                      {met
+                        ? <FaCheck size={10} className="text-emerald-500 flex-shrink-0" />
+                        : <FaTimes size={10} className="text-red-400 flex-shrink-0" />
+                      }
+                      <span className={`text-xs ${met ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-slate-400"}`}>
+                        {rule}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">Confirm password</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Confirm password</label>
               <div className="relative">
                 <input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat password" className={`${inputCls} pr-12`} required />
-                <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition" aria-label={showConfirmPassword ? "Hide" : "Show"}>
+                <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition" aria-label={showConfirmPassword ? "Hide" : "Show"}>
                   {showConfirmPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
                 </button>
               </div>
             </div>
-            <label className="flex items-start gap-3 cursor-pointer text-sm text-gray-600">
+            <label className="flex items-start gap-3 cursor-pointer text-sm text-gray-600 dark:text-slate-400">
               <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 rounded border-gray-300 text-gray-900 focus:ring-gray-400" />
               <span>
                 I agree to the{" "}
@@ -100,12 +122,12 @@ function RegisterPageInner() {
               </span>
             </label>
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button type="submit" disabled={loading} className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm disabled:opacity-60">
+            <button type="submit" disabled={loading || !passwordStrong} className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm disabled:opacity-60">
               {loading ? "Creating account..." : "Create Account"}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-5">
+          <p className="text-center text-sm text-gray-500 dark:text-slate-400 mt-5">
             Already have an account?{" "}
             <Link href="/auth/login" className="text-amber-500 font-medium hover:underline">Sign in →</Link>
           </p>

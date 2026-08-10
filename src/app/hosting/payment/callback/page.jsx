@@ -3,18 +3,18 @@ import { FaCheckCircle } from "react-icons/fa";
 
 export default function HostingPaymentCallbackPage() {
   return (
-    <div className="min-h-screen bg-white px-4 pt-24 pb-24 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24 flex items-center justify-center">
       <div className="mx-auto max-w-md text-center">
         <FaCheckCircle className="text-emerald-500 text-5xl mx-auto mb-6" />
-        <h1 className="font-display text-2xl font-bold text-gray-900 mb-2">Payment successful</h1>
-        <p className="text-gray-500 text-sm mb-8">
+        <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-2">Payment successful</h1>
+        <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">
           Your hosting order has been received. We&apos;ll activate your account shortly and send you an email confirmation.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/dashboard" className="rounded-full bg-gray-900 px-6 py-3 font-semibold text-white hover:bg-gray-700 transition">
             Go to Dashboard
           </Link>
-          <Link href="/hosting" className="rounded-full border border-gray-200 px-6 py-3 font-semibold text-gray-700 hover:border-gray-400 transition">
+          <Link href="/hosting" className="rounded-full border border-gray-200 dark:border-slate-700 px-6 py-3 font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition">
             Back to Hosting
           </Link>
         </div>

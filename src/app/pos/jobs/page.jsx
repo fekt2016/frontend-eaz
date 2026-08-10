@@ -1,0 +1,196 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import { api } from "@/lib/api";
+import { FaPlus, FaSearch, FaWrench, FaExclamationTriangle } from "react-icons/fa";
+
+const STATUS_TABS = [
+  { key: "all",        label: "All" },
+  { key: "received",   label: "Received" },
+  { key: "diagnosing", label: "Diagnosing" },
+  { key: "repairing",  label: "Repairing" },
+  { key: "ready",      label: "Ready" },
+  { key: "collected",  label: "Collected" },
+  { key: "cancelled",  label: "Cancelled" },
+];
+
+const STATUS_COLORS = {
+  received:   "bg-blue-500/15 text-blue-400",
+  diagnosing: "bg-purple-500/15 text-purple-400",
+  repairing:  "bg-amber-500/15 text-amber-400",
+  ready:      "bg-green-500/15 text-green-400",
+  collected:  "bg-gray-500/15 text-gray-400",
+  cancelled:  "bg-red-500/15 text-red-400",
+};
+
+export default function JobsPage() {
+  const [jobs,    setJobs]    = useState([]);
+  const [total,   setTotal]   = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [status,  setStatus]  = useState("all");
+  const [q,       setQ]       = useState("");
+  const [page,    setPage]    = useState(1);
+  const limit = 20;
+
+  const fetchJobs = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const params = new URLSearchParams({ page, limit });
+      if (status !== "all") params.set("status", status);
+      if (q.trim()) params.set("q", q.trim());
+      const res = await api.get(`/pos/jobs?${params}`);
+      setJobs(res.data || []);
+      setTotal(res.total);
+    } catch (err) {
+      setError(err.message || "Failed to load jobs.");
+    } finally {
+      setLoading(false);
+    }
+  }, [status, q, page]);
+
+  useEffect(() => { fetchJobs(); }, [fetchJobs]);
+
+  const handleSearch = (e) => { setQ(e.target.value); setPage(1); };
+  const handleStatus = (s) => { setStatus(s); setPage(1); };
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">Repair Jobs</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{total} total jobs</p>
+        </div>
+        <Link
+          href="/pos/jobs/new"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
+        >
+          <FaPlus size={11} /> New Job
+        </Link>
+      </div>
+
+      {/* Search + filter */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <FaSearch size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+          <input
+            value={q}
+            onChange={handleSearch}
+            placeholder="Search by job #, customer name, device…"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition"
+          />
+        </div>
+      </div>
+
+      {/* Status tabs */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {STATUS_TABS.map(t => (
+          <button
+            key={t.key}
+            onClick={() => handleStatus(t.key)}
+            className={`whitespace-nowrap px-3.5 py-1.5 rounded-lg text-xs font-medium transition ${
+              status === t.key
+                ? "bg-amber-500 text-white"
+                : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white hover:border-gray-700"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+        {loading ? (
+          <div className="p-5 space-y-3">
+            {[...Array(5)].map((_, i) => <div key={i} className="h-14 rounded-xl bg-gray-800 animate-pulse" />)}
+          </div>
+        ) : jobs.length === 0 ? (
+          <div className="py-16 text-center">
+            <FaWrench size={24} className="text-gray-700 mx-auto mb-3" />
+            <p className="text-gray-400 font-medium">No jobs found</p>
+            <p className="text-gray-600 text-sm mt-1">Try a different filter or create a new job.</p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop table header */}
+            <div className="hidden sm:grid grid-cols-[auto_1fr_120px_140px_100px_auto_auto] gap-3 px-5 py-3 border-b border-gray-800 text-xs text-gray-500 font-medium uppercase tracking-wide">
+              <span>Job #</span>
+              <span>Customer</span>
+              <span>Device</span>
+              <span>Fault</span>
+              <span>Assigned</span>
+              <span>Status</span>
+              <span>Date</span>
+            </div>
+            <div className="divide-y divide-gray-800">
+              {jobs.map(job => (
+                <Link
+                  key={job._id}
+                  href={`/pos/jobs/${job._id}`}
+                  className="flex sm:grid sm:grid-cols-[auto_1fr_120px_140px_100px_auto_auto] gap-3 items-center px-5 py-4 hover:bg-gray-800/40 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    {job.priority === "urgent" && <FaExclamationTriangle size={10} className="text-red-400 flex-shrink-0" />}
+                    <span className="text-xs font-mono font-semibold text-amber-400 whitespace-nowrap">{job.jobNumber}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-white truncate">{job.customer?.phone}</p>
+                      {job.customerRepairCount > 1 && (
+                        <span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-medium">
+                          {job.customerRepairCount}×
+                        </span>
+                      )}
+                    </div>
+                    {job.customer?.name && <p className="text-xs text-gray-500 truncate">{job.customer.name}</p>}
+                  </div>
+                  <p className="text-xs text-gray-300 truncate hidden sm:block">
+                    {[job.deviceBrand, job.deviceModel].filter(Boolean).join(" ").slice(0, 20) || "—"}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate hidden sm:block">
+                    {job.faultDescription?.slice(0, 30)}{job.faultDescription?.length > 30 ? "…" : ""}
+                  </p>
+                  <span className={`text-xs truncate hidden sm:block ${job.assignedTo ? "text-gray-300" : "text-gray-600"}`}>
+                    {job.assignedTo?.name?.split(" ")[0] || "—"}
+                  </span>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[job.status] || "bg-gray-700 text-gray-300"}`}>
+                    {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                  </span>
+                  <span className="text-xs text-gray-500 whitespace-nowrap hidden sm:block">
+                    {new Date(job.createdAt).toLocaleDateString("en-GH")}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {total > limit && (
+        <div className="flex items-center justify-between text-sm text-gray-400">
+          <span>Page {page} of {Math.ceil(total / limit)}</span>
+          <div className="flex gap-2">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(p => p - 1)}
+              className="px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-800 disabled:opacity-40 hover:bg-gray-800 transition"
+            >
+              ← Prev
+            </button>
+            <button
+              disabled={page * limit >= total}
+              onClick={() => setPage(p => p + 1)}
+              className="px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-800 disabled:opacity-40 hover:bg-gray-800 transition"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

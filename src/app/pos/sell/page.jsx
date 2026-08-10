@@ -1,0 +1,547 @@
+"use client";
+
+/**
+ * /pos/sell — Production cashier screen
+ *
+ * Keyboard shortcuts:
+ *   F2          Focus scan input
+ *   F4 / Enter  Checkout (when cart non-empty, scan empty)
+ *   Escape      Clear search / close payment panel
+ *   Delete      Remove last cart item
+ *   + / -       Adjust last item qty
+ */
+
+import { useState, useRef, useEffect, useCallback } from "react";
+import { api } from "@/lib/api";
+import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
+import { Receipt } from "@/components/pos/Receipt";
+import {
+  FaBarcode, FaTrash, FaPlus, FaMinus,
+  FaCheckCircle, FaSpinner, FaExclamationTriangle,
+  FaPrint, FaTimes,
+} from "react-icons/fa";
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const METHODS = [
+  { key: "cash",  label: "Cash",  color: "bg-green-600 hover:bg-green-700" },
+  { key: "momo",  label: "MoMo",  color: "bg-yellow-500 hover:bg-yellow-600" },
+  { key: "card",  label: "Card",  color: "bg-blue-600 hover:bg-blue-700" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default function SellPage() {
+  // Scan / search
+  const scanRef           = useRef(null);
+  const [scanInput, setScanInput] = useState("");
+  const [results,   setResults]   = useState([]);
+  const [scanning,  setScanning]  = useState(false);
+  const [scanError, setScanError] = useState("");
+
+  // Cart
+  const [cart, setCart] = useState([]); // [{ partId, name, barcode, unitPrice, quantity, stock }]
+
+  // Payment panel
+  const [showPay,    setShowPay]    = useState(false);
+  const [payMethod,  setPayMethod]  = useState("cash");
+  const [amountPaid, setAmountPaid] = useState("");
+  const [momoRef,    setMomoRef]    = useState("");
+  const [discount,   setDiscount]   = useState("");
+  const [completing, setCompleting] = useState(false);
+  const [payError,   setPayError]   = useState("");
+
+  // Completed sale
+  const [completedSale, setCompletedSale] = useState(null);
+
+  const amountPaidRef = useRef(null);
+
+  // ── Totals ──────────────────────────────────────────────────────────────────
+  const subtotal   = cart.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+  const disc       = Number(discount) || 0;
+  const total      = Math.max(0, subtotal - disc);
+  const paid       = Number(amountPaid) || 0;
+  const changeDue  = Math.max(0, paid - total);
+  const canCheckout = cart.length > 0 && !completing;
+
+  // ── Auto-focus scan input ────────────────────────────────────────────────────
+  const focusScan = useCallback(() => scanRef.current?.focus(), []);
+
+  useEffect(() => {
+    focusScan();
+  }, [focusScan]);
+
+  // Re-focus scan after cart change (scanner keeps going)
+  useEffect(() => {
+    if (!showPay && !completedSale) {
+      const t = setTimeout(focusScan, 50);
+      return () => clearTimeout(t);
+    }
+  }, [cart, showPay, completedSale, focusScan]);
+
+  // ── Cart operations ──────────────────────────────────────────────────────────
+  const addToCart = (part) => {
+    setScanError("");
+    setResults([]);
+    setCart(prev => {
+      const exists = prev.find(i => i.partId === part._id);
+      if (exists) {
+        if (exists.quantity >= part.quantity && !part.allowNegativeStock) {
+          setScanError(`Max stock for "${part.name}" reached (${part.quantity})`);
+          return prev;
+        }
+        return prev.map(i => i.partId === part._id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      if (part.quantity < 1 && !part.allowNegativeStock) {
+        setScanError(`"${part.name}" is out of stock.`);
+        return prev;
+      }
+      return [...prev, {
+        partId: part._id, name: part.name, barcode: part.barcode,
+        unitPrice: part.sellingPrice, quantity: 1, stock: part.quantity,
+        allowNegativeStock: part.allowNegativeStock,
+      }];
+    });
+  };
+
+  const removeFromCart = (partId) => setCart(prev => prev.filter(i => i.partId !== partId));
+
+  const changeQty = (partId, delta) => {
+    setCart(prev => prev.map(i => {
+      if (i.partId !== partId) return i;
+      const next = i.quantity + delta;
+      if (next <= 0) return null;
+      if (next > i.stock && !i.allowNegativeStock) return i;
+      return { ...i, quantity: next };
+    }).filter(Boolean));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    setDiscount("");
+    setScanError("");
+    setResults([]);
+    focusScan();
+  };
+
+  // ── Payment ──────────────────────────────────────────────────────────────────
+  const openPayment = useCallback(() => {
+    setPayError("");
+    setAmountPaid(payMethod === "momo" || payMethod === "card" ? total.toFixed(2) : "");
+    setShowPay(true);
+    setTimeout(() => amountPaidRef.current?.focus(), 100);
+  }, [payMethod, total]);
+
+  // ── Keyboard shortcuts ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      if (completedSale) return;
+
+      if (e.key === "F2") { e.preventDefault(); focusScan(); }
+
+      if (e.key === "Escape") {
+        setScanInput(""); setResults([]); setScanError("");
+        if (showPay) setShowPay(false);
+        focusScan();
+      }
+
+      if ((e.key === "F4" || (e.key === "Enter" && !scanInput.trim())) && canCheckout && !showPay) {
+        e.preventDefault();
+        openPayment();
+      }
+
+      // + / - adjust last cart item
+      if (!showPay && document.activeElement === scanRef.current) {
+        const last = cart.length - 1;
+        if (e.key === "+" && last >= 0) { e.preventDefault(); changeQty(cart[last].partId, 1); }
+        if (e.key === "-" && last >= 0) { e.preventDefault(); changeQty(cart[last].partId, -1); }
+        if (e.key === "Delete" && last >= 0) { e.preventDefault(); removeFromCart(cart[last].partId); }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [cart, showPay, completedSale, canCheckout, scanInput, focusScan, openPayment]);
+
+  // ── Barcode scanner hook (hardware scanner via keyboard wedge) ──────────────
+  useBarcodeScanner(async (code) => {
+    if (showPay || completedSale) return;
+    await handleScanOrSearch(code);
+  }, { active: !showPay && !completedSale, minLength: 3 });
+
+  // ── Scan / search logic ──────────────────────────────────────────────────────
+  const handleScanOrSearch = useCallback(async (code) => {
+    if (!code?.trim()) return;
+    setScanning(true);
+    setScanError("");
+    setResults([]);
+
+    try {
+      const res = await api.get(`/pos/scan/${encodeURIComponent(code.trim())}`);
+      if (res.type === "product") {
+        addToCart(res.data);
+        setScanInput("");
+      } else {
+        // repair job found — show info, don't add to cart
+        setScanError(`Repair job found: ${res.data.jobNumber} — ${res.data.status}`);
+      }
+    } catch {
+      // Not an exact scan match — fall back to search
+      try {
+        const search = await api.get(`/pos/inventory?q=${encodeURIComponent(code.trim())}&retail=true&limit=8`);
+        if (search.data.length === 1) {
+          addToCart(search.data[0]);
+          setScanInput("");
+        } else if (search.data.length > 1) {
+          setResults(search.data);
+        } else {
+          setScanError("No product found for: " + code);
+        }
+      } catch {
+        setScanError("Scan error. Try again.");
+      }
+    } finally {
+      setScanning(false);
+    }
+  }, []);
+
+  // ── Search as user types (debounced) ─────────────────────────────────────────
+  useEffect(() => {
+    if (!scanInput.trim() || scanInput.length < 2) { setResults([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const res = await api.get(`/pos/inventory?q=${encodeURIComponent(scanInput)}&limit=8`);
+        setResults(res.data);
+      } catch { /* silent */ }
+    }, 200);
+    return () => clearTimeout(t);
+  }, [scanInput]);
+
+  const completeSale = async () => {
+    if (!amountPaid || paid < total) {
+      setPayError(`Enter amount paid. Need at least GH₵${total.toFixed(2)}`);
+      return;
+    }
+    setCompleting(true);
+    setPayError("");
+    try {
+      const res = await api.post("/pos/sales", {
+        items: cart.map(i => ({ partId: i.partId, quantity: i.quantity })),
+        paymentMethod: payMethod,
+        amountPaid: paid,
+        discount: disc || undefined,
+        momoReference: momoRef || undefined,
+      });
+      setCompletedSale(res.data);
+      setShowPay(false);
+    } catch (err) {
+      setPayError(err.message || "Sale failed. Try again.");
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  const newSale = () => {
+    setCompletedSale(null);
+    setCart([]);
+    setDiscount("");
+    setScanInput("");
+    setResults([]);
+    setScanError("");
+    setPayMethod("cash");
+    setAmountPaid("");
+    setMomoRef("");
+    setTimeout(focusScan, 50);
+  };
+
+  // ─── COMPLETED SALE VIEW ────────────────────────────────────────────────────
+  if (completedSale) {
+    return (
+      <div className="max-w-sm mx-auto space-y-4 pt-4">
+        <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-5 text-center">
+          <FaCheckCircle size={32} className="text-green-400 mx-auto mb-2" />
+          <p className="text-white font-bold text-lg">Sale Complete</p>
+          <p className="text-gray-400 text-sm">{completedSale.saleNumber}</p>
+          <p className="text-2xl font-bold text-white mt-2">GH₵{completedSale.total.toFixed(2)}</p>
+          {completedSale.changeDue > 0 && (
+            <p className="text-green-400 font-semibold mt-1">Change: GH₵{completedSale.changeDue.toFixed(2)}</p>
+          )}
+        </div>
+
+        {/* Receipt preview */}
+        <div className="border border-gray-800 rounded-2xl overflow-hidden bg-white">
+          <Receipt sale={completedSale} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-700 text-gray-300 hover:text-white hover:border-gray-600 transition text-sm font-medium"
+          >
+            <FaPrint size={13} /> Print Receipt
+          </button>
+          <button
+            onClick={newSale}
+            className="py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition"
+          >
+            New Sale →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── MAIN POS VIEW ──────────────────────────────────────────────────────────
+  return (
+    <div className="flex flex-col lg:flex-row gap-4 h-full min-h-[calc(100vh-120px)]">
+
+      {/* ── LEFT: Scan + Cart ─────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col gap-3">
+
+        {/* Scan bar — always focused */}
+        <div className="relative">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-gray-500">
+            {scanning
+              ? <FaSpinner size={14} className="animate-spin text-amber-400" />
+              : <FaBarcode size={14} />}
+          </div>
+          <input
+            ref={scanRef}
+            value={scanInput}
+            onChange={e => { setScanInput(e.target.value); setScanError(""); }}
+            onKeyDown={e => {
+              if (e.key === "Enter" && scanInput.trim()) {
+                e.preventDefault();
+                handleScanOrSearch(scanInput);
+              }
+            }}
+            placeholder="Scan barcode or search product… (F2 to focus)"
+            className="w-full pl-10 pr-10 py-3.5 rounded-xl bg-gray-900 border-2 border-amber-500/50 focus:border-amber-500 text-white text-sm placeholder-gray-500 focus:outline-none transition"
+            autoComplete="off"
+            spellCheck={false}
+          />
+          {scanInput && (
+            <button onClick={() => { setScanInput(""); setResults([]); focusScan(); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+              <FaTimes size={13} />
+            </button>
+          )}
+        </div>
+
+        {/* Scan error / info */}
+        {scanError && (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <FaExclamationTriangle size={12} className="flex-shrink-0" />
+            {scanError}
+          </div>
+        )}
+
+        {/* Search results dropdown */}
+        {results.length > 0 && (
+          <div className="rounded-xl bg-gray-800 border border-gray-700 overflow-hidden shadow-xl">
+            <p className="px-4 py-2 text-xs text-gray-500 border-b border-gray-700">{results.length} results — click or press ↑↓ Enter</p>
+            {results.map(p => (
+              <button
+                key={p._id}
+                type="button"
+                onClick={() => { addToCart(p); setScanInput(""); setResults([]); focusScan(); }}
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-700 transition text-left"
+              >
+                <div>
+                  <p className="text-sm text-white font-medium">{p.name}</p>
+                  <p className="text-xs text-gray-400">{p.category} · Stock: <span className={p.quantity <= p.lowStockThreshold ? "text-red-400" : "text-gray-400"}>{p.quantity}</span></p>
+                </div>
+                <p className="text-sm font-bold text-amber-400 ml-4">GH₵{p.sellingPrice.toLocaleString()}</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Cart */}
+        <div className="flex-1 bg-gray-900 rounded-2xl border border-gray-800 flex flex-col">
+          {/* Cart header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Cart ({cart.length} item{cart.length !== 1 ? "s" : ""})</p>
+            {cart.length > 0 && (
+              <button onClick={clearCart} className="text-xs text-red-400 hover:underline flex items-center gap-1">
+                <FaTimes size={10} /> Clear
+              </button>
+            )}
+          </div>
+
+          {/* Cart items */}
+          <div className="flex-1 overflow-y-auto">
+            {cart.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-32 text-gray-600">
+                <FaBarcode size={28} className="mb-2 opacity-30" />
+                <p className="text-sm">Scan or search a product to begin</p>
+              </div>
+            ) : (
+              cart.map((item, idx) => (
+                <div
+                  key={item.partId}
+                  className={`flex items-center gap-3 px-4 py-3 border-b border-gray-800 last:border-0 ${idx === cart.length - 1 ? "bg-amber-500/5" : ""}`}
+                >
+                  {/* Item info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{item.name}</p>
+                    <p className="text-xs text-gray-500">GH₵{item.unitPrice.toFixed(2)} each</p>
+                  </div>
+
+                  {/* Qty controls */}
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={() => changeQty(item.partId, -1)} className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition">
+                      <FaMinus size={9} />
+                    </button>
+                    <span className="text-sm font-bold text-white w-6 text-center">{item.quantity}</span>
+                    <button
+                      onClick={() => changeQty(item.partId, 1)}
+                      disabled={item.quantity >= item.stock && !item.allowNegativeStock}
+                      className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition disabled:opacity-30"
+                    >
+                      <FaPlus size={9} />
+                    </button>
+                  </div>
+
+                  {/* Subtotal */}
+                  <p className="text-sm font-bold text-white w-20 text-right">GH₵{(item.unitPrice * item.quantity).toFixed(2)}</p>
+
+                  {/* Remove */}
+                  <button onClick={() => removeFromCart(item.partId)} className="text-gray-600 hover:text-red-400 transition ml-1">
+                    <FaTrash size={11} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Keyboard hint */}
+          <div className="px-4 py-2 border-t border-gray-800">
+            <p className="text-[10px] text-gray-600">F2 focus · F4 checkout · Del remove last · +/- qty · Esc clear</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT: Summary + Payment ─────────────────────────────────────── */}
+      <div className="w-full lg:w-72 flex flex-col gap-3">
+
+        {/* Totals */}
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5 space-y-2.5">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Summary</p>
+
+          <div className="flex justify-between text-sm text-gray-400">
+            <span>Subtotal</span>
+            <span className="text-white">GH₵{subtotal.toFixed(2)}</span>
+          </div>
+
+          {/* Discount */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-400">Discount</span>
+            <div className="relative w-28">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-500">GH₵</span>
+              <input
+                type="number" min="0" value={discount}
+                onChange={e => setDiscount(e.target.value)}
+                placeholder="0"
+                className="w-full pl-8 pr-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-sm text-white focus:outline-none focus:border-amber-500 transition text-right"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between text-base font-bold border-t border-gray-800 pt-2.5">
+            <span className="text-white">Total</span>
+            <span className="text-amber-400">GH₵{total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Payment method selector */}
+        <div className="grid grid-cols-3 gap-2">
+          {METHODS.map(m => (
+            <button
+              key={m.key}
+              onClick={() => {
+                setPayMethod(m.key);
+                if (m.key !== "cash") setAmountPaid(total.toFixed(2));
+              }}
+              className={`py-2.5 rounded-xl text-white text-sm font-bold transition ${
+                payMethod === m.key ? m.color + " ring-2 ring-white/30" : "bg-gray-800 hover:bg-gray-700"
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Payment panel (inline when open) */}
+        {showPay && (
+          <div className="bg-gray-900 rounded-2xl border border-amber-500/30 p-5 space-y-3">
+            <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide">Collect Payment</p>
+
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5">Amount received (GH₵) *</label>
+              <input
+                ref={amountPaidRef}
+                type="number" min="0"
+                value={amountPaid}
+                onChange={e => setAmountPaid(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") completeSale(); }}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white text-base font-bold focus:outline-none focus:border-amber-500 transition"
+                placeholder="0.00"
+              />
+            </div>
+
+            {payMethod === "momo" && (
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5">MoMo reference</label>
+                <input
+                  value={momoRef}
+                  onChange={e => setMomoRef(e.target.value)}
+                  placeholder="Transaction ref…"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:border-amber-500 transition"
+                />
+              </div>
+            )}
+
+            {paid > 0 && paid >= total && (
+              <div className="flex justify-between text-sm bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+                <span className="text-green-400 font-medium">Change due</span>
+                <span className="text-green-400 font-bold">GH₵{changeDue.toFixed(2)}</span>
+              </div>
+            )}
+
+            {payError && <p className="text-red-400 text-sm">{payError}</p>}
+
+            <button
+              onClick={completeSale}
+              disabled={completing || paid < total}
+              className="w-full py-3.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-base transition disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {completing
+                ? <><FaSpinner className="animate-spin" size={14} /> Processing…</>
+                : <><FaCheckCircle size={14} /> Complete Sale (Enter)</>}
+            </button>
+
+            <button onClick={() => { setShowPay(false); focusScan(); }} className="w-full py-2 text-gray-500 hover:text-white text-sm transition">
+              ← Back (Esc)
+            </button>
+          </div>
+        )}
+
+        {/* Checkout button */}
+        {!showPay && (
+          <button
+            onClick={openPayment}
+            disabled={!canCheckout}
+            className="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-base transition disabled:opacity-30 flex items-center justify-center gap-2"
+          >
+            Checkout →  GH₵{total.toFixed(2)}
+          </button>
+        )}
+
+        {/* Quick stats */}
+        <div className="bg-gray-900 rounded-xl border border-gray-800 px-4 py-3 space-y-1">
+          <p className="text-xs text-gray-500">{cart.length} item(s) · {cart.reduce((s, i) => s + i.quantity, 0)} unit(s)</p>
+          <p className="text-xs text-gray-600">Press F4 or Enter to checkout</p>
+        </div>
+      </div>
+    </div>
+  );
+}
