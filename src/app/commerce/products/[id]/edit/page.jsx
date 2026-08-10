@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 import { api } from "@/lib/api";
-import AdminNav from "@/components/admin/AdminNav";
-import ProductForm from "@/components/admin/ProductForm";
+import AdminNav from "@/components/commerce/AdminNav";
+import ProductForm from "@/components/commerce/ProductForm";
 
 export default function AdminEditProductPage() {
   const { user, loading: authLoading } = useAuth();
@@ -37,7 +37,7 @@ export default function AdminEditProductPage() {
     setSubmitting(true);
     try {
       await api.patch(`/products/${id}`, data);
-      router.push("/admin/products");
+      router.push("/commerce/products");
     } catch (err) {
       alert(err.message || "Failed to update product");
       setSubmitting(false);

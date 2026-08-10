@@ -5,23 +5,23 @@ import Link from "next/link";
 import { FaBoxOpen, FaTruckFast, FaClipboardList } from "react-icons/fa6";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import AdminNav from "@/components/admin/AdminNav";
+import AdminNav from "@/components/commerce/AdminNav";
 
 const sections = [
   {
-    href: "/admin/products",
+    href: "/commerce/products",
     icon: FaBoxOpen,
     title: "Products",
     description: "Create, edit, and manage shop products.",
   },
   {
-    href: "/admin/delivery-zones",
+    href: "/commerce/delivery-zones",
     icon: FaTruckFast,
     title: "Delivery Zones",
     description: "Define delivery fees and estimated times per zone.",
   },
   {
-    href: "/admin/orders",
+    href: "/commerce/orders",
     icon: FaClipboardList,
     title: "Orders",
     description: "Review and manage all shop orders.",

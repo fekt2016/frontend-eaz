@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
-import AdminNav from "@/components/admin/AdminNav";
+import AdminNav from "@/components/commerce/AdminNav";
 
 const statusColors = {
   pending: "bg-amber-50 text-amber-700",
@@ -91,7 +91,7 @@ export default function AdminOrdersPage() {
             {visible.map((order) => (
               <Link
                 key={order._id}
-                href={`/admin/orders/${order._id}`}
+                href={`/commerce/orders/${order._id}`}
                 className="block p-4 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 transition"
               >
                 <div className="flex items-start justify-between gap-4">

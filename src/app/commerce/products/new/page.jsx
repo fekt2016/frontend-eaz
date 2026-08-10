@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import AdminNav from "@/components/admin/AdminNav";
-import ProductForm from "@/components/admin/ProductForm";
+import AdminNav from "@/components/commerce/AdminNav";
+import ProductForm from "@/components/commerce/ProductForm";
 
 export default function AdminNewProductPage() {
   const { user, loading: authLoading } = useAuth();
@@ -22,7 +22,7 @@ export default function AdminNewProductPage() {
     setSubmitting(true);
     try {
       await api.post("/products", data);
-      router.push("/admin/products");
+      router.push("/commerce/products");
     } catch (err) {
       alert(err.message || "Failed to create product");
       setSubmitting(false);

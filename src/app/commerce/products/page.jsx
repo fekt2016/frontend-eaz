@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
-import AdminNav from "@/components/admin/AdminNav";
+import AdminNav from "@/components/commerce/AdminNav";
 
 export default function AdminProductsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -61,7 +61,7 @@ export default function AdminProductsPage() {
             <p className="text-gray-500 text-sm">Create, edit, and manage shop products.</p>
           </div>
           <Link
-            href="/admin/products/new"
+            href="/commerce/products/new"
             className="shrink-0 rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 transition"
           >
             + Add Product
@@ -119,7 +119,7 @@ export default function AdminProductsPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <Link
-                        href={`/admin/products/${product._id}/edit`}
+                        href={`/commerce/products/${product._id}/edit`}
                         className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-gray-400 transition"
                       >
                         Edit

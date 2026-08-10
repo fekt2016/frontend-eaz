@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
-import AdminNav from "@/components/admin/AdminNav";
+import AdminNav from "@/components/commerce/AdminNav";
 
 const STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
@@ -96,7 +96,7 @@ export default function AdminOrderDetailPage() {
           <AdminNav />
           <div className="rounded-2xl border border-gray-100 bg-gray-50 p-8 text-center">
             <p className="text-gray-400 text-sm">Order not found.</p>
-            <Link href="/admin/orders" className="text-sm text-gray-500 hover:text-gray-900 mt-2 inline-block">
+            <Link href="/commerce/orders" className="text-sm text-gray-500 hover:text-gray-900 mt-2 inline-block">
               ← Back to Orders
             </Link>
           </div>
