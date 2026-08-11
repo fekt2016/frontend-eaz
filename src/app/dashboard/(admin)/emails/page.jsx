@@ -107,13 +107,13 @@ export default function AdminEmailLogsPage() {
   if (authLoading || user?.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}
         <div className="mb-8">
-          <Link href="/dashboard/admin-overview" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
-            ← Admin Overview
+          <Link href="/dashboard" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
+            ← Dashboard
           </Link>
           <div className="flex items-center gap-3 mb-2">
             <span className="w-11 h-11 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">

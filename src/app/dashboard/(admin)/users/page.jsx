@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import {
   FaSpinner, FaRedo, FaEdit, FaBan, FaCheckCircle,
   FaTimes, FaSearch, FaShieldAlt, FaUser, FaKey, FaEye, FaEyeSlash,
+  FaPlus, FaUserCog, FaCashRegister, FaTools,
 } from "react-icons/fa";
 
 function fmtDate(d) {
@@ -13,8 +14,169 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+const ROLE_OPTIONS = [
+  { value: "user",       label: "User" },
+  { value: "staff",      label: "Staff" },
+  { value: "cashier",    label: "Cashier" },
+  { value: "technician", label: "Technician" },
+  { value: "admin",      label: "Admin" },
+  { value: "superadmin", label: "Super Admin" },
+];
+
+const roleStyles = {
+  superadmin: "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  admin:      "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  user:       "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  staff:      "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  cashier:    "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
+  technician: "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+};
+
+const roleIcons = {
+  superadmin: FaShieldAlt,
+  admin:      FaShieldAlt,
+  user:       FaUser,
+  staff:      FaUserCog,
+  cashier:    FaCashRegister,
+  technician: FaTools,
+};
+
+// ─── Create User Modal ─────────────────────────────────────────────────────
+function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
+  const [form, setForm] = useState({
+    name: "", email: "", phone: "", password: "", role: "user",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const visibleRoles = ROLE_OPTIONS.filter((r) => r.value !== "superadmin" || isSuperAdmin);
+
+  const handleCreate = async () => {
+    if (!form.name.trim() || !form.email.trim() || !form.password) {
+      setError("Name, email, and password are required.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await api.post("/auth/users", form);
+      onCreated();
+      onClose();
+    } catch (e) {
+      setError(e?.response?.data?.error || "Failed to create user.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <FaPlus size={13} />
+            </div>
+            <p className="font-semibold text-gray-900 dark:text-white text-sm">Create User</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+            <FaTimes size={13} />
+          </button>
+        </div>
+
+        {/* Form */}
+        <div className="px-6 py-5 space-y-4">
+          {error && (
+            <p className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl border border-red-100 dark:border-red-900/30">
+              {error}
+            </p>
+          )}
+
+          {[
+            { label: "Full Name",     key: "name",  type: "text",  placeholder: "e.g. Kwame Mensah" },
+            { label: "Email Address", key: "email", type: "email", placeholder: "user@example.com" },
+            { label: "Phone Number",  key: "phone", type: "tel",   placeholder: "+233 24 000 0000" },
+          ].map(({ label, key, type, placeholder }) => (
+            <div key={key}>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">{label}</label>
+              <input
+                type={type}
+                value={form[key]}
+                onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                placeholder={placeholder}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition"
+              />
+            </div>
+          ))}
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">Temporary Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                placeholder="Min. 8 characters"
+                className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400 transition"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
+              >
+                {showPassword ? <FaEyeSlash size={13} /> : <FaEye size={13} />}
+              </button>
+            </div>
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Share this with the user — they can change it later from their settings.</p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">Role</label>
+            <select
+              value={form.role}
+              onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400 transition"
+            >
+              {visibleRoles.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">
+              Staff = shop team · Cashier = sales · Technician = repairs · Admin = full management
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 pb-5 flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleCreate}
+            disabled={saving}
+            className="flex-1 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold disabled:opacity-50 transition flex items-center justify-center gap-2"
+          >
+            {saving ? <FaSpinner className="animate-spin" size={12} /> : <FaPlus size={11} />}
+            {saving ? "Creating…" : "Create User"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Edit Modal ────────────────────────────────────────────────────────────
-function EditModal({ user, onClose, onSaved }) {
+function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
   const [form, setForm] = useState({
     name:  user.name  || "",
     email: user.email || "",
@@ -23,6 +185,8 @@ function EditModal({ user, onClose, onSaved }) {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState("");
+
+  const visibleRoles = ROLE_OPTIONS.filter((r) => r.value !== "superadmin" || isSuperAdmin);
 
   const handleSave = async () => {
     if (!form.name.trim() || !form.email.trim()) {
@@ -88,8 +252,9 @@ function EditModal({ user, onClose, onSaved }) {
               onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 transition"
             >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
+              {visibleRoles.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -326,9 +491,12 @@ export default function AdminUsersPage() {
   const [users, setUsers]       = useState([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState("");
-  const [editTarget, setEditTarget]       = useState(null);
-  const [blockTarget, setBlockTarget]     = useState(null);
+  const [createOpen, setCreateOpen]         = useState(false);
+  const [editTarget, setEditTarget]         = useState(null);
+  const [blockTarget, setBlockTarget]       = useState(null);
   const [passwordTarget, setPasswordTarget] = useState(null);
+
+  const isSuperAdmin = me?.role === "superadmin";
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -362,7 +530,7 @@ export default function AdminUsersPage() {
   if (authLoading) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}
@@ -373,13 +541,21 @@ export default function AdminUsersPage() {
               {users.length} registered · {users.filter(u => u.isBlocked).length} blocked
             </p>
           </div>
-          <button
-            onClick={fetchUsers}
-            disabled={loading}
-            className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50"
-          >
-            <FaRedo size={11} className={loading ? "animate-spin" : ""} /> Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCreateOpen(true)}
+              className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white transition"
+            >
+              <FaPlus size={11} /> Create User
+            </button>
+            <button
+              onClick={fetchUsers}
+              disabled={loading}
+              className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50"
+            >
+              <FaRedo size={11} className={loading ? "animate-spin" : ""} /> Refresh
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -434,14 +610,15 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-5 py-3.5 text-sm text-gray-500 dark:text-slate-400">{u.phone || "—"}</td>
                       <td className="px-5 py-3.5">
-                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
-                          u.role === "admin"
-                            ? "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                            : "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                        }`}>
-                          {u.role === "admin" ? <FaShieldAlt size={8} /> : <FaUser size={8} />}
-                          {u.role}
-                        </span>
+                        {(() => {
+                          const RoleIcon = roleIcons[u.role] || FaUser;
+                          return (
+                            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${roleStyles[u.role] || "bg-gray-50 text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
+                              <RoleIcon size={8} />
+                              {u.role}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-5 py-3.5">
                         {u.isBlocked ? (
@@ -503,8 +680,9 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Modals */}
-      {editTarget     && <EditModal           user={editTarget}     onClose={() => setEditTarget(null)}     onSaved={handleSaved} />}
-      {blockTarget    && <BlockModal          user={blockTarget}    onClose={() => setBlockTarget(null)}    onSaved={handleSaved} />}
+      {createOpen    && <CreateUserModal     isSuperAdmin={isSuperAdmin} onClose={() => setCreateOpen(null)} onCreated={fetchUsers} />}
+      {editTarget    && <EditModal           user={editTarget}     isSuperAdmin={isSuperAdmin} onClose={() => setEditTarget(null)}     onSaved={handleSaved} />}
+      {blockTarget   && <BlockModal          user={blockTarget}    onClose={() => setBlockTarget(null)}    onSaved={handleSaved} />}
       {passwordTarget && <ChangePasswordModal user={passwordTarget} onClose={() => setPasswordTarget(null)} />}
     </div>
   );

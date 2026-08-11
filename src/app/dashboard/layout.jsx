@@ -1,15 +1,16 @@
 import DashboardGuard from "./DashboardGuard";
-import DashboardShell from "./DashboardShell";
+import AppShellDecision from "./AppShellDecision";
 
 export const metadata = {
   title: "Dashboard | EazWorld",
   description: "Manage your orders, hosting, and account.",
+  robots: { index: false, follow: false },
 };
 
 export default function DashboardLayout({ children }) {
   return (
     <DashboardGuard>
-      <DashboardShell>{children}</DashboardShell>
+      <AppShellDecision>{children}</AppShellDecision>
     </DashboardGuard>
   );
 }

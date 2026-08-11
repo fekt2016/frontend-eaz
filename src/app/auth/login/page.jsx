@@ -40,8 +40,8 @@ function LoginPageInner() {
         return;
       }
       const role = res?.data?.user?.role;
-      if (role === "technician" || role === "admin") router.push("/pos");
-      else if (["superadmin", "staff", "cashier"].includes(role)) router.push("/pos/sell");
+      if (role === "technician" || role === "admin") router.push("/dashboard/pos");
+      else if (["superadmin", "staff", "cashier"].includes(role)) router.push("/dashboard/pos/sell");
       else router.push("/dashboard");
     } catch (err) {
       // If account not verified, redirect to verify page

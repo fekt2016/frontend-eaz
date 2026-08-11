@@ -1,260 +1,318 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { useParams } from "next/navigation";
-import { FaShieldAlt, FaWrench, FaCheckCircle, FaClock, FaTimesCircle, FaMobileAlt } from "react-icons/fa";
+import Link from "next/link";
+import { useParams, useSearchParams } from "next/navigation";
+import { api } from "@/lib/api";
+import { formatPhoneInput } from "@/lib/sanitize";
+import { FaSpinner, FaCheckCircle, FaPhone, FaWrench } from "react-icons/fa";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.eazworld.co/api/v1";
+const inputCls =
+  "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
 
-const STATUS_CONFIG = {
-  received:          { label: "Received",           color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/30",   step: 1 },
-  diagnosing:        { label: "Diagnosing",          color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30", step: 2 },
-  waiting_for_parts: { label: "Waiting for Parts",   color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30", step: 2 },
-  repairing:         { label: "Repairing",           color: "text-amber-400",  bg: "bg-amber-500/10 border-amber-500/30",  step: 3 },
-  ready:             { label: "Ready for Collection",color: "text-green-400",  bg: "bg-green-500/10 border-green-500/30",  step: 4 },
-  collected:         { label: "Collected",           color: "text-gray-400",   bg: "bg-gray-500/10 border-gray-700",       step: 5 },
-  cancelled:         { label: "Cancelled",           color: "text-red-400",    bg: "bg-red-500/10 border-red-500/30",      step: 0 },
+const JOB_STATUS = {
+  received:          { label: "Device Received",      classes: "bg-blue-50 text-blue-700" },
+  diagnosing:        { label: "Diagnosing",           classes: "bg-violet-50 text-violet-700" },
+  waiting_for_parts: { label: "Waiting for Parts",    classes: "bg-amber-50 text-amber-700" },
+  repairing:         { label: "Repairing",            classes: "bg-orange-50 text-orange-700" },
+  ready:             { label: "Ready for Collection", classes: "bg-emerald-50 text-emerald-700" },
+  collected:         { label: "Collected",            classes: "bg-gray-100 text-gray-600" },
+  cancelled:         { label: "Cancelled",            classes: "bg-gray-100 text-gray-500" },
 };
 
-const STEPS = [
-  { label: "Received",  step: 1 },
-  { label: "Diagnosing / Repairing", step: 3 },
-  { label: "Ready",     step: 4 },
-  { label: "Collected", step: 5 },
-];
+const ORDER_STATUS = {
+  pending:   { label: "Payment Pending", classes: "bg-amber-50 text-amber-700" },
+  paid:      { label: "Paid",            classes: "bg-emerald-50 text-emerald-700" },
+  cancelled: { label: "Cancelled",       classes: "bg-gray-100 text-gray-500" },
+};
 
-export default function TrackPage() {
+const ORDERABLE = ["received", "diagnosing", "waiting_for_parts"];
+
+export default function TrackRepairPage() {
   const { token } = useParams();
-  const [job,     setJob]     = useState(null);
+  const searchParams = useSearchParams();
+  const justPaid = searchParams.get("paid") === "1";
+
+  const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState("");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!token) return;
-    fetch(`${API_BASE}/track/${token}`)
-      .then(r => r.json())
-      .then(r => {
-        if (!r.success) throw new Error(r.error || "Job not found.");
-        setJob(r.data);
-      })
-      .catch(e => setError(e.message))
+  // Order form state
+  const [activePartId, setActivePartId] = useState(null);
+  const [qty, setQty] = useState(1);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [placing, setPlacing] = useState(false);
+  const [orderError, setOrderError] = useState("");
+
+  const load = () => {
+    setLoading(true);
+    setError("");
+    api
+      .get(`/track/${token}`)
+      .then((r) => setJob(r.data))
+      .catch((err) => setError(err.message || "Unable to load your repair."))
       .finally(() => setLoading(false));
-  }, [token]);
+  };
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-gray-700 border-t-amber-400 rounded-full animate-spin" />
-    </div>
-  );
+  useEffect(() => { if (token) load(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (error) return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="text-center max-w-sm">
-        <FaTimesCircle size={40} className="text-red-400 mx-auto mb-4" />
-        <h1 className="text-xl font-bold text-white mb-2">Job Not Found</h1>
-        <p className="text-gray-400 text-sm">
-          This tracking link may be invalid or expired. Please contact us for assistance.
-        </p>
-        <a
-          href={`tel:${process.env.NEXT_PUBLIC_SHOP_PHONE || "0244388190"}`}
-          className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
-        >
-          <FaMobileAlt size={13} /> Call Us
-        </a>
+  useEffect(() => { if (job?.customerName && !name) setName(job.customerName); }, [job]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const canOrder = job && ORDERABLE.includes(job.status) && (job.parts || []).length > 0;
+
+  const openOrder = (part) => {
+    setActivePartId(part.id);
+    setQty(1);
+    setOrderError("");
+  };
+
+  const submitOrder = async (e) => {
+    e.preventDefault();
+    setOrderError("");
+    if (!name.trim()) { setOrderError("Please enter your name."); return; }
+    if (!phone.trim()) { setOrderError("Please enter the phone number on the receipt."); return; }
+    setPlacing(true);
+    try {
+      const res = await api.post(`/track/${token}/part-orders`, {
+        partLineId: activePartId,
+        quantity: qty,
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+      });
+      window.location.href = res.data.authorizationUrl;
+    } catch (err) {
+      setOrderError(err.message || "Unable to start payment. Please try again.");
+      setPlacing(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-4 pt-28 pb-24">
+        <FaSpinner size={20} className="animate-spin text-gray-400" />
       </div>
-    </div>
-  );
+    );
+  }
 
-  const cfg     = STATUS_CONFIG[job.status] || STATUS_CONFIG.received;
-  const isCancelled = job.status === "cancelled";
-  const isDone      = job.status === "collected";
-  const currentStep = cfg.step;
+  if (error || !job) {
+    return (
+      <div className="min-h-screen bg-white text-gray-900 px-4 pt-28 pb-24">
+        <div className="mx-auto max-w-xl text-center">
+          <FaWrench size={28} className="mx-auto mb-4 text-gray-300" />
+          <h1 className="font-display font-black text-2xl mb-2">Repair not found</h1>
+          <p className="text-sm text-gray-500 mb-8">
+            {error || "We couldn't find a repair for that link. Check the link from your SMS or receipt."}
+          </p>
+          <Link href="/" className="inline-block rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-700 transition">
+            Back to EazWorld
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const jobBadge = JOB_STATUS[job.status] || JOB_STATUS.received;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800 bg-gray-900">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center flex-shrink-0">
-            <FaWrench size={14} className="text-white" />
-          </div>
-          <div>
-            <p className="font-bold text-white text-sm leading-none">EazWorld Repair</p>
-            <p className="text-xs text-gray-500">Repair Tracker</p>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white text-gray-900 px-4 pt-28 pb-24">
+      <div className="mx-auto max-w-3xl">
+        <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Repair Tracking</p>
+        <h1 className="font-display font-black text-3xl md:text-4xl mb-2">Track Your Repair</h1>
+        <p className="text-gray-500 text-sm mb-10">
+          {job.customerName ? `Hi ${job.customerName}, here's the status of your device repair.` : "Here's the status of your device repair."}
+        </p>
 
-      <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
-
-        {/* Job number + status */}
-        <div className="text-center">
-          <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Job Number</p>
-          <h1 className="text-3xl font-bold font-mono text-amber-400">{job.jobNumber}</h1>
-          {job.customerName && (
-            <p className="text-gray-400 text-sm mt-1">For {job.customerName}</p>
-          )}
-        </div>
-
-        {/* Status badge */}
-        <div className={`flex items-center justify-center gap-3 px-5 py-4 rounded-2xl border ${cfg.bg}`}>
-          {isDone       ? <FaCheckCircle size={20} className={cfg.color} /> :
-           isCancelled  ? <FaTimesCircle size={20} className={cfg.color} /> :
-                          <FaClock size={20} className={cfg.color} />}
-          <div>
-            <p className={`font-bold text-lg ${cfg.color}`}>{cfg.label}</p>
-            {!isCancelled && !isDone && (
-              <p className="text-xs text-gray-400 mt-0.5">Your device is being taken care of</p>
-            )}
-          </div>
-        </div>
-
-        {/* Progress steps — hide for cancelled */}
-        {!isCancelled && (
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Progress</p>
-            <div className="space-y-3">
-              {STEPS.map((s, i) => {
-                const done    = currentStep > s.step;
-                const active  = currentStep === s.step || (s.step === 3 && [2,3].includes(currentStep));
-                return (
-                  <div key={s.step} className="flex items-center gap-3">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold transition ${
-                      done   ? "bg-green-500 text-white" :
-                      active ? "bg-amber-500 text-white" :
-                               "bg-gray-800 border border-gray-700 text-gray-500"
-                    }`}>
-                      {done ? "✓" : i + 1}
-                    </div>
-                    <p className={`text-sm font-medium ${
-                      done ? "text-green-400" : active ? "text-amber-400" : "text-gray-500"
-                    }`}>
-                      {s.label}
-                    </p>
-                    {active && !done && (
-                      <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-medium">
-                        Current
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+        {justPaid && (
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
+            <FaCheckCircle className="text-emerald-600" />
+            <p className="text-sm text-emerald-700">Payment received. We&apos;ll start the repair once your part arrives.</p>
           </div>
         )}
 
-        {/* Device details */}
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5 space-y-3">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Device</p>
-          <div className="grid grid-cols-2 gap-3 text-sm">
+        {/* Job card */}
+        <div className="rounded-2xl border border-gray-100 bg-white p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
             <div>
-              <p className="text-gray-500 text-xs">Device</p>
-              <p className="text-white font-medium">{job.device || "—"}</p>
+              <p className="text-xs text-gray-400">Job Number</p>
+              <p className="font-display font-bold text-lg">{job.jobNumber}</p>
             </div>
-            <div>
-              <p className="text-gray-500 text-xs">Issue reported</p>
-              <p className="text-gray-300">{job.faultDescription}</p>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${jobBadge.classes}`}>{jobBadge.label}</span>
+          </div>
+
+          <dl className="my-5 space-y-3 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-400">Device</dt>
+              <dd className="font-medium text-right">{job.device}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-400">Fault</dt>
+              <dd className="font-medium text-right max-w-[70%]">{job.faultDescription}</dd>
             </div>
             {job.repairWork && (
-              <div className="col-span-2">
-                <p className="text-gray-500 text-xs">Repair work</p>
-                <p className="text-gray-300">{job.repairWork}</p>
+              <div className="flex justify-between gap-4">
+                <dt className="text-gray-400">Repair</dt>
+                <dd className="font-medium text-right max-w-[70%]">{job.repairWork}</dd>
               </div>
             )}
-            {job.estimatedCompletion && job.status !== "collected" && job.status !== "ready" && (
-              <div className="col-span-2">
-                <p className="text-gray-500 text-xs">Estimated completion</p>
-                <p className="text-amber-400 font-medium">
-                  {new Date(job.estimatedCompletion).toLocaleString("en-GH", { dateStyle: "long", timeStyle: "short" })}
-                </p>
+            {job.estimatedCompletion && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-gray-400">Estimated completion</dt>
+                <dd className="font-medium">{new Date(job.estimatedCompletion).toLocaleDateString("en-GH")}</dd>
               </div>
             )}
-            <div>
-              <p className="text-gray-500 text-xs">Job created</p>
-              <p className="text-gray-300">{new Date(job.createdAt).toLocaleDateString("en-GH", { dateStyle: "long" })}</p>
-            </div>
             {job.completedAt && (
-              <div>
-                <p className="text-gray-500 text-xs">Completed</p>
-                <p className="text-green-400">{new Date(job.completedAt).toLocaleDateString("en-GH", { dateStyle: "long" })}</p>
+              <div className="flex justify-between gap-4">
+                <dt className="text-gray-400">Completed</dt>
+                <dd className="font-medium">{new Date(job.completedAt).toLocaleDateString("en-GH")}</dd>
               </div>
             )}
-          </div>
+          </dl>
         </div>
 
-        {/* Ready for collection alert */}
-        {job.status === "ready" && (
-          <div className="flex items-start gap-3 px-4 py-4 rounded-2xl bg-green-500/10 border border-green-500/30">
-            <FaCheckCircle size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-green-400 font-semibold text-sm">Your device is ready!</p>
-              <p className="text-gray-300 text-xs mt-1">
-                Please come to our shop to collect your device. Bring this job number: <span className="font-mono font-bold text-amber-400">{job.jobNumber}</span>
-              </p>
-            </div>
-          </div>
-        )}
+        {/* Parts */}
+        {(job.parts || []).length > 0 && (
+          <div className="mt-8">
+            <h2 className="font-display font-bold text-xl mb-1">Parts for this repair</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              {canOrder
+                ? "You can pay for any of the parts below now — we&apos;ll install it once it&apos;s ready."
+                : "Parts required for this repair."}
+            </p>
 
-        {/* Warranty */}
-        {job.warrantyDays > 0 && job.warrantyExpires && (
-          <div className={`flex items-start gap-3 px-4 py-4 rounded-2xl border ${
-            job.warrantyStatus === "active"        ? "bg-green-500/10 border-green-500/30" :
-            job.warrantyStatus === "expiring_soon" ? "bg-amber-500/10 border-amber-500/30" :
-            "bg-gray-500/10 border-gray-700"
-          }`}>
-            <FaShieldAlt size={18} className={
-              job.warrantyStatus === "active"        ? "text-green-400" :
-              job.warrantyStatus === "expiring_soon" ? "text-amber-400" : "text-gray-500"
-            } />
-            <div>
-              <p className={`font-semibold text-sm ${
-                job.warrantyStatus === "active"        ? "text-green-400" :
-                job.warrantyStatus === "expiring_soon" ? "text-amber-400" : "text-gray-500"
-              }`}>
-                {job.warrantyDays}-day Warranty
-                {job.warrantyStatus === "expired" ? " (Expired)" : ""}
-              </p>
-              {job.warrantyNotes && (
-                <p className="text-gray-400 text-xs mt-0.5">{job.warrantyNotes}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">
-                {job.warrantyStatus === "expired"
-                  ? `Expired on ${new Date(job.warrantyExpires).toLocaleDateString("en-GH", { dateStyle: "long" })}`
-                  : `Valid until ${new Date(job.warrantyExpires).toLocaleDateString("en-GH", { dateStyle: "long" })}`}
-              </p>
-            </div>
-          </div>
-        )}
+            <div className="space-y-3">
+              {job.parts.map((part) => (
+                <div key={part.id} className="rounded-2xl border border-gray-100 bg-white p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-gray-900">{part.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{part.quantity} × GH₵{part.priceGhs}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-display font-bold text-lg text-amber-500">GH₵{part.priceGhs * part.quantity}</p>
+                      {canOrder && part.priceGhs > 0 && (
+                        <button
+                          onClick={() => openOrder(part)}
+                          className="mt-2 rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white hover:bg-gray-700 transition"
+                        >
+                          Pay for part
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-        {/* Device photos */}
-        {job.photos?.length > 0 && (
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Device Photos at Intake</p>
-            <div className="grid grid-cols-3 gap-2">
-              {job.photos.map((photo, i) => (
-                <a key={i} href={photo.url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-xl overflow-hidden bg-gray-800 block">
-                  <Image src={photo.url} alt={photo.caption || `Photo ${i + 1}`} width={200} height={200} className="w-full h-full object-cover hover:scale-105 transition duration-200" />
-                </a>
+                  {activePartId === part.id && (
+                    <form onSubmit={submitOrder} className="mt-5 space-y-4 rounded-xl bg-gray-50 p-4">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-700">Quantity</label>
+                        <div className="flex items-center gap-3">
+                          {[1, 2, 3].map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => setQty(n)}
+                              className={`w-12 rounded-xl border py-2 text-sm font-semibold transition ${
+                                qty === n
+                                  ? "border-gray-900 bg-gray-900 text-white"
+                                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
+                              }`}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                          <span className="text-sm text-gray-400 ml-auto">
+                            Total: <span className="font-semibold text-gray-900">GH₵{part.priceGhs * qty}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-700">Your name</label>
+                        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className={inputCls} />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-700">Phone on receipt</label>
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
+                          placeholder="024 000 0000"
+                          className={inputCls}
+                          required
+                        />
+                        <p className="mt-1.5 text-xs text-gray-400">Must match the phone number on your repair receipt.</p>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-700">Email <span className="font-normal text-gray-400">(optional — for faster updates)</span></label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          className={inputCls}
+                        />
+                      </div>
+                      {orderError && <p className="text-sm text-red-600">{orderError}</p>}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setActivePartId(null)}
+                          className="rounded-full border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-white transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={placing}
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 transition disabled:opacity-60"
+                        >
+                          {placing ? <FaSpinner size={13} className="animate-spin" /> : <FaPhone size={12} />}
+                          {placing ? "Opening Paystack…" : "Continue to payment"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Contact */}
-        <div className="text-center pt-2 pb-6">
-          <p className="text-gray-500 text-xs mb-3">Need help? Contact us</p>
-          <a
-            href="tel:0244388190"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-amber-500/50 text-gray-300 hover:text-white text-sm font-medium transition"
-          >
-            <FaMobileAlt size={13} className="text-amber-400" />
-            0244 388 190
-          </a>
-          <p className="text-gray-700 text-xs mt-6">Powered by EazWorld · eazworld.co</p>
-        </div>
+        {/* Part order history */}
+        {(job.partOrders || []).length > 0 && (
+          <div className="mt-8 rounded-2xl border border-gray-100 bg-white">
+            <div className="px-6 pt-5">
+              <h2 className="font-display font-bold text-lg">Part orders</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Payments you&apos;ve made for this repair.</p>
+            </div>
+            <ul className="divide-y divide-gray-100 mt-3">
+              {job.partOrders.map((o) => {
+                const badge = ORDER_STATUS[o.status] || ORDER_STATUS.pending;
+                return (
+                  <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-4 text-sm">
+                    <div>
+                      <p className="font-medium text-gray-900">{o.partName} <span className="text-gray-400">× {o.quantity}</span></p>
+                      <p className="text-xs text-gray-400">{new Date(o.createdAt).toLocaleDateString("en-GH")}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>{badge.label}</span>
+                      <span className="font-semibold">GH₵{o.amountGhs}</span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
-      </main>
+        <div className="mt-10 text-center">
+          <p className="text-sm text-gray-400 mb-4">Questions about your repair? Call us on <span className="font-medium text-gray-600">024 438 8190</span></p>
+          <Link href="/" className="inline-block rounded-full border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+            Back to EazWorld
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

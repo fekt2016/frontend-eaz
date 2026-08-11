@@ -43,7 +43,7 @@ export default function AdminDomainOrdersPage() {
     try {
       const params = new URLSearchParams();
       if (filter !== "all") params.set("status", filter);
-      const res = await api.get(`/domains/orders?${params}`);
+      const res = await api.get(`/domain/orders?${params}`);
       const all = res.data?.data || res.data || [];
       const q = search.trim().toLowerCase();
       setOrders(q ? all.filter((o) =>
@@ -63,7 +63,7 @@ export default function AdminDomainOrdersPage() {
   const handleStatusUpdate = async (orderId, status) => {
     setUpdating(orderId);
     try {
-      await api.patch(`/domains/orders/${orderId}`, { status });
+      await api.patch(`/domain/orders/${orderId}/status`, { status });
       await fetchOrders();
     } catch (err) {
       alert(err.message || "Update failed");
@@ -77,12 +77,12 @@ export default function AdminDomainOrdersPage() {
   const totalRevenue = orders.filter(o => o.status === "completed").reduce((s, o) => s + (o.price || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}
         <div className="mb-8">
-          <Link href="/dashboard/admin-overview" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Admin Overview</Link>
+          <Link href="/dashboard" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Dashboard</Link>
           <div className="flex items-center gap-3 mb-2">
             <span className="w-11 h-11 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
               <FaGlobe size={18} className="text-violet-600 dark:text-violet-400" />

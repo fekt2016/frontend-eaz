@@ -1,22 +1,18 @@
-// Shared dashboard navigation — used by the dashboard sidebar (DashboardShell)
-// and reused (dark-styled) in the POS sidebar so admins can jump between the
-// admin dashboard and POS from one place.
+// Single source of truth for the shared app sidebar. Every page that uses a
+// sidenav (dashboard, commerce, POS) renders the same sections, role-gated.
 import {
-  FaTachometerAlt, FaUserCircle, FaTools, FaStore, FaCalendarAlt, FaComments,
+  FaTachometerAlt, FaStore, FaCalendarAlt, FaComments,
   FaStar, FaFileAlt, FaServer, FaGlobe, FaUsers, FaEnvelope,
+  FaBarcode, FaHome, FaWrench, FaBoxes, FaChartBar, FaReceipt, FaTruck, FaShieldAlt,
 } from "react-icons/fa";
 
 // Shown to every logged-in dashboard user.
 export const baseNav = [
   { href: "/dashboard", icon: FaTachometerAlt, label: "Overview" },
-  { href: "/dashboard/settings", icon: FaUserCircle, label: "Settings" },
 ];
 
 // Admin/superadmin only.
 export const adminNav = [
-  { href: "/dashboard/admin-overview", icon: FaTachometerAlt, label: "Admin Overview" },
-  { href: "/pos", icon: FaTools, label: "Repair Shop POS" },
-  { href: "/commerce", icon: FaStore, label: "Commerce" },
   { href: "/dashboard/consultations", icon: FaCalendarAlt, label: "Consultations" },
   { href: "/dashboard/chats", icon: FaComments, label: "Chat Sessions" },
   { href: "/dashboard/reviews", icon: FaStar, label: "Reviews" },
@@ -25,4 +21,24 @@ export const adminNav = [
   { href: "/dashboard/domain-orders", icon: FaGlobe, label: "Domain Orders" },
   { href: "/dashboard/users", icon: FaUsers, label: "Users" },
   { href: "/dashboard/emails", icon: FaEnvelope, label: "Email Logs" },
+];
+
+// Admin/superadmin only — sits below the Repair Shop POS section.
+export const marketplaceNav = [
+  { href: "/dashboard/commerce", icon: FaStore, label: "Marketplace" },
+  { href: "/dashboard/commerce/inventory", icon: FaBoxes, label: "Inventory" },
+];
+
+// roles: if undefined, visible to all POS roles.
+// superadmin = full access; admin = repair steps only; staff = full except staff mgmt; cashier = sales; technician = repairs
+export const posNav = [
+  { label: "Sell",       href: "/dashboard/pos/sell",      icon: FaBarcode,  roles: ["superadmin","cashier","staff"] },
+  { label: "Dashboard",  href: "/dashboard/pos/dashboard", icon: FaHome,     roles: ["superadmin","admin","staff"] },
+  { label: "My Jobs",    href: "/dashboard/pos",           icon: FaWrench,   roles: ["technician"] },
+  { label: "Jobs",       href: "/dashboard/pos/jobs",      icon: FaWrench,   roles: ["superadmin","staff"] },
+  { label: "Customers",  href: "/dashboard/pos/customers", icon: FaUsers,    roles: ["superadmin","staff","cashier"] },
+  { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: FaTruck,    roles: ["superadmin","staff"] },
+  { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: FaReceipt,  roles: ["superadmin","staff"] },
+  { label: "Warranty",   href: "/dashboard/pos/warranty",  icon: FaShieldAlt, roles: ["superadmin","staff"] },
+  { label: "Reports",    href: "/dashboard/pos/reports",   icon: FaChartBar, roles: ["superadmin","staff"] },
 ];

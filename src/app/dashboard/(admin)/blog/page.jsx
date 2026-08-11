@@ -189,7 +189,7 @@ export default function AdminBlogPage() {
   const drafts    = posts.filter((p) => !p.published).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
       <div className="mx-auto max-w-5xl">
 
         {/* Header */}

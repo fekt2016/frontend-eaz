@@ -1,11 +1,30 @@
 import ShopGrid from "@/components/shop/ShopGrid";
 
-export default function ShopCategoryPage({ params }) {
-  let category = params.category;
+function cleanCategory(raw) {
   try {
-    category = decodeURIComponent(category);
+    return decodeURIComponent(raw || "").replace(/[-_]/g, " ").trim() || raw;
   } catch {
-    // Malformed percent-encoding — fall back to the raw segment.
+    return raw;
   }
+}
+
+export async function generateMetadata({ params }) {
+  const category = cleanCategory(params.category);
+  const title = `${category} — EazWorld Shop`;
+  const description = `Browse ${category} at the EazWorld shop. Phones, accessories and repair parts with secure Paystack payments and fast delivery across Ghana.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://eazworld.com/shop/category/${encodeURIComponent(params.category)}`,
+    },
+  };
+}
+
+export default function ShopCategoryPage({ params }) {
+  const category = cleanCategory(params.category);
   return <ShopGrid activeCategory={category} />;
 }

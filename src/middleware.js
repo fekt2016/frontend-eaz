@@ -83,7 +83,6 @@ export async function middleware(request) {
 
   // Admin-only dashboard pages (flat routes under /dashboard).
   const ADMIN_DASHBOARD_PATHS = [
-    "/dashboard/admin-overview",
     "/dashboard/consultations",
     "/dashboard/chats",
     "/dashboard/reviews",
@@ -92,6 +91,7 @@ export async function middleware(request) {
     "/dashboard/domain-orders",
     "/dashboard/users",
     "/dashboard/emails",
+    "/dashboard/commerce",
   ];
   if (token && ADMIN_DASHBOARD_PATHS.some((p) => pathname.startsWith(p))) {
     if (!ADMIN_ROLES.includes(userRole)) {
@@ -100,7 +100,7 @@ export async function middleware(request) {
   }
 
   // ── POS auth guard ───────────────────────────────────────────────────────────
-  if (pathname.startsWith("/pos")) {
+  if (pathname.startsWith("/dashboard/pos")) {
     if (!token) {
       return NextResponse.redirect(new URL(`/auth/login?redirect=${pathname}`, request.url));
     }

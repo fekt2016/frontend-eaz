@@ -1,6 +1,18 @@
 import Link from "next/link";
 import { FaMapMarkerAlt, FaClock, FaPhone, FaEnvelope, FaWhatsapp, FaCheckCircle, FaWifi, FaSnowflake, FaCar } from "react-icons/fa";
 
+export const metadata = {
+  title: "Visit Us — Nima, Accra, Ghana",
+  description:
+    "Visit EazWorld in person — E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra. Phone repair, digital consultations and walk-ins welcome. Mon–Fri 9AM–6PM, Sat 10AM–4PM.",
+  openGraph: {
+    title: "Visit Us | EazWorld",
+    description: "Come see EazWorld in person in Nima, Accra — phone repair and digital consultations.",
+    url: "https://eazworld.com/visit-us",
+  },
+  alternates: { canonical: "https://eazworld.com/visit-us" },
+};
+
 const amenities = [
   { icon: FaSnowflake, label: "Air Conditioning" },
   { icon: FaWifi, label: "Free WiFi" },

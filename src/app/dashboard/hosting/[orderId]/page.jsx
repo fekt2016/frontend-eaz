@@ -147,7 +147,7 @@ export default function HostingOrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24 text-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24 text-center">
         <p className="text-gray-400 dark:text-slate-500">Order not found.</p>
         <Link href="/dashboard" className="mt-4 inline-block text-sm text-amber-500 hover:underline">← Back to Dashboard</Link>
       </div>
@@ -168,7 +168,7 @@ export default function HostingOrderDetailPage() {
   const canRenew = order.status === "active" || (order.status === "cancelled" && order.cpanelUsername);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
       <div className="mx-auto max-w-2xl">
         <Link href="/dashboard" className="mb-6 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           ← Back to Dashboard
