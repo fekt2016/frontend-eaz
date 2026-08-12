@@ -12,7 +12,7 @@ export default function Contact() {
     <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Get in Touch</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Get in Touch</p>
           <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">We&apos;d Love to Hear From You</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg">Send us a message and we&apos;ll get back to you within 24 hours.</p>
         </div>
@@ -30,11 +30,11 @@ export default function Contact() {
               <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Contact Details</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3 text-sm">
-                  <FaEnvelope className="text-amber-500 mt-0.5 flex-shrink-0" />
+                  <FaEnvelope className="text-brand-500 mt-0.5 flex-shrink-0" />
                   <a href="mailto:info@eazworld.co" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">info@eazworld.co</a>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <FaPhone className="text-amber-500 mt-0.5 flex-shrink-0" />
+                  <FaPhone className="text-brand-500 mt-0.5 flex-shrink-0" />
                   <div className="flex flex-col gap-0.5">
                     <a href="tel:+233244388190" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">+233 24 438 8190</a>
                     <a href="tel:+233235222207" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">+233 23 522 2207</a>
@@ -48,11 +48,11 @@ export default function Contact() {
                   </a>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <FaMapMarkerAlt className="text-amber-500 mt-0.5 flex-shrink-0" />
+                  <FaMapMarkerAlt className="text-brand-500 mt-0.5 flex-shrink-0" />
                   <span className="text-gray-600 dark:text-slate-400">E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <FaClock className="text-amber-500 mt-0.5 flex-shrink-0" />
+                  <FaClock className="text-brand-500 mt-0.5 flex-shrink-0" />
                   <span className="text-gray-600 dark:text-slate-400">Mon–Fri 9AM–6PM, Sat 10AM–4PM</span>
                 </div>
               </div>

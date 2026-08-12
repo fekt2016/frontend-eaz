@@ -9,7 +9,7 @@ const CATEGORIES = ["All", "SEO", "Web Design", "Case Study", "Social Media", "B
 const CATEGORY_COLORS = {
   SEO:               "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
   "Web Design":      "bg-violet-50 text-violet-700 dark:bg-violet-900/20 dark:text-violet-400",
-  "Case Study":      "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
+  "Case Study":      "bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400",
   "Social Media":    "bg-pink-50 text-pink-700 dark:bg-pink-900/20 dark:text-pink-400",
   Branding:          "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
   "Phone Repair":    "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-400",
@@ -36,7 +36,7 @@ function PostCard({ post }) {
           <FaClock size={10} /> {post.readTime}
         </span>
       </div>
-      <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-2 group-hover:text-amber-500 transition leading-snug">
+      <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-2 group-hover:text-brand-500 transition leading-snug">
         <Link href={`/blog/${post.slug}`}>{post.title}</Link>
       </h2>
       <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed flex-1 mb-4">{post.excerpt}</p>
@@ -45,7 +45,7 @@ function PostCard({ post }) {
           <p className="text-gray-700 dark:text-slate-300 text-xs font-medium">{post.author}</p>
           {date && <p className="text-gray-400 dark:text-slate-500 text-xs">{new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>}
         </div>
-        <Link href={`/blog/${post.slug}`} className="text-amber-500 text-xs font-medium hover:underline">
+        <Link href={`/blog/${post.slug}`} className="text-brand-500 text-xs font-medium hover:underline">
           Read →
         </Link>
       </div>
@@ -101,7 +101,7 @@ export default function Blog() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Insights & Guides</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Insights & Guides</p>
           <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">The EazWorld Blog</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg max-w-xl mx-auto">
             Practical guides, case studies, and insights on digital marketing, web design, and growing your business in Ghana.
@@ -116,12 +116,12 @@ export default function Blog() {
             <div className="p-8 md:p-10 rounded-3xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 grid md:grid-cols-[1fr_auto] gap-8 items-start">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30">
+                  <span className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-900/20 dark:text-brand-400 dark:border-brand-800/30">
                     Featured
                   </span>
                   <CategoryPill cat={featured.category} />
                 </div>
-                <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-3 hover:text-amber-500 transition">
+                <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-3 hover:text-brand-500 transition">
                   <Link href={`/blog/${featured.slug}`}>{featured.title}</Link>
                 </h2>
                 <p className="text-gray-500 dark:text-slate-400 mb-4 leading-relaxed">{featured.excerpt}</p>
@@ -156,7 +156,7 @@ export default function Blog() {
                   onClick={() => setActiveCategory(cat)}
                   className={`px-4 py-1.5 rounded-full text-xs font-medium transition ${
                     activeCategory === cat
-                      ? "bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900"
+                      ? "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900"
                       : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
@@ -171,7 +171,7 @@ export default function Blog() {
                 placeholder="Search articles…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-8 pr-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400 transition"
+                className="w-full pl-8 pr-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-brand-400 transition"
               />
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function Blog() {
           <h3 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-2">Want to Apply This to Your Business?</h3>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Book a free 30-minute consultation — honest advice tailored to your goals.</p>
           <Link href="/book-consultation"
-            className="inline-block px-6 py-3 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 transition text-sm">
+            className="inline-block px-6 py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition text-sm">
             Book a Free Consultation →
           </Link>
         </div>

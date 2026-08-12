@@ -10,7 +10,7 @@ import {
 const CATEGORIES = [
   { value: "rent",         label: "Rent",         color: "text-blue-600 dark:text-blue-400",   bg: "bg-blue-500/15"   },
   { value: "utilities",    label: "Utilities",    color: "text-cyan-400",   bg: "bg-cyan-500/15"   },
-  { value: "tools",        label: "Tools",        color: "text-amber-600 dark:text-amber-400",  bg: "bg-amber-500/15"  },
+  { value: "tools",        label: "Tools",        color: "text-brand-600 dark:text-brand-400",  bg: "bg-brand-500/15"  },
   { value: "parts",        label: "Parts",        color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-500/15" },
   { value: "salaries",     label: "Salaries",     color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-500/15" },
   { value: "marketing",    label: "Marketing",    color: "text-pink-400",   bg: "bg-pink-500/15"   },
@@ -21,7 +21,7 @@ const CATEGORIES = [
 
 const catMap = Object.fromEntries(CATEGORIES.map(c => [c.value, c]));
 
-const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition";
+const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const labelCls  = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
 function today() {
@@ -144,14 +144,14 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FaReceipt className="text-amber-600 dark:text-amber-400" size={17} /> Expenses
+            <FaReceipt className="text-brand-600 dark:text-brand-400" size={17} /> Expenses
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">Track shop running costs and see true profit</p>
         </div>
         {isSuperAdmin && (
           <button
             onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
           >
             <FaPlus size={11} /> Add Expense
           </button>
@@ -189,7 +189,7 @@ export default function ExpensesPage() {
             </div>
             {formError && <p className="text-red-600 dark:text-red-400 text-xs">{formError}</p>}
             <div className="flex gap-3">
-              <button type="submit" disabled={formSaving} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition disabled:opacity-50">
+              <button type="submit" disabled={formSaving} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50">
                 <FaCheck size={11} /> {formSaving ? "Saving…" : "Save Expense"}
               </button>
               <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition">
@@ -250,19 +250,19 @@ export default function ExpensesPage() {
         <select
           value={filterCat}
           onChange={e => { setFilterCat(e.target.value); setPage(1); }}
-          className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300 focus:outline-none focus:border-amber-500 transition"
+          className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300 focus:outline-none focus:border-brand-500 transition"
         >
           <option value="all">All categories</option>
           {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
         </select>
         <input
           type="date" value={filterFrom} onChange={e => { setFilterFrom(e.target.value); setPage(1); }}
-          className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300 focus:outline-none focus:border-amber-500 transition"
+          className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300 focus:outline-none focus:border-brand-500 transition"
         />
         <span className="text-gray-600 text-sm">to</span>
         <input
           type="date" value={filterTo} onChange={e => { setFilterTo(e.target.value); setPage(1); }}
-          className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300 focus:outline-none focus:border-amber-500 transition"
+          className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300 focus:outline-none focus:border-brand-500 transition"
         />
         {(filterCat !== "all" || filterFrom || filterTo) && (
           <button
@@ -312,7 +312,7 @@ export default function ExpensesPage() {
                         <input value={editDesc} onChange={e => setEditDesc(e.target.value)} className={inputCls} />
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => handleEdit(exp._id)} disabled={editSaving} className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition disabled:opacity-50">
+                        <button onClick={() => handleEdit(exp._id)} disabled={editSaving} className="flex-1 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition disabled:opacity-50">
                           {editSaving ? "…" : "Save"}
                         </button>
                         <button onClick={() => setEditId(null)} className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-xs transition">
@@ -340,7 +340,7 @@ export default function ExpensesPage() {
                       </p>
                       {isSuperAdmin && (
                         <div className="flex gap-1.5 flex-shrink-0">
-                          <button onClick={() => startEdit(exp)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-amber-400 hover:border-amber-500/50 flex items-center justify-center transition">
+                          <button onClick={() => startEdit(exp)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-brand-400 hover:border-brand-500/50 flex items-center justify-center transition">
                             <FaEdit size={11} />
                           </button>
                           <button onClick={() => handleDelete(exp._id)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-red-400 hover:border-red-500/50 flex items-center justify-center transition">

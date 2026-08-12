@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 import { FaGlobe, FaSearch, FaRedo, FaSpinner, FaExternalLinkAlt } from "react-icons/fa";
 
 const statusColors = {
-  pending:   "bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:ring-amber-900/30",
+  pending:   "bg-brand-50 text-brand-700 ring-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:ring-brand-900/30",
   completed: "bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:ring-emerald-900/30",
   failed:    "bg-red-50 text-red-700 ring-red-100 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-900/30",
 };
@@ -99,7 +99,7 @@ export default function AdminDomainOrdersPage() {
           {[
             { label: "Total orders", value: orders.length },
             { label: "Completed", value: orders.filter(o => o.status === "completed").length, accent: "text-emerald-700" },
-            { label: "Pending", value: orders.filter(o => o.status === "pending").length, accent: "text-amber-700" },
+            { label: "Pending", value: orders.filter(o => o.status === "pending").length, accent: "text-brand-700" },
             { label: "Revenue", value: `GH₵${totalRevenue.toLocaleString()}`, accent: "text-gray-900" },
           ].map(({ label, value, accent }) => (
             <div key={label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
@@ -119,7 +119,7 @@ export default function AdminDomainOrdersPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search domain, email, customer name…"
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-300"
               />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -140,7 +140,7 @@ export default function AdminDomainOrdersPage() {
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-20 gap-3 text-gray-400 dark:text-slate-500">
-            <FaSpinner className="animate-spin text-2xl text-amber-500" />
+            <FaSpinner className="animate-spin text-2xl text-brand-500" />
             <span className="text-sm">Loading orders…</span>
           </div>
         ) : orders.length === 0 ? (

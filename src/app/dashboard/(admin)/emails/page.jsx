@@ -41,7 +41,7 @@ const typeColors = {
   password_reset:      "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   contact_admin:       "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
   contact_autoreply:   "bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
-  order_confirmation:  "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  order_confirmation:  "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400",
   payment_received:    "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   hosting_credentials: "bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
   renewal_reminder:    "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",

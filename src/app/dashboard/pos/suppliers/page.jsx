@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { FaPlus, FaTruck, FaSearch, FaCheck, FaTimes, FaEdit, FaTrash, FaChevronRight } from "react-icons/fa";
 
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition";
+const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const labelCls = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
 const EMPTY_FORM = { name: "", contactPerson: "", phone: "", email: "", address: "", notes: "" };
@@ -99,14 +99,14 @@ export default function SuppliersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FaTruck className="text-amber-600 dark:text-amber-400" size={17} /> Suppliers
+            <FaTruck className="text-brand-600 dark:text-brand-400" size={17} /> Suppliers
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">{suppliers.length} supplier{suppliers.length !== 1 ? "s" : ""}</p>
         </div>
         {isSuperAdmin && (
           <button
             onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
           >
             <FaPlus size={11} /> Add Supplier
           </button>
@@ -146,7 +146,7 @@ export default function SuppliersPage() {
             </div>
             {formError && <p className="text-red-600 dark:text-red-400 text-xs">{formError}</p>}
             <div className="flex gap-3">
-              <button type="submit" disabled={saving} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition disabled:opacity-50">
+              <button type="submit" disabled={saving} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50">
                 <FaCheck size={11} /> {saving ? "Saving…" : "Save Supplier"}
               </button>
               <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition">
@@ -164,7 +164,7 @@ export default function SuppliersPage() {
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Search suppliers…"
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition"
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition"
         />
       </div>
 
@@ -212,7 +212,7 @@ export default function SuppliersPage() {
                       </div>
                     </div>
                     <div className="flex gap-3">
-                      <button onClick={() => handleEdit(s._id)} disabled={editSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition disabled:opacity-50">
+                      <button onClick={() => handleEdit(s._id)} disabled={editSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50">
                         <FaCheck size={11} /> {editSaving ? "Saving…" : "Save"}
                       </button>
                       <button onClick={() => setEditId(null)} className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition">
@@ -223,8 +223,8 @@ export default function SuppliersPage() {
                 ) : (
                   /* Normal row */
                   <div className="flex items-center gap-4 px-5 py-4">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
-                      <FaTruck size={13} className="text-amber-600 dark:text-amber-400" />
+                    <div className="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center flex-shrink-0">
+                      <FaTruck size={13} className="text-brand-600 dark:text-brand-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -235,15 +235,15 @@ export default function SuppliersPage() {
                       </div>
                       <div className="flex flex-wrap gap-x-3 text-xs text-gray-500 mt-0.5">
                         {s.contactPerson && <span>{s.contactPerson}</span>}
-                        {s.phone  && <a href={`tel:${s.phone}`}  className="hover:text-amber-400 transition">{s.phone}</a>}
-                        {s.email  && <a href={`mailto:${s.email}`} className="hover:text-amber-400 transition">{s.email}</a>}
+                        {s.phone  && <a href={`tel:${s.phone}`}  className="hover:text-brand-400 transition">{s.phone}</a>}
+                        {s.email  && <a href={`mailto:${s.email}`} className="hover:text-brand-400 transition">{s.email}</a>}
                       </div>
                       {s.notes && <p className="text-xs text-gray-600 truncate mt-0.5">{s.notes}</p>}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <Link
                         href={`/pos/suppliers/${s._id}`}
-                        className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-300 transition"
+                        className="flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 hover:text-brand-300 transition"
                       >
                         Parts <FaChevronRight size={9} />
                       </Link>
@@ -252,7 +252,7 @@ export default function SuppliersPage() {
                           <button onClick={() => toggleActive(s)} className={`w-8 h-8 rounded-lg border flex items-center justify-center transition text-xs ${s.isActive ? "border-green-500/30 text-green-600 dark:text-green-400 hover:bg-green-500/10" : "border-gray-300 dark:border-gray-700 text-gray-500 hover:text-gray-900 dark:hover:text-white"}`} title={s.isActive ? "Deactivate" : "Activate"}>
                             {s.isActive ? "✓" : "○"}
                           </button>
-                          <button onClick={() => startEdit(s)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-amber-400 hover:border-amber-500/50 flex items-center justify-center transition">
+                          <button onClick={() => startEdit(s)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-brand-400 hover:border-brand-500/50 flex items-center justify-center transition">
                             <FaEdit size={11} />
                           </button>
                           <button onClick={() => handleDelete(s._id)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-red-400 hover:border-red-500/50 flex items-center justify-center transition">

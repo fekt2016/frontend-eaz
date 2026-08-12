@@ -22,14 +22,14 @@ export default function SupplierDetailPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
-      <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-amber-400 rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-brand-400 rounded-full animate-spin" />
     </div>
   );
 
   if (error || !supplier) return (
     <div className="text-center py-16 text-gray-500">
       {error || "Supplier not found."}{" "}
-      <Link href="/dashboard/pos/suppliers" className="text-amber-600 dark:text-amber-400 hover:underline">Back</Link>
+      <Link href="/dashboard/pos/suppliers" className="text-brand-600 dark:text-brand-400 hover:underline">Back</Link>
     </div>
   );
 
@@ -58,23 +58,23 @@ export default function SupplierDetailPage() {
           {supplier.contactPerson && (
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
               <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <FaTruck size={11} className="text-amber-600 dark:text-amber-400" />
+                <FaTruck size={11} className="text-brand-600 dark:text-brand-400" />
               </div>
               <span>{supplier.contactPerson}</span>
             </div>
           )}
           {supplier.phone && (
-            <a href={`tel:${supplier.phone}`} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-amber-400 transition">
+            <a href={`tel:${supplier.phone}`} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-brand-400 transition">
               <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <FaPhone size={10} className="text-amber-600 dark:text-amber-400" />
+                <FaPhone size={10} className="text-brand-600 dark:text-brand-400" />
               </div>
               <span>{supplier.phone}</span>
             </a>
           )}
           {supplier.email && (
-            <a href={`mailto:${supplier.email}`} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-amber-400 transition">
+            <a href={`mailto:${supplier.email}`} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-brand-400 transition">
               <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <FaEnvelope size={10} className="text-amber-600 dark:text-amber-400" />
+                <FaEnvelope size={10} className="text-brand-600 dark:text-brand-400" />
               </div>
               <span>{supplier.email}</span>
             </a>
@@ -82,7 +82,7 @@ export default function SupplierDetailPage() {
           {supplier.address && (
             <div className="flex items-start gap-2 text-gray-600 dark:text-gray-300">
               <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <FaMapMarkerAlt size={10} className="text-amber-600 dark:text-amber-400" />
+                <FaMapMarkerAlt size={10} className="text-brand-600 dark:text-brand-400" />
               </div>
               <span>{supplier.address}</span>
             </div>
@@ -117,9 +117,9 @@ export default function SupplierDetailPage() {
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <FaBoxes size={13} className="text-amber-600 dark:text-amber-400" /> Linked Parts
+            <FaBoxes size={13} className="text-brand-600 dark:text-brand-400" /> Linked Parts
           </h2>
-          <Link href="/dashboard/commerce/inventory" className="text-xs text-amber-600 dark:text-amber-400 hover:underline">Manage inventory →</Link>
+          <Link href="/dashboard/commerce/inventory" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">Manage inventory →</Link>
         </div>
 
         {parts.length === 0 ? (
@@ -148,7 +148,7 @@ export default function SupplierDetailPage() {
                       <span className={`text-sm font-semibold ${isLow ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
                     </div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">GH₵{p.costPrice.toLocaleString()}</span>
-                    <span className="text-xs text-amber-600 dark:text-amber-400 hidden sm:block">GH₵{p.sellingPrice.toLocaleString()}</span>
+                    <span className="text-xs text-brand-600 dark:text-brand-400 hidden sm:block">GH₵{p.sellingPrice.toLocaleString()}</span>
                   </div>
                 );
               })}

@@ -14,7 +14,7 @@ const STATUS_COLORS = {
   received:          "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
   diagnosing:        "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
   waiting_for_parts: "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30",
-  repairing:         "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+  repairing:         "bg-brand-500/15 text-brand-600 dark:text-brand-400 border-brand-500/30",
   ready:             "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
   collected:         "bg-gray-500/15 text-gray-500 dark:text-gray-400 border-gray-500/30",
   cancelled:         "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
@@ -41,19 +41,19 @@ export default function CustomerDetailPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
-      <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-amber-400 rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-brand-400 rounded-full animate-spin" />
     </div>
   );
 
   if (error) return (
     <div className="text-center py-16 text-red-600 dark:text-red-400">
-      {error} — <Link href="/dashboard/pos/customers" className="text-amber-600 dark:text-amber-400 hover:underline">Back</Link>
+      {error} — <Link href="/dashboard/pos/customers" className="text-brand-600 dark:text-brand-400 hover:underline">Back</Link>
     </div>
   );
 
   if (!data) return (
     <div className="text-center py-16 text-gray-500">
-      Customer not found. <Link href="/dashboard/pos/customers" className="text-amber-600 dark:text-amber-400 hover:underline">Back</Link>
+      Customer not found. <Link href="/dashboard/pos/customers" className="text-brand-600 dark:text-brand-400 hover:underline">Back</Link>
     </div>
   );
 
@@ -85,7 +85,7 @@ export default function CustomerDetailPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">{customer.phone}</h1>
             {activeJobs.length > 0 && (
-              <span className="text-xs bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-brand-500/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full">
                 {activeJobs.length} active
               </span>
             )}
@@ -94,7 +94,7 @@ export default function CustomerDetailPage() {
         </div>
         <Link
           href={`/dashboard/pos/jobs/new?customer=${customer._id}`}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
         >
           <FaWrench size={11} /> New Job
         </Link>
@@ -152,7 +152,7 @@ export default function CustomerDetailPage() {
           <p className="text-xs text-gray-500 mt-1">Completed</p>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 text-center">
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{activeJobs.length}</p>
+          <p className="text-2xl font-bold text-brand-600 dark:text-brand-400">{activeJobs.length}</p>
           <p className="text-xs text-gray-500 mt-1">Active</p>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 text-center">
@@ -211,15 +211,15 @@ export default function CustomerDetailPage() {
                     <div className="flex items-start gap-3 min-w-0">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         job.status === "collected" ? "bg-gray-200 dark:bg-gray-700" :
-                        job.status === "cancelled" ? "bg-red-500/10" : "bg-amber-500/10"
+                        job.status === "cancelled" ? "bg-red-500/10" : "bg-brand-500/10"
                       }`}>
                         {job.status === "collected" ? <FaCheckCircle size={13} className="text-gray-500 dark:text-gray-400" /> :
                          job.status === "cancelled" ? <FaExclamationTriangle size={12} className="text-red-600 dark:text-red-400" /> :
-                         <FaClock size={12} className="text-amber-600 dark:text-amber-400" />}
+                         <FaClock size={12} className="text-brand-600 dark:text-brand-400" />}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Link href={`/dashboard/pos/jobs/${job._id}`} className="text-sm font-mono font-semibold text-amber-600 dark:text-amber-400 hover:underline">
+                          <Link href={`/dashboard/pos/jobs/${job._id}`} className="text-sm font-mono font-semibold text-brand-600 dark:text-brand-400 hover:underline">
                             {job.jobNumber}
                           </Link>
                           <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${STATUS_COLORS[job.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
@@ -235,7 +235,7 @@ export default function CustomerDetailPage() {
                         </p>
                         <p className="text-xs text-gray-500 mt-0.5 truncate">{job.faultDescription}</p>
                         {job.repairWork && (
-                          <p className="text-xs text-amber-400/80 mt-0.5 truncate">✓ {job.repairWork}</p>
+                          <p className="text-xs text-brand-400/80 mt-0.5 truncate">✓ {job.repairWork}</p>
                         )}
                         <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                           <span className="text-xs text-gray-600">
@@ -252,14 +252,14 @@ export default function CustomerDetailPage() {
                       <div className="flex items-center gap-1.5 justify-end">
                         <Link
                           href={`/dashboard/pos/jobs/${job._id}`}
-                          className="text-xs text-gray-500 hover:text-amber-400 transition"
+                          className="text-xs text-gray-500 hover:text-brand-400 transition"
                         >
                           View
                         </Link>
                         <span className="text-gray-700">·</span>
                         <button
                           onClick={() => printRepairReceipt({ ...job, status: job.status }, [])}
-                          className="text-xs text-gray-500 hover:text-amber-400 transition flex items-center gap-1"
+                          className="text-xs text-gray-500 hover:text-brand-400 transition flex items-center gap-1"
                         >
                           <FaPrint size={9} /> Receipt
                         </button>

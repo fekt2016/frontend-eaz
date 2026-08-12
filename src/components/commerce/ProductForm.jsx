@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 
 const inputClass =
-  "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200";
+  "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700";
 
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-semibold text-gray-500 uppercase tracking-wide">
+      <span className="mb-1.5 block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
         {label}
       </span>
       {children}
@@ -148,23 +148,23 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         />
       </Field>
 
-      <label className="flex items-center gap-2.5 text-sm text-gray-700">
+      <label className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
         <input
           type="checkbox"
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300"
+          className="h-4 w-4 rounded border-gray-300 dark:border-slate-600"
         />
         Active (visible in the shop)
       </label>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
 
       <div className="flex items-center gap-3 pt-2">
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 transition disabled:opacity-60"
+          className="rounded-full bg-gray-900 dark:bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
         >
           {submitting ? "Saving..." : submitLabel}
         </button>

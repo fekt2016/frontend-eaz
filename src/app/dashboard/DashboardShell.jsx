@@ -42,7 +42,7 @@ export default function DashboardShell({ children, title = "Dashboard" }) {
           <span className="font-bold text-gray-900 dark:text-white text-sm">{title}</span>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <div className="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-xs">
+            <div className="w-7 h-7 rounded-full bg-brand-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
           </div>

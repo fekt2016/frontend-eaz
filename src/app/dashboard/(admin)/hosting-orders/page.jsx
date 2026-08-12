@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 
 const statusColors = {
-  pending: "bg-amber-50 text-amber-700 ring-amber-100",
+  pending: "bg-brand-50 text-brand-700 ring-brand-100",
   paid: "bg-blue-50 text-blue-700 ring-blue-100",
   active: "bg-emerald-50 text-emerald-700 ring-emerald-100",
   cancelled: "bg-red-50 text-red-700 ring-red-100",
@@ -210,8 +210,8 @@ export default function AdminHostingOrdersPage() {
               ← Back to Dashboard
             </Link>
             <div className="flex items-center gap-3 mb-2">
-              <span className="w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <FaServer size={20} className="text-amber-600 dark:text-amber-400" />
+              <span className="w-11 h-11 rounded-xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center">
+                <FaServer size={20} className="text-brand-600 dark:text-brand-400" />
               </span>
               <div>
                 <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Hosting — Admin</h1>
@@ -243,9 +243,9 @@ export default function AdminHostingOrdersPage() {
             {attentionAlerts.map((msg, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-300"
+                className="flex items-start gap-2 rounded-xl border border-brand-200 dark:border-brand-900/40 bg-brand-50 dark:bg-brand-900/20 px-4 py-3 text-sm text-brand-900 dark:text-brand-300"
               >
-                <FaExclamationTriangle className="shrink-0 mt-0.5 text-amber-600" />
+                <FaExclamationTriangle className="shrink-0 mt-0.5 text-brand-600" />
                 <span>{msg}</span>
               </div>
             ))}
@@ -263,13 +263,13 @@ export default function AdminHostingOrdersPage() {
             label="Pending review"
             value={summaryLoading ? "…" : summary?.pending}
             hint="Often bank transfers — verify payout"
-            accent="text-amber-700"
+            accent="text-brand-700"
           />
           <StatCard
             label="With proof uploaded"
             value={summaryLoading ? "…" : summary?.pendingBankTransfersWithProof}
             hint="Pending + bank TX + receipt"
-            accent="text-amber-800"
+            accent="text-brand-800"
           />
           <StatCard
             label="Paid (queue)"
@@ -296,7 +296,7 @@ export default function AdminHostingOrdersPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search email, name, domain, Paystack ref, Mongo order ID…"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300 dark:focus:border-amber-600"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-300 dark:focus:border-brand-600"
               />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -324,7 +324,7 @@ export default function AdminHostingOrdersPage() {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-500 dark:text-slate-400">
-            <FaSpinner className="animate-spin text-2xl text-amber-500" />
+            <FaSpinner className="animate-spin text-2xl text-brand-500" />
             <span className="text-sm">Loading orders…</span>
           </div>
         ) : orders.length === 0 ? (
@@ -361,7 +361,7 @@ export default function AdminHostingOrdersPage() {
                                 href={order.proofUploadUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:text-amber-700"
+                                className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700"
                               >
                                 PDF receipt <FaExternalLinkAlt size={9} />
                               </a>
@@ -389,7 +389,7 @@ export default function AdminHostingOrdersPage() {
                           )}
                         </td>
                         <td className="px-4 py-3 align-top capitalize">
-                          <Link href={`/dashboard/hosting/${order._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 hover:underline">
+                          <Link href={`/dashboard/hosting/${order._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 hover:underline">
                             {order.planType} · {order.tier}
                           </Link>
                           <p className="text-xs text-gray-400 dark:text-slate-500 capitalize">{order.billingCycle}</p>
@@ -443,7 +443,7 @@ export default function AdminHostingOrdersPage() {
                                 type="button"
                                 disabled={cpanelBusy === order._id}
                                 onClick={() => handleAdminCpanel(order._id)}
-                                className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 inline-flex items-center gap-1"
+                                className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-50 inline-flex items-center gap-1"
                               >
                                 {cpanelBusy === order._id ? <FaSpinner size={11} className="animate-spin" /> : null}
                                 cPanel

@@ -190,7 +190,7 @@ export default function AdminChatsPage() {
             <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">
               {sessions.length} total · {totalOpen} open · {totalResolved} resolved
               {pendingCount > 0 && (
-                <span className="ml-2 inline-flex items-center gap-1 text-amber-500 font-semibold">
+                <span className="ml-2 inline-flex items-center gap-1 text-brand-500 font-semibold">
                   · <FaBell size={10} className="animate-pulse" /> {pendingCount} pending
                 </span>
               )}
@@ -214,8 +214,8 @@ export default function AdminChatsPage() {
         <div className="grid grid-cols-5 gap-3 mb-6">
           {[
             { label: "Total",    value: sessions.length, color: "text-gray-900 dark:text-white",           border: "border-gray-100 dark:border-slate-800" },
-            { label: "Open",     value: totalOpen,       color: totalOpen > 0 ? "text-amber-500" : "text-gray-900 dark:text-white", border: "border-gray-100 dark:border-slate-800" },
-            { label: "Pending",  value: pendingCount,    color: pendingCount > 0 ? "text-amber-500" : "text-gray-900 dark:text-white", border: pendingCount > 0 ? "border-amber-200 dark:border-amber-900/40" : "border-gray-100 dark:border-slate-800" },
+            { label: "Open",     value: totalOpen,       color: totalOpen > 0 ? "text-brand-500" : "text-gray-900 dark:text-white", border: "border-gray-100 dark:border-slate-800" },
+            { label: "Pending",  value: pendingCount,    color: pendingCount > 0 ? "text-brand-500" : "text-gray-900 dark:text-white", border: pendingCount > 0 ? "border-brand-200 dark:border-brand-900/40" : "border-gray-100 dark:border-slate-800" },
             { label: "Live",     value: liveCount,       color: liveCount > 0 ? "text-emerald-500" : "text-gray-900 dark:text-white", border: liveCount > 0 ? "border-emerald-200 dark:border-emerald-900/40" : "border-gray-100 dark:border-slate-800" },
             { label: "Resolved", value: totalResolved,   color: "text-emerald-600 dark:text-emerald-400",  border: "border-gray-100 dark:border-slate-800" },
           ].map(({ label, value, color, border }) => (
@@ -228,9 +228,9 @@ export default function AdminChatsPage() {
 
         {/* New pending alert */}
         {newAlert && (
-          <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 animate-pulse">
-            <FaBell size={14} className="text-amber-500 flex-shrink-0" />
-            <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+          <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-2xl bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 animate-pulse">
+            <FaBell size={14} className="text-brand-500 flex-shrink-0" />
+            <p className="text-sm font-semibold text-brand-700 dark:text-brand-400">
               New live chat request — a user is waiting for your response!
             </p>
           </div>
@@ -251,10 +251,10 @@ export default function AdminChatsPage() {
               className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
                 filter === val
                   ? val === "pending"
-                    ? "bg-amber-500 text-white"
+                    ? "bg-brand-500 text-white"
                     : val === "live"
                       ? "bg-emerald-500 text-white"
-                      : "bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900"
+                      : "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900"
                   : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
@@ -265,7 +265,7 @@ export default function AdminChatsPage() {
 
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <FaSpinner className="animate-spin text-2xl text-amber-500" />
+            <FaSpinner className="animate-spin text-2xl text-brand-500" />
             <span className="text-sm">Loading sessions…</span>
           </div>
         ) : visibleSessions.length === 0 ? (
@@ -300,12 +300,12 @@ export default function AdminChatsPage() {
                       ? s.humanAccepted && !s.resolved
                         ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/10"
                         : s.humanRequested && !s.humanAccepted && !s.resolved
-                          ? "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10"
-                          : "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10"
+                          ? "border-brand-300 dark:border-brand-700 bg-brand-50 dark:bg-brand-900/10"
+                          : "border-brand-300 dark:border-brand-700 bg-brand-50 dark:bg-brand-900/10"
                       : s.humanAccepted && !s.resolved
                         ? "border-emerald-200 dark:border-emerald-900/40 bg-white dark:bg-slate-900 hover:border-emerald-300 dark:hover:border-emerald-800"
                         : s.humanRequested && !s.humanAccepted && !s.resolved
-                          ? "border-amber-200 dark:border-amber-900/40 bg-white dark:bg-slate-900 hover:border-amber-300 dark:hover:border-amber-800"
+                          ? "border-brand-200 dark:border-brand-900/40 bg-white dark:bg-slate-900 hover:border-brand-300 dark:hover:border-brand-800"
                           : s.resolved
                             ? "border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 opacity-60"
                             : "border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-gray-200 dark:hover:border-slate-700"
@@ -317,8 +317,8 @@ export default function AdminChatsPage() {
                         s.humanAccepted && !s.resolved
                           ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
                           : s.humanRequested && !s.resolved
-                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
-                            : "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                            ? "bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400"
+                            : "bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400"
                       }`}>
                         {s.name ? s.name.charAt(0).toUpperCase() : "?"}
                       </div>
@@ -334,7 +334,7 @@ export default function AdminChatsPage() {
                     {/* Status badges */}
                     <div className="flex flex-col items-end gap-1 flex-shrink-0">
                       {s.humanRequested && !s.humanAccepted && !s.resolved && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 px-1.5 py-0.5 rounded-full">
                           <FaBell size={8} className="animate-pulse" /> Pending
                         </span>
                       )}
@@ -347,7 +347,7 @@ export default function AdminChatsPage() {
                         <span className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">Closed</span>
                       )}
                       {!s.resolved && !s.humanRequested && (
-                        <span className="w-2 h-2 rounded-full bg-amber-400" />
+                        <span className="w-2 h-2 rounded-full bg-brand-400" />
                       )}
                     </div>
                   </div>
@@ -373,25 +373,25 @@ export default function AdminChatsPage() {
                   active.humanAccepted && !active.resolved
                     ? "border-emerald-200 dark:border-emerald-900/40"
                     : active.humanRequested && !active.humanAccepted && !active.resolved
-                      ? "border-amber-200 dark:border-amber-900/40"
+                      ? "border-brand-200 dark:border-brand-900/40"
                       : "border-gray-100 dark:border-slate-800"
                 }`}>
 
                   {/* Pending banner — user waiting, admin hasn't accepted yet */}
                   {active.humanRequested && !active.humanAccepted && !active.resolved && (
-                    <div className="px-5 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-900/30 flex items-center gap-3">
-                      <FaBell size={14} className="text-amber-500 animate-pulse flex-shrink-0" />
+                    <div className="px-5 py-3 bg-brand-50 dark:bg-brand-900/20 border-b border-brand-100 dark:border-brand-900/30 flex items-center gap-3">
+                      <FaBell size={14} className="text-brand-500 animate-pulse flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                        <p className="text-sm font-semibold text-brand-700 dark:text-brand-400">
                           This user is waiting for a live agent
                         </p>
-                        <p className="text-xs text-amber-600 dark:text-amber-500 mt-0.5">
+                        <p className="text-xs text-brand-600 dark:text-brand-500 mt-0.5">
                           Accept the chat to start the live session — the user will be notified instantly.
                         </p>
                       </div>
                       <button
                         onClick={() => acceptChat(active.sessionId)}
-                        className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white transition flex-shrink-0"
+                        className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-brand-500 hover:bg-brand-600 text-white transition flex-shrink-0"
                       >
                         <FaHandshake size={11} /> Accept Chat
                       </button>
@@ -427,7 +427,7 @@ export default function AdminChatsPage() {
                         </span>
                         {/* State badge */}
                         {active.humanRequested && !active.humanAccepted && !active.resolved && (
-                          <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 px-1.5 py-0.5 rounded-full">
                             Pending
                           </span>
                         )}
@@ -439,7 +439,7 @@ export default function AdminChatsPage() {
                       </div>
                       <div className="flex flex-wrap gap-3 mt-0.5">
                         {active.email && (
-                          <a href={`mailto:${active.email}`} className="text-xs text-amber-500 flex items-center gap-1 hover:underline">
+                          <a href={`mailto:${active.email}`} className="text-xs text-brand-500 flex items-center gap-1 hover:underline">
                             <FaEnvelope size={9} />{active.email}
                           </a>
                         )}
@@ -464,7 +464,7 @@ export default function AdminChatsPage() {
                       {active.humanRequested && !active.humanAccepted && !active.resolved && (
                         <button
                           onClick={() => acceptChat(active.sessionId)}
-                          className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white transition"
+                          className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-brand-500 hover:bg-brand-600 text-white transition"
                         >
                           <FaHandshake size={10} /> Accept
                         </button>
@@ -522,7 +522,7 @@ export default function AdminChatsPage() {
                             )}
                             <div className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
                               isUser
-                                ? "bg-amber-500 text-white rounded-tr-sm"
+                                ? "bg-brand-500 text-white rounded-tr-sm"
                                 : isAdmin
                                   ? "bg-indigo-50 dark:bg-indigo-900/30 text-gray-800 dark:text-slate-200 border border-indigo-100 dark:border-indigo-800 rounded-tl-sm"
                                   : "bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-100 dark:border-slate-700 rounded-tl-sm"
@@ -559,15 +559,15 @@ export default function AdminChatsPage() {
 
                   {/* Reply box — locked until admin accepts the chat */}
                   {active.humanRequested && !active.humanAccepted && !active.resolved ? (
-                    <div className="border-t border-amber-100 dark:border-amber-900/30 p-4 bg-amber-50/40 dark:bg-amber-900/5">
+                    <div className="border-t border-brand-100 dark:border-brand-900/30 p-4 bg-brand-50/40 dark:bg-brand-900/5">
                       <div className="flex items-center gap-3 justify-center py-2">
-                        <FaBell size={13} className="text-amber-500 animate-pulse" />
-                        <p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
+                        <FaBell size={13} className="text-brand-500 animate-pulse" />
+                        <p className="text-sm text-brand-700 dark:text-brand-400 font-medium">
                           Accept the chat above to start replying
                         </p>
                         <button
                           onClick={() => acceptChat(active.sessionId)}
-                          className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white transition"
+                          className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-brand-500 hover:bg-brand-600 text-white transition"
                         >
                           <FaHandshake size={10} /> Accept
                         </button>

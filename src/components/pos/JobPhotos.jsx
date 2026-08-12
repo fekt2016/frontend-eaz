@@ -51,7 +51,7 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-800 bg-gray-800/50">
         <div className="flex items-center gap-2">
-          <FaCamera size={12} className="text-amber-400" />
+          <FaCamera size={12} className="text-brand-400" />
           <p className="text-xs font-semibold text-gray-300 uppercase tracking-wide">
             Device Photos
           </p>
@@ -61,7 +61,7 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 transition disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition disabled:opacity-50"
           >
             {uploading
               ? <><FaSpinner className="animate-spin" size={10} /> Uploading…</>
@@ -79,12 +79,12 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
             onDrop={handleDrop}
             onDragOver={e => e.preventDefault()}
             onClick={() => fileRef.current?.click()}
-            className="border-2 border-dashed border-gray-700 hover:border-amber-500/50 rounded-xl p-8 text-center cursor-pointer transition group"
+            className="border-2 border-dashed border-gray-700 hover:border-brand-500/50 rounded-xl p-8 text-center cursor-pointer transition group"
           >
             {uploading ? (
-              <FaSpinner size={24} className="text-amber-400 animate-spin mx-auto mb-2" />
+              <FaSpinner size={24} className="text-brand-400 animate-spin mx-auto mb-2" />
             ) : (
-              <FaCamera size={24} className="text-gray-600 group-hover:text-amber-400 mx-auto mb-2 transition" />
+              <FaCamera size={24} className="text-gray-600 group-hover:text-brand-400 mx-auto mb-2 transition" />
             )}
             <p className="text-sm text-gray-500 group-hover:text-gray-300 transition">
               {uploading ? "Uploading…" : "Click or drag photos here"}
@@ -139,7 +139,7 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="aspect-square rounded-xl border-2 border-dashed border-gray-700 hover:border-amber-500/50 flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-amber-400 transition disabled:opacity-50"
+                className="aspect-square rounded-xl border-2 border-dashed border-gray-700 hover:border-brand-500/50 flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-brand-400 transition disabled:opacity-50"
               >
                 {uploading
                   ? <FaSpinner size={16} className="animate-spin" />

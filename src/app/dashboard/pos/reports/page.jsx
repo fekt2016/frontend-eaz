@@ -12,7 +12,7 @@ const STATUS_COLORS = {
   received:          "bg-blue-500/20 text-blue-600 dark:text-blue-400",
   diagnosing:        "bg-purple-500/20 text-purple-600 dark:text-purple-400",
   waiting_for_parts: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
-  repairing:         "bg-amber-500/20 text-amber-600 dark:text-amber-400",
+  repairing:         "bg-brand-500/20 text-brand-600 dark:text-brand-400",
   ready:             "bg-green-500/20 text-green-600 dark:text-green-400",
   collected:         "bg-gray-500/20 text-gray-500 dark:text-gray-400",
   cancelled:         "bg-red-500/20 text-red-600 dark:text-red-400",
@@ -99,7 +99,7 @@ export default function ReportsPage() {
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Reports</h1>
           <p className="text-sm text-gray-500 mt-0.5">Shop performance overview</p>
         </div>
-        {loading && <FaSpinner className="animate-spin text-amber-600 dark:text-amber-400" size={16} />}
+        {loading && <FaSpinner className="animate-spin text-brand-600 dark:text-brand-400" size={16} />}
       </div>
 
       {/* Date range */}
@@ -111,7 +111,7 @@ export default function ReportsPage() {
               onClick={() => applyPreset(p)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                 preset === p.label
-                  ? "bg-amber-500 text-white"
+                  ? "bg-brand-500 text-white"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
@@ -123,14 +123,14 @@ export default function ReportsPage() {
               type="date"
               value={from}
               onChange={e => { setFrom(e.target.value); setPreset("custom"); }}
-              className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-amber-500"
+              className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-brand-500"
             />
             <span className="text-gray-500 text-xs">to</span>
             <input
               type="date"
               value={to}
               onChange={e => { setTo(e.target.value); setPreset("custom"); }}
-              className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-amber-500"
+              className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-brand-500"
             />
           </div>
         </div>
@@ -145,10 +145,10 @@ export default function ReportsPage() {
           {/* Key stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <Stat label="Total Revenue"     value={`GH₵${(stats?.totalRevenue || 0).toLocaleString()}`}  color="text-green-600 dark:text-green-400"  icon={FaMoneyBillWave} sub={`${stats?.totalPayments || 0} payments`} />
-            <Stat label="Today's Revenue"   value={`GH₵${(stats?.todayRevenue  || 0).toLocaleString()}`} color="text-amber-600 dark:text-amber-400"  icon={FaChartBar}      sub="Payments today" />
+            <Stat label="Today's Revenue"   value={`GH₵${(stats?.todayRevenue  || 0).toLocaleString()}`} color="text-brand-600 dark:text-brand-400"  icon={FaChartBar}      sub="Payments today" />
             <Stat label="Total Jobs"        value={stats?.totalJobs}        icon={FaWrench}    sub="All time" />
             <Stat label="New Today"         value={stats?.todayJobs}        icon={FaWrench}    sub="Jobs created today" color="text-blue-600 dark:text-blue-400" />
-            <Stat label="In Progress"       value={stats?.pendingJobs}      icon={FaSpinner}   color="text-amber-600 dark:text-amber-400" sub="Active repairs" />
+            <Stat label="In Progress"       value={stats?.pendingJobs}      icon={FaSpinner}   color="text-brand-600 dark:text-brand-400" sub="Active repairs" />
             <Stat label="Ready to Collect"  value={stats?.readyJobs}        icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="Awaiting pickup" />
             <Stat label="Customers"         value={stats?.totalCustomers}   icon={FaUsers}     sub="Registered" />
             <Stat label="Low Stock"         value={stats?.lowStockCount}    icon={FaExclamationTriangle} color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"} sub="Parts below threshold" />
@@ -173,7 +173,7 @@ export default function ReportsPage() {
                       GH₵{day.total >= 1000 ? `${(day.total/1000).toFixed(1)}k` : day.total.toLocaleString()}
                     </p>
                     <div
-                      className="w-full rounded-t-lg bg-amber-500/70 hover:bg-amber-500 transition"
+                      className="w-full rounded-t-lg bg-brand-500/70 hover:bg-brand-500 transition"
                       title={`GH₵${day.total.toLocaleString()} · ${day.count} payment${day.count !== 1 ? "s" : ""}`}
                       style={{ height: `${Math.max(4, (day.total / maxDailyRevenue) * 100)}%` }}
                     />
@@ -191,7 +191,7 @@ export default function ReportsPage() {
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Expenses by Category</h2>
-                <Link href="/dashboard/pos/expenses" className="text-xs text-amber-600 dark:text-amber-400 hover:underline">Manage →</Link>
+                <Link href="/dashboard/pos/expenses" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">Manage →</Link>
               </div>
               <div className="space-y-3">
                 {expenseCats.map(e => {
@@ -242,7 +242,7 @@ export default function ReportsPage() {
                           <span className="text-gray-900 dark:text-white font-semibold">GH₵{m.total.toLocaleString()}</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
-                          <div className="h-1.5 rounded-full bg-amber-500 transition-all" style={{ width: `${pct}%` }} />
+                          <div className="h-1.5 rounded-full bg-brand-500 transition-all" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
@@ -280,8 +280,8 @@ export default function ReportsPage() {
                         <span className="text-xs text-gray-600 w-4 text-right">{i + 1}</span>
                         <span className="flex-1 text-sm text-gray-600 dark:text-gray-300 truncate">{p._id}</span>
                         <span className="text-xs text-gray-500">{p.timesUsed}×</span>
-                        <span className={`text-xs font-medium w-12 text-right ${margin >= 40 ? "text-green-600 dark:text-green-400" : margin >= 20 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>{margin}%</span>
-                        <span className="text-sm text-amber-600 dark:text-amber-400 font-semibold w-24 text-right">GH₵{p.revenue.toLocaleString()}</span>
+                        <span className={`text-xs font-medium w-12 text-right ${margin >= 40 ? "text-green-600 dark:text-green-400" : margin >= 20 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>{margin}%</span>
+                        <span className="text-sm text-brand-600 dark:text-brand-400 font-semibold w-24 text-right">GH₵{p.revenue.toLocaleString()}</span>
                       </div>
                     );
                   })}
@@ -301,16 +301,16 @@ export default function ReportsPage() {
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="text-xs text-gray-600 w-4">{i + 1}</span>
-                            <span className="text-xs font-mono text-amber-600 dark:text-amber-400">{job.jobNumber}</span>
+                            <span className="text-xs font-mono text-brand-600 dark:text-brand-400">{job.jobNumber}</span>
                             <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{job.customer?.name}</span>
                           </div>
                           <div className="flex items-center gap-3 flex-shrink-0">
-                            <span className={`text-xs font-semibold ${pct >= 50 ? "text-green-600 dark:text-green-400" : pct >= 25 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>{pct}%</span>
+                            <span className={`text-xs font-semibold ${pct >= 50 ? "text-green-600 dark:text-green-400" : pct >= 25 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>{pct}%</span>
                             <span className="text-sm font-bold text-green-600 dark:text-green-400 w-24 text-right">GH₵{job.grossProfit.toLocaleString()}</span>
                           </div>
                         </div>
                         <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${pct >= 50 ? "bg-green-500/60" : pct >= 25 ? "bg-amber-500/60" : "bg-red-500/60"}`} style={{ width: `${Math.min(100, pct)}%` }} />
+                          <div className={`h-full rounded-full ${pct >= 50 ? "bg-green-500/60" : pct >= 25 ? "bg-brand-500/60" : "bg-red-500/60"}`} style={{ width: `${Math.min(100, pct)}%` }} />
                         </div>
                       </Link>
                     );
@@ -361,7 +361,7 @@ export default function ReportsPage() {
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-mono text-amber-600 dark:text-amber-400">{job.jobNumber}</p>
+                          <p className="text-sm font-mono text-brand-600 dark:text-brand-400">{job.jobNumber}</p>
                           <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${STATUS_COLORS[job.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
                             {job.status.replace(/_/g, " ")}
                           </span>

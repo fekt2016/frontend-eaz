@@ -11,7 +11,7 @@ const STATUS_COLORS = {
   received:           "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
   diagnosing:         "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
   waiting_for_parts:  "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30",
-  repairing:          "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+  repairing:          "bg-brand-500/15 text-brand-600 dark:text-brand-400 border-brand-500/30",
   ready:              "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
   collected:          "bg-gray-500/15 text-gray-500 dark:text-gray-400 border-gray-500/30",
   cancelled:          "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
@@ -59,7 +59,7 @@ function JobRow({ job }) {
 
 const Spinner = () => (
   <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-    <div className="w-6 h-6 border-2 border-slate-700 border-t-amber-400 rounded-full animate-spin" />
+    <div className="w-6 h-6 border-2 border-slate-700 border-t-brand-400 rounded-full animate-spin" />
   </div>
 );
 
@@ -78,7 +78,6 @@ export default function PosRoot() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) { router.replace("/auth/login?redirect=/dashboard/pos"); return; }
-    if (user.role === "cashier") { router.replace("/dashboard/pos/sell"); return; }
     if (!["technician", "admin"].includes(user.role)) { router.replace("/dashboard/pos/dashboard"); }
   }, [user, authLoading, router]);
 
@@ -134,7 +133,7 @@ export default function PosRoot() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: "New / Waiting",  value: counts.received, color: "text-blue-600 dark:text-blue-400" },
-          { label: "In Progress",    value: counts.active,   color: "text-amber-600 dark:text-amber-400" },
+          { label: "In Progress",    value: counts.active,   color: "text-brand-600 dark:text-brand-400" },
           { label: "Ready",          value: counts.ready,    color: "text-green-600 dark:text-green-400" },
           { label: "Urgent",         value: counts.urgent,   color: "text-red-600 dark:text-red-400" },
         ].map(({ label, value, color }) => (
@@ -156,7 +155,7 @@ export default function PosRoot() {
             onClick={() => setTab(t.key)}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
               tab === t.key
-                ? "bg-amber-500 text-white"
+                ? "bg-brand-500 text-white"
                 : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             }`}
           >

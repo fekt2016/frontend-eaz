@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { FaSearch, FaUser, FaPhone, FaPlus } from "react-icons/fa";
 import { formatPhoneInput } from "@/lib/sanitize";
 
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition";
+const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const labelCls = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
 function AddCustomerModal({ onClose, onSave }) {
@@ -91,7 +91,7 @@ function AddCustomerModal({ onClose, onSave }) {
             )}
           </div>
           {error && <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>}
-          <button type="submit" disabled={saving} className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold disabled:opacity-50 transition">
+          <button type="submit" disabled={saving} className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold disabled:opacity-50 transition">
             {saving ? "Saving…" : "Add Customer"}
           </button>
         </form>
@@ -139,7 +139,7 @@ export default function CustomersPage() {
         </div>
         <button
           onClick={() => setModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
         >
           <FaPlus size={11} /> Add Customer
         </button>
@@ -152,7 +152,7 @@ export default function CustomersPage() {
           value={q}
           onChange={e => { setQ(e.target.value); setPage(1); }}
           placeholder="Search by name or phone…"
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition"
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition"
         />
       </div>
 
@@ -176,7 +176,7 @@ export default function CustomersPage() {
                 className="flex items-center justify-between px-5 py-4 hover:bg-gray-100/40 dark:hover:bg-gray-800/40 transition"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-brand-500/15 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0">
                     {(c.name || c.phone).charAt(0).toUpperCase()}
                   </div>
                   <div>

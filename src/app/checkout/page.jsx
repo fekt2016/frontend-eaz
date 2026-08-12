@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 
 const inputCls =
-  "w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 transition bg-white";
+  "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-900";
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -75,14 +75,14 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-white px-4 pt-28 pb-24">
-        <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
+      <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-28 pb-24">
+        <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-6 py-16 text-center">
           <p className="text-3xl mb-3">🛒</p>
-          <p className="font-semibold text-gray-900 mb-2">Your cart is empty</p>
-          <p className="text-gray-400 text-sm mb-6">Add a product to the cart before checking out.</p>
+          <p className="font-semibold text-gray-900 dark:text-white mb-2">Your cart is empty</p>
+          <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">Add a product to the cart before checking out.</p>
           <Link
             href="/shop"
-            className="rounded-full bg-gray-900 px-5 py-2 text-xs font-semibold text-white hover:bg-gray-700 transition"
+            className="rounded-full bg-gray-900 dark:bg-brand-500 px-5 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
           >
             Browse the Shop
           </Link>
@@ -92,32 +92,32 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white px-4 pt-28 pb-24">
+    <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-28 pb-24">
       <div className="mx-auto max-w-5xl">
         <Link
           href="/cart"
-          className="mb-8 inline-flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-gray-900 transition"
+          className="mb-8 inline-flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition"
         >
           <FaArrowLeft size={10} /> Back to cart
         </Link>
 
-        <h1 className="font-display font-black text-3xl md:text-4xl text-gray-900 mb-2">Checkout</h1>
-        <p className="text-gray-500 text-sm mb-10">
+        <h1 className="font-display font-black text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Checkout</h1>
+        <p className="text-gray-500 dark:text-slate-400 text-sm mb-10">
           One step — tell us where to deliver and pay securely with Paystack.
         </p>
 
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>
+          <div className="mb-6 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">{error}</div>
         )}
 
         <div className="grid gap-8 lg:grid-cols-[1fr,340px]">
           {/* LEFT: customer details + delivery zone */}
           <div className="space-y-6">
-            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
-              <h2 className="font-display text-xl font-semibold text-gray-900 mb-4">Delivery Details</h2>
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-6">
+              <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-4">Delivery Details</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700">Full Name *</label>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Full Name *</label>
                   <input
                     type="text"
                     value={customer.name}
@@ -127,7 +127,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700">Phone *</label>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Phone *</label>
                   <input
                     type="tel"
                     value={customer.phone}
@@ -137,8 +137,8 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                    Email <span className="text-gray-400">(optional — for your receipt)</span>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">
+                    Email <span className="text-gray-400 dark:text-slate-500">(optional — for your receipt)</span>
                   </label>
                   <input
                     type="email"
@@ -149,7 +149,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700">Delivery Address</label>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Delivery Address</label>
                   <input
                     type="text"
                     value={customer.address}
@@ -161,10 +161,10 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
-              <h2 className="font-display text-xl font-semibold text-gray-900 mb-4">Delivery Zone</h2>
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-6">
+              <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-4">Delivery Zone</h2>
               {zones.length === 0 ? (
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-400 dark:text-slate-500">
                   Delivery zones are loading... (or no zones configured — no delivery fee applies.)
                 </p>
               ) : (
@@ -175,16 +175,18 @@ export default function CheckoutPage() {
                       type="button"
                       onClick={() => setZoneId(zone._id)}
                       className={`w-full rounded-xl border p-4 text-left transition ${
-                        zoneId === zone._id ? "border-amber-300 bg-amber-50" : "border-gray-100 bg-white hover:border-gray-200"
+                        zoneId === zone._id
+                          ? "border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/10"
+                          : "border-gray-100 bg-white hover:border-gray-200 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700"
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-900">{zone.name}</span>
-                        <span className={`font-semibold ${zone.fee === 0 ? "text-emerald-600" : "text-amber-500"}`}>
+                        <span className="font-semibold text-gray-900 dark:text-white">{zone.name}</span>
+                        <span className={`font-semibold ${zone.fee === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-brand-500"}`}>
                           {zone.fee === 0 ? "Free" : formatGhs(zone.fee)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">
                         {zone.estimatedDays} {zone.estimatedDays === 1 ? "day" : "days"} estimated delivery
                       </p>
                     </button>
@@ -196,41 +198,41 @@ export default function CheckoutPage() {
 
           {/* RIGHT: order summary */}
           <div className="lg:sticky lg:top-24 h-fit">
-            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Order Summary</h3>
-              <ul className="divide-y divide-gray-100 border-b border-gray-100 mb-4">
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-6">
+              <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
+              <ul className="divide-y divide-gray-100 dark:divide-slate-800 border-b border-gray-100 dark:border-slate-800 mb-4">
                 {items.map((item) => (
                   <li key={item.slug} className="flex justify-between gap-3 py-3 text-sm">
-                    <span className="text-gray-700">
-                      {item.name} <span className="text-gray-400">× {item.qty}</span>
+                    <span className="text-gray-700 dark:text-slate-300">
+                      {item.name} <span className="text-gray-400 dark:text-slate-500">× {item.qty}</span>
                     </span>
-                    <span className="font-medium text-gray-900">{formatGhs(item.price * item.qty)}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formatGhs(item.price * item.qty)}</span>
                   </li>
                 ))}
               </ul>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Subtotal</span>
-                  <span className="text-gray-900">{formatGhs(subtotal)}</span>
+                  <span className="text-gray-500 dark:text-slate-400">Subtotal</span>
+                  <span className="text-gray-900 dark:text-white">{formatGhs(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Delivery</span>
-                  <span className="text-gray-900">{deliveryFee === 0 ? "—" : formatGhs(deliveryFee)}</span>
+                  <span className="text-gray-500 dark:text-slate-400">Delivery</span>
+                  <span className="text-gray-900 dark:text-white">{deliveryFee === 0 ? "—" : formatGhs(deliveryFee)}</span>
                 </div>
-                <div className="flex justify-between border-t border-gray-200 pt-3 font-semibold text-base">
-                  <span className="text-gray-900">Total</span>
-                  <span className="text-amber-500">{formatGhs(total)}</span>
+                <div className="flex justify-between border-t border-gray-200 dark:border-slate-700 pt-3 font-semibold text-base">
+                  <span className="text-gray-900 dark:text-white">Total</span>
+                  <span className="text-brand-500">{formatGhs(total)}</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handlePlaceOrder}
                 disabled={loading}
-                className="mt-5 w-full rounded-full bg-gray-900 py-3 text-sm font-semibold text-white hover:bg-gray-700 transition disabled:opacity-60"
+                className="mt-5 w-full rounded-full bg-gray-900 dark:bg-brand-500 py-3 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
               >
                 {loading ? "Processing..." : `Pay ${formatGhs(total)} Securely`}
               </button>
-              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-gray-400">
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-gray-400 dark:text-slate-500">
                 <FaLock size={10} /> Secured by Paystack — card &amp; mobile money
               </p>
             </div>

@@ -10,7 +10,7 @@ import { formatGhs } from "@/lib/shop";
 const STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
 const statusColors = {
-  pending: "bg-amber-50 text-amber-700",
+  pending: "bg-brand-50 text-brand-700",
   paid: "bg-blue-50 text-blue-700",
   processing: "bg-indigo-50 text-indigo-700",
   shipped: "bg-purple-50 text-purple-700",

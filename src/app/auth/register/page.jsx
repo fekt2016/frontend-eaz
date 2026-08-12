@@ -116,9 +116,9 @@ function RegisterPageInner() {
               <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 rounded border-gray-300 text-gray-900 focus:ring-gray-400" />
               <span>
                 I agree to the{" "}
-                <Link href="/terms" className="text-amber-500 hover:underline">Terms of Service</Link>
+                <Link href="/terms" className="text-brand-500 hover:underline">Terms of Service</Link>
                 {" "}and{" "}
-                <Link href="/privacy" className="text-amber-500 hover:underline">Privacy Policy</Link>
+                <Link href="/privacy" className="text-brand-500 hover:underline">Privacy Policy</Link>
               </span>
             </label>
             {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -129,7 +129,7 @@ function RegisterPageInner() {
 
           <p className="text-center text-sm text-gray-500 dark:text-slate-400 mt-5">
             Already have an account?{" "}
-            <Link href="/auth/login" className="text-amber-500 font-medium hover:underline">Sign in →</Link>
+            <Link href="/auth/login" className="text-brand-500 font-medium hover:underline">Sign in →</Link>
           </p>
         </div>
       </div>

@@ -9,7 +9,7 @@ function StarRating({ rating }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((s) => (
-        <FaStar key={s} size={13} className={s <= rating ? "text-amber-400" : "text-gray-200 dark:text-slate-700"} />
+        <FaStar key={s} size={13} className={s <= rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />
       ))}
     </div>
   );
@@ -44,7 +44,7 @@ export default function ReviewsPage() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Client Reviews</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Client Reviews</p>
           <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">What Our Clients Say</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg">Real feedback from real customers. We&apos;re proud of every project we deliver.</p>
         </div>
@@ -55,7 +55,7 @@ export default function ReviewsPage() {
         <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6 text-center">
           {[[avgRating, "Average Rating"], ["100%", "Client Satisfaction"], ["4+", "Years in Accra"]].map(([val, label]) => (
             <div key={label}>
-              <p className="font-display font-black text-3xl text-amber-500">{val}</p>
+              <p className="font-display font-black text-3xl text-brand-500">{val}</p>
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
             </div>
           ))}
@@ -105,7 +105,7 @@ export default function ReviewsPage() {
                   <div key={r._id} className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center font-display font-bold text-amber-600 dark:text-amber-400 text-sm flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center font-display font-bold text-brand-600 dark:text-brand-400 text-sm flex-shrink-0">
                           {r.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -132,7 +132,7 @@ export default function ReviewsPage() {
               </div>
               <div className="mt-4 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
                 <p className="text-gray-500 dark:text-slate-400 text-sm mb-3">Want to work with us?</p>
-                <Link href="/book-consultation" className="block py-2.5 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 transition">
+                <Link href="/book-consultation" className="block py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">
                   Book a Free Consultation
                 </Link>
               </div>

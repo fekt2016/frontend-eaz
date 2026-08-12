@@ -48,18 +48,18 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
         <div>
           <Link href="/" className="font-display font-bold text-xl text-gray-900 dark:text-white">
-            Eaz<span className="text-amber-500">World</span>
+            Eaz<span className="text-brand-500">World</span>
           </Link>
           <p className="text-gray-500 dark:text-slate-400 mt-3 text-sm leading-relaxed">
             Premium digital agency in Accra, Ghana. Web design, hosting, domains, and phone repair.
           </p>
           <div className="mt-4 space-y-2">
             <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-slate-400">
-              <FaMapMarkerAlt className="text-amber-500 mt-0.5 flex-shrink-0" size={11} />
+              <FaMapMarkerAlt className="text-brand-500 mt-0.5 flex-shrink-0" size={11} />
               <span>E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
-              <FaPhone className="text-amber-500 flex-shrink-0" size={11} />
+              <FaPhone className="text-brand-500 flex-shrink-0" size={11} />
               <a href="tel:+233244388190" className="hover:text-gray-900 dark:hover:text-white transition">+233 24 438 8190</a>
             </div>
             <a
@@ -118,7 +118,7 @@ export default function Footer() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-gray-400 dark:text-slate-500 hover:text-amber-500 dark:hover:text-amber-400 transition"
+                className="text-xs text-gray-400 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 transition"
               >
                 {label}
               </a>

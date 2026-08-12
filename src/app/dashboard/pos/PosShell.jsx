@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { FaTools, FaBars, FaSignOutAlt } from "react-icons/fa";
+import { FaTools, FaBars, FaSignOutAlt, FaCog } from "react-icons/fa";
 import { posNav } from "../dashboardNav";
 import Sidebar from "../Sidebar";
 
@@ -16,6 +16,7 @@ const PAGE_TITLES = {
   "/dashboard/pos/jobs": "Jobs",
   "/dashboard/pos/jobs/new": "New Job",
   "/dashboard/pos/customers": "Customers",
+  "/dashboard/pos/orders": "Orders",
   "/dashboard/pos/suppliers": "Suppliers",
   "/dashboard/pos/expenses": "Expenses",
   "/dashboard/pos/warranty": "Warranty",
@@ -24,7 +25,7 @@ const PAGE_TITLES = {
 
 const Spinner = () => (
   <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-    <div className="w-6 h-6 border-2 border-slate-700 border-t-amber-400 rounded-full animate-spin" />
+    <div className="w-6 h-6 border-2 border-slate-700 border-t-brand-400 rounded-full animate-spin" />
   </div>
 );
 
@@ -37,7 +38,7 @@ export default function PosShell({ children }) {
 
   useEffect(() => {
     if (!loading) {
-      const POS_ROLES = ["superadmin", "admin", "staff", "cashier", "technician"];
+      const POS_ROLES = ["superadmin", "admin", "staff", "technician"];
       if (!user) {
         setRedirecting(true);
         router.replace("/auth/login?redirect=/dashboard/pos/sell");
@@ -48,7 +49,7 @@ export default function PosShell({ children }) {
     }
   }, [user, loading, router]);
 
-  const POS_ROLES = ["superadmin", "admin", "staff", "cashier", "technician"];
+  const POS_ROLES = ["superadmin", "admin", "staff", "technician"];
   if (loading || redirecting || !user) return <Spinner />;
   if (!POS_ROLES.includes(user.role)) return <Spinner />;
 
@@ -65,7 +66,7 @@ export default function PosShell({ children }) {
         <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-4 px-4 sm:px-6 py-3">
             <Link href="/dashboard/pos" className="flex items-center gap-2.5 flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
                 <FaTools size={13} className="text-gray-900 dark:text-white" />
               </div>
               <div className="hidden sm:block">
@@ -83,7 +84,7 @@ export default function PosShell({ children }) {
                     href={href}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${
                       active
-                        ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                        ? "bg-brand-500/15 text-brand-600 dark:text-brand-400"
                         : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                   >
@@ -100,6 +101,14 @@ export default function PosShell({ children }) {
                 <p className="text-xs font-semibold text-gray-900 dark:text-white truncate max-w-[120px]">{user.name}</p>
                 <p className="text-xs text-gray-500 capitalize">{user.role}</p>
               </div>
+              <Link
+                href="/dashboard/settings"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                aria-label="Settings"
+              >
+                <FaCog size={13} />
+                <span className="hidden sm:inline">Settings</span>
+              </Link>
               <button
                 onClick={() => { logout(); router.push("/auth/login"); }}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
@@ -141,7 +150,7 @@ export default function PosShell({ children }) {
           <span className="font-bold text-gray-900 dark:text-white text-sm">EazWorld</span>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <div className="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-xs">
+            <div className="w-7 h-7 rounded-full bg-brand-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs">
               {user.name?.charAt(0).toUpperCase()}
             </div>
           </div>

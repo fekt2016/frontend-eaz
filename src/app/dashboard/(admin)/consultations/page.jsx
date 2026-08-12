@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FaSpinner, FaRedo, FaTrash, FaChevronDown, FaEnvelope, FaPhone, FaBuilding, FaCalendarAlt } from "react-icons/fa";
 
 const STATUS_CONFIG = {
-  new:      { label: "New",      cls: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40",     dot: "bg-amber-400" },
+  new:      { label: "New",      cls: "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800/40",     dot: "bg-brand-400" },
   read:     { label: "Read",     cls: "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40",           dot: "bg-blue-400" },
   replied:  { label: "Replied",  cls: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40", dot: "bg-emerald-400" },
   archived: { label: "Archived", cls: "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400 border border-gray-200 dark:border-slate-700",            dot: "bg-gray-400" },
@@ -47,7 +47,7 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
 
   return (
     <div className={`rounded-2xl border bg-white dark:bg-slate-900 overflow-hidden transition ${
-      item.status === "new" ? "border-amber-200 dark:border-amber-800/40" : "border-gray-100 dark:border-slate-800"
+      item.status === "new" ? "border-brand-200 dark:border-brand-800/40" : "border-gray-100 dark:border-slate-800"
     }`}>
       {/* Header row */}
       <div
@@ -55,14 +55,14 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
         onClick={() => setExpanded((v) => !v)}
       >
         <div className="flex items-start gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm flex-shrink-0 mt-0.5">
+          <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0 mt-0.5">
             {item.name?.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
             <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{item.name}</p>
             <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 truncate">{item.email}</p>
             {item.service && (
-              <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mt-1">🎯 {item.service}</p>
+              <p className="text-xs font-medium text-brand-600 dark:text-brand-400 mt-1">🎯 {item.service}</p>
             )}
           </div>
         </div>
@@ -80,11 +80,11 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
 
             {/* Contact info */}
             <div className="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-slate-400">
-              <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 hover:text-amber-500 transition">
+              <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 hover:text-brand-500 transition">
                 <FaEnvelope size={11} /> {item.email}
               </a>
               {item.phone && (
-                <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 hover:text-amber-500 transition">
+                <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 hover:text-brand-500 transition">
                   <FaPhone size={11} /> {item.phone}
                 </a>
               )}
@@ -114,7 +114,7 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
                 placeholder="Add a private note (only visible to admin)…"
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 transition resize-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition resize-none"
               />
               <button
                 onClick={handleSaveNote}
@@ -146,7 +146,7 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
               <div className="flex gap-2">
                 <a
                   href={`mailto:${item.email}?subject=Re: ${encodeURIComponent(item.subject || "Your Consultation Request")}`}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-amber-500 text-white hover:bg-amber-400 transition"
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-400 transition"
                 >
                   <FaEnvelope size={10} /> Reply by Email
                 </a>
@@ -243,7 +243,7 @@ export default function AdminConsultationsPage() {
             <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">
               Consultations
               {newCount > 0 && (
-                <span className="ml-2 text-sm font-semibold px-2.5 py-1 rounded-full bg-amber-500 text-white">{newCount} new</span>
+                <span className="ml-2 text-sm font-semibold px-2.5 py-1 rounded-full bg-brand-500 text-white">{newCount} new</span>
               )}
             </h1>
             <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">Manage booking requests from the consultation form.</p>
@@ -267,7 +267,7 @@ export default function AdminConsultationsPage() {
                 onClick={() => setTypeFilter(val)}
                 className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
                   typeFilter === val
-                    ? "bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900"
+                    ? "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900"
                     : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
@@ -284,7 +284,7 @@ export default function AdminConsultationsPage() {
                 onClick={() => setFilter(val)}
                 className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
                   filter === val
-                    ? "bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900"
+                    ? "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900"
                     : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
@@ -299,7 +299,7 @@ export default function AdminConsultationsPage() {
         <div className="grid grid-cols-4 gap-3 mb-6">
           {[["new", "New"], ["read", "Read"], ["replied", "Replied"], ["archived", "Archived"]].map(([key, label]) => (
             <div key={key} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-4 text-center">
-              <p className={`text-2xl font-bold ${key === "new" && counts.new > 0 ? "text-amber-500" : "text-gray-900 dark:text-white"}`}>
+              <p className={`text-2xl font-bold ${key === "new" && counts.new > 0 ? "text-brand-500" : "text-gray-900 dark:text-white"}`}>
                 {counts[key] || 0}
               </p>
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
@@ -310,7 +310,7 @@ export default function AdminConsultationsPage() {
         {/* List */}
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <FaSpinner className="animate-spin text-2xl text-amber-500" />
+            <FaSpinner className="animate-spin text-2xl text-brand-500" />
             <span className="text-sm">Loading…</span>
           </div>
         ) : items.length === 0 ? (

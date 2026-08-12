@@ -7,7 +7,7 @@ import { PROJECTS, CATEGORIES } from "@/data/portfolioData";
 import { usePortfolioFilter } from "@/hooks/usePortfolio";
 
 const CATEGORY_COLORS = {
-  "E-commerce":   "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  "E-commerce":   "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400",
   "Entertainment":"bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",
   "Logistics":    "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
   "Real Estate":  "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
@@ -31,7 +31,7 @@ export default function PortfolioPage() {
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[1fr_auto] gap-10 items-start">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Our Work</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Our Work</p>
             <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
               Projects That<br />Speak for Themselves.
             </h1>
@@ -41,7 +41,7 @@ export default function PortfolioPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {stats.map((s) => (
                 <div key={s.label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3">
-                  <div className="font-display font-bold text-xl text-amber-500">{s.value}</div>
+                  <div className="font-display font-bold text-xl text-brand-500">{s.value}</div>
                   <div className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{s.label}</div>
                 </div>
               ))}
@@ -64,8 +64,8 @@ export default function PortfolioPage() {
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                 />
                 <div className="min-w-0">
-                  <p className="text-xs text-amber-500 font-medium truncate">{project.client}</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-500 transition truncate">{project.title}</p>
+                  <p className="text-xs text-brand-500 font-medium truncate">{project.client}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-brand-500 transition truncate">{project.title}</p>
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mt-0.5 ${CATEGORY_COLORS[project.category] || "bg-gray-100 text-gray-600"}`}>
                     {project.category}
                   </span>
@@ -125,7 +125,7 @@ export default function PortfolioPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-1">All Projects</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-1">All Projects</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Complete Portfolio</h2>
             </div>
             <p className="sm:hidden text-xs text-gray-400 dark:text-slate-500">{resultCount} projects</p>
@@ -172,8 +172,8 @@ export default function PortfolioPage() {
                   </div>
 
                   <div className="flex flex-1 flex-col p-5">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-500 mb-0.5">{project.client}</p>
-                    <h3 className="font-display font-bold text-base text-gray-900 dark:text-white group-hover:text-amber-500 transition mb-1 line-clamp-2">{project.title}</h3>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-500 mb-0.5">{project.client}</p>
+                    <h3 className="font-display font-bold text-base text-gray-900 dark:text-white group-hover:text-brand-500 transition mb-1 line-clamp-2">{project.title}</h3>
                     <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed line-clamp-3 mb-4 flex-1">{project.shortDesc}</p>
                     <div className="flex items-center justify-between border-t border-gray-100 dark:border-slate-800 pt-3">
                       <div>
@@ -207,7 +207,7 @@ export default function PortfolioPage() {
             Join the businesses that trusted EazWorld to bring their vision to life.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/contact" className="rounded-full bg-amber-500 text-gray-900 font-semibold px-6 py-3 text-sm hover:bg-amber-400 transition">
+            <Link href="/contact" className="rounded-full bg-brand-500 text-gray-900 font-semibold px-6 py-3 text-sm hover:bg-brand-400 transition">
               Start Your Project
             </Link>
             <Link href="/services" className="rounded-full border border-white/30 text-white px-6 py-3 text-sm font-medium hover:border-white hover:bg-white/10 transition">

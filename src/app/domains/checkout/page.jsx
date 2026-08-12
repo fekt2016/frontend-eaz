@@ -16,7 +16,7 @@ function CheckoutContentInner() {
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="font-display font-bold text-4xl text-gray-900 dark:text-white mb-4">Checkout</h1>
           <p className="text-gray-500 dark:text-slate-400 mb-6">Missing domain or price. Search for a domain first.</p>
-          <Link href="/domains" className="text-amber-500 hover:underline text-sm">
+          <Link href="/domains" className="text-brand-500 hover:underline text-sm">
             ← Back to domain search
           </Link>
         </div>
@@ -32,7 +32,7 @@ function CheckoutContentInner() {
         </Link>
         <h1 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-2">Checkout</h1>
         <p className="text-gray-500 dark:text-slate-400 mb-1 font-mono">{domain}</p>
-        <p className="text-amber-500 font-semibold mb-8">${price}<span className="text-gray-400 dark:text-slate-500 font-normal text-xs">/yr</span></p>
+        <p className="text-brand-500 font-semibold mb-8">${price}<span className="text-gray-400 dark:text-slate-500 font-normal text-xs">/yr</span></p>
 
         <div className="flex flex-wrap gap-4 mb-8 text-xs text-gray-400 dark:text-slate-500">
           <span>🔒 SSL Secured</span>

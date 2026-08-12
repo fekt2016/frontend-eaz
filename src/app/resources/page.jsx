@@ -99,7 +99,7 @@ const TYPE_ICONS = {
 
 const TYPE_COLORS = {
   Guide: "bg-violet-50 text-violet-700 border-violet-100",
-  Template: "bg-amber-50 text-amber-700 border-amber-100",
+  Template: "bg-brand-50 text-brand-700 border-brand-100",
   Checklist: "bg-emerald-50 text-emerald-700 border-emerald-100",
   Tool: "bg-cyan-50 text-cyan-700 border-cyan-100",
 };
@@ -147,10 +147,10 @@ function DownloadModal({ resource, onClose }) {
         </button>
         {status === "success" ? (
           <div className="text-center">
-            <FaCheckCircle className="text-amber-500 text-4xl mx-auto mb-4" />
+            <FaCheckCircle className="text-brand-500 text-4xl mx-auto mb-4" />
             <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-2">Check Your Inbox!</h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
-              We&apos;ve sent <strong className="text-gray-900 dark:text-white">{resource.title}</strong> to <strong className="text-amber-500">{email}</strong>.
+              We&apos;ve sent <strong className="text-gray-900 dark:text-white">{resource.title}</strong> to <strong className="text-brand-500">{email}</strong>.
             </p>
             <p className="text-gray-400 dark:text-slate-500 text-xs">Can&apos;t find it? Check your spam folder.</p>
           </div>
@@ -200,7 +200,7 @@ export default function Resources() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Free Resources</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Free Resources</p>
           <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
             Free Guides, Templates & Tools
           </h1>

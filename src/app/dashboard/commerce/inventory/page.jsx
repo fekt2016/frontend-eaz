@@ -12,7 +12,7 @@ import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
 const CATEGORIES = ["Screen", "Battery", "Charging Port", "Speaker", "Camera", "Button", "Housing", "Board", "Accessory", "Cable", "IC / Chip", "Other"];
 
-const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition";
+const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const selectCls = `${inputCls} cursor-pointer`;
 const labelCls  = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
@@ -92,9 +92,9 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
           <div>
             <label className={labelCls}>
               <span className="flex items-center gap-1.5">
-                <FaBarcode size={11} className="text-amber-600 dark:text-amber-400" />
+                <FaBarcode size={11} className="text-brand-600 dark:text-brand-400" />
                 Barcode
-                {!editing && <span className="text-amber-500 font-normal normal-case tracking-normal ml-1">— scan now or type</span>}
+                {!editing && <span className="text-brand-500 font-normal normal-case tracking-normal ml-1">— scan now or type</span>}
               </span>
             </label>
             <input
@@ -102,7 +102,7 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
               value={barcode}
               onChange={e => setBarcode(e.target.value)}
               placeholder="Scan part barcode…"
-              className={`${inputCls} ${!barcode && !editing ? "border-amber-500/50 focus:border-amber-500" : ""}`}
+              className={`${inputCls} ${!barcode && !editing ? "border-brand-500/50 focus:border-brand-500" : ""}`}
             />
           </div>
 
@@ -181,7 +181,7 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition disabled:opacity-50"
+            className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50"
           >
             {saving ? "Saving…" : editing ? "Update Part" : "Add Part"}
           </button>
@@ -284,16 +284,16 @@ function PartsTab() {
           {modal === null && (
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-300 ${
               scanFlash
-                ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
+                ? "bg-brand-500/20 border-brand-500/50 text-brand-300"
                 : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500"
             }`}>
-              <FaBarcode size={11} className={scanFlash ? "text-amber-600 dark:text-amber-400" : ""} />
+              <FaBarcode size={11} className={scanFlash ? "text-brand-600 dark:text-brand-400" : ""} />
               {scanFlash ? "Scanned!" : "Scan ready"}
             </div>
           )}
           <button
             onClick={() => openNew()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
           >
             <FaPlus size={11} /> Add Part
           </button>
@@ -346,13 +346,13 @@ function PartsTab() {
             value={q}
             onChange={e => { setQ(e.target.value); setPage(1); }}
             placeholder="Search parts, barcodes, SKUs…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition"
           />
         </div>
         <select
           value={category}
           onChange={e => { setCategory(e.target.value); setPage(1); }}
-          className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-500 cursor-pointer transition"
+          className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-brand-500 cursor-pointer transition"
         >
           <option value="">All categories</option>
           {CATEGORIES.map(c => <option key={c}>{c}</option>)}
@@ -369,10 +369,10 @@ function PartsTab() {
 
       {/* Scan hint */}
       {modal === null && parts.length === 0 && !loading && !q && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
-          <FaBarcode size={18} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
+          <FaBarcode size={18} className="text-brand-600 dark:text-brand-400 flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium text-amber-300">Scanner ready</p>
+            <p className="text-sm font-medium text-brand-300">Scanner ready</p>
             <p className="text-xs text-gray-500 mt-0.5">Point your barcode scanner at any part to add it to inventory &mdash; or click &ldquo;Add Part&rdquo; to enter manually.</p>
           </div>
         </div>
@@ -408,7 +408,7 @@ function PartsTab() {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
                         {lowStockFlag && <FaExclamationTriangle size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
-                        {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 flex-shrink-0">Retail</span>}
+                        {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400 flex-shrink-0">Retail</span>}
                       </div>
                       {p.sku && <p className="text-xs text-gray-500">SKU: {p.sku}</p>}
                       {p.compatibleWith?.length > 0 && (
@@ -419,9 +419,9 @@ function PartsTab() {
                     <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{p.category}</span>
                     <span className={`text-sm font-semibold hidden sm:block ${lowStockFlag ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
                     <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">GH₵{p.costPrice.toLocaleString()}</span>
-                    <span className="text-sm text-amber-600 dark:text-amber-400 font-medium hidden sm:block">GH₵{p.sellingPrice.toLocaleString()}</span>
+                    <span className="text-sm text-brand-600 dark:text-brand-400 font-medium hidden sm:block">GH₵{p.sellingPrice.toLocaleString()}</span>
                     <div className="flex items-center gap-2 ml-auto sm:ml-0">
-                      <button onClick={() => setModal(p)} className="text-gray-500 hover:text-amber-400 transition"><FaEdit size={13} /></button>
+                      <button onClick={() => setModal(p)} className="text-gray-500 hover:text-brand-400 transition"><FaEdit size={13} /></button>
                       <button onClick={() => handleDelete(p._id)} className="text-gray-500 hover:text-red-400 transition"><FaTrash size={12} /></button>
                     </div>
                   </div>
@@ -511,7 +511,7 @@ function ProductsTab() {
         </div>
         <Link
           href="/dashboard/commerce/products/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
         >
           <FaPlus size={11} /> Add Product
         </Link>

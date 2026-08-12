@@ -46,7 +46,7 @@ export async function middleware(request) {
 
   // ── Verify token and extract role ──────────────────────────────────────────
   const ADMIN_ROLES    = ["admin", "superadmin"];
-  const POS_ROLES      = ["superadmin", "admin", "staff", "cashier", "technician"];
+  const POS_ROLES      = ["superadmin", "admin", "staff", "technician"];
   let isAdmin = false;
   let userRole = null;
   if (token) {
@@ -56,6 +56,15 @@ export async function middleware(request) {
       userRole = payload?.role;
       isAdmin  = ADMIN_ROLES.includes(userRole);
     } catch { /* invalid / forged token — treat as guest */ }
+  }
+
+  // ── Keep the team out of the public storefront ───────────────────────────────
+  // Any signed-in staff-side role (superadmin/admin/staff/technician) is bounced
+  // from public pages to the dashboard. Guests and customers (role "user") are
+  // free to browse the shop, blog, etc. /auth stays open so login/logout works.
+  const inStaffArea = pathname.startsWith("/dashboard") || pathname.startsWith("/auth");
+  if (token && POS_ROLES.includes(userRole) && !inStaffArea) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // ── Maintenance check (skip for admins) ─────────────────────────────────────

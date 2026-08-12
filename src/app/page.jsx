@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { FaCheckCircle, FaWhatsapp } from "react-icons/fa";
 import HeroCarousel from "@/components/home/HeroCarousel";
+import RecentProducts from "@/components/home/RecentProducts";
 import ServicesGrid from "@/components/home/ServicesGrid";
-import ShopSection from "@/components/home/ShopSection";
 import Testimonials from "@/components/home/Testimonials";
 import BlogPreview from "@/components/home/BlogPreview";
 import CtaSection from "@/components/home/CtaSection";
@@ -44,7 +44,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {stats.map(({ value, label }) => (
             <div key={label}>
-              <p className="font-display font-black text-3xl text-amber-500">{value}</p>
+              <p className="font-display font-black text-3xl text-brand-500">{value}</p>
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
             </div>
           ))}
@@ -57,7 +57,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto">
           <div className="max-w-xl mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Why EazWorld</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Why EazWorld</p>
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white">
               A Digital Partner You Can Trust
             </h2>
@@ -78,7 +78,7 @@ export default function Home() {
       <section className="py-24 px-4 bg-gray-50 dark:bg-slate-950">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Featured Work</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Featured Work</p>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-5 leading-tight">
               All Services Working Together: Saiisai
             </h2>
@@ -88,7 +88,7 @@ export default function Home() {
             <ul className="space-y-2 mb-7">
               {["Web Design & Development", "Brand Identity", "SEO & Content Marketing", "Paid Advertising", "Social Media Management", "Email Marketing"].map((s) => (
                 <li key={s} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                  <FaCheckCircle size={13} className="text-amber-500 flex-shrink-0" /> {s}
+                  <FaCheckCircle size={13} className="text-brand-500 flex-shrink-0" /> {s}
                 </li>
               ))}
             </ul>
@@ -101,7 +101,7 @@ export default function Home() {
               ))}
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/portfolio/saiisai" className="px-6 py-3 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 font-semibold text-sm hover:bg-gray-700 dark:hover:bg-amber-400 transition">
+              <Link href="/portfolio/saiisai" className="px-6 py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 font-semibold text-sm hover:bg-gray-700 dark:hover:bg-brand-400 transition">
                 Read the Case Study →
               </Link>
               <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer"
@@ -135,7 +135,8 @@ export default function Home() {
         </div>
       </section>
 
-      <ShopSection />
+      {/* RECENT PRODUCTS — shop showcase, after the agency story & proof */}
+      <RecentProducts />
 
       <Testimonials />
       <BlogPreview />

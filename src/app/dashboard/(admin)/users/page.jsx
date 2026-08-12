@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import {
   FaSpinner, FaRedo, FaEdit, FaBan, FaCheckCircle,
   FaTimes, FaSearch, FaShieldAlt, FaUser, FaKey, FaEye, FaEyeSlash,
-  FaPlus, FaUserCog, FaCashRegister, FaTools,
+  FaPlus, FaUserCog, FaTools,
 } from "react-icons/fa";
 
 function fmtDate(d) {
@@ -17,7 +17,6 @@ function fmtDate(d) {
 const ROLE_OPTIONS = [
   { value: "user",       label: "User" },
   { value: "staff",      label: "Staff" },
-  { value: "cashier",    label: "Cashier" },
   { value: "technician", label: "Technician" },
   { value: "admin",      label: "Admin" },
   { value: "superadmin", label: "Super Admin" },
@@ -25,10 +24,9 @@ const ROLE_OPTIONS = [
 
 const roleStyles = {
   superadmin: "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  admin:      "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  admin:      "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400",
   user:       "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   staff:      "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  cashier:    "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
   technician: "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
 };
 
@@ -37,7 +35,6 @@ const roleIcons = {
   admin:      FaShieldAlt,
   user:       FaUser,
   staff:      FaUserCog,
-  cashier:    FaCashRegister,
   technician: FaTools,
 };
 
@@ -148,7 +145,7 @@ function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
               ))}
             </select>
             <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">
-              Staff = shop team · Cashier = sales · Technician = repairs · Admin = full management
+              Staff = shop team & sales · Technician = repairs · Admin = full management
             </p>
           </div>
         </div>
@@ -212,7 +209,7 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm">
+            <div className="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm">
               {user.name?.charAt(0).toUpperCase()}
             </div>
             <p className="font-semibold text-gray-900 dark:text-white text-sm">Edit User</p>
@@ -240,7 +237,7 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
                 type={type}
                 value={form[key]}
                 onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 dark:focus:border-amber-500 transition"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 dark:focus:border-brand-500 transition"
               />
             </div>
           ))}
@@ -250,7 +247,7 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
             <select
               value={form.role}
               onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 transition"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
             >
               {visibleRoles.map((r) => (
                 <option key={r.value} value={r.value}>{r.label}</option>
@@ -270,7 +267,7 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 py-2.5 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 disabled:opacity-50 transition flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
             {saving ? <FaSpinner className="animate-spin" size={12} /> : null}
             {saving ? "Saving…" : "Save Changes"}
@@ -410,7 +407,7 @@ function ChangePasswordModal({ user, onClose }) {
               </div>
               <p className="font-semibold text-gray-900 dark:text-white mb-1">Password Updated</p>
               <p className="text-xs text-gray-400 dark:text-slate-500">The new password is active immediately.</p>
-              <button onClick={onClose} className="mt-4 w-full py-2.5 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 transition">
+              <button onClick={onClose} className="mt-4 w-full py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">
                 Done
               </button>
             </div>
@@ -566,14 +563,14 @@ export default function AdminUsersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email or phone…"
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 transition"
+            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition"
           />
         </div>
 
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <FaSpinner className="animate-spin text-2xl text-amber-500" />
+            <FaSpinner className="animate-spin text-2xl text-brand-500" />
             <span className="text-sm">Loading users…</span>
           </div>
         ) : filtered.length === 0 ? (
@@ -599,7 +596,7 @@ export default function AdminUsersPage() {
                     <tr key={u._id} className={`hover:bg-gray-50 dark:hover:bg-slate-800/40 transition ${u.isBlocked ? "opacity-60" : ""}`}>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm flex-shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0">
                             {u.name?.charAt(0).toUpperCase()}
                           </div>
                           <div>

@@ -10,7 +10,7 @@ const CATEGORIES = ["SEO", "Web Design", "Case Study", "Social Media", "Branding
 const CATEGORY_COLORS = {
   SEO:               "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
   "Web Design":      "bg-violet-50 text-violet-700 dark:bg-violet-900/20 dark:text-violet-400",
-  "Case Study":      "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
+  "Case Study":      "bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400",
   "Social Media":    "bg-pink-50 text-pink-700 dark:bg-pink-900/20 dark:text-pink-400",
   Branding:          "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
   "Phone Repair":    "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-400",
@@ -31,7 +31,7 @@ function PostForm({ initial, onSave, onCancel, saving }) {
   const set = (k) => (e) => setFields((f) => ({ ...f, [k]: e.target.value }));
   const toggle = (k) => () => setFields((f) => ({ ...f, [k]: !f[k] }));
 
-  const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 transition bg-white dark:bg-slate-800";
+  const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition bg-white dark:bg-slate-800";
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
@@ -87,7 +87,7 @@ function PostForm({ initial, onSave, onCancel, saving }) {
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <button type="button" onClick={toggle("featured")}
-                className={`w-10 h-6 rounded-full transition ${fields.featured ? "bg-amber-500" : "bg-gray-200 dark:bg-slate-700"} relative`}>
+                className={`w-10 h-6 rounded-full transition ${fields.featured ? "bg-brand-500" : "bg-gray-200 dark:bg-slate-700"} relative`}>
                 <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${fields.featured ? "left-5" : "left-1"}`} />
               </button>
               <span className="text-sm text-gray-700 dark:text-slate-300 font-medium">Featured</span>
@@ -102,7 +102,7 @@ function PostForm({ initial, onSave, onCancel, saving }) {
           <button
             onClick={() => onSave(fields)}
             disabled={saving || !fields.title || !fields.excerpt || !fields.content}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 disabled:opacity-50 transition"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition"
           >
             {saving ? <FaSpinner className="animate-spin" size={12} /> : <FaCheck size={12} />}
             {saving ? "Saving…" : initial?._id ? "Save Changes" : "Publish Post"}
@@ -207,7 +207,7 @@ export default function AdminBlogPage() {
             </button>
             <button
               onClick={() => { setEditing(null); setShowForm(true); }}
-              className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-amber-400 transition"
+              className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
             >
               <FaPlus size={11} /> New Post
             </button>
@@ -217,7 +217,7 @@ export default function AdminBlogPage() {
         {/* Posts list */}
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <FaSpinner className="animate-spin text-2xl text-amber-500" />
+            <FaSpinner className="animate-spin text-2xl text-brand-500" />
             <span className="text-sm">Loading posts…</span>
           </div>
         ) : posts.length === 0 ? (
@@ -226,7 +226,7 @@ export default function AdminBlogPage() {
             <p className="font-semibold text-gray-900 dark:text-white mb-2">No posts yet</p>
             <p className="text-gray-400 dark:text-slate-500 text-sm mb-5">Create your first blog post.</p>
             <button onClick={() => { setEditing(null); setShowForm(true); }}
-              className="px-5 py-2.5 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 transition">
+              className="px-5 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 transition">
               Write First Post
             </button>
           </div>
@@ -240,7 +240,7 @@ export default function AdminBlogPage() {
                       {post.category}
                     </span>
                     {post.featured && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-200 dark:border-amber-800/30">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400 border border-brand-200 dark:border-brand-800/30">
                         <FaStar size={9} /> Featured
                       </span>
                     )}
@@ -267,7 +267,7 @@ export default function AdminBlogPage() {
                   <button
                     onClick={() => handleToggle(post, "featured")}
                     title={post.featured ? "Remove featured" : "Mark featured"}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition ${post.featured ? "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition ${post.featured ? "text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
                   >
                     <FaStar size={13} />
                   </button>

@@ -40,7 +40,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
 
   const passwordRules  = useMemo(() => getPasswordRules(password), [password]);
 
-  const inputCls    = "w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 transition";
+  const inputCls    = "w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition";
   const selectCls   = `${inputCls} cursor-pointer`;
 
   const handleSubmit = async (e) => {
@@ -117,10 +117,10 @@ export default function ServicePaymentModal({ pkg, onClose }) {
         </div>
 
         {/* Deposit summary */}
-        <div className="mx-5 mt-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 flex items-center justify-between">
+        <div className="mx-5 mt-4 p-3 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 flex items-center justify-between">
           <div>
-            <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">Deposit (50% upfront)</p>
-            <p className="text-xl font-bold text-amber-600 dark:text-amber-400">GH₵{pkg.deposit.toLocaleString()}</p>
+            <p className="text-xs text-brand-700 dark:text-brand-400 font-medium">Deposit (50% upfront)</p>
+            <p className="text-xl font-bold text-brand-600 dark:text-brand-400">GH₵{pkg.deposit.toLocaleString()}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-400 dark:text-slate-500">Project total starts from</p>
@@ -133,7 +133,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
           {/* Logged-in greeting */}
           {!isGuest && (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-              <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0">
                 {user.name?.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -244,7 +244,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <><FaSpinner className="animate-spin" size={13} /> Redirecting to payment…</>

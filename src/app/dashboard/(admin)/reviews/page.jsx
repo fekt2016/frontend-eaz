@@ -22,7 +22,7 @@ function StarRating({ rating }) {
         <FaStar
           key={s}
           size={11}
-          className={s <= rating ? "text-amber-400" : "text-gray-200 dark:text-slate-700"}
+          className={s <= rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"}
         />
       ))}
     </div>
@@ -130,7 +130,7 @@ export default function AdminReviewsPage() {
           {[
             { label: "Total",    value: reviews.length, color: "text-gray-900 dark:text-white" },
             { label: "Approved", value: approved,        color: "text-emerald-600 dark:text-emerald-400" },
-            { label: "Pending",  value: pending,         color: pending > 0 ? "text-amber-500" : "text-gray-900 dark:text-white" },
+            { label: "Pending",  value: pending,         color: pending > 0 ? "text-brand-500" : "text-gray-900 dark:text-white" },
           ].map(({ label, value, color }) => (
             <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-4 text-center">
               <p className={`text-2xl font-bold ${color}`}>{value}</p>
@@ -148,7 +148,7 @@ export default function AdminReviewsPage() {
                 onClick={() => setFilter(val)}
                 className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
                   filter === val
-                    ? "bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900"
+                    ? "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900"
                     : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
@@ -164,7 +164,7 @@ export default function AdminReviewsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, service or content…"
-              className="w-full pl-9 pr-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 transition"
+              className="w-full pl-9 pr-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition"
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function AdminReviewsPage() {
         {/* List */}
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <FaSpinner className="animate-spin text-2xl text-amber-500" />
+            <FaSpinner className="animate-spin text-2xl text-brand-500" />
             <span className="text-sm">Loading reviews…</span>
           </div>
         ) : filtered.length === 0 ? (
@@ -188,14 +188,14 @@ export default function AdminReviewsPage() {
                 key={r._id}
                 className={`rounded-2xl border bg-white dark:bg-slate-900 p-5 transition ${
                   !r.approved
-                    ? "border-amber-200 dark:border-amber-800/40"
+                    ? "border-brand-200 dark:border-brand-800/40"
                     : "border-gray-100 dark:border-slate-800"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   {/* Left: reviewer info */}
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0">
                       {r.name?.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
@@ -205,7 +205,7 @@ export default function AdminReviewsPage() {
                           {r.service}
                         </span>
                         {!r.approved && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800/40">
                             Pending
                           </span>
                         )}

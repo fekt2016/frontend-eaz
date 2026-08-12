@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
@@ -11,113 +10,9 @@ import {
   FaArrowUp, FaArrowDown, FaExclamationTriangle, FaRedo, FaSpinner,
   FaCalendarAlt, FaTools,
 } from "react-icons/fa";
-
-/* ── Personal overview helpers ─────────────────────────────────────────── */
-
-const statusConfig = {
-  active:    { label: "Active",    cls: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-900/30", dot: "bg-emerald-500" },
-  paid:      { label: "Paid",      cls: "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-900/30",                  dot: "bg-blue-500" },
-  pending:   { label: "Pending",   cls: "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-900/30",             dot: "bg-amber-400" },
-  cancelled: { label: "Cancelled", cls: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",                        dot: "bg-red-400" },
-  failed:    { label: "Failed",    cls: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",                        dot: "bg-red-400" },
-  completed: { label: "Active",    cls: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-900/30", dot: "bg-emerald-500" },
-};
-
-function StatusBadge({ status }) {
-  const cfg = statusConfig[status] || { label: status, cls: "bg-gray-50 text-gray-600 border-gray-100", dot: "bg-gray-400" };
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border capitalize ${cfg.cls}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-      {cfg.label}
-    </span>
-  );
-}
-
-function StatCard({ icon: Icon, label, value, sub, color }) {
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 flex items-center gap-4">
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-        <Icon size={18} className="text-white" />
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white leading-none">{value}</p>
-        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
-        {sub && <p className="text-xs text-gray-300 dark:text-slate-600 mt-0.5">{sub}</p>}
-      </div>
-    </div>
-  );
-}
-
-function HostingCard({ order }) {
-  const isActive = order.status === "active";
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-            <FaServer size={16} className="text-amber-500" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{order.planType} — {order.tier}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 capitalize">{order.billingCycle} · GH₵{order.amount}</p>
-          </div>
-        </div>
-        <StatusBadge status={order.status} />
-      </div>
-
-      {order.domain && (
-        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-          <FaGlobe size={12} className="text-gray-400 dark:text-slate-500" />
-          <span className="text-xs text-gray-600 dark:text-slate-300 font-mono">{order.domain}</span>
-        </div>
-      )}
-
-      {isActive && order.cpanelUsername && (
-        <div className="mb-4 px-3 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">cPanel Username</p>
-          <p className="text-sm font-mono text-emerald-800 dark:text-emerald-300 font-semibold">{order.cpanelUsername}</p>
-          <p className="text-xs text-emerald-700/80 dark:text-emerald-500 mt-1">Open cPanel from the order page — we sign you in securely.</p>
-        </div>
-      )}
-
-      <div className="flex gap-2">
-        <Link
-          href={`/dashboard/hosting/${order._id}`}
-          className="flex-1 text-center text-xs font-semibold py-2 rounded-full border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white transition"
-        >
-          View Details
-        </Link>
-        {isActive && order.cpanelUsername && (
-          <Link
-            href={`/dashboard/hosting/${order._id}`}
-            className="flex-1 text-center text-xs font-semibold py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition"
-          >
-            Manage hosting
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function DomainCard({ order }) {
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-            <FaGlobe size={16} className="text-blue-500" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white font-mono">{order.domain}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500">{order.years} year{order.years > 1 ? "s" : ""} · GH₵{order.price}</p>
-          </div>
-        </div>
-        <StatusBadge status={order.status} />
-      </div>
-    </div>
-  );
-}
+import {
+  StatCard, HostingCard, DomainCard, ShopOrderCard, RepairCard,
+} from "@/components/dashboard/customer/CustomerCards";
 
 /* ── Admin overview helpers ────────────────────────────────────────────── */
 
@@ -156,7 +51,7 @@ function KpiCard({ icon: Icon, label, value, sub, accent, growth }) {
 }
 
 const statusColors = {
-  pending:  "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  pending:  "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400",
   paid:     "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   active:   "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   cancelled:"bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400",
@@ -165,7 +60,7 @@ const statusColors = {
 };
 
 const consultationStatusColors = {
-  new:      "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  new:      "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400",
   read:     "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   replied:  "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   archived: "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400",
@@ -303,7 +198,7 @@ function AdminOverviewSection() {
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white animate-pulse">ACTIVE</span>
                   )}
                   {maint.maintenanceScheduledStart && !maint.maintenanceActive && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-white">SCHEDULED</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-400 text-white">SCHEDULED</span>
                   )}
                 </p>
                 <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
@@ -344,7 +239,7 @@ function AdminOverviewSection() {
                   value={maintMsg}
                   onChange={(e) => setMaintMsg(e.target.value)}
                   rows={2}
-                  className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 transition resize-none"
+                  className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-brand-400 transition resize-none"
                   placeholder="We're performing scheduled maintenance. We'll be back shortly!"
                 />
               </div>
@@ -356,7 +251,7 @@ function AdminOverviewSection() {
                     type="datetime-local"
                     value={maintStart}
                     onChange={(e) => setMaintStart(e.target.value)}
-                    className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 transition"
+                    className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
                   />
                 </div>
                 <div>
@@ -365,15 +260,15 @@ function AdminOverviewSection() {
                     type="datetime-local"
                     value={maintEnd}
                     onChange={(e) => setMaintEnd(e.target.value)}
-                    className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 transition"
+                    className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
                   />
                 </div>
               </div>
 
               {maintStart && !maintEnd && (
-                <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                  <FaExclamationTriangle size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800">
+                  <FaExclamationTriangle size={12} className="text-brand-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-brand-700 dark:text-brand-400">
                     <strong>No end time set.</strong> Once the start time passes, maintenance will stay active indefinitely until you turn it off manually.
                   </p>
                 </div>
@@ -393,7 +288,7 @@ function AdminOverviewSection() {
                 <button
                   type="submit"
                   disabled={maintSaving}
-                  className="text-xs font-bold px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-400 text-white transition disabled:opacity-50 flex items-center gap-1.5"
+                  className="text-xs font-bold px-4 py-2 rounded-full bg-brand-500 hover:bg-brand-400 text-white transition disabled:opacity-50 flex items-center gap-1.5"
                 >
                   {maintSaving ? <FaSpinner size={10} className="animate-spin" /> : null}
                   Save settings
@@ -417,7 +312,7 @@ function AdminOverviewSection() {
           { href: "/dashboard/emails",        label: "Email Logs" },
         ].map(({ href, label }) => (
           <Link key={href} href={href}
-            className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-amber-300 dark:hover:border-amber-700/50 hover:text-amber-700 dark:hover:text-amber-400 transition">
+            className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700/50 hover:text-brand-700 dark:hover:text-brand-400 transition">
             {label} →
           </Link>
         ))}
@@ -425,11 +320,11 @@ function AdminOverviewSection() {
 
       {loading ? (
         <div className="flex items-center justify-center py-16 gap-3 text-gray-400 dark:text-slate-500">
-          <FaSpinner className="animate-spin text-2xl text-amber-500" />
+          <FaSpinner className="animate-spin text-2xl text-brand-500" />
           <span className="text-sm">Loading overview…</span>
         </div>
       ) : !d ? (
-        <div className="text-center py-16 text-gray-400 dark:text-slate-500 text-sm">Failed to load data. <button onClick={fetchData} className="text-amber-500 underline">Retry</button></div>
+        <div className="text-center py-16 text-gray-400 dark:text-slate-500 text-sm">Failed to load data. <button onClick={fetchData} className="text-brand-500 underline">Retry</button></div>
       ) : (
         <>
           {/* Alerts */}
@@ -442,8 +337,8 @@ function AdminOverviewSection() {
                 </div>
               )}
               {d.hosting?.pending > 0 && (
-                <div className="flex items-center gap-2 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-300">
-                  <FaExclamationTriangle className="shrink-0 text-amber-500" size={14} />
+                <div className="flex items-center gap-2 rounded-xl border border-brand-200 dark:border-brand-900/40 bg-brand-50 dark:bg-brand-900/20 px-4 py-3 text-sm text-brand-900 dark:text-brand-300">
+                  <FaExclamationTriangle className="shrink-0 text-brand-500" size={14} />
                   <span><strong>{d.hosting.pending}</strong> hosting order{d.hosting.pending > 1 ? "s" : ""} pending review — <Link href="/dashboard/hosting-orders" className="underline">review now</Link></span>
                 </div>
               )}
@@ -458,13 +353,13 @@ function AdminOverviewSection() {
 
           {/* KPI grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <KpiCard icon={FaMoneyBillWave} label="Total Revenue" value={fmt(d.revenue?.total)} sub={`Hosting ${fmt(d.revenue?.hosting)} · Domains ${fmt(d.revenue?.domains)}`} accent="bg-amber-500" growth={d.revenue?.growth} />
-            <KpiCard icon={FaMoneyBillWave} label="Revenue This Month" value={fmt(d.revenue?.thisMonth)} sub={`Last month: ${fmt(d.revenue?.lastMonth)}`} accent="bg-amber-400" />
+            <KpiCard icon={FaMoneyBillWave} label="Total Revenue" value={fmt(d.revenue?.total)} sub={`Hosting ${fmt(d.revenue?.hosting)} · Domains ${fmt(d.revenue?.domains)}`} accent="bg-brand-500" growth={d.revenue?.growth} />
+            <KpiCard icon={FaMoneyBillWave} label="Revenue This Month" value={fmt(d.revenue?.thisMonth)} sub={`Last month: ${fmt(d.revenue?.lastMonth)}`} accent="bg-brand-400" />
             <KpiCard icon={FaServer} label="Active Hosting" value={fmtNum(d.hosting?.active)} sub={`${fmtNum(d.hosting?.total)} total orders`} accent="bg-emerald-500" />
             <KpiCard icon={FaUsers} label="Total Users" value={fmtNum(d.users?.total)} sub={`+${fmtNum(d.users?.thisMonth)} this month`} accent="bg-blue-500" />
             <KpiCard icon={FaGlobe} label="Domain Orders" value={fmtNum(d.domains?.total)} sub={`+${fmtNum(d.domains?.thisMonth)} this month`} accent="bg-violet-500" />
             <KpiCard icon={FaServer} label="Hosting This Month" value={fmtNum(d.hosting?.thisMonth)} sub={`Last month: ${fmtNum(d.hosting?.lastMonth)}`} accent="bg-gray-700" />
-            <KpiCard icon={FaServer} label="Pending Orders" value={fmtNum(d.hosting?.pending)} sub="Awaiting payment verification" accent="bg-amber-600" />
+            <KpiCard icon={FaServer} label="Pending Orders" value={fmtNum(d.hosting?.pending)} sub="Awaiting payment verification" accent="bg-brand-600" />
             <KpiCard icon={FaExclamationTriangle} label="Expiring Soon" value={fmtNum(d.hosting?.expiringIn7Days)} sub="Active accounts expiring in 7 days" accent="bg-red-500" />
             <KpiCard icon={FaCalendarAlt} label="Consultations" value={fmtNum(consultations.total)} sub={consultations.new > 0 ? `${consultations.new} new — needs reply` : "All up to date"} accent="bg-violet-500" growth={null} />
           </div>
@@ -476,10 +371,10 @@ function AdminOverviewSection() {
                 <FaCalendarAlt size={13} className="text-violet-500" />
                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Consultations</h3>
                 {consultations.new > 0 && (
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white">{consultations.new} new</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand-500 text-white">{consultations.new} new</span>
                 )}
               </div>
-              <Link href="/dashboard/consultations" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">
+              <Link href="/dashboard/consultations" className="text-xs text-brand-500 hover:text-brand-600 font-semibold flex items-center gap-1">
                 Manage all <FaChevronRight size={9} />
               </Link>
             </div>
@@ -495,7 +390,7 @@ function AdminOverviewSection() {
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{c.name}</p>
                     <p className="text-xs text-gray-400 dark:text-slate-500">
-                      {c.service && <span className="text-amber-500 font-medium">{c.service} · </span>}
+                      {c.service && <span className="text-brand-500 font-medium">{c.service} · </span>}
                       {c.email} · {fmtDate(c.createdAt)}
                     </p>
                   </div>
@@ -512,7 +407,7 @@ function AdminOverviewSection() {
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50 dark:border-slate-800">
                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Hosting Orders</h3>
-                <Link href="/dashboard/hosting-orders" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
+                <Link href="/dashboard/hosting-orders" className="text-xs text-brand-500 hover:text-brand-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
               </div>
               <div className="divide-y divide-gray-50 dark:divide-slate-800">
                 {(d.recentHostingOrders || []).length === 0 ? (
@@ -535,7 +430,7 @@ function AdminOverviewSection() {
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50 dark:border-slate-800">
                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Domain Orders</h3>
-                <Link href="/dashboard/domain-orders" className="text-xs text-amber-500 hover:text-amber-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
+                <Link href="/dashboard/domain-orders" className="text-xs text-brand-500 hover:text-brand-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
               </div>
               <div className="divide-y divide-gray-50 dark:divide-slate-800">
                 {(d.recentDomainOrders || []).length === 0 ? (
@@ -565,21 +460,16 @@ function AdminOverviewSection() {
 
 function DashboardContent() {
   const { user } = useAuth();
-  const searchParams = useSearchParams();
   const isAdmin = ["admin", "superadmin"].includes(user?.role);
 
   const [hosting, setHosting] = useState([]);
   const [domains, setDomains] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [repairs, setRepairs] = useState([]);
   const [loadingHosting, setLoadingHosting] = useState(true);
   const [loadingDomains, setLoadingDomains] = useState(true);
-  const [tab, setTab] = useState("overview");
-
-  useEffect(() => {
-    const t = searchParams.get("tab");
-    if (t === "hosting" || t === "domains" || t === "overview") {
-      setTab(t);
-    }
-  }, [searchParams]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [loadingRepairs, setLoadingRepairs] = useState(true);
 
   useEffect(() => {
     api.get("/hosting/orders")
@@ -591,17 +481,21 @@ function DashboardContent() {
       .then((res) => setDomains(res.data || []))
       .catch(() => {})
       .finally(() => setLoadingDomains(false));
+
+    api.get("/orders/mine")
+      .then((res) => setOrders(res.data || []))
+      .catch(() => {})
+      .finally(() => setLoadingOrders(false));
+
+    api.get("/track/mine")
+      .then((res) => setRepairs(res.data || []))
+      .catch(() => {})
+      .finally(() => setLoadingRepairs(false));
   }, []);
 
   const activeHosting = hosting.filter(o => o.status === "active").length;
   const activeDomains = domains.filter(o => o.status === "completed").length;
   const pendingOrders = [...hosting, ...domains].filter(o => o.status === "pending").length;
-
-  const navItems = [
-    { id: "overview", label: "Overview" },
-    { id: "hosting", label: "Hosting" },
-    { id: "domains", label: "Domains" },
-  ];
 
   return (
     <div className="bg-gray-50 dark:bg-slate-950 min-h-screen">
@@ -610,8 +504,8 @@ function DashboardContent() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center">
-              <FaUserCircle size={24} className="text-amber-500" />
+            <div className="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center">
+              <FaUserCircle size={24} className="text-brand-500" />
             </div>
             <div>
               <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white">
@@ -639,36 +533,20 @@ function DashboardContent() {
           <div>
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <StatCard icon={FaServer} label="Active Hosting" value={activeHosting} color="bg-amber-400" />
+            <StatCard icon={FaServer} label="Active Hosting" value={activeHosting} color="bg-brand-400" />
             <StatCard icon={FaGlobe} label="Active Domains" value={activeDomains} color="bg-blue-500" />
             <StatCard icon={FaClock} label="Pending Orders" value={pendingOrders} color="bg-gray-400" />
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 mb-6 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-1 w-fit">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setTab(item.id)}
-                className={`px-5 py-2 rounded-xl text-sm font-semibold transition ${
-                  tab === item.id ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Overview tab */}
-          {tab === "overview" && (
-            <div className="grid md:grid-cols-2 gap-8">
+          {/* Overview */}
+          <div className="grid md:grid-cols-2 gap-8">
               {/* Recent Hosting */}
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-semibold text-gray-900 dark:text-white">Recent Hosting</h2>
-                  <button onClick={() => setTab("hosting")} className="text-xs text-amber-500 hover:underline flex items-center gap-1">
+                  <Link href="/dashboard/hosting" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
                     View all <FaChevronRight size={9} />
-                  </button>
+                  </Link>
                 </div>
                 {loadingHosting ? (
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 flex justify-center">
@@ -692,9 +570,9 @@ function DashboardContent() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-semibold text-gray-900 dark:text-white">Recent Domains</h2>
-                  <button onClick={() => setTab("domains")} className="text-xs text-amber-500 hover:underline flex items-center gap-1">
+                  <Link href="/dashboard/domains" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
                     View all <FaChevronRight size={9} />
-                  </button>
+                  </Link>
                 </div>
                 {loadingDomains ? (
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 flex justify-center">
@@ -714,16 +592,66 @@ function DashboardContent() {
                 )}
               </div>
 
+              {/* Recent Orders */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
+                  <Link href="/dashboard/orders" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
+                    View all <FaChevronRight size={9} />
+                  </Link>
+                </div>
+                {loadingOrders ? (
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 flex justify-center">
+                    <div className="w-5 h-5 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 text-center">
+                    <p className="text-gray-400 dark:text-slate-500 text-sm mb-3">No shop orders yet.</p>
+                    <Link href="/shop" className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
+                      Visit the Shop
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {orders.slice(0, 2).map(o => <ShopOrderCard key={o._id} order={o} />)}
+                  </div>
+                )}
+              </div>
+
+              {/* Recent Repairs */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-gray-900 dark:text-white">Recent Repairs</h2>
+                  <Link href="/dashboard/repairs" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
+                    View all <FaChevronRight size={9} />
+                  </Link>
+                </div>
+                {loadingRepairs ? (
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 flex justify-center">
+                    <div className="w-5 h-5 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
+                  </div>
+                ) : repairs.length === 0 ? (
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 text-center">
+                    <p className="text-gray-400 dark:text-slate-500 text-sm">No repairs on file.</p>
+                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Repairs you book in-store appear here.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {repairs.slice(0, 2).map(j => <RepairCard key={j._id} job={j} />)}
+                  </div>
+                )}
+              </div>
+
               {/* Quick Actions */}
               <div className="md:col-span-2">
                 <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
-                    { href: "/hosting", icon: FaServer, label: "Order Hosting", color: "text-amber-500 bg-amber-50" },
+                    { href: "/hosting", icon: FaServer, label: "Order Hosting", color: "text-brand-500 bg-brand-50" },
                     { href: "/domains", icon: FaGlobe, label: "Register Domain", color: "text-blue-500 bg-blue-50" },
                     { href: "/contact", icon: FaShieldAlt, label: "Get Support", color: "text-emerald-500 bg-emerald-50" },
                     {
-                      href: "/dashboard?tab=hosting",
+                      href: "/dashboard/hosting",
                       icon: FaExternalLinkAlt,
                       label: "cPanel (my orders)",
                       color: "text-purple-500 bg-purple-50",
@@ -743,65 +671,6 @@ function DashboardContent() {
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Hosting tab */}
-          {tab === "hosting" && (
-            <div>
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-semibold text-gray-900 dark:text-white">All Hosting Orders</h2>
-                <Link href="/hosting" className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition">
-                  + New Order
-                </Link>
-              </div>
-              {loadingHosting ? (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-10 flex justify-center">
-                  <div className="w-6 h-6 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
-                </div>
-              ) : hosting.length === 0 ? (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-10 text-center">
-                  <FaServer size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
-                  <p className="text-gray-400 dark:text-slate-500 text-sm mb-4">No hosting orders yet.</p>
-                  <Link href="/hosting" className="text-sm font-semibold px-5 py-2.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition">
-                    Browse Hosting Plans
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {hosting.map(o => <HostingCard key={o._id} order={o} />)}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Domains tab */}
-          {tab === "domains" && (
-            <div>
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-semibold text-gray-900 dark:text-white">All Domains</h2>
-                <Link href="/domains" className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition">
-                  + Register Domain
-                </Link>
-              </div>
-              {loadingDomains ? (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-10 flex justify-center">
-                  <div className="w-6 h-6 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
-                </div>
-              ) : domains.length === 0 ? (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-10 text-center">
-                  <FaGlobe size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
-                  <p className="text-gray-400 dark:text-slate-500 text-sm mb-4">No domains registered yet.</p>
-                  <Link href="/domains" className="text-sm font-semibold px-5 py-2.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition">
-                    Search Domains
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {domains.map(o => <DomainCard key={o._id} order={o} />)}
-                </div>
-              )}
-            </div>
-          )}
         </div>
         )}
 

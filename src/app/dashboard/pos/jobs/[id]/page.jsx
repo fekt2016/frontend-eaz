@@ -13,7 +13,7 @@ import { formatPhoneInput } from "@/lib/sanitize";
 import { printRepairReceipt } from "@/lib/printReceipt";
 import JobPhotos from "@/components/pos/JobPhotos";
 
-const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition";
+const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const selectCls = `${inputCls} cursor-pointer`;
 const labelCls  = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
@@ -21,7 +21,7 @@ const STATUSES = ["received", "diagnosing", "repairing", "ready", "collected", "
 const STATUS_COLORS = {
   received:   "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
   diagnosing: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
-  repairing:  "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+  repairing:  "bg-brand-500/15 text-brand-600 dark:text-brand-400 border-brand-500/30",
   ready:      "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
   collected:  "bg-gray-500/15 text-gray-500 dark:text-gray-400 border-gray-500/30",
   cancelled:  "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
@@ -269,13 +269,13 @@ export default function JobDetailPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
-      <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-amber-400 rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-brand-400 rounded-full animate-spin" />
     </div>
   );
 
   if (!job && !loading) return (
     <div className="text-center py-16 text-gray-500">
-      Job not found. <Link href="/dashboard/pos/jobs" className="text-amber-600 dark:text-amber-400 hover:underline">Back to jobs</Link>
+      Job not found. <Link href="/dashboard/pos/jobs" className="text-brand-600 dark:text-brand-400 hover:underline">Back to jobs</Link>
     </div>
   );
 
@@ -314,7 +314,7 @@ export default function JobDetailPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50"
           >
             {saving ? <FaSpinner className="animate-spin" size={12} /> : <FaCheck size={12} />}
             Save
@@ -370,7 +370,7 @@ export default function JobDetailPage() {
               {job.warrantyDays > 0 && (
                 <div className={`mt-3 flex items-center justify-between px-3 py-2 rounded-lg border text-xs ${
                   job.warrantyStatus === "active"        ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400" :
-                  job.warrantyStatus === "expiring_soon" ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400" :
+                  job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-600 dark:text-brand-400" :
                   job.warrantyStatus === "expired"       ? "bg-gray-500/10 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400" :
                   "bg-teal-500/10 border-teal-500/20 text-teal-400"
                 }`}>
@@ -393,15 +393,15 @@ export default function JobDetailPage() {
           {/* Technician section */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 print:hidden">
             <div className="flex items-center gap-2 px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50">
-              <FaWrench size={11} className="text-amber-600 dark:text-amber-400" />
-              <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide">Technician Update</p>
+              <FaWrench size={11} className="text-brand-600 dark:text-brand-400" />
+              <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">Technician Update</p>
             </div>
             <div className="p-5 space-y-4">
               {/* Repair work — key field for teller */}
               <div>
                 <label className={labelCls}>
                   Work to be done / performed
-                  <span className="ml-2 text-amber-500 text-xs font-normal">shown on invoice</span>
+                  <span className="ml-2 text-brand-500 text-xs font-normal">shown on invoice</span>
                 </label>
                 <textarea
                   value={repairWork}
@@ -494,7 +494,7 @@ export default function JobDetailPage() {
                 {job?.warrantyExpires && (
                   <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs ${
                     job.warrantyStatus === "active"        ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400" :
-                    job.warrantyStatus === "expiring_soon" ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400" :
+                    job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-600 dark:text-brand-400" :
                     "bg-gray-500/10 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400"
                   }`}>
                     <span className="font-medium">Warranty expires:</span>
@@ -541,7 +541,7 @@ export default function JobDetailPage() {
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-sm text-amber-600 dark:text-amber-400 font-semibold">GH₵{(p.sellingPrice || 0).toLocaleString()}</p>
+                          <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">GH₵{(p.sellingPrice || 0).toLocaleString()}</p>
                           <p className="text-xs text-gray-500">Stock: {p.quantity}</p>
                         </div>
                       </button>
@@ -568,7 +568,7 @@ export default function JobDetailPage() {
                         <span className="text-sm text-gray-900 dark:text-white w-5 text-center">{p.quantity}</span>
                         <button onClick={() => updatePart(p.id, "quantity", p.quantity + 1)} className="w-6 h-6 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-xs flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
                       </div>
-                      <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 w-20 text-right">
+                      <p className="text-sm font-semibold text-brand-600 dark:text-brand-400 w-20 text-right">
                         GH₵{((p.cost || 0) * p.quantity).toLocaleString()}
                       </p>
                       <button onClick={() => removePart(p.id)} className="text-gray-600 hover:text-red-400 transition print:hidden">
@@ -613,7 +613,7 @@ export default function JobDetailPage() {
             )}
             {status === "diagnosing" && (
               <div className="p-3">
-                <button onClick={() => quickStatus("repairing")} className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition">
+                <button onClick={() => quickStatus("repairing")} className="w-full py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition">
                   Diagnosis done → Start Repairing
                 </button>
               </div>
@@ -652,8 +652,8 @@ export default function JobDetailPage() {
 
             {/* Repair work description — what teller tells the customer */}
             {(repairWork || job?.repairWork) && (
-              <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-amber-500/5">
-                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Repair work</p>
+              <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-brand-500/5">
+                <p className="text-xs text-brand-600 dark:text-brand-400 font-medium mb-1">Repair work</p>
                 <p className="text-sm text-gray-700 dark:text-gray-200">{repairWork || job?.repairWork}</p>
               </div>
             )}
@@ -721,7 +721,7 @@ export default function JobDetailPage() {
                   {/* Visual margin bar */}
                   <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mt-1">
                     <div
-                      className={`h-full rounded-full transition-all ${marginPct >= 50 ? "bg-green-500" : marginPct >= 25 ? "bg-amber-500" : "bg-red-500"}`}
+                      className={`h-full rounded-full transition-all ${marginPct >= 50 ? "bg-green-500" : marginPct >= 25 ? "bg-brand-500" : "bg-red-500"}`}
                       style={{ width: `${Math.min(100, Math.max(0, marginPct))}%` }}
                     />
                   </div>
@@ -749,7 +749,7 @@ export default function JobDetailPage() {
                   )}
                   {(totalParts + (Number(laborCost) || 0)) > 0 && (
                     <button type="button" onClick={() => setPayAmount(String(Math.max(0, totalParts + (Number(laborCost) || 0) - Math.max(0, totalPaid - (Number(diagnosisFee) || 0)))))}
-                      className="px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs font-medium hover:bg-amber-500/30 transition border border-amber-500/20">
+                      className="px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20">
                       Parts + Labour GH₵{(totalParts + (Number(laborCost) || 0)).toLocaleString()}
                     </button>
                   )}
@@ -804,7 +804,7 @@ export default function JobDetailPage() {
           {!isTechnician && (balanceDue > 0 || momoStatus === "pending" || momoStatus === "success") && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 space-y-4 print:hidden">
             <div className="flex items-center gap-2">
-              <FaMobileAlt size={14} className="text-amber-600 dark:text-amber-400" />
+              <FaMobileAlt size={14} className="text-brand-600 dark:text-brand-400" />
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Request MoMo Payment</p>
             </div>
 
@@ -838,10 +838,10 @@ export default function JobDetailPage() {
               </div>
             ) : momoStatus === "pending" ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                  <FaSpinner size={16} className="text-amber-600 dark:text-amber-400 animate-spin flex-shrink-0" />
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/10 border border-brand-500/30">
+                  <FaSpinner size={16} className="text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">Waiting for customer…</p>
+                    <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">Waiting for customer…</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{momoMsg || "Customer will receive a USSD prompt on their phone."}</p>
                     {momoRef && <p className="text-xs text-gray-600 mt-0.5 font-mono">Ref: {momoRef}</p>}
                   </div>
@@ -912,7 +912,7 @@ export default function JobDetailPage() {
                 <button
                   onClick={initiateMomo}
                   disabled={momoLoading || !momoPhone || (!momoAmount && balanceDue <= 0)}
-                  className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {momoLoading ? <FaSpinner className="animate-spin" size={12} /> : <FaMobileAlt size={12} />}
                   Send Payment Request

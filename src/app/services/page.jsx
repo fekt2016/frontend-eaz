@@ -34,7 +34,7 @@ export default function ServicesPage() {
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">What We Offer</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">What We Offer</p>
           <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-5">Our Services</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-10">
             Six digital services and in-person phone repair — everything your business needs online, all from one trusted team in Accra.
@@ -69,7 +69,7 @@ export default function ServicesPage() {
 
           {/* Left: copy */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">All Services in Action</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">All Services in Action</p>
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-4">
               See What&apos;s Possible When All 7 Work Together
             </h2>
@@ -91,7 +91,7 @@ export default function ServicesPage() {
             <ul className="space-y-2 mb-8">
               {["Web Design & Development", "Brand Identity", "SEO & Content", "Paid Advertising", "Social Media", "Email Marketing"].map((s) => (
                 <li key={s} className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
-                  <FaCheckCircle size={13} className="text-amber-500 flex-shrink-0" />
+                  <FaCheckCircle size={13} className="text-brand-500 flex-shrink-0" />
                   {s}
                 </li>
               ))}
@@ -132,7 +132,7 @@ export default function ServicesPage() {
                   <div className="h-16 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-600" />
                   <div className="p-2">
                     <div className="h-2 rounded bg-gray-200 dark:bg-slate-700 mb-1" />
-                    <div className="h-2 rounded bg-amber-100 dark:bg-amber-900/30 w-2/3" />
+                    <div className="h-2 rounded bg-brand-100 dark:bg-brand-900/30 w-2/3" />
                   </div>
                 </div>
               ))}
@@ -145,7 +145,7 @@ export default function ServicesPage() {
                   <div key={i} className="h-6 w-12 rounded bg-gray-100 dark:bg-slate-800" />
                 ))}
               </div>
-              <div className="h-6 w-20 rounded-full bg-amber-400/30" />
+              <div className="h-6 w-20 rounded-full bg-brand-400/30" />
             </div>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function ServicesPage() {
       {/* HELP SECTION */}
       <section className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Not Sure?</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Not Sure?</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-4">
             Not Sure Which Services You Need?
           </h2>

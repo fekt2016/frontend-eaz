@@ -7,7 +7,7 @@ import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from
 
 const WARRANTY_COLORS = {
   active:        "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
-  expiring_soon: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+  expiring_soon: "bg-brand-500/15 text-brand-600 dark:text-brand-400 border-brand-500/30",
   expired:       "bg-gray-500/15 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700",
 };
 
@@ -35,12 +35,12 @@ function JobWarrantyRow({ job, warrantyStatus }) {
         <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
           <FaShieldAlt size={11} className={
             warrantyStatus === "active"        ? "text-green-600 dark:text-green-400" :
-            warrantyStatus === "expiring_soon" ? "text-amber-600 dark:text-amber-400" : "text-gray-500"
+            warrantyStatus === "expiring_soon" ? "text-brand-600 dark:text-brand-400" : "text-gray-500"
           } />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-mono font-semibold text-amber-600 dark:text-amber-400">{job.jobNumber}</p>
+            <p className="text-sm font-mono font-semibold text-brand-600 dark:text-brand-400">{job.jobNumber}</p>
             <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${WARRANTY_COLORS[warrantyStatus]}`}>
               {WARRANTY_LABELS[warrantyStatus]}
             </span>
@@ -59,7 +59,7 @@ function JobWarrantyRow({ job, warrantyStatus }) {
         </p>
         {days !== null && (
           <p className={`text-xs font-semibold mt-0.5 ${
-            days < 0 ? "text-gray-500" : days <= 7 ? "text-amber-600 dark:text-amber-400" : "text-green-600 dark:text-green-400"
+            days < 0 ? "text-gray-500" : days <= 7 ? "text-brand-600 dark:text-brand-400" : "text-green-600 dark:text-green-400"
           }`}>
             {days < 0 ? `${Math.abs(days)}d ago` : days === 0 ? "Today" : `${days}d left`}
           </p>
@@ -106,10 +106,10 @@ export default function WarrantyPage() {
 
       {/* Alert banner — expiring soon */}
       {!loading && expiringSoon.length > 0 && (
-        <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
-          <FaExclamationTriangle size={14} className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl bg-brand-500/10 border border-brand-500/30">
+          <FaExclamationTriangle size={14} className="text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+            <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">
               {expiringSoon.length} warranty{expiringSoon.length !== 1 ? "s" : ""} expiring within 7 days
             </p>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
@@ -117,7 +117,7 @@ export default function WarrantyPage() {
                 <Link
                   key={j._id}
                   href={`/pos/jobs/${j._id}`}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 transition font-mono"
+                  className="text-xs px-2.5 py-1 rounded-lg bg-brand-500/15 text-brand-300 hover:bg-brand-500/30 transition font-mono"
                 >
                   {j.jobNumber} · {daysLeft(j.warrantyExpires)}d
                 </Link>
@@ -145,7 +145,7 @@ export default function WarrantyPage() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Expiring</p>
-              <FaExclamationTriangle size={13} className="text-amber-600 dark:text-amber-400" />
+              <FaExclamationTriangle size={13} className="text-brand-600 dark:text-brand-400" />
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{expiringSoon.length}</p>
             <p className="text-xs text-gray-500 mt-0.5">Within 7 days</p>
@@ -173,7 +173,7 @@ export default function WarrantyPage() {
             onClick={() => setTab(t.key)}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition ${
               tab === t.key
-                ? "bg-amber-500 text-white"
+                ? "bg-brand-500 text-white"
                 : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-700"
             }`}
           >

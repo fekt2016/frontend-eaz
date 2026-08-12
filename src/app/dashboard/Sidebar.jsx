@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 import { FaTachometerAlt, FaTimes, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 import { baseNav, adminNav, marketplaceNav, posNav } from "./dashboardNav";
 
-const POS_ROLES = ["superadmin", "admin", "staff", "cashier", "technician"];
+const POS_ROLES = ["superadmin", "admin", "staff", "technician"];
 
 function SidebarLink({ href, icon: Icon, label, active, onClick, badge }) {
   return (
@@ -17,7 +17,7 @@ function SidebarLink({ href, icon: Icon, label, active, onClick, badge }) {
       onClick={onClick}
       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
         active
-          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+          ? "bg-brand-500/15 text-brand-600 dark:text-brand-400"
           : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
       }`}
     >
@@ -69,7 +69,7 @@ export default function Sidebar({ open, onClose }) {
       {/* Logo */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
             <FaTachometerAlt size={13} className="text-gray-900 dark:text-white" />
           </div>
           <div>

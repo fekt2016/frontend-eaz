@@ -13,7 +13,7 @@ const CATEGORY_COLORS = {
   "Web Design": "bg-violet-50 text-violet-700",
   "Mobile Apps": "bg-blue-50 text-blue-700",
   "Brand Identity": "bg-purple-50 text-purple-700",
-  "E-commerce": "bg-amber-50 text-amber-700",
+  "E-commerce": "bg-brand-50 text-brand-700",
   "SEO Projects": "bg-emerald-50 text-emerald-700",
   "Domain & Hosting": "bg-cyan-50 text-cyan-700",
 };
@@ -152,7 +152,7 @@ export default function CaseStudyPage({ params }) {
 
       {/* READ PROGRESS BAR */}
       <div
-        className="fixed top-0 left-0 h-0.5 bg-amber-500 z-[999] transition-all duration-100"
+        className="fixed top-0 left-0 h-0.5 bg-brand-500 z-[999] transition-all duration-100"
         style={{ width: `${readProgress}%` }}
       />
 
@@ -235,7 +235,7 @@ export default function CaseStudyPage({ params }) {
                 href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-5 py-2.5 rounded-full bg-amber-500 text-gray-900 font-semibold text-sm hover:bg-amber-400 transition"
+                className="px-5 py-2.5 rounded-full bg-brand-500 text-gray-900 font-semibold text-sm hover:bg-brand-400 transition"
               >
                 View Live Site ↗
               </a>
@@ -259,7 +259,7 @@ export default function CaseStudyPage({ params }) {
             ["Category", project.category],
             ["Timeline", project.duration],
             ["Year", project.year],
-            ["Live", project.liveUrl && project.liveUrl !== "#" ? <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:underline">Visit ↗</a> : "Coming soon"],
+            ["Live", project.liveUrl && project.liveUrl !== "#" ? <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">Visit ↗</a> : "Coming soon"],
           ].map(([label, value]) => (
             <div key={label} className="px-4 py-2 first:pl-0 last:pr-0">
               <p className="text-xs text-gray-400 dark:text-slate-500 mb-0.5">{label}</p>
@@ -272,7 +272,7 @@ export default function CaseStudyPage({ params }) {
       {/* IMPACT METRICS */}
       <section className="py-16 px-4 bg-white dark:bg-slate-900">
         <div className="max-w-6xl mx-auto text-center mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Project Impact</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Project Impact</p>
           <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">Measurable Results That Matter</h2>
         </div>
         <div className="max-w-3xl mx-auto grid grid-cols-3 gap-5">
@@ -282,7 +282,7 @@ export default function CaseStudyPage({ params }) {
                 <CountUpNumber value={r.value} duration={2000} />
               </p>
               <p className="text-gray-500 dark:text-slate-400 text-sm">{r.label}</p>
-              <div className="w-8 h-0.5 bg-amber-400 mx-auto mt-3 rounded-full" />
+              <div className="w-8 h-0.5 bg-brand-400 mx-auto mt-3 rounded-full" />
             </div>
           ))}
         </div>
@@ -303,14 +303,14 @@ export default function CaseStudyPage({ params }) {
           <div className="space-y-12">
             {/* Overview */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">01 — Overview</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">01 — Overview</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">About This Project</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{project.caseStudy?.overview}</p>
             </div>
 
             {/* Challenge */}
             <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">02 — The Challenge</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">02 — The Challenge</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">The Problem We Solved</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4">{project.caseStudy?.challenge}</p>
               <ul className="space-y-2">
@@ -325,7 +325,7 @@ export default function CaseStudyPage({ params }) {
 
             {/* Solution */}
             <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">03 — Our Solution</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">03 — Our Solution</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">How We Approached It</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4">{project.caseStudy?.solution}</p>
               <ul className="space-y-2">
@@ -340,7 +340,7 @@ export default function CaseStudyPage({ params }) {
 
             {/* Process timeline */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">04 — Our Process</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">04 — Our Process</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">Step by Step</h2>
               <div ref={timelineRef} className="space-y-4">
                 {(project.caseStudy?.process || []).slice(0, 4).map((step, i) => (
@@ -351,7 +351,7 @@ export default function CaseStudyPage({ params }) {
                     transition={{ duration: 0.5, delay: i * 0.12, ease: "easeOut" }}
                     className="flex gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800"
                   >
-                    <div className="w-10 h-10 rounded-full border-2 border-amber-100 bg-amber-50 flex items-center justify-center font-display font-bold text-amber-500 text-sm flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full border-2 border-brand-100 bg-brand-50 flex items-center justify-center font-display font-bold text-brand-500 text-sm flex-shrink-0">
                       {i + 1}
                     </div>
                     <div>
@@ -366,7 +366,7 @@ export default function CaseStudyPage({ params }) {
 
             {/* Outcome */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">05 — The Outcome</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">05 — The Outcome</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">What We Achieved Together</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-5">{project.caseStudy?.outcome}</p>
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
@@ -420,7 +420,7 @@ export default function CaseStudyPage({ params }) {
               ))}
             </div>
 
-            <div className="p-5 rounded-2xl bg-amber-50 border border-amber-100 text-center">
+            <div className="p-5 rounded-2xl bg-brand-50 border border-brand-100 text-center">
               <p className="text-2xl mb-2">🚀</p>
               <h4 className="font-semibold text-gray-900 text-sm mb-1">Like What You See?</h4>
               <p className="text-gray-500 dark:text-gray-500 text-xs leading-relaxed mb-4">We can build something this impactful for your business.</p>
@@ -441,7 +441,7 @@ export default function CaseStudyPage({ params }) {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Project Gallery</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Project Gallery</p>
             <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">Behind the Screens</h2>
             <p className="text-gray-400 dark:text-slate-500 text-sm mt-2 max-w-md mx-auto">A closer look at how the experience comes together across key screens.</p>
           </div>
@@ -509,18 +509,18 @@ export default function CaseStudyPage({ params }) {
       {/* TESTIMONIAL */}
       <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-4xl text-amber-300 font-serif mb-4">&ldquo;</p>
+          <p className="text-4xl text-brand-300 font-serif mb-4">&ldquo;</p>
           <blockquote className="font-display font-bold text-xl md:text-2xl text-gray-900 dark:text-white leading-relaxed mb-8">
             {project.testimonial?.quote}
           </blockquote>
           <div className="flex items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center font-bold text-amber-500 text-sm">
+            <div className="w-10 h-10 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center font-bold text-brand-500 text-sm">
               {project.testimonial?.avatar}
             </div>
             <div className="text-left">
               <p className="font-semibold text-gray-900 dark:text-white text-sm">{project.testimonial?.author}</p>
               <p className="text-gray-400 dark:text-slate-500 text-xs">{project.testimonial?.role}</p>
-              <p className="text-amber-400 text-xs mt-0.5">★★★★★</p>
+              <p className="text-brand-400 text-xs mt-0.5">★★★★★</p>
             </div>
           </div>
           <div className="inline-flex items-center gap-1.5 mt-5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
@@ -534,7 +534,7 @@ export default function CaseStudyPage({ params }) {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Technologies Used</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Technologies Used</p>
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Built With</h2>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
@@ -553,7 +553,7 @@ export default function CaseStudyPage({ params }) {
         <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">More Work</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">More Work</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Continue Exploring</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-5">
@@ -564,7 +564,7 @@ export default function CaseStudyPage({ params }) {
                     <Image src={prevProject.thumbnail} alt={prevProject.title} width={64} height={64} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                     <div>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-1 ${CATEGORY_COLORS[prevProject.category] || "bg-gray-100 text-gray-600"}`}>{prevProject.category}</span>
-                      <p className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-amber-500 transition">{prevProject.title}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-brand-500 transition">{prevProject.title}</p>
                       <p className="text-gray-400 dark:text-slate-500 text-xs">{prevProject.client}</p>
                     </div>
                   </div>
@@ -577,7 +577,7 @@ export default function CaseStudyPage({ params }) {
                     <Image src={nextProject.thumbnail} alt={nextProject.title} width={64} height={64} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                     <div>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-1 ${CATEGORY_COLORS[nextProject.category] || "bg-gray-100 text-gray-600"}`}>{nextProject.category}</span>
-                      <p className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-amber-500 transition">{nextProject.title}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-brand-500 transition">{nextProject.title}</p>
                       <p className="text-gray-400 dark:text-slate-500 text-xs">{nextProject.client}</p>
                     </div>
                   </div>
@@ -596,7 +596,7 @@ export default function CaseStudyPage({ params }) {
       {/* BOTTOM CTA */}
       <section className="py-20 px-4 bg-gray-900">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Let&apos;s Work Together</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Let&apos;s Work Together</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-white mb-4 leading-tight">
             Ready to Build<br />Something Like This?
           </h2>
@@ -607,7 +607,7 @@ export default function CaseStudyPage({ params }) {
             <button
               type="button"
               onClick={() => router.push("/contact")}
-              className="px-7 py-3.5 rounded-full bg-amber-500 text-gray-900 font-semibold hover:bg-amber-400 transition"
+              className="px-7 py-3.5 rounded-full bg-brand-500 text-gray-900 font-semibold hover:bg-brand-400 transition"
             >
               Start Your Project →
             </button>

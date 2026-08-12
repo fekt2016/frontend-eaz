@@ -12,7 +12,7 @@ const NS1 = process.env.NEXT_PUBLIC_NAMESERVER_1 || "ns1.eazworld.com";
 const NS2 = process.env.NEXT_PUBLIC_NAMESERVER_2 || "ns2.eazworld.com";
 
 const statusColors = {
-  pending: "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-900/30",
+  pending: "bg-brand-50 text-brand-700 border-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-900/30",
   paid: "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-900/30",
   active: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-900/30",
   cancelled: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",
@@ -149,7 +149,7 @@ export default function HostingOrderDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24 text-center">
         <p className="text-gray-400 dark:text-slate-500">Order not found.</p>
-        <Link href="/dashboard" className="mt-4 inline-block text-sm text-amber-500 hover:underline">← Back to Dashboard</Link>
+        <Link href="/dashboard" className="mt-4 inline-block text-sm text-brand-500 hover:underline">← Back to Dashboard</Link>
       </div>
     );
   }
@@ -223,7 +223,7 @@ export default function HostingOrderDetailPage() {
             {expiresAt && (
               <div className="flex justify-between">
                 <dt className="text-gray-400 dark:text-slate-500">Expires</dt>
-                <dd className={`font-medium ${isExpired ? "text-red-600 dark:text-red-400" : isExpiringSoon ? "text-amber-600 dark:text-amber-400" : "text-gray-900 dark:text-white"}`}>
+                <dd className={`font-medium ${isExpired ? "text-red-600 dark:text-red-400" : isExpiringSoon ? "text-brand-600 dark:text-brand-400" : "text-gray-900 dark:text-white"}`}>
                   {expiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   {isExpired && " — Expired"}
                   {isExpiringSoon && !isExpired && ` — ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`}
@@ -241,22 +241,22 @@ export default function HostingOrderDetailPage() {
 
         {/* Nameserver instructions — own domain orders only */}
         {showNameservers && (
-          <div className="rounded-2xl border border-amber-100 bg-amber-50 p-6 mb-5">
-            <h2 className="text-sm font-semibold text-amber-900 mb-1">📡 Point your domain</h2>
-            <p className="text-xs text-amber-700 mb-3">
+          <div className="rounded-2xl border border-brand-100 bg-brand-50 p-6 mb-5">
+            <h2 className="text-sm font-semibold text-brand-900 mb-1">📡 Point your domain</h2>
+            <p className="text-xs text-brand-700 mb-3">
               Update the nameservers for <strong className="font-mono">{order.domain}</strong> at your registrar to:
             </p>
             <div className="space-y-2 text-sm font-mono">
-              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-amber-100">
+              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-brand-100">
                 <span className="text-gray-400 font-sans text-xs">NS1</span>
                 <span className="font-semibold text-gray-900">{NS1}</span>
               </div>
-              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-amber-100">
+              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-brand-100">
                 <span className="text-gray-400 font-sans text-xs">NS2</span>
                 <span className="font-semibold text-gray-900">{NS2}</span>
               </div>
             </div>
-            <p className="mt-3 text-xs text-amber-700">DNS propagation takes 24–48 hours. Your cPanel is accessible immediately via the button below once your account is active.</p>
+            <p className="mt-3 text-xs text-brand-700">DNS propagation takes 24–48 hours. Your cPanel is accessible immediately via the button below once your account is active.</p>
           </div>
         )}
 
@@ -273,9 +273,9 @@ export default function HostingOrderDetailPage() {
 
           {/* Expiring soon warning */}
           {isExpiringSoon && !isExpired && (
-            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30">
-              <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-1">Expiring in {daysLeft} day{daysLeft === 1 ? "" : "s"}</p>
-              <p className="text-xs text-amber-600 dark:text-amber-500">Renew now to avoid any interruption to your website.</p>
+            <div className="p-4 rounded-2xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-900/30">
+              <p className="text-sm font-semibold text-brand-700 dark:text-brand-400 mb-1">Expiring in {daysLeft} day{daysLeft === 1 ? "" : "s"}</p>
+              <p className="text-xs text-brand-600 dark:text-brand-500">Renew now to avoid any interruption to your website.</p>
             </div>
           )}
 
@@ -288,7 +288,7 @@ export default function HostingOrderDetailPage() {
                 isExpired
                   ? "bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-100"
                   : isExpiringSoon
-                    ? "bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-100"
+                    ? "bg-brand-500 text-white hover:bg-brand-600 shadow-lg shadow-brand-100"
                     : "border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500"
               }`}
             >
@@ -306,7 +306,7 @@ export default function HostingOrderDetailPage() {
             <button
               onClick={handleCpanelLogin}
               disabled={loginLoading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition disabled:opacity-60 shadow-lg shadow-amber-100"
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-brand-500 text-white text-sm font-bold hover:bg-brand-600 transition disabled:opacity-60 shadow-lg shadow-brand-100"
             >
               {loginLoading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

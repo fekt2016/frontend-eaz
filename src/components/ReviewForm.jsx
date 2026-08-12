@@ -106,7 +106,7 @@ export default function ReviewForm({ onSuccess }) {
                 size={28}
                 className={`transition-colors ${
                   star <= (hovered || fields.rating)
-                    ? "text-amber-400"
+                    ? "text-brand-400"
                     : "text-gray-200 dark:text-slate-700"
                 }`}
               />
@@ -128,7 +128,7 @@ export default function ReviewForm({ onSuccess }) {
             className={`${inputCls} ${user?.name ? "bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-slate-400 cursor-default" : ""}`}
           />
           {user?.name && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-amber-500 font-medium">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-500 font-medium">
               Logged in
             </span>
           )}
@@ -160,7 +160,7 @@ export default function ReviewForm({ onSuccess }) {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full py-3.5 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 disabled:opacity-50 transition text-sm"
+        className="w-full py-3.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition text-sm"
       >
         {status === "loading" ? "Submitting..." : "Submit Review →"}
       </button>

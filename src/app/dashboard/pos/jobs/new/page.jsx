@@ -7,7 +7,7 @@ import { FaSearch, FaPlus, FaArrowLeft } from "react-icons/fa";
 import Link from "next/link";
 import { formatPhoneInput } from "@/lib/sanitize";
 
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition";
+const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const selectCls = `${inputCls} cursor-pointer`;
 const labelCls = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
@@ -131,7 +131,7 @@ export default function NewJobPage() {
           <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Customer</p>
 
           {selectedCustomer ? (
-            <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-brand-500/10 border border-brand-500/30">
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedCustomer.phone}</p>
                 {selectedCustomer.name && <p className="text-xs text-gray-500 dark:text-gray-400">{selectedCustomer.name}</p>}
@@ -171,7 +171,7 @@ export default function NewJobPage() {
                       onMouseDown={e => { e.preventDefault(); setSelectedCustomer(c); setShowDropdown(false); }}
                       className="w-full text-left px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-3"
                     >
-                      <div className="w-7 h-7 rounded-full bg-amber-500/15 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-xs flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-brand-500/15 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs flex-shrink-0">
                         {c.phone.charAt(0)}
                       </div>
                       <div>
@@ -245,7 +245,7 @@ export default function NewJobPage() {
               id="requiresDiagnosis"
               checked={requiresDiagnosis}
               onChange={e => { setRequiresDiagnosis(e.target.checked); if (!e.target.checked) setDiagnosisFee(""); }}
-              className="mt-0.5 accent-amber-500 cursor-pointer"
+              className="mt-0.5 accent-brand-500 cursor-pointer"
             />
             <div className="flex-1">
               <label htmlFor="requiresDiagnosis" className="text-sm text-gray-900 dark:text-white font-medium cursor-pointer">
@@ -310,7 +310,7 @@ export default function NewJobPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? "Creating…" : <><FaPlus size={11} /> Create Job Ticket</>}
         </button>

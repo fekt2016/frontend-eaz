@@ -4,11 +4,16 @@ import {
   FaTachometerAlt, FaStore, FaCalendarAlt, FaComments,
   FaStar, FaFileAlt, FaServer, FaGlobe, FaUsers, FaEnvelope,
   FaBarcode, FaHome, FaWrench, FaBoxes, FaChartBar, FaReceipt, FaTruck, FaShieldAlt,
+  FaShoppingBag,
 } from "react-icons/fa";
 
 // Shown to every logged-in dashboard user.
 export const baseNav = [
   { href: "/dashboard", icon: FaTachometerAlt, label: "Overview" },
+  { href: "/dashboard/orders", icon: FaShoppingBag, label: "Shop Orders" },
+  { href: "/dashboard/repairs", icon: FaWrench, label: "My Repairs" },
+  { href: "/dashboard/hosting", icon: FaServer, label: "Hosting" },
+  { href: "/dashboard/domains", icon: FaGlobe, label: "Domains" },
 ];
 
 // Admin/superadmin only.
@@ -30,13 +35,14 @@ export const marketplaceNav = [
 ];
 
 // roles: if undefined, visible to all POS roles.
-// superadmin = full access; admin = repair steps only; staff = full except staff mgmt; cashier = sales; technician = repairs
+// superadmin = full access; admin = repair steps only; staff = full except staff mgmt (also handles sales); technician = repairs
 export const posNav = [
-  { label: "Sell",       href: "/dashboard/pos/sell",      icon: FaBarcode,  roles: ["superadmin","cashier","staff"] },
-  { label: "Dashboard",  href: "/dashboard/pos/dashboard", icon: FaHome,     roles: ["superadmin","admin","staff"] },
+  { label: "Sell",       href: "/dashboard/pos/sell",      icon: FaBarcode,  roles: ["superadmin","staff"] },
+  { label: "Dashboard",  href: "/dashboard/pos/dashboard", icon: FaHome,     roles: ["superadmin","admin","staff","technician"] },
   { label: "My Jobs",    href: "/dashboard/pos",           icon: FaWrench,   roles: ["technician"] },
   { label: "Jobs",       href: "/dashboard/pos/jobs",      icon: FaWrench,   roles: ["superadmin","staff"] },
-  { label: "Customers",  href: "/dashboard/pos/customers", icon: FaUsers,    roles: ["superadmin","staff","cashier"] },
+  { label: "Customers",  href: "/dashboard/pos/customers", icon: FaUsers,    roles: ["superadmin","staff"] },
+  { label: "Orders",     href: "/dashboard/pos/orders",    icon: FaShoppingBag, roles: ["superadmin","admin","staff"] },
   { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: FaTruck,    roles: ["superadmin","staff"] },
   { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: FaReceipt,  roles: ["superadmin","staff"] },
   { label: "Warranty",   href: "/dashboard/pos/warranty",  icon: FaShieldAlt, roles: ["superadmin","staff"] },

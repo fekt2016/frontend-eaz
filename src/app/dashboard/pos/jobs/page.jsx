@@ -18,7 +18,7 @@ const STATUS_TABS = [
 const STATUS_COLORS = {
   received:   "bg-blue-500/15 text-blue-600 dark:text-blue-400",
   diagnosing: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
-  repairing:  "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  repairing:  "bg-brand-500/15 text-brand-600 dark:text-brand-400",
   ready:      "bg-green-500/15 text-green-600 dark:text-green-400",
   collected:  "bg-gray-500/15 text-gray-500 dark:text-gray-400",
   cancelled:  "bg-red-500/15 text-red-600 dark:text-red-400",
@@ -66,7 +66,7 @@ export default function JobsPage() {
         </div>
         <Link
           href="/dashboard/pos/jobs/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
         >
           <FaPlus size={11} /> New Job
         </Link>
@@ -86,7 +86,7 @@ export default function JobsPage() {
             value={q}
             onChange={handleSearch}
             placeholder="Search by job #, customer name, device…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition"
           />
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function JobsPage() {
             onClick={() => handleStatus(t.key)}
             className={`whitespace-nowrap px-3.5 py-1.5 rounded-lg text-xs font-medium transition ${
               status === t.key
-                ? "bg-amber-500 text-white"
+                ? "bg-brand-500 text-white"
                 : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-700"
             }`}
           >
@@ -141,13 +141,13 @@ export default function JobsPage() {
                 >
                   <div className="flex items-center gap-2">
                     {job.priority === "urgent" && <FaExclamationTriangle size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
-                    <span className="text-xs font-mono font-semibold text-amber-600 dark:text-amber-400 whitespace-nowrap">{job.jobNumber}</span>
+                    <span className="text-xs font-mono font-semibold text-brand-600 dark:text-brand-400 whitespace-nowrap">{job.jobNumber}</span>
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm text-gray-900 dark:text-white truncate">{job.customer?.phone}</p>
                       {job.customerRepairCount > 1 && (
-                        <span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-medium">
+                        <span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full bg-brand-500/15 text-brand-600 dark:text-brand-400 font-medium">
                           {job.customerRepairCount}×
                         </span>
                       )}

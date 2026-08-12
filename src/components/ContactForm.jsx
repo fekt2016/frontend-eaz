@@ -12,7 +12,7 @@ const schema = z.object({
   message: z.string().min(10, "Please write at least 10 characters"),
 });
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition bg-white dark:bg-slate-800";
+const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 transition bg-white dark:bg-slate-800";
 
 export default function ContactForm() {
   const [fields, setFields] = useState({ name: "", email: "", subject: "", message: "" });
@@ -101,7 +101,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full py-3.5 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 disabled:opacity-50 transition text-sm"
+        className="w-full py-3.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition text-sm"
       >
         {status === "loading" ? "Sending…" : "Send Message →"}
       </button>

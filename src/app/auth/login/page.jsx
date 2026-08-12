@@ -41,8 +41,8 @@ function LoginPageInner() {
       }
       const role = res?.data?.user?.role;
       if (role === "technician" || role === "admin") router.push("/dashboard/pos");
-      else if (["superadmin", "staff", "cashier"].includes(role)) router.push("/dashboard/pos/sell");
-      else router.push("/dashboard");
+      else if (["superadmin", "staff"].includes(role)) router.push("/dashboard/pos/sell");
+      else router.push("/"); // customers land on the homepage, not the dashboard
     } catch (err) {
       // If account not verified, redirect to verify page
       if (err.requiresVerification) {
@@ -99,7 +99,7 @@ function LoginPageInner() {
 
           <div className="flex items-center justify-between mt-5 text-xs">
             <Link href="/auth/forgot-password" className="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">Forgot password?</Link>
-            <Link href="/auth/register" className="text-amber-500 font-medium hover:underline">Create account →</Link>
+            <Link href="/auth/register" className="text-brand-500 font-medium hover:underline">Create account →</Link>
           </div>
         </div>
 

@@ -58,7 +58,7 @@ export default function BankTransferPage() {
             ))}
             <div className="flex justify-between pt-2">
               <span className="text-gray-500 dark:text-slate-400">Reference</span>
-              <span className="font-mono text-amber-500">{orderId}</span>
+              <span className="font-mono text-brand-500">{orderId}</span>
             </div>
           </div>
           <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">Use your order reference when making the transfer so we can match your payment.</p>
@@ -66,24 +66,24 @@ export default function BankTransferPage() {
 
         {/* Nameserver card — only for own-domain orders */}
         {showNameservers && (
-          <div className="rounded-2xl border border-amber-100 bg-amber-50 p-6 mb-6">
-            <h2 className="font-display text-base font-semibold text-amber-900 mb-1">
+          <div className="rounded-2xl border border-brand-100 bg-brand-50 p-6 mb-6">
+            <h2 className="font-display text-base font-semibold text-brand-900 mb-1">
               📡 While you wait — point your domain
             </h2>
-            <p className="text-xs text-amber-700 mb-4">
+            <p className="text-xs text-brand-700 mb-4">
               Log in to your domain registrar and update the nameservers for <strong className="font-mono">{domain}</strong> to:
             </p>
             <div className="space-y-2 text-sm font-mono">
-              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-amber-100">
+              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-brand-100">
                 <span className="text-gray-400 font-sans text-xs">Nameserver 1</span>
                 <span className="font-semibold text-gray-900">{NS1}</span>
               </div>
-              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-amber-100">
+              <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-brand-100">
                 <span className="text-gray-400 font-sans text-xs">Nameserver 2</span>
                 <span className="font-semibold text-gray-900">{NS2}</span>
               </div>
             </div>
-            <p className="mt-3 text-xs text-amber-700">
+            <p className="mt-3 text-xs text-brand-700">
               DNS changes take 24–48 hours to propagate. Your hosting credentials will be emailed to you once your payment is confirmed.
             </p>
           </div>

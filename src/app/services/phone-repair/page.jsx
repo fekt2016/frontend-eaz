@@ -162,7 +162,7 @@ export default function PhoneRepair() {
       {/* REPAIRS */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Services</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Services</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">What We Repair</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {repairs.map((r) => (
@@ -184,7 +184,7 @@ export default function PhoneRepair() {
       {/* PRICING TABLE */}
       <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Pricing</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Pricing</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-3">Price Guide</h2>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Free diagnostic before any repair. You approve the quote first.</p>
           <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -210,7 +210,7 @@ export default function PhoneRepair() {
       {/* HOW IT WORKS */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Process</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Process</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map((s) => (
@@ -227,7 +227,7 @@ export default function PhoneRepair() {
       {/* FAQ */}
       <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">FAQ</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">FAQ</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-6">Common Questions</h2>
           <FAQ items={faqs} />
         </div>
@@ -244,7 +244,7 @@ export default function PhoneRepair() {
               { icon: FaPhone, label: "Phone", value: "+233 24 438 8190 / +233 23 522 2207", href: "tel:+233244388190" },
             ].map(({ icon: Ic, label, value, href }) => (
               <div key={label} className="flex items-start gap-3 text-sm">
-                <Ic className="text-amber-500 mt-0.5 flex-shrink-0" />
+                <Ic className="text-brand-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white text-xs mb-0.5">{label}</p>
                   {href ? <a href={href} className="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">{value}</a> : <p className="text-gray-500 dark:text-slate-400">{value}</p>}
