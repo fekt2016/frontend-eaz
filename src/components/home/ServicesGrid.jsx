@@ -26,7 +26,7 @@ const services = [
     title: "Paid Advertising",
     description: "Google and Meta campaigns that put your brand in front of the right people at the right time.",
     benefits: ["Google & Facebook Ads", "Precise audience targeting", "ROI-focused optimisation"],
-    href: "/services/web-marketing",
+    href: "/services/paid-ads",
     accent: "#3b82f6",
   },
   {
@@ -34,7 +34,7 @@ const services = [
     title: "Branding",
     description: "Logo, identity, and brand strategy that makes your business instantly recognisable and trustworthy.",
     benefits: ["Logo & visual identity", "Brand voice & guidelines", "Competitor differentiation"],
-    href: "/services/web-design",
+    href: "/services/branding",
     accent: "#8b5cf6",
   },
   {
@@ -42,7 +42,7 @@ const services = [
     title: "Social Media",
     description: "Consistent, creative social media management that builds your audience and drives engagement.",
     benefits: ["Content creation & scheduling", "Community management", "Growth analytics"],
-    href: "/services/web-marketing",
+    href: "/services/social-media",
     accent: "#ec4899",
   },
   {
@@ -50,7 +50,7 @@ const services = [
     title: "Email Marketing",
     description: "Strategic campaigns that turn your subscriber list into a reliable revenue channel.",
     benefits: ["Automated email sequences", "List segmentation", "Open rate optimisation"],
-    href: "/services/web-marketing",
+    href: "/services/email",
     accent: "#f59e0b",
   },
   {
@@ -66,14 +66,14 @@ const services = [
 
 export default function ServicesGrid() {
   return (
-    <section className="py-24 px-4 bg-white">
+    <section className="py-24 px-4 bg-white dark:bg-slate-950">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">What We Do</p>
-          <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 mb-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">What We Do</p>
+          <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-4">
             Everything Your Business Needs Online
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
+          <p className="text-gray-500 dark:text-slate-400 max-w-xl mx-auto">
             Six digital services and in-person phone repair — all from one trusted team in Accra.
           </p>
         </div>
@@ -84,21 +84,21 @@ export default function ServicesGrid() {
               key={s.title}
               className={`group p-8 rounded-2xl border transition hover:-translate-y-1 hover:shadow-md ${
                 s.distinct
-                  ? "border-cyan-100 bg-cyan-50/50"
-                  : "border-gray-100 bg-white hover:border-gray-200"
+                  ? "border-cyan-100 dark:border-cyan-900/30 bg-cyan-50/50 dark:bg-cyan-900/10"
+                  : "border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-gray-200 dark:hover:border-slate-700"
               }`}
             >
               <div
                 className="w-14 h-14 rounded-xl flex items-center justify-center mb-5"
-                style={{ background: `${s.accent}15` }}
+                style={{ background: `${s.accent}18` }}
               >
                 <s.icon size={24} style={{ color: s.accent }} />
               </div>
-              <h3 className="font-display font-bold text-xl text-gray-900 mb-2">{s.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed mb-4">{s.description}</p>
+              <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-2">{s.title}</h3>
+              <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-4">{s.description}</p>
               <ul className="space-y-1.5 mb-5">
                 {s.benefits.map((b) => (
-                  <li key={b} className="flex items-start gap-2 text-sm text-gray-600">
+                  <li key={b} className="flex items-start gap-2 text-sm text-gray-600 dark:text-slate-300">
                     <FaCheckCircle size={13} className="mt-0.5 flex-shrink-0" style={{ color: s.accent }} />
                     {b}
                   </li>

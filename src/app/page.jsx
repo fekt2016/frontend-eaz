@@ -1,136 +1,145 @@
 import Link from "next/link";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaWhatsapp } from "react-icons/fa";
 import HeroCarousel from "@/components/home/HeroCarousel";
+import RecentProducts from "@/components/home/RecentProducts";
 import ServicesGrid from "@/components/home/ServicesGrid";
-import ShopSection from "@/components/home/ShopSection";
 import Testimonials from "@/components/home/Testimonials";
+import BlogPreview from "@/components/home/BlogPreview";
 import CtaSection from "@/components/home/CtaSection";
-import { posts } from "@/content/blog/posts";
-import { buildMetadata } from "@/lib/seo";
 
-export const metadata = buildMetadata({
-  title: "EazWorld | Web Design, Hosting & Phone Repair in Accra, Ghana",
-  description:
-    "Ghana's premium digital agency. Web design, SEO, paid ads, branding, hosting, and phone repair in Accra.",
-  path: "/",
-});
-
-const CATEGORY_COLORS = {
-  SEO: "bg-emerald-50 text-emerald-700",
-  "Web Design": "bg-purple-50 text-purple-700",
-  "Case Study": "bg-amber-50 text-amber-700",
-  "Social Media": "bg-pink-50 text-pink-700",
-  Branding: "bg-violet-50 text-violet-700",
-  "Phone Repair": "bg-cyan-50 text-cyan-700",
+export const metadata = {
+  title: "EazWorld | Web Design, SEO, Branding & Phone Repair in Accra, Ghana",
+  description: "Ghana's trusted digital agency. Web design, SEO, paid ads, branding, social media, email marketing, hosting and phone repair in Accra.",
+  keywords: ["web design Accra", "SEO Ghana", "digital marketing Ghana", "phone repair Accra", "web hosting Ghana"],
+  openGraph: {
+    title: "EazWorld | Digital Agency in Accra, Ghana",
+    description: "Web design, SEO, paid ads, branding, hosting and phone repair — all from one team in Accra.",
+    url: "https://eazworld.com",
+    siteName: "EazWorld",
+    type: "website",
+  },
 };
 
-export default function Home() {
-  const recentPosts = posts.slice(0, 3);
+const stats = [
+  { value: "4+",    label: "Years in Accra" },
+  { value: "50+",   label: "Projects Delivered" },
+  { value: "4.9★",  label: "Client Rating" },
+  { value: "24hr",  label: "Response Time" },
+];
 
+const whyUs = [
+  { icon: "🇬🇭", title: "Accra-Based Team",    desc: "We know the Ghanaian market, the culture, and what works locally." },
+  { icon: "💰", title: "GHS Pricing",          desc: "All prices in cedis. Pay via Paystack, Mobile Money or bank transfer." },
+  { icon: "🤝", title: "Honest Advice",        desc: "We tell you what you actually need — no unnecessary upsells." },
+  { icon: "⚡", title: "Fast Delivery",         desc: "Most websites live within 2 weeks. Most repairs done same day." },
+];
+
+export default function Home() {
   return (
     <>
       <HeroCarousel />
+
+      {/* STATS BAR */}
+      <section className="py-10 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {stats.map(({ value, label }) => (
+            <div key={label}>
+              <p className="font-display font-black text-3xl text-brand-500">{value}</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <ServicesGrid />
 
-      {/* SAIISAI FEATURED */}
-      <section className="py-24 px-4 bg-gray-50">
+      {/* WHY EAZWORLD */}
+      <section className="py-20 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-xl mb-12">
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Why EazWorld</p>
+            <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white">
+              A Digital Partner You Can Trust
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {whyUs.map(({ icon, title, desc }) => (
+              <div key={title} className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
+                <span className="text-3xl mb-4 block">{icon}</span>
+                <p className="font-semibold text-gray-900 dark:text-white text-sm mb-2">{title}</p>
+                <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURED WORK — SAIISAI */}
+      <section className="py-24 px-4 bg-gray-50 dark:bg-slate-950">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Featured Work</p>
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 mb-5 leading-tight">
-              All 6 Services Working Together: Saiisai
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Featured Work</p>
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-5 leading-tight">
+              All Services Working Together: Saiisai
             </h2>
-            <p className="text-gray-500 leading-relaxed mb-6">
-              Saiisai is Ghana&apos;s emerging online marketplace — built entirely by EazWorld from the ground up. We handled product strategy, UX design, development, branding, SEO, and growth marketing all in one project.
+            <p className="text-gray-500 dark:text-slate-400 leading-relaxed mb-6">
+              Saiisai is Ghana&apos;s emerging online marketplace — built entirely by EazWorld from the ground up. We handled product strategy, UX design, development, branding, SEO, and growth marketing.
             </p>
             <ul className="space-y-2 mb-7">
               {["Web Design & Development", "Brand Identity", "SEO & Content Marketing", "Paid Advertising", "Social Media Management", "Email Marketing"].map((s) => (
-                <li key={s} className="flex items-center gap-2 text-sm text-gray-700">
-                  <FaCheckCircle size={13} className="text-amber-500 flex-shrink-0" />
-                  {s}
+                <li key={s} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                  <FaCheckCircle size={13} className="text-brand-500 flex-shrink-0" /> {s}
                 </li>
               ))}
             </ul>
             <div className="flex flex-wrap gap-6 mb-8">
               {[["150+", "Sellers"], ["15k+", "Products"], ["4.7★", "Rating"], ["500+", "Daily Transactions"]].map(([val, label]) => (
                 <div key={label}>
-                  <p className="font-display font-bold text-2xl text-gray-900">{val}</p>
-                  <p className="text-gray-400 text-xs">{label}</p>
+                  <p className="font-display font-bold text-2xl text-gray-900 dark:text-white">{val}</p>
+                  <p className="text-gray-400 dark:text-slate-500 text-xs">{label}</p>
                 </div>
               ))}
             </div>
-            <Link href="/portfolio/saiisai" className="inline-flex px-6 py-3 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition">
-              Read the Case Study →
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/portfolio/saiisai" className="px-6 py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 font-semibold text-sm hover:bg-gray-700 dark:hover:bg-brand-400 transition">
+                Read the Case Study →
+              </Link>
+              <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 transition">
+                <FaWhatsapp /> Start a Project
+              </a>
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-gray-100 p-8 shadow-sm">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-8 shadow-sm">
             <div className="space-y-4">
               {[
-                { label: "Monthly Sellers", value: "150+", change: "+12 this month", positive: true },
-                { label: "Products Listed", value: "15,400", change: "+340 this week", positive: true },
-                { label: "Platform Rating", value: "4.7 / 5.0", change: "98 reviews", positive: true },
-                { label: "Daily Transactions", value: "500+", change: "Peak day: 820", positive: true },
-              ].map((metric) => (
-                <div key={metric.label} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                { label: "Monthly Sellers",    value: "150+",   change: "+12 this month" },
+                { label: "Products Listed",     value: "15,400", change: "+340 this week" },
+                { label: "Platform Rating",     value: "4.7 / 5.0", change: "98 reviews" },
+                { label: "Daily Transactions",  value: "500+",   change: "Peak day: 820" },
+              ].map((m) => (
+                <div key={m.label} className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-slate-800 last:border-0">
                   <div>
-                    <p className="text-xs text-gray-400">{metric.label}</p>
-                    <p className="font-display font-bold text-xl text-gray-900">{metric.value}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500">{m.label}</p>
+                    <p className="font-display font-bold text-xl text-gray-900 dark:text-white">{m.value}</p>
                   </div>
-                  <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                    {metric.change}
+                  <span className="text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-full">
+                    {m.change}
                   </span>
                 </div>
               ))}
             </div>
-            <p className="text-gray-400 text-xs mt-4 text-center">Live platform metrics</p>
+            <p className="text-gray-400 dark:text-slate-500 text-xs mt-4 text-center">Live platform metrics</p>
           </div>
         </div>
       </section>
 
-      <ShopSection />
+      {/* RECENT PRODUCTS — shop showcase, after the agency story & proof */}
+      <RecentProducts />
 
       <Testimonials />
-
-      {/* BLOG PREVIEW */}
-      <section className="py-24 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">From the Blog</p>
-              <h2 className="font-display font-bold text-3xl text-gray-900">Latest Insights</h2>
-            </div>
-            <Link href="/blog" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition hidden md:block">
-              View all articles →
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {recentPosts.map((post) => (
-              <Link
-                key={post.id}
-                href={`/blog/${post.slug}`}
-                className="group block p-6 rounded-2xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm transition"
-              >
-                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-3 ${CATEGORY_COLORS[post.category] || "bg-gray-100 text-gray-600"}`}>
-                  {post.category}
-                </span>
-                <h3 className="font-display font-bold text-gray-900 leading-snug mb-2 group-hover:text-amber-500 transition">
-                  {post.title}
-                </h3>
-                <p className="text-gray-400 text-xs">{post.readTime} · {new Date(post.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
-              </Link>
-            ))}
-          </div>
-
-          <div className="text-center mt-8 md:hidden">
-            <Link href="/blog" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition">
-              View all articles →
-            </Link>
-          </div>
-        </div>
-      </section>
-
+      <BlogPreview />
       <CtaSection />
     </>
   );

@@ -1,5 +1,6 @@
 export const metadata = {
-  robots: { index: false, follow: false },
+  title: "Checkout | EazWorld",
+  robots: { index: false, follow: true },
 };
 
 export default function DomainsCheckoutLayout({ children }) {

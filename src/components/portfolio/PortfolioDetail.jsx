@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { FaArrowLeft, FaCheckCircle, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import { PROJECTS } from "@/data/portfolioData";
 import CountUpNumber from "@/components/caseStudy/CountUpNumber";
@@ -12,7 +13,7 @@ const CATEGORY_COLORS = {
   "Web Design": "bg-violet-50 text-violet-700",
   "Mobile Apps": "bg-blue-50 text-blue-700",
   "Brand Identity": "bg-purple-50 text-purple-700",
-  "E-commerce": "bg-amber-50 text-amber-700",
+  "E-commerce": "bg-brand-50 text-brand-700",
   "SEO Projects": "bg-emerald-50 text-emerald-700",
   "Domain & Hosting": "bg-cyan-50 text-cyan-700",
 };
@@ -130,10 +131,10 @@ export default function PortfolioDetail({ slug }) {
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center pt-20 text-center px-4">
-        <p className="text-7xl font-black text-gray-100 mb-4">404</p>
-        <h1 className="font-display font-bold text-2xl text-gray-900 mb-2">Project not found</h1>
-        <p className="text-gray-500 mb-6 max-w-sm">The project you&apos;re looking for doesn&apos;t exist or has been moved.</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col items-center justify-center pt-20 text-center px-4">
+        <p className="text-7xl font-black text-gray-100 dark:text-slate-800 mb-4">404</p>
+        <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-2">Project not found</h1>
+        <p className="text-gray-500 dark:text-slate-400 mb-6 max-w-sm">The project you&apos;re looking for doesn&apos;t exist or has been moved.</p>
         <Link href="/portfolio" className="px-5 py-2.5 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition">
           ← Back to Portfolio
         </Link>
@@ -146,21 +147,21 @@ export default function PortfolioDetail({ slug }) {
   const nextProject = currentIndex < PROJECTS.length - 1 ? PROJECTS[currentIndex + 1] : null;
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
 
       {/* READ PROGRESS BAR */}
       <div
-        className="fixed top-0 left-0 h-0.5 bg-amber-500 z-[999] transition-all duration-100"
+        className="fixed top-0 left-0 h-0.5 bg-brand-500 z-[999] transition-all duration-100"
         style={{ width: `${readProgress}%` }}
       />
 
       {/* STICKY NAV */}
-      <header className="fixed top-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur border-b border-gray-100">
+      <header className="fixed top-0 left-0 right-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto h-16 px-4 flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={() => router.push("/portfolio")}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition flex-shrink-0"
+            className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition flex-shrink-0"
           >
             <FaArrowLeft size={12} /> All Projects
           </button>
@@ -168,7 +169,7 @@ export default function PortfolioDetail({ slug }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: showNavTitle ? 1 : 0 }}
             transition={{ duration: 0.3 }}
-            className="font-semibold text-sm text-gray-900 truncate hidden sm:block"
+            className="font-semibold text-sm text-gray-900 dark:text-white truncate hidden sm:block"
           >
             {project.title}
           </motion.p>
@@ -181,7 +182,7 @@ export default function PortfolioDetail({ slug }) {
                 if (copiedResetRef.current) clearTimeout(copiedResetRef.current);
                 copiedResetRef.current = setTimeout(() => setCopied(false), 2000);
               }}
-              className={`text-xs px-3 py-1.5 rounded-full border transition ${copied ? "border-emerald-400 text-emerald-600" : "border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700"}`}
+              className={`text-xs px-3 py-1.5 rounded-full border transition ${copied ? "border-emerald-400 text-emerald-600" : "border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-700 dark:hover:text-slate-300"}`}
             >
               {copied ? "Copied ✓" : "🔗 Copy Link"}
             </button>
@@ -198,10 +199,11 @@ export default function PortfolioDetail({ slug }) {
           className="absolute inset-0 transition-transform duration-75"
           style={{ transform: `translateY(${parallaxY}px)`, willChange: "transform" }}
         >
-          <img
+          <Image
             src={project.heroImage || project.thumbnail}
             alt={project.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
             style={{ minHeight: "80vh" }}
           />
         </div>
@@ -232,7 +234,7 @@ export default function PortfolioDetail({ slug }) {
                 href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-5 py-2.5 rounded-full bg-amber-500 text-gray-900 font-semibold text-sm hover:bg-amber-400 transition"
+                className="px-5 py-2.5 rounded-full bg-brand-500 text-gray-900 font-semibold text-sm hover:bg-brand-400 transition"
               >
                 View Live Site ↗
               </a>
@@ -249,43 +251,43 @@ export default function PortfolioDetail({ slug }) {
       </section>
 
       {/* OVERVIEW BAND */}
-      <div className="bg-gray-50 border-y border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 grid grid-cols-2 sm:grid-cols-5 divide-x divide-gray-200">
+      <div className="bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 py-4 grid grid-cols-2 sm:grid-cols-5 divide-x divide-gray-200 dark:divide-slate-700">
           {[
             ["Client", project.client],
             ["Category", project.category],
             ["Timeline", project.duration],
             ["Year", project.year],
-            ["Live", project.liveUrl && project.liveUrl !== "#" ? <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:underline">Visit ↗</a> : "Coming soon"],
+            ["Live", project.liveUrl && project.liveUrl !== "#" ? <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">Visit ↗</a> : "Coming soon"],
           ].map(([label, value]) => (
             <div key={label} className="px-4 py-2 first:pl-0 last:pr-0">
-              <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-              <p className="text-sm font-semibold text-gray-900">{value}</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mb-0.5">{label}</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">{value}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* IMPACT METRICS */}
-      <section className="py-16 px-4 bg-white">
+      <section className="py-16 px-4 bg-white dark:bg-slate-900">
         <div className="max-w-6xl mx-auto text-center mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Project Impact</p>
-          <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900">Measurable Results That Matter</h2>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Project Impact</p>
+          <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">Measurable Results That Matter</h2>
         </div>
         <div className="max-w-3xl mx-auto grid grid-cols-3 gap-5">
           {(project.results || []).slice(0, 3).map((r, idx) => (
-            <div key={idx} className="text-center p-6 rounded-2xl border border-gray-100 bg-gray-50">
-              <p className="font-display font-black text-3xl text-gray-900 mb-1">
+            <div key={idx} className="text-center p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800">
+              <p className="font-display font-black text-3xl text-gray-900 dark:text-white mb-1">
                 <CountUpNumber value={r.value} duration={2000} />
               </p>
-              <p className="text-gray-500 text-sm">{r.label}</p>
-              <div className="w-8 h-0.5 bg-amber-400 mx-auto mt-3 rounded-full" />
+              <p className="text-gray-500 dark:text-slate-400 text-sm">{r.label}</p>
+              <div className="w-8 h-0.5 bg-brand-400 mx-auto mt-3 rounded-full" />
             </div>
           ))}
         </div>
         <div className="max-w-3xl mx-auto mt-6 flex flex-wrap justify-center gap-2">
           {(project.tags || []).map((tag) => (
-            <span key={tag} className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
+            <span key={tag} className="px-3 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 text-xs font-medium">
               {tag}
             </span>
           ))}
@@ -293,26 +295,26 @@ export default function PortfolioDetail({ slug }) {
       </section>
 
       {/* STORY + SIDEBAR */}
-      <section className="py-16 px-4 bg-gray-50 border-y border-gray-100">
+      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-[1fr_300px] gap-12 items-start">
 
           {/* Main content */}
           <div className="space-y-12">
             {/* Overview */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">01 — Overview</p>
-              <h2 className="font-display font-bold text-2xl text-gray-900 mb-4">About This Project</h2>
-              <p className="text-gray-600 leading-relaxed">{project.caseStudy?.overview}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">01 — Overview</p>
+              <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">About This Project</h2>
+              <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{project.caseStudy?.overview}</p>
             </div>
 
             {/* Challenge */}
-            <div className="p-6 rounded-2xl bg-white border border-gray-100">
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">02 — The Challenge</p>
-              <h2 className="font-display font-bold text-2xl text-gray-900 mb-4">The Problem We Solved</h2>
-              <p className="text-gray-600 leading-relaxed mb-4">{project.caseStudy?.challenge}</p>
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">02 — The Challenge</p>
+              <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">The Problem We Solved</h2>
+              <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4">{project.caseStudy?.challenge}</p>
               <ul className="space-y-2">
                 {getChallengeBullets(project.category).map((b) => (
-                  <li key={b} className="flex items-start gap-2.5 text-sm text-gray-600">
+                  <li key={b} className="flex items-start gap-2.5 text-sm text-gray-600 dark:text-slate-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0 mt-1.5" />
                     {b}
                   </li>
@@ -321,13 +323,13 @@ export default function PortfolioDetail({ slug }) {
             </div>
 
             {/* Solution */}
-            <div className="p-6 rounded-2xl bg-white border border-gray-100">
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">03 — Our Solution</p>
-              <h2 className="font-display font-bold text-2xl text-gray-900 mb-4">How We Approached It</h2>
-              <p className="text-gray-600 leading-relaxed mb-4">{project.caseStudy?.solution}</p>
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">03 — Our Solution</p>
+              <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">How We Approached It</h2>
+              <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4">{project.caseStudy?.solution}</p>
               <ul className="space-y-2">
                 {getSolutionBullets(project.category).map((b) => (
-                  <li key={b} className="flex items-start gap-2.5 text-sm text-gray-600">
+                  <li key={b} className="flex items-start gap-2.5 text-sm text-gray-600 dark:text-slate-400">
                     <FaCheckCircle size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
                     {b}
                   </li>
@@ -337,8 +339,8 @@ export default function PortfolioDetail({ slug }) {
 
             {/* Process timeline */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">04 — Our Process</p>
-              <h2 className="font-display font-bold text-2xl text-gray-900 mb-6">Step by Step</h2>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">04 — Our Process</p>
+              <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">Step by Step</h2>
               <div ref={timelineRef} className="space-y-4">
                 {(project.caseStudy?.process || []).slice(0, 4).map((step, i) => (
                   <motion.div
@@ -346,15 +348,15 @@ export default function PortfolioDetail({ slug }) {
                     initial={{ opacity: 0, x: -20 }}
                     animate={timelineInView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.5, delay: i * 0.12, ease: "easeOut" }}
-                    className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100"
+                    className="flex gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800"
                   >
-                    <div className="w-10 h-10 rounded-full border-2 border-amber-100 bg-amber-50 flex items-center justify-center font-display font-bold text-amber-500 text-sm flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full border-2 border-brand-100 bg-brand-50 flex items-center justify-center font-display font-bold text-brand-500 text-sm flex-shrink-0">
                       {i + 1}
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 mb-0.5">Step {i + 1}</p>
-                      <h4 className="font-semibold text-gray-900 text-sm mb-1">{step}</h4>
-                      <p className="text-gray-400 text-xs leading-relaxed">{describeProcessStep(step)}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mb-0.5">Step {i + 1}</p>
+                      <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{step}</h4>
+                      <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed">{describeProcessStep(step)}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -363,14 +365,14 @@ export default function PortfolioDetail({ slug }) {
 
             {/* Outcome */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">05 — The Outcome</p>
-              <h2 className="font-display font-bold text-2xl text-gray-900 mb-4">What We Achieved Together</h2>
-              <p className="text-gray-600 leading-relaxed mb-5">{project.caseStudy?.outcome}</p>
-              <div className="p-5 rounded-2xl bg-white border border-gray-100">
-                <p className="font-semibold text-gray-900 text-sm mb-3">Project Highlights</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">05 — The Outcome</p>
+              <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">What We Achieved Together</h2>
+              <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-5">{project.caseStudy?.outcome}</p>
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm mb-3">Project Highlights</p>
                 <ul className="space-y-2">
                   {(project.results || []).slice(0, 3).map((r) => (
-                    <li key={r.label} className="flex items-center gap-2.5 text-sm text-gray-700">
+                    <li key={r.label} className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
                       <span className="text-emerald-500 font-bold">✓</span>
                       {r.value} {r.label}
                     </li>
@@ -382,17 +384,17 @@ export default function PortfolioDetail({ slug }) {
 
           {/* Sidebar */}
           <div className="space-y-5 lg:sticky lg:top-24">
-            <div className="p-5 rounded-2xl bg-white border border-gray-100">
-              <p className="font-semibold text-gray-900 text-sm mb-4">Project Details</p>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+              <p className="font-semibold text-gray-900 dark:text-white text-sm mb-4">Project Details</p>
               {[["Client", project.client], ["Category", project.category], ["Year", project.year], ["Duration", project.duration]].map(([l, v]) => (
-                <div key={l} className="flex justify-between text-sm py-2 border-b border-gray-50 last:border-0">
-                  <span className="text-gray-400">{l}</span>
-                  <span className="font-medium text-gray-900">{v}</span>
+                <div key={l} className="flex justify-between text-sm py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
+                  <span className="text-gray-400 dark:text-slate-500">{l}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{v}</span>
                 </div>
               ))}
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {(project.tags || []).map((tag) => (
-                  <span key={tag} className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">{tag}</span>
+                  <span key={tag} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 text-xs">{tag}</span>
                 ))}
               </div>
               {project.liveUrl && project.liveUrl !== "#" && (
@@ -400,27 +402,27 @@ export default function PortfolioDetail({ slug }) {
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block mt-4 text-center py-2 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:border-gray-400 hover:text-gray-900 transition"
+                  className="block mt-4 text-center py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 text-xs font-medium hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white transition"
                 >
                   Visit Live Site ↗
                 </a>
               )}
             </div>
 
-            <div className="p-5 rounded-2xl bg-white border border-gray-100">
-              <p className="font-semibold text-gray-900 text-sm mb-3">At a Glance</p>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+              <p className="font-semibold text-gray-900 dark:text-white text-sm mb-3">At a Glance</p>
               {(project.results || []).slice(0, 3).map((r) => (
-                <div key={r.label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                  <span className="font-display font-bold text-gray-900">{r.value}</span>
-                  <span className="text-gray-400 text-xs">{r.label}</span>
+                <div key={r.label} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
+                  <span className="font-display font-bold text-gray-900 dark:text-white">{r.value}</span>
+                  <span className="text-gray-400 dark:text-slate-500 text-xs">{r.label}</span>
                 </div>
               ))}
             </div>
 
-            <div className="p-5 rounded-2xl bg-amber-50 border border-amber-100 text-center">
+            <div className="p-5 rounded-2xl bg-brand-50 border border-brand-100 text-center">
               <p className="text-2xl mb-2">🚀</p>
               <h4 className="font-semibold text-gray-900 text-sm mb-1">Like What You See?</h4>
-              <p className="text-gray-500 text-xs leading-relaxed mb-4">We can build something this impactful for your business.</p>
+              <p className="text-gray-500 dark:text-gray-500 text-xs leading-relaxed mb-4">We can build something this impactful for your business.</p>
               <button
                 type="button"
                 onClick={() => router.push("/contact")}
@@ -438,15 +440,15 @@ export default function PortfolioDetail({ slug }) {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Project Gallery</p>
-            <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900">Behind the Screens</h2>
-            <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto">A closer look at how the experience comes together across key screens.</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Project Gallery</p>
+            <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">Behind the Screens</h2>
+            <p className="text-gray-400 dark:text-slate-500 text-sm mt-2 max-w-md mx-auto">A closer look at how the experience comes together across key screens.</p>
           </div>
           <div
             className="relative rounded-2xl overflow-hidden cursor-pointer aspect-[16/8] mb-4 group"
             onClick={() => openLightbox(0)}
           >
-            <img src={images[0]} alt={`${project.title} hero`} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <Image src={images[0]} alt={`${project.title} hero`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover group-hover:scale-105 transition duration-500" />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition" />
             <div className="absolute bottom-4 right-4 bg-black/50 text-white text-xs px-3 py-1.5 rounded-full">Click to expand</div>
           </div>
@@ -457,7 +459,7 @@ export default function PortfolioDetail({ slug }) {
                 className="relative rounded-2xl overflow-hidden cursor-pointer aspect-[4/3] group"
                 onClick={() => openLightbox(idx + 1)}
               >
-                <img src={img} alt={`${project.title} screen ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <Image src={img} alt={`${project.title} screen ${idx + 1}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover group-hover:scale-105 transition duration-500" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition" />
               </div>
             ))}
@@ -504,20 +506,20 @@ export default function PortfolioDetail({ slug }) {
       </AnimatePresence>
 
       {/* TESTIMONIAL */}
-      <section className="py-16 px-4 bg-gray-50 border-y border-gray-100">
+      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-4xl text-amber-300 font-serif mb-4">&ldquo;</p>
-          <blockquote className="font-display font-bold text-xl md:text-2xl text-gray-900 leading-relaxed mb-8">
+          <p className="text-4xl text-brand-300 font-serif mb-4">&ldquo;</p>
+          <blockquote className="font-display font-bold text-xl md:text-2xl text-gray-900 dark:text-white leading-relaxed mb-8">
             {project.testimonial?.quote}
           </blockquote>
           <div className="flex items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center font-bold text-amber-500 text-sm">
+            <div className="w-10 h-10 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center font-bold text-brand-500 text-sm">
               {project.testimonial?.avatar}
             </div>
             <div className="text-left">
-              <p className="font-semibold text-gray-900 text-sm">{project.testimonial?.author}</p>
-              <p className="text-gray-400 text-xs">{project.testimonial?.role}</p>
-              <p className="text-amber-400 text-xs mt-0.5">★★★★★</p>
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">{project.testimonial?.author}</p>
+              <p className="text-gray-400 dark:text-slate-500 text-xs">{project.testimonial?.role}</p>
+              <p className="text-brand-400 text-xs mt-0.5">★★★★★</p>
             </div>
           </div>
           <div className="inline-flex items-center gap-1.5 mt-5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
@@ -531,12 +533,12 @@ export default function PortfolioDetail({ slug }) {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">Technologies Used</p>
-            <h2 className="font-display font-bold text-2xl text-gray-900">Built With</h2>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Technologies Used</p>
+            <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Built With</h2>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             {(project.tags || []).map((tag) => (
-              <div key={tag} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-700">
+              <div key={tag} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-sm text-gray-700 dark:text-slate-300">
                 <span>{getTechIcon(tag)}</span>
                 {tag}
               </div>
@@ -547,42 +549,42 @@ export default function PortfolioDetail({ slug }) {
 
       {/* PREV / NEXT NAV */}
       {(prevProject || nextProject) && (
-        <section className="py-16 px-4 bg-gray-50 border-y border-gray-100">
+        <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">More Work</p>
-              <h2 className="font-display font-bold text-2xl text-gray-900">Continue Exploring</h2>
+              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">More Work</p>
+              <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Continue Exploring</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-5">
               {prevProject && (
-                <button type="button" onClick={() => router.push(`/portfolio/${prevProject.slug}`)} className="group text-left p-4 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transition">
-                  <p className="text-xs text-gray-400 mb-2">← Previous Project</p>
+                <button type="button" onClick={() => router.push(`/portfolio/${prevProject.slug}`)} className="group text-left p-4 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition">
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mb-2">← Previous Project</p>
                   <div className="flex gap-3">
-                    <img src={prevProject.thumbnail} alt={prevProject.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                    <Image src={prevProject.thumbnail} alt={prevProject.title} width={64} height={64} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                     <div>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-1 ${CATEGORY_COLORS[prevProject.category] || "bg-gray-100 text-gray-600"}`}>{prevProject.category}</span>
-                      <p className="font-semibold text-gray-900 text-sm group-hover:text-amber-500 transition">{prevProject.title}</p>
-                      <p className="text-gray-400 text-xs">{prevProject.client}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-brand-500 transition">{prevProject.title}</p>
+                      <p className="text-gray-400 dark:text-slate-500 text-xs">{prevProject.client}</p>
                     </div>
                   </div>
                 </button>
               )}
               {nextProject && (
-                <button type="button" onClick={() => router.push(`/portfolio/${nextProject.slug}`)} className="group text-left p-4 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transition">
-                  <p className="text-xs text-gray-400 mb-2 text-right">Next Project →</p>
+                <button type="button" onClick={() => router.push(`/portfolio/${nextProject.slug}`)} className="group text-left p-4 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition">
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mb-2 text-right">Next Project →</p>
                   <div className="flex gap-3">
-                    <img src={nextProject.thumbnail} alt={nextProject.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                    <Image src={nextProject.thumbnail} alt={nextProject.title} width={64} height={64} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                     <div>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-1 ${CATEGORY_COLORS[nextProject.category] || "bg-gray-100 text-gray-600"}`}>{nextProject.category}</span>
-                      <p className="font-semibold text-gray-900 text-sm group-hover:text-amber-500 transition">{nextProject.title}</p>
-                      <p className="text-gray-400 text-xs">{nextProject.client}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-brand-500 transition">{nextProject.title}</p>
+                      <p className="text-gray-400 dark:text-slate-500 text-xs">{nextProject.client}</p>
                     </div>
                   </div>
                 </button>
               )}
             </div>
             <div className="text-center mt-6">
-              <button type="button" onClick={() => router.push("/portfolio")} className="text-sm text-gray-400 hover:text-gray-700 transition">
+              <button type="button" onClick={() => router.push("/portfolio")} className="text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
                 ← View All Portfolio
               </button>
             </div>
@@ -593,7 +595,7 @@ export default function PortfolioDetail({ slug }) {
       {/* BOTTOM CTA */}
       <section className="py-20 px-4 bg-gray-900">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Let&apos;s Work Together</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Let&apos;s Work Together</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-white mb-4 leading-tight">
             Ready to Build<br />Something Like This?
           </h2>
@@ -604,7 +606,7 @@ export default function PortfolioDetail({ slug }) {
             <button
               type="button"
               onClick={() => router.push("/contact")}
-              className="px-7 py-3.5 rounded-full bg-amber-500 text-gray-900 font-semibold hover:bg-amber-400 transition"
+              className="px-7 py-3.5 rounded-full bg-brand-500 text-gray-900 font-semibold hover:bg-brand-400 transition"
             >
               Start Your Project →
             </button>

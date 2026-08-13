@@ -99,7 +99,7 @@ const TYPE_ICONS = {
 
 const TYPE_COLORS = {
   Guide: "bg-violet-50 text-violet-700 border-violet-100",
-  Template: "bg-amber-50 text-amber-700 border-amber-100",
+  Template: "bg-brand-50 text-brand-700 border-brand-100",
   Checklist: "bg-emerald-50 text-emerald-700 border-emerald-100",
   Tool: "bg-cyan-50 text-cyan-700 border-cyan-100",
 };
@@ -125,7 +125,7 @@ function DownloadModal({ resource, onClose }) {
     setStatus("success");
   };
 
-  const inputCls = "w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:border-gray-400 transition";
+  const inputCls = "w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-gray-400 transition";
 
   return (
     <motion.div
@@ -139,20 +139,20 @@ function DownloadModal({ resource, onClose }) {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative w-full max-w-md p-8 rounded-3xl bg-white border border-gray-100 shadow-xl"
+        className="relative w-full max-w-md p-8 rounded-3xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition">
+        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           <FaTimes />
         </button>
         {status === "success" ? (
           <div className="text-center">
-            <FaCheckCircle className="text-amber-500 text-4xl mx-auto mb-4" />
-            <h3 className="font-display font-bold text-xl text-gray-900 mb-2">Check Your Inbox!</h3>
-            <p className="text-gray-500 text-sm mb-4">
-              We&apos;ve sent <strong className="text-gray-900">{resource.title}</strong> to <strong className="text-amber-500">{email}</strong>.
+            <FaCheckCircle className="text-brand-500 text-4xl mx-auto mb-4" />
+            <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-2">Check Your Inbox!</h3>
+            <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
+              We&apos;ve sent <strong className="text-gray-900 dark:text-white">{resource.title}</strong> to <strong className="text-brand-500">{email}</strong>.
             </p>
-            <p className="text-gray-400 text-xs">Can&apos;t find it? Check your spam folder.</p>
+            <p className="text-gray-400 dark:text-slate-500 text-xs">Can&apos;t find it? Check your spam folder.</p>
           </div>
         ) : (
           <>
@@ -160,8 +160,8 @@ function DownloadModal({ resource, onClose }) {
               <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border mb-3 ${TYPE_COLORS[resource.type]}`}>
                 {resource.type}
               </span>
-              <h3 className="font-display font-bold text-xl text-gray-900 mb-1">{resource.title}</h3>
-              <p className="text-gray-500 text-sm">{resource.format} · {resource.pages}</p>
+              <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-1">{resource.title}</h3>
+              <p className="text-gray-500 dark:text-slate-400 text-sm">{resource.format} · {resource.pages}</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -180,7 +180,7 @@ function DownloadModal({ resource, onClose }) {
                 <FaDownload className="text-sm" />
                 {status === "loading" ? "Sending..." : "Send to My Email"}
               </button>
-              <p className="text-gray-400 text-xs text-center">Free, no spam. We&apos;ll send it straight to your inbox.</p>
+              <p className="text-gray-400 dark:text-slate-500 text-xs text-center">Free, no spam. We&apos;ll send it straight to your inbox.</p>
             </form>
           </>
         )}
@@ -196,22 +196,22 @@ export default function ResourcesListing() {
   const filtered = resources.filter((r) => activeTab === "All" || r.type === activeTab);
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
       {/* HERO */}
-      <section className="pt-28 pb-14 px-4 border-b border-gray-100">
+      <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Free Resources</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 mb-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Free Resources</p>
+          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
             Free Guides, Templates & Tools
           </h1>
-          <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">
             Practical resources to help you grow your business online — checklists, guides, and templates used by our team and clients.
           </p>
         </div>
       </section>
 
       {/* TABS */}
-      <section className="py-8 px-4 border-b border-gray-100">
+      <section className="py-8 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto flex gap-2 flex-wrap">
           {TABS.map((tab) => (
             <button
@@ -220,8 +220,8 @@ export default function ResourcesListing() {
               onClick={() => setActiveTab(tab)}
               className={`px-5 py-2 rounded-full text-sm font-medium transition ${
                 activeTab === tab
-                  ? "bg-gray-900 text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-gray-900"
+                  ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                  : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               {tab}
@@ -246,18 +246,18 @@ export default function ResourcesListing() {
                 return (
                   <div
                     key={resource.id}
-                    className="p-6 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transition flex flex-col"
+                    className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition flex flex-col"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${TYPE_COLORS[resource.type]}`}>
                         <Icon className="text-xs" /> {resource.type}
                       </span>
-                      <span className="text-gray-400 text-xs">{resource.format}</span>
+                      <span className="text-gray-400 dark:text-slate-500 text-xs">{resource.format}</span>
                     </div>
-                    <h3 className="font-semibold text-gray-900 text-base mb-2 flex-1">{resource.title}</h3>
-                    <p className="text-gray-500 text-xs leading-relaxed mb-4">{resource.desc}</p>
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                      <span className="text-gray-400 text-xs">{resource.pages}</span>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-base mb-2 flex-1">{resource.title}</h3>
+                    <p className="text-gray-500 dark:text-slate-400 text-xs leading-relaxed mb-4">{resource.desc}</p>
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-slate-800">
+                      <span className="text-gray-400 dark:text-slate-500 text-xs">{resource.pages}</span>
                       <button
                         type="button"
                         onClick={() => setSelected(resource)}
@@ -275,17 +275,17 @@ export default function ResourcesListing() {
       </section>
 
       {/* CTA STRIP */}
-      <section className="py-16 px-4 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-4xl mx-auto p-8 rounded-3xl bg-white border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
+      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-t border-gray-100 dark:border-slate-800">
+        <div className="max-w-4xl mx-auto p-8 rounded-3xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <h3 className="font-display font-bold text-2xl text-gray-900 mb-1">Need More Than a Template?</h3>
-            <p className="text-gray-500 text-sm">Let our team build and execute the strategy for you.</p>
+            <h3 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Need More Than a Template?</h3>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">Let our team build and execute the strategy for you.</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <a href="/contact" className="px-5 py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm">
               Get a Free Quote
             </a>
-            <a href="/book-consultation" className="px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 transition text-sm">
+            <a href="/book-consultation" className="px-5 py-3 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition text-sm">
               Book a Call
             </a>
           </div>

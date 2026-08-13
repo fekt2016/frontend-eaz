@@ -7,6 +7,11 @@
   --foreground: #111827;
 }
 
+.dark {
+  --background: #020617;
+  --foreground: #f1f5f9;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -15,6 +20,20 @@ body {
   color: var(--foreground);
   background: var(--background);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/*
+ * Accessibility: many components use Tailwind's `focus:outline-none`, which
+ * strips the default focus indicator. This restores a visible ring for
+ * KEYBOARD users only (`:focus-visible` doesn't fire on mouse click), so we
+ * meet WCAG 2.4.7 without adding a ring on every click. Left unlayered + marked
+ * important so it wins over the layered `outline-none` utility.
+ */
+:focus-visible {
+  outline: 2px solid #f59e0b !important; /* amber-500 — brand accent */
+  outline-offset: 2px !important;
+  border-radius: 4px;
 }
 
 @layer utilities {

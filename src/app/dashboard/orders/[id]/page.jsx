@@ -1,0 +1,237 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { FaArrowLeft, FaBoxOpen, FaPaperPlane } from "react-icons/fa6";
+import { useAuth } from "@/context/AuthContext";
+import { api } from "@/lib/api";
+import { formatGhs } from "@/lib/shop";
+import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
+
+const ORDER_STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
+
+export default function CustomerOrderDetailPage() {
+  const { id } = useParams();
+  const { user } = useAuth();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [trackStatus, setTrackStatus] = useState("processing");
+  const [trackNote, setTrackNote] = useState("");
+  const [trackLocation, setTrackLocation] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const seesAll = ["admin", "superadmin", "staff"].includes(user?.role);
+
+  const load = () => {
+    api
+      .get(seesAll ? `/orders/${id}` : `/orders/mine/${id}`)
+      .then((res) => setOrder(res.data))
+      .catch((err) => setError(err.message || "Order not found"))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, seesAll]);
+
+  const handleTrackingUpdate = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.post(`/orders/${id}/tracking`, {
+        status: trackStatus,
+        note: trackNote,
+        location: trackLocation,
+      });
+      setTrackNote("");
+      setTrackLocation("");
+      setOrder((prev) => ({ ...prev, status: trackStatus }));
+      load();
+    } catch (err) {
+      alert(err.message || "Update failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 pt-10 pb-20 flex justify-center">
+        <div className="w-6 h-6 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-brand-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 pt-10 pb-20">
+        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center">
+          <p className="text-gray-400 dark:text-slate-500 text-sm mb-2">Order not found.</p>
+          <Link href="/dashboard/orders" className="text-sm text-brand-500 hover:underline inline-flex items-center gap-1.5">
+            <FaArrowLeft size={11} /> Back to My Orders
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const zone = order.deliveryZone;
+  const deliveryFee = zone?.fee != null ? zone.fee : order.deliveryFee;
+  const history = order.trackingHistory || [];
+  const statuses = [...ORDER_STATUSES];
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 pt-10 pb-20">
+      <Link
+        href="/dashboard/orders"
+        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition"
+      >
+        <FaArrowLeft size={11} /> Back to My Orders
+      </Link>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white">{order.orderNumber}</h1>
+          <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">Placed {fmtDate(order.createdAt)}</p>
+          {order.trackingNumber && (
+            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">
+              Tracking number <span className="font-mono font-semibold text-gray-700 dark:text-slate-300">{order.trackingNumber}</span>
+            </p>
+          )}
+        </div>
+        <StatusBadge status={order.status} />
+      </div>
+
+      {seesAll && (
+        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 mb-6">
+          <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Add tracking update</h2>
+          <form onSubmit={handleTrackingUpdate} className="space-y-3">
+            <div className="grid sm:grid-cols-2 gap-3">
+              <label className="block">
+                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">Status</span>
+                <select
+                  value={trackStatus}
+                  onChange={(e) => setTrackStatus(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400/40"
+                >
+                  {statuses.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">Location (optional)</span>
+                <input
+                  type="text"
+                  value={trackLocation}
+                  onChange={(e) => setTrackLocation(e.target.value)}
+                  placeholder="e.g. Accra depot"
+                  className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40"
+                />
+              </label>
+            </div>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">Note (optional)</span>
+              <textarea
+                value={trackNote}
+                onChange={(e) => setTrackNote(e.target.value)}
+                rows={2}
+                placeholder="e.g. Handed to courier for delivery"
+                className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40 resize-none"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-50"
+            >
+              <FaPaperPlane size={10} /> {saving ? "Saving…" : "Add tracking update"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 mb-6">
+        <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-4">Tracking</h2>
+        {history.length === 0 ? (
+          <p className="text-sm text-gray-400 dark:text-slate-500">No tracking updates yet.</p>
+        ) : (
+          <ol className="relative border-l border-gray-100 dark:border-slate-800 ml-2 space-y-6">
+            {[...history].reverse().map((h, i) => (
+              <li key={i} className="ml-6">
+                <span className="absolute -left-[9px] mt-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 bg-brand-500" />
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={h.status} />
+                    <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">{h.status}</span>
+                  </div>
+                  <span className="text-xs text-gray-400 dark:text-slate-500">{fmtDate(h.timestamp)}</span>
+                </div>
+                {h.note && <p className="text-sm text-gray-600 dark:text-slate-300 mt-1">{h.note}</p>}
+                {h.location && (
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 inline-flex items-center gap-1">
+                    <FaBoxOpen size={10} /> {h.location}
+                  </p>
+                )}
+                {h.updatedBy?.name && (
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Updated by {h.updatedBy.name}</p>
+                )}
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+
+      {zone && (
+        <div className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+          <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-2">Delivery</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400">
+            {zone.name} · {zone.estimatedDays} {zone.estimatedDays === 1 ? "day" : "days"} estimated
+          </p>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 mb-6">
+        <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Items</h2>
+        <ul className="divide-y divide-gray-100 dark:divide-slate-800">
+          {order.items?.map((item, i) => (
+            <li key={item._id || i} className="flex items-center justify-between gap-4 py-3 text-sm">
+              <div className="min-w-0">
+                <p className="font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">Qty {item.qty} × {formatGhs(item.price)}</p>
+              </div>
+              <p className="font-semibold text-gray-900 dark:text-white shrink-0">{formatGhs(item.price * item.qty)}</p>
+            </li>
+          ))}
+        </ul>
+        <div className="border-t border-gray-100 dark:border-slate-800 mt-3 pt-3 space-y-1.5 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500 dark:text-slate-400">Subtotal</span>
+            <span className="font-medium text-gray-900 dark:text-white">{formatGhs(order.subtotal)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500 dark:text-slate-400">Delivery</span>
+            <span className="font-medium text-gray-900 dark:text-white">{deliveryFee > 0 ? formatGhs(deliveryFee) : "—"}</span>
+          </div>
+          <div className="flex justify-between border-t border-gray-100 dark:border-slate-800 pt-2 font-semibold">
+            <span className="text-gray-900 dark:text-white">Total</span>
+            <span className="text-brand-500">{formatGhs(order.total)}</span>
+          </div>
+        </div>
+      </div>
+
+      {order.customer?.address && (
+        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+          <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-2">Delivering to</h2>
+          <p className="text-sm text-gray-700 dark:text-slate-300">{order.customer.name}</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer.phone}</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer.address}</p>
+        </div>
+      )}
+    </div>
+  );
+}

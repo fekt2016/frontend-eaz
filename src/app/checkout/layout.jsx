@@ -1,5 +1,6 @@
 export const metadata = {
-  robots: { index: false, follow: false },
+  title: "Checkout",
+  robots: { index: false, follow: true },
 };
 
 export default function CheckoutLayout({ children }) {

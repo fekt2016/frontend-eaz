@@ -1,9 +1,22 @@
 import BlogArticle from "@/components/blog/BlogArticle";
-import { posts } from "@/content/blog/posts";
 import { buildMetadata, truncate } from "@/lib/seo";
 
-export function generateMetadata({ params }) {
-  const post = posts.find((p) => p.slug === params.slug);
+async function getPost(slug) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/posts/${encodeURIComponent(slug)}`,
+      { next: { revalidate: 3600 } }
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata({ params }) {
+  const post = await getPost(params.slug);
   if (!post) {
     return buildMetadata({
       title: "Article Not Found | EazWorld",

@@ -39,22 +39,22 @@ export default function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-            className="fixed right-0 top-0 bottom-0 z-[70] flex w-full max-w-md flex-col bg-white shadow-2xl"
+            className="fixed right-0 top-0 bottom-0 z-[70] flex w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-2xl"
             role="dialog"
             aria-label="Shopping cart"
           >
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 px-5 py-4">
               <div className="flex items-center gap-2">
-                <FaShoppingCart className="text-amber-500" size={16} />
-                <h2 className="font-display font-bold text-lg text-gray-900">Your Cart</h2>
+                <FaShoppingCart className="text-brand-500" size={16} />
+                <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white">Your Cart</h2>
                 {count > 0 && (
-                  <span className="rounded-full bg-amber-500 px-2 py-0.5 text-xs font-bold text-white">{count}</span>
+                  <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-bold text-white">{count}</span>
                 )}
               </div>
               <button
                 type="button"
                 onClick={closeCart}
-                className="text-gray-400 hover:text-gray-900 transition"
+                className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition"
                 aria-label="Close cart"
               >
                 <FaTimes size={18} />
@@ -66,22 +66,22 @@ export default function CartDrawer() {
             </div>
 
             {items.length > 0 && (
-              <div className="border-t border-gray-100 px-5 py-4">
+              <div className="border-t border-gray-100 dark:border-slate-800 px-5 py-4">
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Subtotal</span>
-                  <span className="font-display font-bold text-xl text-gray-900">{formatGhs(subtotal)}</span>
+                  <span className="text-sm text-gray-500 dark:text-slate-400">Subtotal</span>
+                  <span className="font-display font-bold text-xl text-gray-900 dark:text-white">{formatGhs(subtotal)}</span>
                 </div>
                 <Link
                   href="/checkout"
                   onClick={closeCart}
-                  className="block w-full rounded-full bg-gray-900 py-3 text-center text-sm font-semibold text-white hover:bg-gray-700 transition"
+                  className="block w-full rounded-full bg-gray-900 dark:bg-brand-500 py-3 text-center text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
                 >
                   Checkout
                 </Link>
                 <button
                   type="button"
                   onClick={closeCart}
-                  className="mt-2 w-full rounded-full border border-gray-200 py-3 text-sm font-semibold text-gray-700 hover:border-gray-400 transition"
+                  className="mt-2 w-full rounded-full border border-gray-200 dark:border-slate-700 py-3 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition"
                 >
                   Continue Shopping
                 </button>
