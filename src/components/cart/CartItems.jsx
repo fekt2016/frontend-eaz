@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { FaMinus, FaPlus, FaTimes } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
 import { formatGhs } from "@/lib/shop";
@@ -32,12 +33,14 @@ export default function CartItems() {
         <li key={item.slug} className="flex gap-4 py-4">
           <Link
             href={`/shop/${item.slug}`}
-            className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100"
+            className="relative block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100"
           >
-            <img
+            <Image
               src={item.image || "https://placehold.co/200x200/1e1b4b/ffffff?text=Product"}
               alt={item.name}
-              className="h-full w-full object-cover"
+              fill
+              sizes="80px"
+              className="object-cover"
             />
           </Link>
           <div className="flex flex-1 flex-col">

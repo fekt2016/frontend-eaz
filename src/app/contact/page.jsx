@@ -1,11 +1,14 @@
 import ContactForm from "@/components/ContactForm";
 import Link from "next/link";
 import { FaMapMarkerAlt, FaClock, FaEnvelope, FaPhone } from "react-icons/fa";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Contact Us | EazWorld",
-  description: "Get in touch with EazWorld. We respond within 24 hours.",
-};
+  description:
+    "Get in touch with EazWorld in Accra, Ghana. Web design, SEO, hosting, domain, and phone repair enquiries — we respond within 24 hours.",
+  path: "/contact",
+});
 
 export default function Contact() {
   return (

@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Privacy Policy | EazWorld",
-  description: "How EazWorld collects, uses, and protects your personal information.",
-};
+  description:
+    "How EazWorld collects, uses, and protects your personal information — our privacy policy for users in Ghana and beyond.",
+  path: "/privacy",
+});
 
 const sections = [
   {

@@ -6,18 +6,14 @@ import ShopSection from "@/components/home/ShopSection";
 import Testimonials from "@/components/home/Testimonials";
 import CtaSection from "@/components/home/CtaSection";
 import { posts } from "@/content/blog/posts";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "EazWorld | Web Design, Hosting & Phone Repair in Accra, Ghana",
-  description: "Ghana's premium digital agency. Web design, SEO, paid ads, branding, hosting, and phone repair in Accra.",
-  openGraph: {
-    title: "EazWorld | Digital Agency in Accra, Ghana",
-    description: "Web design, SEO, paid ads, branding, hosting, and phone repair.",
-    url: "https://eazworld.com",
-    siteName: "EazWorld",
-    type: "website",
-  },
-};
+  description:
+    "Ghana's premium digital agency. Web design, SEO, paid ads, branding, hosting, and phone repair in Accra.",
+  path: "/",
+});
 
 const CATEGORY_COLORS = {
   SEO: "bg-emerald-50 text-emerald-700",

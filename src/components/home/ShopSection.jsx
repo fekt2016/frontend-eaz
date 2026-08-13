@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
@@ -99,10 +100,12 @@ function ShopCard({ product }) {
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-md hover:-translate-y-1 transition duration-300">
       <Link href={`/shop/${product.slug}`} className="relative block overflow-hidden aspect-[4/3]">
-        <img
+        <Image
           src={image}
           alt={product.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <span className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>
           {badge.label}

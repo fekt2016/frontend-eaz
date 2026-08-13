@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FaCheckCircle, FaPalette, FaSearch, FaBullhorn, FaStar, FaHashtag, FaEnvelope, FaMobileAlt } from "react-icons/fa";
 import ServicesGrid from "@/components/home/ServicesGrid";
+import { buildMetadata } from "@/lib/seo";
 
 const iconStrip = [
   { icon: FaPalette, label: "Web Design", accent: "#F5A623" },
@@ -12,20 +13,12 @@ const iconStrip = [
   { icon: FaMobileAlt, label: "Phone Repair", accent: "#06b6d4" },
 ];
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Our Digital Services | EazWorld",
-  description: "Explore our 7 services: Web Design, SEO, Paid Ads, Branding, Social Media, Email Marketing, and Phone Repair in Accra, Ghana.",
-  openGraph: {
-    title: "Our Digital Services | EazWorld",
-    description: "Web design, SEO, paid ads, branding, social media, email marketing, and phone repair — all from one team in Accra.",
-    url: "https://eazworld.com/services",
-    siteName: "EazWorld",
-    type: "website",
-  },
-  alternates: {
-    canonical: "https://eazworld.com/services",
-  },
-};
+  description:
+    "Explore our services: Web Design, SEO, Paid Ads, Branding, Social Media, Email Marketing, and Phone Repair in Accra, Ghana.",
+  path: "/services",
+});
 
 export default function ServicesPage() {
   return (

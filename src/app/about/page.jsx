@@ -1,4 +1,12 @@
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "About EazWorld | Digital Agency in Accra, Ghana",
+  description:
+    "EazWorld is a premium digital agency in Accra, Ghana. Web design, branding, SEO, hosting, and phone repair for African businesses.",
+  path: "/about",
+});
 
 const values = [
   { title: "Quality First", desc: "We don't ship until we're proud of it. Every detail matters." },

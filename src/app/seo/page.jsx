@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FaSearch, FaCheckCircle } from "react-icons/fa";
+import { buildMetadata } from "@/lib/seo";
 
 const SEO_FEATURES = [
   "On-page SEO optimisation",
@@ -14,10 +15,12 @@ const SEO_FEATURES = [
   "Monthly SEO reports and recommendations",
 ];
 
-export const metadata = {
-  title: "SEO Services | EazWorld",
-  description: "Improve your search engine rankings and grow organic traffic with EazWorld's comprehensive SEO services in Accra, Ghana.",
-};
+export const metadata = buildMetadata({
+  title: "SEO Services in Ghana | EazWorld",
+  description:
+    "Improve your search engine rankings and grow organic traffic with EazWorld's comprehensive SEO services for Ghanaian and African businesses.",
+  path: "/seo",
+});
 
 export default function SEOPage() {
   return (

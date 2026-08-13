@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { FaArrowLeft, FaMinus, FaPlus } from "react-icons/fa";
 import { api } from "@/lib/api";
@@ -100,8 +101,14 @@ export default function ProductDetail({ slug }) {
         <div className="grid gap-10 lg:grid-cols-2">
           {/* IMAGE GALLERY */}
           <div>
-            <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white aspect-[4/3]">
-              <img src={images[activeImage]} alt={product.name} className="h-full w-full object-cover" />
+            <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white aspect-[4/3]">
+              <Image
+                src={images[activeImage]}
+                alt={product.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
             </div>
             {images.length > 1 && (
               <div className="mt-3 flex gap-3">
@@ -110,11 +117,17 @@ export default function ProductDetail({ slug }) {
                     key={img + i}
                     type="button"
                     onClick={() => setActiveImage(i)}
-                    className={`overflow-hidden rounded-xl border-2 w-20 h-16 transition ${
+                    className={`relative overflow-hidden rounded-xl border-2 w-20 h-16 transition ${
                       activeImage === i ? "border-amber-500" : "border-gray-100 hover:border-gray-300"
                     }`}
                   >
-                    <img src={img} alt={`${product.name} ${i + 1}`} className="h-full w-full object-cover" />
+                    <Image
+                      src={img}
+                      alt={`${product.name} ${i + 1}`}
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
                   </button>
                 ))}
               </div>

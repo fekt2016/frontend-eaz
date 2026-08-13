@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { FaCheckCircle } from "react-icons/fa";
 
+export const metadata = {
+  title: "Payment Successful | EazWorld",
+  description: "Thank you. Your order is being processed.",
+  robots: { index: false, follow: false },
+};
+
 export default function PaymentSuccess() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4 pt-24">

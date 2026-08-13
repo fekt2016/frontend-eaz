@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { FaMapMarkerAlt, FaClock, FaPhone, FaEnvelope, FaCheckCircle, FaWifi, FaSnowflake, FaCar } from "react-icons/fa";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Visit Our Office in Accra | EazWorld",
+  description:
+    "Visit the EazWorld office in Osu, Accra for phone repair, digital consultations, or to say hello. Free parking, free WiFi, walk-ins welcome.",
+  path: "/visit-us",
+});
 
 const amenities = [
   { icon: FaSnowflake, label: "Air Conditioning" },

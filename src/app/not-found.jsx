@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+export const metadata = {
+  title: { absolute: "Page Not Found | EazWorld" },
+  description: "This page could not be found.",
+  robots: { index: false, follow: false },
+};
+
 export default function NotFound() {
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 pt-24">

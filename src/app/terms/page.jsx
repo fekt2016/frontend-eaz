@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Terms of Service | EazWorld",
-  description: "The terms and conditions governing your use of EazWorld services.",
-};
+  description:
+    "The terms and conditions governing your use of EazWorld's website, hosting, domain, and digital services in Ghana.",
+  path: "/terms",
+});
 
 const sections = [
   {
