@@ -7,7 +7,7 @@ import { FaClock } from "react-icons/fa";
 const CATEGORY_COLORS = {
   SEO:               "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   "Web Design":      "bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
-  "Case Study":      "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  "Case Study":      "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400",
   "Social Media":    "bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",
   Branding:          "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   "Phone Repair":    "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
@@ -46,7 +46,7 @@ export default function BlogPreview() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">From the Blog</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">From the Blog</p>
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white">Latest Insights</h2>
           </div>
           <Link href="/blog" className="text-sm font-medium text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition hidden md:block">
@@ -66,7 +66,7 @@ export default function BlogPreview() {
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-3 ${CATEGORY_COLORS[post.category] || "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300"}`}>
                   {post.category}
                 </span>
-                <h3 className="font-display font-bold text-gray-900 dark:text-white leading-snug mb-2 group-hover:text-amber-500 transition">
+                <h3 className="font-display font-bold text-gray-900 dark:text-white leading-snug mb-2 group-hover:text-brand-500 transition">
                   {post.title}
                 </h3>
                 <p className="text-gray-400 dark:text-slate-500 text-xs flex items-center gap-1.5">

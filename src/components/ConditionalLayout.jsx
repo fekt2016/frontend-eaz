@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 
 // Routes where the global Navbar / Footer / ChatWidget should NOT render
-const BARE_PREFIXES = ["/pos"];
+const BARE_PREFIXES = ["/dashboard"];
 
 export default function ConditionalLayout({ children }) {
   const pathname = usePathname();

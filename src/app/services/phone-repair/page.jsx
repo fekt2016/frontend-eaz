@@ -86,6 +86,7 @@ export default function PhoneRepair() {
             <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">Fast, Reliable Phone Repair in Accra</h1>
             <p className="text-gray-500 dark:text-slate-400 text-lg mb-6">iPhone, Samsung, Infinix, Tecno, Itel & more. Honest pricing. 30-day warranty. Walk-ins welcome.</p>
             <div className="flex flex-wrap gap-3">
+              <Link href="/repair" className="px-6 py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">Book a Repair Online</Link>
               <a href="tel:+233244388190" className="px-6 py-3 rounded-full bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-700 transition">Call Us Now</a>
               <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">
                 <FaWhatsapp /> WhatsApp
@@ -162,7 +163,7 @@ export default function PhoneRepair() {
       {/* REPAIRS */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Services</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Services</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">What We Repair</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {repairs.map((r) => (
@@ -184,7 +185,7 @@ export default function PhoneRepair() {
       {/* PRICING TABLE */}
       <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Pricing</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Pricing</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-3">Price Guide</h2>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Free diagnostic before any repair. You approve the quote first.</p>
           <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -210,7 +211,7 @@ export default function PhoneRepair() {
       {/* HOW IT WORKS */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Process</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Process</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map((s) => (
@@ -227,7 +228,7 @@ export default function PhoneRepair() {
       {/* FAQ */}
       <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">FAQ</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">FAQ</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-6">Common Questions</h2>
           <FAQ items={faqs} />
         </div>
@@ -244,7 +245,7 @@ export default function PhoneRepair() {
               { icon: FaPhone, label: "Phone", value: "+233 24 438 8190 / +233 23 522 2207", href: "tel:+233244388190" },
             ].map(({ icon: Ic, label, value, href }) => (
               <div key={label} className="flex items-start gap-3 text-sm">
-                <Ic className="text-amber-500 mt-0.5 flex-shrink-0" />
+                <Ic className="text-brand-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white text-xs mb-0.5">{label}</p>
                   {href ? <a href={href} className="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">{value}</a> : <p className="text-gray-500 dark:text-slate-400">{value}</p>}
@@ -267,7 +268,8 @@ export default function PhoneRepair() {
           <div className="space-y-4">
             <div className="p-6 rounded-2xl bg-cyan-50 dark:bg-cyan-900/10 border border-cyan-100 dark:border-cyan-900/30 text-center">
               <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-2">Ready to Fix Your Phone?</h3>
-              <p className="text-gray-500 dark:text-slate-400 text-sm mb-5">Walk in today or reach us directly.</p>
+              <p className="text-gray-500 dark:text-slate-400 text-sm mb-5">Book online in 2 minutes, walk in, or reach us directly.</p>
+              <Link href="/repair" className="block py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition mb-2">Book a Repair Online</Link>
               <a href="tel:+233244388190" className="block py-3 rounded-full bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-700 transition mb-2">Call Now — +233 24 438 8190</a>
               <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 py-3 rounded-full bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition mb-2">
                 <FaWhatsapp /> WhatsApp Us

@@ -28,9 +28,9 @@ const services = [
 ];
 
 const trust = [
-  { icon: <FaStar className="text-amber-400" />, value: "4.9/5", label: "Client Rating" },
-  { icon: <FaClock className="text-amber-400" />, value: "< 24hrs", label: "Response Time" },
-  { icon: <FaShieldAlt className="text-amber-400" />, value: "No Pressure", label: "Honest Advice" },
+  { icon: <FaStar className="text-brand-400" />, value: "4.9/5", label: "Client Rating" },
+  { icon: <FaClock className="text-brand-400" />, value: "< 24hrs", label: "Response Time" },
+  { icon: <FaShieldAlt className="text-brand-400" />, value: "No Pressure", label: "Honest Advice" },
 ];
 
 const steps = [
@@ -41,7 +41,7 @@ const steps = [
 ];
 
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition bg-white dark:bg-slate-800";
+const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 transition bg-white dark:bg-slate-800";
 
 export default function BookConsultation() {
   const [fields, setFields] = useState({ firstName: "", lastName: "", email: "", phone: "", company: "", service: "", message: "" });
@@ -111,12 +111,12 @@ export default function BookConsultation() {
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-6 leading-relaxed">
             We&apos;ve received your request. Expect a reply within 24 hours with 2–3 available time slots.
           </p>
-          <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 rounded-xl p-4 mb-6 text-left">
-            <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-2">What happens next?</p>
+          <div className="bg-brand-50 dark:bg-brand-900/10 border border-brand-100 dark:border-brand-800/30 rounded-xl p-4 mb-6 text-left">
+            <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 mb-2">What happens next?</p>
             <ul className="space-y-1.5">
               {["Check your email for our reply", "Pick a time slot that suits you", "Join the 30-min video or phone call", "Leave with a clear plan & estimate"].map((s) => (
                 <li key={s} className="flex items-center gap-2 text-xs text-gray-600 dark:text-slate-400">
-                  <FaCheckCircle className="text-amber-400 flex-shrink-0" size={10} /> {s}
+                  <FaCheckCircle className="text-brand-400 flex-shrink-0" size={10} /> {s}
                 </li>
               ))}
             </ul>
@@ -142,7 +142,7 @@ export default function BookConsultation() {
       {/* HERO ─────────────────────────────────────────────────── */}
       <section className="pt-28 pb-16 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-amber-500 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 px-3 py-1 rounded-full mb-5">
+          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-500 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
             Free · 30 Minutes · No Obligation
           </span>
           <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
@@ -222,7 +222,7 @@ export default function BookConsultation() {
                       onClick={() => setService(s.id)}
                       className={`flex flex-col items-center text-center p-3 rounded-xl border-2 transition text-xs font-medium gap-1 ${
                         fields.service === s.id
-                          ? "border-amber-400 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white"
+                          ? "border-brand-400 bg-brand-50 dark:bg-brand-900/20 text-gray-900 dark:text-white"
                           : "border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500"
                       }`}
                     >
@@ -254,7 +254,7 @@ export default function BookConsultation() {
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="w-full py-4 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 font-bold text-sm hover:bg-gray-700 dark:hover:bg-amber-400 disabled:opacity-50 transition flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 font-bold text-sm hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition flex items-center justify-center gap-2"
               >
                 {status === "loading" ? (
                   <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending…</>
@@ -301,11 +301,11 @@ export default function BookConsultation() {
                 {reviews.map((r) => (
                   <blockquote key={r._id} className="p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                     <div className="flex gap-0.5 mb-2">
-                      {[1,2,3,4,5].map((s) => <FaStar key={s} size={11} className={s <= r.rating ? "text-amber-400" : "text-gray-200 dark:text-slate-700"} />)}
+                      {[1,2,3,4,5].map((s) => <FaStar key={s} size={11} className={s <= r.rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />)}
                     </div>
                     <p className="text-gray-600 dark:text-slate-300 text-xs italic leading-relaxed mb-3">&ldquo;{r.review}&rdquo;</p>
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-xs flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs flex-shrink-0">
                         {r.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -315,7 +315,7 @@ export default function BookConsultation() {
                     </div>
                   </blockquote>
                 ))}
-                <Link href="/reviews" className="block text-center text-xs text-amber-500 hover:text-amber-600 transition font-medium">
+                <Link href="/reviews" className="block text-center text-xs text-brand-500 hover:text-brand-600 transition font-medium">
                   View all reviews →
                 </Link>
               </div>

@@ -7,10 +7,10 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
-import { sanitizeEmail } from "@/lib/sanitize";
+import { sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.string().min(1),
   password: z.string().min(1),
 });
 
@@ -28,25 +28,27 @@ function LoginPageInner() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const cleanEmail = sanitizeEmail(email);
-    const result = schema.safeParse({ email: cleanEmail, password });
-    if (!result.success) { setError("Invalid email or password."); return; }
+    const cleanIdentifier = /\S+@\S+\.\S+/.test(email.trim())
+      ? sanitizeEmail(email)
+      : sanitizePhone(email);
+    const result = schema.safeParse({ email: cleanIdentifier, password });
+    if (!result.success) { setError("Invalid email/phone or password."); return; }
     setLoading(true);
     try {
-      const res = await login(cleanEmail, password);
+      const res = await login(cleanIdentifier, password);
       // If 2FA required, redirect to 2FA verification page
       if (res?.data?.requiresTwoFactor) {
-        router.push(`/auth/verify-2fa?email=${encodeURIComponent(email)}`);
+        router.push(`/auth/verify-2fa?email=${encodeURIComponent(cleanIdentifier)}`);
         return;
       }
       const role = res?.data?.user?.role;
-      if (role === "technician" || role === "admin") router.push("/pos/technician");
-      else if (["superadmin", "staff", "cashier"].includes(role)) router.push("/pos/sell");
-      else router.push("/dashboard");
+      if (role === "technician" || role === "admin") router.push("/dashboard/pos");
+      else if (["superadmin", "staff"].includes(role)) router.push("/dashboard/pos/sell");
+      else router.push("/"); // customers land on the homepage, not the dashboard
     } catch (err) {
       // If account not verified, redirect to verify page
       if (err.requiresVerification) {
-        router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+        router.push(`/auth/verify?email=${encodeURIComponent(cleanIdentifier)}`);
         return;
       }
       setError(err.message || "Invalid email or password.");
@@ -67,8 +69,8 @@ function LoginPageInner() {
         <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email address</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} required />
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email or phone number</label>
+              <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com or 024 000 0000" className={inputCls} required />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Password</label>
@@ -99,7 +101,7 @@ function LoginPageInner() {
 
           <div className="flex items-center justify-between mt-5 text-xs">
             <Link href="/auth/forgot-password" className="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">Forgot password?</Link>
-            <Link href="/auth/register" className="text-amber-500 font-medium hover:underline">Create account →</Link>
+            <Link href="/auth/register" className="text-brand-500 font-medium hover:underline">Create account →</Link>
           </div>
         </div>
 

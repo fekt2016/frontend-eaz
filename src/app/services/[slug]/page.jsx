@@ -45,8 +45,8 @@ export default function ServiceDetailPage({ params }) {
           <Link href="/services" className="text-xs text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition mb-6 inline-block">← All Services</Link>
           <div className="grid md:grid-cols-[1fr_300px] gap-10 items-start">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mb-5">
-                <Icon size={22} className="text-amber-500" />
+              <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center mb-5">
+                <Icon size={22} className="text-brand-500" />
               </div>
               <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">{service.title}</h1>
               <p className="text-gray-500 dark:text-slate-400 text-lg leading-relaxed">{service.tagline}</p>
@@ -68,7 +68,7 @@ export default function ServiceDetailPage({ params }) {
       {/* CHALLENGE */}
       <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">The Problem</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">The Problem</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">The Challenge</h2>
           <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{service.challenge}</p>
         </div>
@@ -78,7 +78,7 @@ export default function ServiceDetailPage({ params }) {
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Our Approach</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Our Approach</p>
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">How We Solve It</h2>
             <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{service.solution}</p>
           </div>
@@ -100,19 +100,19 @@ export default function ServiceDetailPage({ params }) {
       <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">What You Get</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">What You Get</p>
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">Deliverables</h2>
             <ul className="space-y-2.5">
               {service.deliverables.map((d) => (
                 <li key={d} className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-slate-300">
-                  <FaCheckCircle size={13} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                  <FaCheckCircle size={13} className="text-brand-500 mt-0.5 flex-shrink-0" />
                   {d}
                 </li>
               ))}
             </ul>
           </div>
           <div className="p-7 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Real Example</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Real Example</p>
             <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-3">Saiisai Marketplace</h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-5">{service.saiisaiExample}</p>
             <div className="flex gap-5 mb-5">
@@ -120,7 +120,7 @@ export default function ServiceDetailPage({ params }) {
                 <div key={label}><p className="font-bold text-gray-900 dark:text-white">{val}</p><p className="text-gray-400 dark:text-slate-500 text-xs">{label}</p></div>
               ))}
             </div>
-            <Link href="/portfolio/saiisai" className="text-amber-500 text-sm font-medium hover:underline">Read the full case study →</Link>
+            <Link href="/portfolio/saiisai" className="text-brand-500 text-sm font-medium hover:underline">Read the full case study →</Link>
           </div>
         </div>
       </section>
@@ -128,7 +128,7 @@ export default function ServiceDetailPage({ params }) {
       {/* FAQ */}
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Questions</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Questions</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">Frequently Asked</h2>
           <FAQ items={service.faqs} />
         </div>

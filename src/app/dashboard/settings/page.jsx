@@ -133,10 +133,10 @@ function PasswordSection() {
 
   const strength = newPass.length === 0 ? 0 : newPass.length < 8 ? 1 : newPass.length < 12 ? 2 : /[A-Z]/.test(newPass) && /[0-9]/.test(newPass) ? 4 : 3;
   const strengthLabel = ["", "Weak", "Fair", "Good", "Strong"];
-  const strengthColor = ["", "bg-red-400", "bg-amber-400", "bg-blue-400", "bg-emerald-500"];
+  const strengthColor = ["", "bg-red-400", "bg-brand-400", "bg-blue-400", "bg-emerald-500"];
 
   return (
-    <SectionCard icon={FaLock} title="Change Password" description="Choose a strong password for your account." iconColor="bg-amber-500">
+    <SectionCard icon={FaLock} title="Change Password" description="Choose a strong password for your account." iconColor="bg-brand-500">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1.5">Current password</label>
@@ -166,7 +166,7 @@ function PasswordSection() {
                   <div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${i <= strength ? strengthColor[strength] : "bg-gray-100"}`} />
                 ))}
               </div>
-              <span className={`text-xs font-medium ${strength <= 1 ? "text-red-500" : strength === 2 ? "text-amber-500" : strength === 3 ? "text-blue-500" : "text-emerald-600"}`}>
+              <span className={`text-xs font-medium ${strength <= 1 ? "text-red-500" : strength === 2 ? "text-brand-500" : strength === 3 ? "text-blue-500" : "text-emerald-600"}`}>
                 {strengthLabel[strength]}
               </span>
             </div>
@@ -340,7 +340,7 @@ function TwoFactorSection({ user, onUpdate }) {
 function ThemeSection() {
   const { isDark, toggleTheme } = useTheme();
   return (
-    <SectionCard icon={isDark ? FaMoon : FaSun} title="Appearance" description="Choose how EazWorld looks for you." iconColor={isDark ? "bg-slate-700" : "bg-amber-400"}>
+    <SectionCard icon={isDark ? FaMoon : FaSun} title="Appearance" description="Choose how EazWorld looks for you." iconColor={isDark ? "bg-slate-700" : "bg-brand-400"}>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-900 dark:text-white">{isDark ? "Dark mode" : "Light mode"}</p>
@@ -348,7 +348,7 @@ function ThemeSection() {
         </div>
         <button onClick={toggleTheme}
           className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none
-            ${isDark ? "bg-amber-500" : "bg-gray-200"}`}>
+            ${isDark ? "bg-brand-500" : "bg-gray-200"}`}>
           <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform
             ${isDark ? "translate-x-6" : "translate-x-1"}`} />
         </button>
@@ -367,7 +367,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24 transition-colors">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24 transition-colors">
       <div className="mx-auto max-w-2xl">
 
         {/* Header */}

@@ -69,7 +69,7 @@ function MessageBubble({ msg }) {
   if (msg.role === "user") {
     return (
       <div className="flex justify-end mb-3">
-        <div className="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-tr-sm text-sm leading-relaxed whitespace-pre-wrap bg-amber-500 text-white">
+        <div className="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-tr-sm text-sm leading-relaxed whitespace-pre-wrap bg-brand-500 text-white">
           {renderText(msg.content)}
         </div>
       </div>
@@ -92,7 +92,7 @@ function MessageBubble({ msg }) {
   }
   return (
     <div className="flex justify-start mb-3">
-      <div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mr-2 mt-1">E</div>
+      <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mr-2 mt-1">E</div>
       <div className="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-tl-sm text-sm leading-relaxed whitespace-pre-wrap bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-100 dark:border-slate-700 shadow-sm">
         {renderText(msg.content)}
       </div>
@@ -103,7 +103,7 @@ function MessageBubble({ msg }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start mb-3">
-      <div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mr-2 mt-1">E</div>
+      <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mr-2 mt-1">E</div>
       <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
         <div className="flex gap-1 items-center">
           {[0, 150, 300].map((d) => (
@@ -161,7 +161,7 @@ function HumanRequestForm({ user, onSubmit, onCancel }) {
         )}
         {isLoggedIn && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-            <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
               {user.name?.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
@@ -188,7 +188,7 @@ function HumanRequestForm({ user, onSubmit, onCancel }) {
 // ─── Admin shortcut badge ─────────────────────────────────────────────────────
 function AdminChatBadge() {
   return (
-    <Link href="/dashboard/admin/chats"
+    <Link href="/dashboard/chats"
       className="fixed bottom-5 right-4 sm:right-6 z-50 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all">
       <FaUserShield size={14} /><span>Admin Chats</span>
     </Link>
@@ -507,11 +507,11 @@ export default function ChatWidget() {
           <div className="bg-gray-900 dark:bg-slate-900 px-4 py-3.5 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-sm">
                   {isLive || isPending ? <FaUserShield size={14} /> : "E"}
                 </div>
                 <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-gray-900 ${
-                  isLive ? "bg-emerald-400" : isPending ? "bg-amber-400 animate-pulse" : isEnded ? "bg-gray-400" : "bg-emerald-400"
+                  isLive ? "bg-emerald-400" : isPending ? "bg-brand-400 animate-pulse" : isEnded ? "bg-gray-400" : "bg-emerald-400"
                 }`} />
               </div>
               <div>
@@ -542,9 +542,9 @@ export default function ChatWidget() {
 
           {/* Status banners */}
           {isPending && (
-            <div className="px-4 py-2.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-900/30 flex items-center gap-2.5">
-              <FaClock size={11} className="text-amber-500 flex-shrink-0 animate-pulse" />
-              <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+            <div className="px-4 py-2.5 bg-brand-50 dark:bg-brand-900/20 border-b border-brand-100 dark:border-brand-900/30 flex items-center gap-2.5">
+              <FaClock size={11} className="text-brand-500 flex-shrink-0 animate-pulse" />
+              <p className="text-[11px] text-brand-700 dark:text-brand-400 font-medium">
                 Waiting for an agent to accept your chat request…
               </p>
             </div>
@@ -571,11 +571,11 @@ export default function ChatWidget() {
             </div>
           )}
           {isLoggedIn && isBot && (
-            <div className="px-4 py-1.5 bg-amber-50 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/20 flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
+            <div className="px-4 py-1.5 bg-brand-50 dark:bg-brand-900/10 border-b border-brand-100 dark:border-brand-900/20 flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-brand-500 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
                 {user.name?.charAt(0).toUpperCase()}
               </div>
-              <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium truncate">
+              <p className="text-[11px] text-brand-700 dark:text-brand-400 font-medium truncate">
                 Chatting as <span className="font-bold">{user.name}</span>
               </p>
             </div>
@@ -590,10 +590,10 @@ export default function ChatWidget() {
             {typing && <TypingIndicator />}
             {isPending && (
               <div className="flex justify-start mb-3">
-                <div className="w-7 h-7 rounded-full bg-amber-400 flex items-center justify-center text-white flex-shrink-0 mr-2 mt-1">
+                <div className="w-7 h-7 rounded-full bg-brand-400 flex items-center justify-center text-white flex-shrink-0 mr-2 mt-1">
                   <FaClock size={11} />
                 </div>
-                <div className="px-3.5 py-2.5 rounded-2xl rounded-tl-sm bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400">
+                <div className="px-3.5 py-2.5 rounded-2xl rounded-tl-sm bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 text-xs text-brand-700 dark:text-brand-400">
                   Waiting for an agent to accept your request…
                 </div>
               </div>
@@ -606,7 +606,7 @@ export default function ChatWidget() {
             <div className="px-4 pb-2 flex flex-wrap gap-1.5 flex-shrink-0">
               {suggestions.map((s) => (
                 <button key={s} onClick={() => handleSuggestion(s)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-full border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition">
+                  className="text-xs font-medium px-3 py-1.5 rounded-full border border-brand-300 dark:border-brand-700 text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition">
                   {s}
                 </button>
               ))}
@@ -643,7 +643,7 @@ export default function ChatWidget() {
           {/* ── Chat ended footer ── */}
           {isEnded && (
             <div className="flex-shrink-0 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 flex gap-2">
-              <button onClick={handleReset} className="flex-1 text-sm py-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-400 transition">
+              <button onClick={handleReset} className="flex-1 text-sm py-2 rounded-xl bg-brand-500 text-white font-semibold hover:bg-brand-400 transition">
                 Start New Chat
               </button>
               <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer"
@@ -661,9 +661,9 @@ export default function ChatWidget() {
                 className="flex items-center gap-2 px-3 py-2.5">
                 <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)}
                   placeholder="Type a message…" disabled={typing}
-                  className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 transition disabled:opacity-50" />
+                  className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition disabled:opacity-50" />
                 <button type="submit" disabled={!input.trim() || typing}
-                  className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-white hover:bg-amber-400 transition disabled:opacity-40 flex-shrink-0">
+                  className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
                   <FaPaperPlane size={13} />
                 </button>
               </form>
@@ -686,9 +686,9 @@ export default function ChatWidget() {
               className="flex items-center gap-2 px-3 py-3 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex-shrink-0">
               <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)}
                 placeholder="Message the team…"
-                className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 transition" />
+                className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition" />
               <button type="submit" disabled={!input.trim()}
-                className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-white hover:bg-amber-400 transition disabled:opacity-40 flex-shrink-0">
+                className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
                 <FaPaperPlane size={13} />
               </button>
             </form>
@@ -711,7 +711,7 @@ export default function ChatWidget() {
 
       {/* Floating button */}
       <button onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-5 right-4 sm:right-6 z-50 w-14 h-14 rounded-full bg-amber-500 hover:bg-amber-400 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+        className="fixed bottom-5 right-4 sm:right-6 z-50 w-14 h-14 rounded-full bg-brand-500 hover:bg-brand-400 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
         aria-label="Open chat">
         {open ? <FaTimes size={20} /> : <FaComments size={22} />}
         {!open && unread > 0 && (

@@ -32,7 +32,7 @@ function Countdown({ until }) {
 
   return (
     <div className="mt-8 flex items-center justify-center gap-3">
-      <FaClock size={14} className="text-amber-400 flex-shrink-0" />
+      <FaClock size={14} className="text-brand-400 flex-shrink-0" />
       <p className="text-sm text-gray-400 dark:text-slate-400">Back in</p>
       {[
         { label: "hrs",  val: remaining.h },
@@ -60,15 +60,15 @@ function MaintenanceContent() {
 
       {/* Animated cog */}
       <div className="relative mb-8">
-        <div className="w-24 h-24 rounded-full bg-amber-500/10 border-2 border-amber-500/30 flex items-center justify-center">
-          <FaTools size={36} className="text-amber-400 animate-pulse" />
+        <div className="w-24 h-24 rounded-full bg-brand-500/10 border-2 border-brand-500/30 flex items-center justify-center">
+          <FaTools size={36} className="text-brand-400 animate-pulse" />
         </div>
         {/* outer ring */}
-        <div className="absolute inset-0 rounded-full border-2 border-dashed border-amber-500/20 animate-spin" style={{ animationDuration: "8s" }} />
+        <div className="absolute inset-0 rounded-full border-2 border-dashed border-brand-500/20 animate-spin" style={{ animationDuration: "8s" }} />
       </div>
 
       {/* Brand */}
-      <p className="text-amber-400 text-xs font-bold tracking-[0.25em] uppercase mb-3">EazWorld</p>
+      <p className="text-brand-400 text-xs font-bold tracking-[0.25em] uppercase mb-3">EazWorld</p>
 
       {/* Heading */}
       <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight">

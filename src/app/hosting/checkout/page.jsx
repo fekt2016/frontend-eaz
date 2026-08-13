@@ -103,7 +103,7 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
     if (status === "checking") return <span className="flex items-center gap-1.5 text-xs text-gray-400"><span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />Checking availability…</span>;
     if (status === "available") return <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">✓ Available{domainInfo?.price ? ` — GH₵${domainInfo.price}/yr` : ""}</span>;
     if (status === "taken") return <span className="text-xs font-semibold text-red-500">✗ Already registered — try a different name or TLD</span>;
-    if (status === "owned") return <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600">★ You already ordered this domain</span>;
+    if (status === "owned") return <span className="flex items-center gap-1.5 text-xs font-semibold text-brand-600">★ You already ordered this domain</span>;
     if (status === "error") return <span className="text-xs text-gray-400">Could not check — enter manually or skip</span>;
     return null;
   };
@@ -188,9 +188,9 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
           )}
 
           {status === "owned" && (
-            <div className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-700 dark:text-amber-400">
+            <div className="rounded-xl border border-brand-200 dark:border-brand-900/40 bg-brand-50 dark:bg-brand-900/20 p-3 text-xs text-brand-700 dark:text-brand-400">
               <p className="font-semibold">You already ordered this domain through EazWorld.</p>
-              <p className="mt-0.5 text-amber-600 dark:text-amber-500">It will be linked to this hosting account automatically.</p>
+              <p className="mt-0.5 text-brand-600 dark:text-brand-500">It will be linked to this hosting account automatically.</p>
             </div>
           )}
         </div>
@@ -205,13 +205,13 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
             placeholder="yourdomain.com"
             className={inputCls}
           />
-          <div className="rounded-xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300 space-y-2">
+          <div className="rounded-xl border border-brand-100 dark:border-brand-900/40 bg-brand-50 dark:bg-brand-900/20 p-3 text-xs text-brand-800 dark:text-brand-300 space-y-2">
             <p className="font-semibold">After checkout, update your domain&apos;s nameservers to:</p>
-            <div className="flex flex-col gap-1 font-mono text-amber-900 dark:text-amber-200">
+            <div className="flex flex-col gap-1 font-mono text-brand-900 dark:text-brand-200">
               <span>NS1: <strong>{process.env.NEXT_PUBLIC_NAMESERVER_1 || "ns1.eazworld.com"}</strong></span>
               <span>NS2: <strong>{process.env.NEXT_PUBLIC_NAMESERVER_2 || "ns2.eazworld.com"}</strong></span>
             </div>
-            <p className="text-amber-700 dark:text-amber-400">Log in to your domain registrar (e.g. Namecheap, GoDaddy) and replace the existing nameservers with the ones above. DNS changes take 24–48 hrs to fully propagate.</p>
+            <p className="text-brand-700 dark:text-brand-400">Log in to your domain registrar (e.g. Namecheap, GoDaddy) and replace the existing nameservers with the ones above. DNS changes take 24–48 hrs to fully propagate.</p>
           </div>
         </div>
       )}
@@ -344,15 +344,15 @@ function HostingCheckoutPageInner() {
                   <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-2">Plan Summary</h2>
                   <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">{plan.name} · {billingCycle === "annual" ? "Billed annually" : "Monthly"}</p>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-3xl font-bold text-amber-500">GH₵ {billingCycle === "annual" ? plan.annualPrice : `${plan.monthlyPrice}.00`}</span>
+                    <span className="text-3xl font-bold text-brand-500">GH₵ {billingCycle === "annual" ? plan.annualPrice : `${plan.monthlyPrice}.00`}</span>
                     <span className="text-xs text-gray-400 dark:text-slate-500">{billingCycle === "annual" ? "/yr" : "/mo"}</span>
                   </div>
                   {billingCycle === "annual" && <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-4">Save GH₵ {saving}</p>}
                   <ul className="space-y-1 text-sm text-gray-500 dark:text-slate-400 mb-6">
                     {plan.features.slice(0, 6).map((f) => (
                       <li key={f} className="flex items-center gap-2">
-                        <span className="text-amber-500">✓</span>
-                        {/^free\s+/i.test(f) ? <span><span className="text-amber-500 font-bold">FREE</span> {f.replace(/^free\s+/i, "")}</span> : <span>{f}</span>}
+                        <span className="text-brand-500">✓</span>
+                        {/^free\s+/i.test(f) ? <span><span className="text-brand-500 font-bold">FREE</span> {f.replace(/^free\s+/i, "")}</span> : <span>{f}</span>}
                       </li>
                     ))}
                   </ul>
@@ -366,7 +366,7 @@ function HostingCheckoutPageInner() {
                   <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-4">Add-ons</h2>
                   <ul className="space-y-3">
                     {ADDONS.map((a) => (
-                      <label key={a.id} className="flex cursor-pointer items-center justify-between rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:border-amber-200 dark:hover:border-amber-700 transition">
+                      <label key={a.id} className="flex cursor-pointer items-center justify-between rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:border-brand-200 dark:hover:border-brand-700 transition">
                         <span className="flex items-center gap-3">
                           <input type="checkbox" checked={addons.includes(a.id)} onChange={() => toggleAddon(a.id)} className="rounded border-gray-300 accent-gray-900" />
                           <span className="text-sm text-gray-700 dark:text-slate-300">{a.name}</span>
@@ -454,7 +454,7 @@ function HostingCheckoutPageInner() {
                       { id: "bank_transfer", icon: "🏦", title: "Bank Transfer", desc: "Manual bank transfer — activate within 2–4 hrs" },
                     ].map((m) => (
                       <button key={m.id} type="button" onClick={() => setPaymentMethod(m.id)}
-                        className={`w-full rounded-xl border p-4 text-left transition ${paymentMethod === m.id ? "border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20" : "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-200 dark:hover:border-slate-600"}`}>
+                        className={`w-full rounded-xl border p-4 text-left transition ${paymentMethod === m.id ? "border-brand-300 dark:border-brand-600 bg-brand-50 dark:bg-brand-900/20" : "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-200 dark:hover:border-slate-600"}`}>
                         <span className="text-2xl">{m.icon}</span>
                         <div className="mt-2 font-semibold text-gray-900 dark:text-white">{m.title}</div>
                         <div className="text-sm text-gray-500 dark:text-slate-400">{m.desc}</div>
@@ -471,7 +471,7 @@ function HostingCheckoutPageInner() {
                       <div className="flex gap-2">
                         {["mtn", "vod"].map((n) => (
                           <button key={n} type="button" onClick={() => setNetwork(n)}
-                            className={`flex-1 rounded-xl border py-2 text-sm font-medium transition ${network === n ? "border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400" : "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:border-gray-200 dark:hover:border-slate-600"}`}>
+                            className={`flex-1 rounded-xl border py-2 text-sm font-medium transition ${network === n ? "border-brand-300 dark:border-brand-600 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400" : "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:border-gray-200 dark:hover:border-slate-600"}`}>
                             {n === "mtn" ? "MTN MoMo" : "Vodafone Cash"}
                           </button>
                         ))}
@@ -533,7 +533,7 @@ function HostingCheckoutPageInner() {
                 )}
                 <div className="border-t border-gray-200 dark:border-slate-700 pt-3 flex justify-between font-semibold text-base">
                   <span className="text-gray-900 dark:text-white">Total</span>
-                  <span className="text-amber-500">GH₵ {total}</span>
+                  <span className="text-brand-500">GH₵ {total}</span>
                 </div>
               </div>
             </div>

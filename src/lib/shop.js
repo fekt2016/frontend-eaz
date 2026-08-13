@@ -8,7 +8,7 @@ export function stockBadge(stock) {
     return { label: "Out of stock", classes: "bg-gray-100 text-gray-500" };
   }
   if (stock <= 10) {
-    return { label: `Only ${stock} left`, classes: "bg-amber-50 text-amber-700" };
+    return { label: `Only ${stock} left`, classes: "bg-brand-50 text-brand-700" };
   }
   return { label: "In stock", classes: "bg-emerald-50 text-emerald-700" };
 }

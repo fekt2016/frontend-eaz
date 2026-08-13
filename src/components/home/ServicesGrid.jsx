@@ -69,7 +69,7 @@ export default function ServicesGrid() {
     <section className="py-24 px-4 bg-white dark:bg-slate-950">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">What We Do</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">What We Do</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-4">
             Everything Your Business Needs Online
           </h2>

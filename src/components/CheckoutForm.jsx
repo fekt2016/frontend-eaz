@@ -108,7 +108,7 @@ export default function CheckoutForm({ domain, price }) {
 
       <div className="flex items-center justify-between pt-2">
         <span className="text-sm text-gray-500 dark:text-slate-400">Total</span>
-        <span className="text-lg font-bold text-amber-500">GH₵{total.toFixed(0)}</span>
+        <span className="text-lg font-bold text-brand-500">GH₵{total.toFixed(0)}</span>
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}

@@ -38,7 +38,7 @@ const packages = [
     desc: "For SMEs, clinics, schools, law firms and logistics companies who need a complete professional website.",
     turnaround: "1–2 weeks",
     depositLabel: "50% upfront",
-    color: "border-amber-400 dark:border-amber-500",
+    color: "border-brand-400 dark:border-brand-500",
     badge: "Most Popular",
     features: [
       "Up to 8 pages",
@@ -138,7 +138,7 @@ export default function WebDesignPage() {
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Web Design & Development</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Web Design & Development</p>
           <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
             Transparent Pricing.<br />No Surprises.
           </h1>
@@ -146,7 +146,7 @@ export default function WebDesignPage() {
             From a simple landing page to a full web application — honest pricing for businesses in Accra and beyond.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/book-consultation" className="px-6 py-3 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 transition">
+            <Link href="/book-consultation" className="px-6 py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">
               Book Free Consultation
             </Link>
             <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer"
@@ -158,10 +158,10 @@ export default function WebDesignPage() {
       </section>
 
       {/* CAPACITY NOTICE */}
-      <section className="py-5 px-4 bg-amber-50 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-800/30">
+      <section className="py-5 px-4 bg-brand-50 dark:bg-brand-900/10 border-b border-brand-100 dark:border-brand-800/30">
         <div className="max-w-3xl mx-auto flex items-center justify-center gap-3 text-center flex-wrap">
-          <span className="text-amber-500 text-base">⚡</span>
-          <p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
+          <span className="text-brand-500 text-base">⚡</span>
+          <p className="text-sm text-brand-700 dark:text-brand-400 font-medium">
             We&apos;re currently taking a limited number of projects to ensure quality.{" "}
             <Link href="/book-consultation" className="underline underline-offset-2 hover:no-underline">Book early to secure your slot.</Link>
           </p>
@@ -171,7 +171,7 @@ export default function WebDesignPage() {
       {/* PACKAGES */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Packages</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Packages</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-3">Choose Your Package</h2>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-12">All prices are one-time. 50% deposit required to begin. Hosting and domain are separate.</p>
 
@@ -181,7 +181,7 @@ export default function WebDesignPage() {
                 {pkg.badge && (
                   <span className={`absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap ${
                     pkg.badge === "Most Popular"
-                      ? "bg-amber-500 text-white"
+                      ? "bg-brand-500 text-white"
                       : "bg-gray-900 dark:bg-slate-700 text-white"
                   }`}>
                     {pkg.badge}
@@ -190,7 +190,7 @@ export default function WebDesignPage() {
 
                 <div className="mb-5">
                   <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-1">{pkg.name}</h3>
-                  <p className="text-2xl font-black text-amber-500">{pkg.price}<span className="text-sm font-normal text-gray-400 dark:text-slate-500"> starting</span></p>
+                  <p className="text-2xl font-black text-brand-500">{pkg.price}<span className="text-sm font-normal text-gray-400 dark:text-slate-500"> starting</span></p>
                   <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{pkg.priceRange}</p>
                 </div>
 
@@ -216,8 +216,8 @@ export default function WebDesignPage() {
                     onClick={() => setSelectedPkg(pkg)}
                     className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-semibold transition ${
                       pkg.badge === "Most Popular"
-                        ? "bg-amber-500 text-white hover:bg-amber-400"
-                        : "bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-amber-400"
+                        ? "bg-brand-500 text-white hover:bg-brand-400"
+                        : "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400"
                     }`}
                   >
                     <FaCreditCard size={11} /> Pay GH₵{pkg.deposit.toLocaleString()} Deposit
@@ -238,14 +238,14 @@ export default function WebDesignPage() {
       {/* ADD-ONS */}
       <section className="py-20 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Add-ons</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Add-ons</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">Optional Extras</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {addons.map((a) => (
               <div key={a.name} className="p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-semibold text-gray-900 dark:text-white text-sm">{a.name}</p>
-                  <span className="text-amber-500 font-bold text-sm whitespace-nowrap ml-2">{a.price}</span>
+                  <span className="text-brand-500 font-bold text-sm whitespace-nowrap ml-2">{a.price}</span>
                 </div>
                 <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed">{a.desc}</p>
               </div>
@@ -257,7 +257,7 @@ export default function WebDesignPage() {
       {/* FAQ */}
       <section className="py-20 px-4">
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">FAQ</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">FAQ</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-8">Common Questions</h2>
           <div className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden">
             {faqs.map((faq) => (
@@ -276,7 +276,7 @@ export default function WebDesignPage() {
           <h2 className="font-display font-bold text-2xl md:text-3xl text-white mb-3">Not Sure Which Package You Need?</h2>
           <p className="text-gray-400 mb-7 text-sm">Book a free 30-minute consultation. We&apos;ll listen to your goals and recommend the right solution — no pressure.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/book-consultation" className="rounded-full bg-amber-500 text-gray-900 font-semibold px-6 py-3 text-sm hover:bg-amber-400 transition">
+            <Link href="/book-consultation" className="rounded-full bg-brand-500 text-gray-900 font-semibold px-6 py-3 text-sm hover:bg-brand-400 transition">
               Book Free Consultation
             </Link>
             <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer"

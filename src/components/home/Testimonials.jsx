@@ -23,7 +23,7 @@ export default function Testimonials() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-14">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Reviews</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Reviews</p>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               What Our Clients Say
             </h2>
@@ -65,12 +65,12 @@ export default function Testimonials() {
               <div key={t._id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-7">
                 <div className="flex gap-0.5 mb-4">
                   {[1,2,3,4,5].map((s) => (
-                    <FaStar key={s} size={13} className={s <= t.rating ? "text-amber-400" : "text-gray-200 dark:text-slate-700"} />
+                    <FaStar key={s} size={13} className={s <= t.rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />
                   ))}
                 </div>
                 <p className="text-gray-700 dark:text-slate-300 leading-relaxed mb-6">&ldquo;{t.review}&rdquo;</p>
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-slate-700">
-                  <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-semibold text-sm flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-semibold text-sm flex-shrink-0">
                     {t.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -89,7 +89,7 @@ export default function Testimonials() {
             <p className="font-semibold text-gray-900 dark:text-white text-sm">Had a great experience?</p>
             <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">Share your feedback — it helps others find us.</p>
           </div>
-          <Link href="/reviews#leave-review" className="flex-shrink-0 px-6 py-2.5 rounded-full bg-gray-900 dark:bg-amber-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-amber-400 transition">
+          <Link href="/reviews#leave-review" className="flex-shrink-0 px-6 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">
             Leave a Review ★
           </Link>
         </div>

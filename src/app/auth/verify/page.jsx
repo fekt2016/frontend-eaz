@@ -115,8 +115,8 @@ function VerifyPageInner() {
         <div className="text-center mb-8">
           <Link href="/" className="font-display font-black text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <div className="mt-6 mb-4 flex justify-center">
-            <span className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center">
-              <FaEnvelope size={24} className="text-amber-500" />
+            <span className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center">
+              <FaEnvelope size={24} className="text-brand-500" />
             </span>
           </div>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Check your email</h1>
@@ -159,8 +159,8 @@ function VerifyPageInner() {
                     onChange={(e) => handlePinChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
                     className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none transition
-                      ${digit ? "border-amber-400 bg-amber-50" : "border-gray-200 dark:border-slate-700"}
-                      focus:border-amber-400`}
+                      ${digit ? "border-brand-400 bg-brand-50" : "border-gray-200 dark:border-slate-700"}
+                      focus:border-brand-400`}
                   />
                 ))}
               </div>
@@ -185,7 +185,7 @@ function VerifyPageInner() {
                 type="button"
                 onClick={handleResend}
                 disabled={resendLoading || resendCooldown > 0}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-amber-500 hover:text-amber-600 disabled:opacity-50 transition">
+                className="inline-flex items-center gap-2 text-sm font-semibold text-brand-500 hover:text-brand-600 disabled:opacity-50 transition">
                 <FaRedo size={11} className={resendLoading ? "animate-spin" : ""} />
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
               </button>
@@ -194,7 +194,7 @@ function VerifyPageInner() {
 
           <p className="text-center text-sm text-gray-400 dark:text-slate-500 mt-5">
             Wrong account?{" "}
-            <Link href="/auth/register" className="text-amber-500 font-medium hover:underline">Register again</Link>
+            <Link href="/auth/register" className="text-brand-500 font-medium hover:underline">Register again</Link>
           </p>
         </div>
 

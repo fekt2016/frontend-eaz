@@ -95,7 +95,7 @@ function Verify2FAInner() {
             </button>
           </form>
           <p className="text-center text-sm text-gray-400 dark:text-slate-500 mt-5">
-            <Link href="/auth/login" className="text-amber-500 font-medium hover:underline">← Back to login</Link>
+            <Link href="/auth/login" className="text-brand-500 font-medium hover:underline">← Back to login</Link>
           </p>
         </div>
       </div>

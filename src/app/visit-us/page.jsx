@@ -1,6 +1,18 @@
 import Link from "next/link";
 import { FaMapMarkerAlt, FaClock, FaPhone, FaEnvelope, FaWhatsapp, FaCheckCircle, FaWifi, FaSnowflake, FaCar } from "react-icons/fa";
 
+export const metadata = {
+  title: "Visit Us — Nima, Accra, Ghana",
+  description:
+    "Visit EazWorld in person — E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra. Phone repair, digital consultations and walk-ins welcome. Mon–Fri 9AM–6PM, Sat 10AM–4PM.",
+  openGraph: {
+    title: "Visit Us | EazWorld",
+    description: "Come see EazWorld in person in Nima, Accra — phone repair and digital consultations.",
+    url: "https://eazworld.com/visit-us",
+  },
+  alternates: { canonical: "https://eazworld.com/visit-us" },
+};
+
 const amenities = [
   { icon: FaSnowflake, label: "Air Conditioning" },
   { icon: FaWifi, label: "Free WiFi" },
@@ -21,7 +33,7 @@ export default function VisitUs() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">Visit Us in Accra</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Visit Us in Accra</p>
           <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">Come See Us In Person</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg">Phone repair, digital consultations, or just to say hello — we&apos;re in Accra and always happy to meet face to face.</p>
         </div>
@@ -41,7 +53,7 @@ export default function VisitUs() {
               { icon: FaEnvelope, label: "Email", href: "mailto:info@eazworld.co", value: "info@eazworld.co" },
             ].map(({ icon: Ic, label, value, href }) => (
               <div key={label} className="flex items-start gap-3 text-sm">
-                <Ic className="text-amber-500 mt-0.5 flex-shrink-0" />
+                <Ic className="text-brand-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-gray-400 dark:text-slate-500 text-xs mb-0.5">{label}</p>
                   {href ? <a href={href} className="text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition">{value}</a> : <p className="text-gray-700 dark:text-slate-300">{value}</p>}
@@ -81,12 +93,12 @@ export default function VisitUs() {
       {/* AMENITIES */}
       <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Our Space</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Our Space</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-8">Comfortable & Professional</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {amenities.map((a) => (
               <div key={a.label} className="flex items-center gap-2 p-4 rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 text-sm text-gray-700 dark:text-slate-300">
-                <a.icon className="text-amber-500 flex-shrink-0" size={14} />
+                <a.icon className="text-brand-500 flex-shrink-0" size={14} />
                 {a.label}
               </div>
             ))}
@@ -97,7 +109,7 @@ export default function VisitUs() {
       {/* WHAT TO EXPECT */}
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-          <div className="p-7 rounded-2xl border border-amber-50 dark:border-amber-900/20 bg-amber-50 dark:bg-amber-900/10">
+          <div className="p-7 rounded-2xl border border-brand-50 dark:border-brand-900/20 bg-brand-50 dark:bg-brand-900/10">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">For a Digital Consultation</h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed">Sit down with one of our strategists for a free 30-minute session. We&apos;ll discuss your goals and give honest recommendations — no pressure.</p>
           </div>
@@ -111,12 +123,12 @@ export default function VisitUs() {
       {/* TESTIMONIALS */}
       <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-3">Reviews</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Reviews</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-8">What Visitors Say</h2>
           <div className="grid md:grid-cols-2 gap-5">
             {testimonials.map((t) => (
               <div key={t.name} className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-                <p className="text-amber-400 text-sm mb-3">{"★".repeat(5)}</p>
+                <p className="text-brand-400 text-sm mb-3">{"★".repeat(5)}</p>
                 <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</p>
                 <p className="font-semibold text-gray-900 dark:text-white text-sm">{t.name}</p>
                 <p className="text-gray-400 dark:text-slate-500 text-xs">{t.service}</p>
