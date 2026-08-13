@@ -633,7 +633,10 @@ function DashboardContent() {
                 ) : repairs.length === 0 ? (
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 text-center">
                     <p className="text-gray-400 dark:text-slate-500 text-sm">No repairs on file.</p>
-                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Repairs you book in-store appear here.</p>
+                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-1 mb-3">Create one online — bring it in or send a rider.</p>
+                    <Link href="/repair" className="inline-block text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
+                      Create a Repair Job
+                    </Link>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -647,15 +650,11 @@ function DashboardContent() {
                 <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
+                    { href: "/repair",  icon: FaTools, label: "Repair Device", color: "text-cyan-500 bg-cyan-50" },
                     { href: "/hosting", icon: FaServer, label: "Order Hosting", color: "text-brand-500 bg-brand-50" },
                     { href: "/domains", icon: FaGlobe, label: "Register Domain", color: "text-blue-500 bg-blue-50" },
                     { href: "/contact", icon: FaShieldAlt, label: "Get Support", color: "text-emerald-500 bg-emerald-50" },
-                    {
-                      href: "/dashboard/hosting",
-                      icon: FaExternalLinkAlt,
-                      label: "cPanel (my orders)",
-                      color: "text-purple-500 bg-purple-50",
-                    },
+                    { href: "/dashboard/hosting", icon: FaExternalLinkAlt, label: "cPanel (my orders)", color: "text-purple-500 bg-purple-50" },
                   ].map(({ href, icon: Icon, label, color }) => (
                     <Link
                       key={label}

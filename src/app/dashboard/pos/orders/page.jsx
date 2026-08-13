@@ -74,13 +74,14 @@ export default function PosOrdersPage() {
     } finally { setSavingId(null); }
   };
 
-  const updatePartStatus = async (id, status) => {
+  const updatePartStatus = async (id, status, orderType) => {
     setSavingId(id); setError("");
+    const endpoint = orderType === "repair" ? `/pos/repair-orders/${id}` : `/pos/part-orders/${id}`;
     try {
-      await api.patch(`/pos/part-orders/${id}`, { status });
+      await api.patch(endpoint, { status });
       setPartOrders(list => list.map(o => (o._id === id ? { ...o, status } : o)));
     } catch (e) {
-      setError(e.message || "Failed to update part order.");
+      setError(e.message || "Failed to update order.");
     } finally { setSavingId(null); }
   };
 
@@ -168,8 +169,17 @@ export default function PosOrdersPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{order.partName}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                      {order.orderType === "repair"
+                        ? (order.items || []).map(i => `${i.partName} ×${i.quantity}`).join(", ")
+                        : order.partName}
+                    </p>
                     <StatusBadge status={order.status} />
+                    {order.orderType === "repair" && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400 bg-brand-500/10 rounded-full px-2 py-0.5">
+                        Multi-part
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     {order.customerName || "—"} · {order.customerPhone || "—"}
@@ -180,17 +190,24 @@ export default function PosOrdersPage() {
                         {order.job.jobNumber}
                       </Link>
                     ) : "—"}
-                    {" · "}{formatDate(order.createdAt)} · Qty {order.quantity}
+                    {" · "}{formatDate(order.createdAt)}
+                    {order.orderType === "repair"
+                      ? (order.shippingFeePesewas > 0 ? " · incl. shipping" : "")
+                      : ` · Qty ${order.quantity}`}
                   </p>
                 </div>
                 <div className="text-right shrink-0 space-y-2">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">GH₵{Number(order.amountGhs || 0).toFixed(2)}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {order.orderType === "repair"
+                      ? formatGhs(order.totalPesewas)
+                      : `GH₵${Number(order.amountGhs || 0).toFixed(2)}`}
+                  </p>
                   <div className="flex items-center gap-2 justify-end">
                     {savingId === order._id && <FaSpinner className="animate-spin text-gray-400" size={11} />}
                     <select
                       value={order.status}
                       disabled={savingId === order._id}
-                      onChange={e => updatePartStatus(order._id, e.target.value)}
+                      onChange={e => updatePartStatus(order._id, e.target.value, order.orderType)}
                       className={selectCls}
                     >
                       {PART_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}

@@ -2,21 +2,78 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { FaArrowLeft, FaLock } from "react-icons/fa";
+import { FaArrowLeft, FaLock, FaTrash, FaPlus, FaTimes } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 
 const inputCls =
   "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-900";
 
+const STORAGE_KEY = "eazworld_shipping_addresses";
+const MAX_SAVED = 3;
+
+function pickSavedAddresses() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter((a) => a && (a.street || a.neighborhood || a.city))
+      .slice(0, MAX_SAVED);
+  } catch {
+    return [];
+  }
+}
+
+function persistLocal(address) {
+  try {
+    const current = pickSavedAddresses();
+    const line = [address.street, address.neighborhood, address.city]
+      .map((p) => (p || "").trim())
+      .filter(Boolean)
+      .join(", ");
+    if (!line) return;
+    const next = [address, ...current.filter((a) => `${a.street}|${a.neighborhood}|${a.city}` !== `${address.street}|${address.neighborhood}|${address.city}`)];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next.slice(0, MAX_SAVED)));
+  } catch {
+    // localStorage unavailable — addresses just won't be saved
+  }
+}
+
+function addressLine(a) {
+  return [a.street, a.neighborhood, a.city]
+    .map((p) => (p || "").trim())
+    .filter(Boolean)
+    .join(", ");
+}
+
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
+  const { user } = useAuth();
   const [zones, setZones] = useState([]);
   const [zoneId, setZoneId] = useState("");
-  const [customer, setCustomer] = useState({ name: "", phone: "", email: "", address: "" });
+  const [customer, setCustomer] = useState({ name: "", phone: "", street: "", neighborhood: "", city: "" });
+  const [savedAddresses, setSavedAddresses] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalForm, setModalForm] = useState({ label: "", street: "", neighborhood: "", city: "" });
+  const [modalSaving, setModalSaving] = useState(false);
+  const [modalError, setModalError] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      // Logged-in user — saved addresses live on their account in MongoDB.
+      api
+        .get("/auth/me/addresses")
+        .then((r) => setSavedAddresses(Array.isArray(r.data) ? r.data : []))
+        .catch(() => setSavedAddresses(pickSavedAddresses()));
+    } else {
+      // Guest — fall back to saved addresses on this device.
+      setSavedAddresses(pickSavedAddresses());
+    }
+  }, [user]);
 
   const loadZones = useCallback(async () => {
     try {
@@ -37,6 +94,60 @@ export default function CheckoutPage() {
   const deliveryFee = selectedZone ? selectedZone.fee : 0;
   const total = subtotal + deliveryFee;
 
+  const openModal = () => {
+    setModalForm({ label: "", street: "", neighborhood: "", city: "" });
+    setModalError("");
+    setModalOpen(true);
+  };
+
+  const selectSavedAddress = (addr) => {
+    setCustomer((c) => ({
+      ...c,
+      street: addr.street || "",
+      neighborhood: addr.neighborhood || "",
+      city: addr.city || "",
+    }));
+  };
+
+  const saveModalAddress = async () => {
+    setModalError("");
+    const saved = {
+      label: modalForm.label.trim(),
+      street: modalForm.street.trim(),
+      neighborhood: modalForm.neighborhood.trim(),
+      city: modalForm.city.trim(),
+    };
+    if (!addressLine(saved)) {
+      setModalError("Enter at least a street address, neighborhood, or city.");
+      return;
+    }
+    setModalSaving(true);
+    try {
+      if (user) {
+        const sRes = await api.post("/auth/me/addresses", saved);
+        setSavedAddresses((prev) => {
+          const without = prev.filter((a) => addressLine(a) !== addressLine(saved));
+          return [sRes.data, ...without];
+        });
+      } else {
+        persistLocal(saved);
+        setSavedAddresses(pickSavedAddresses());
+      }
+      // Select the newly saved address.
+      setCustomer((c) => ({
+        ...c,
+        street: saved.street,
+        neighborhood: saved.neighborhood,
+        city: saved.city,
+      }));
+      setModalOpen(false);
+    } catch (err) {
+      setModalError(err.message || "Could not save the address. Please try again.");
+    } finally {
+      setModalSaving(false);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     setError("");
     if (items.length === 0) {
@@ -54,13 +165,37 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
+      const address = addressLine(customer);
       const res = await api.post("/orders", {
         items: items.map((i) => ({ slug: i.slug, qty: i.qty })),
         ...(zoneId && { deliveryZoneId: zoneId }),
-        customer,
+        customer: {
+          name: customer.name.trim(),
+          phone: customer.phone.trim(),
+          email: user?.email || "",
+          address,
+        },
       });
       const { authorizationUrl } = res.data;
       if (authorizationUrl) {
+        const saved = {
+          street: customer.street.trim(),
+          neighborhood: customer.neighborhood.trim(),
+          city: customer.city.trim(),
+        };
+        if (user) {
+          // Persist to the account (MongoDB) so it can be picked next time.
+          const sRes = await api.post("/auth/me/addresses", saved).catch(() => null);
+          if (sRes?.data) {
+            setSavedAddresses((prev) => {
+              const without = prev.filter((a) => addressLine(a) !== addressLine(saved));
+              return [sRes.data, ...without];
+            });
+          }
+        } else {
+          persistLocal(saved);
+          setSavedAddresses(pickSavedAddresses());
+        }
         clearCart();
         window.location.href = authorizationUrl;
       } else {
@@ -115,6 +250,7 @@ export default function CheckoutPage() {
           <div className="space-y-6">
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-6">
               <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-4">Delivery Details</h2>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Full Name *</label>
@@ -136,28 +272,77 @@ export default function CheckoutPage() {
                     className={inputCls}
                   />
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">
-                    Email <span className="text-gray-400 dark:text-slate-500">(optional — for your receipt)</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={customer.email}
-                    onChange={(e) => setCustomer((c) => ({ ...c, email: e.target.value }))}
-                    placeholder="you@example.com"
-                    className={inputCls}
-                  />
+              </div>
+
+              <label className="mb-2 mt-6 block text-xs font-medium text-gray-700 dark:text-slate-300">
+                Delivery Address
+              </label>
+
+              {savedAddresses.length > 0 && (
+                <div className="space-y-2">
+                  {savedAddresses.map((addr) => {
+                    const line = addressLine(addr);
+                    const selected =
+                      customer.street.trim() === (addr.street || "").trim() &&
+                      customer.neighborhood.trim() === (addr.neighborhood || "").trim() &&
+                      customer.city.trim() === (addr.city || "").trim();
+                    return (
+                      <label
+                        key={addr._id || line}
+                        className={`flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition ${
+                          selected
+                            ? "border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/10"
+                            : "border-gray-200 bg-white hover:border-gray-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="saved-address"
+                          checked={selected}
+                          onChange={() => selectSavedAddress(addr)}
+                          className="mt-1 h-4 w-4 accent-brand-500 flex-shrink-0"
+                        />
+                        <span className="flex-1 text-left">
+                          <span className="text-sm text-gray-700 dark:text-slate-300 break-words block">{line}</span>
+                          {addr.label && <span className="text-xs font-medium text-gray-400 dark:text-slate-500 mt-0.5 block">{addr.label}</span>}
+                        </span>
+                        {addr._id && (
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              try {
+                                await api.delete(`/auth/me/addresses/${addr._id}`);
+                                setSavedAddresses((prev) => prev.filter((a) => a._id !== addr._id));
+                              } catch {
+                                /* ignore — selection still works */
+                              }
+                            }}
+                            aria-label="Delete this address"
+                            className="mt-0.5 p-1.5 text-gray-400 hover:text-red-500 transition"
+                          >
+                            <FaTrash size={12} />
+                          </button>
+                        )}
+                      </label>
+                    );
+                  })}
+                  {savedAddresses.length >= 3 && (
+                    <p className="pt-1 text-xs text-gray-400 dark:text-slate-500">
+                      Maximum of 3 saved addresses — delete one to add another.
+                    </p>
+                  )}
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Delivery Address</label>
-                  <input
-                    type="text"
-                    value={customer.address}
-                    onChange={(e) => setCustomer((c) => ({ ...c, address: e.target.value }))}
-                    placeholder="House number, street, area"
-                    className={inputCls}
-                  />
-                </div>
+              )}
+
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={openModal}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 dark:border-slate-600 px-4 py-3 text-sm font-semibold text-gray-500 dark:text-slate-400 hover:border-brand-400 hover:text-brand-500 dark:hover:border-brand-500 dark:hover:text-brand-400 transition"
+                >
+                  <FaPlus size={12} /> {addressLine(customer) ? "Change address" : "Add delivery address"}
+                </button>
               </div>
             </div>
 
@@ -239,6 +424,93 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      {/* Save address modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setModalOpen(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-semibold text-gray-900 dark:text-white">Add a New Address</h3>
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                aria-label="Close"
+                className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
+              >
+                <FaTimes size={14} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">
+                  Label <span className="text-gray-400 dark:text-slate-500">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={modalForm.label}
+                  onChange={(e) => setModalForm((f) => ({ ...f, label: e.target.value }))}
+                  placeholder="e.g. Home, Office"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Street Address</label>
+                <input
+                  type="text"
+                  value={modalForm.street}
+                  onChange={(e) => setModalForm((f) => ({ ...f, street: e.target.value }))}
+                  placeholder="House number and street"
+                  className={inputCls}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Neighborhood</label>
+                  <input
+                    type="text"
+                    value={modalForm.neighborhood}
+                    onChange={(e) => setModalForm((f) => ({ ...f, neighborhood: e.target.value }))}
+                    placeholder="e.g. Nima"
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">City</label>
+                  <input
+                    type="text"
+                    value={modalForm.city}
+                    onChange={(e) => setModalForm((f) => ({ ...f, city: e.target.value }))}
+                    placeholder="e.g. Accra"
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              {modalError && <p className="text-sm text-red-600 dark:text-red-400">{modalError}</p>}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="flex-1 rounded-full border border-gray-200 dark:border-slate-700 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={saveModalAddress}
+                  disabled={modalSaving}
+                  className="flex-1 rounded-full bg-gray-900 dark:bg-brand-500 py-2.5 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
+                >
+                  {modalSaving ? "Saving…" : "Save Address"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

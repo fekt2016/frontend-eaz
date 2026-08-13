@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { FaTools, FaBars, FaSignOutAlt, FaCog } from "react-icons/fa";
+import { FaTools, FaBars, FaCog } from "react-icons/fa";
 import { posNav } from "../dashboardNav";
 import Sidebar from "../Sidebar";
 
@@ -15,7 +15,6 @@ const PAGE_TITLES = {
   "/dashboard/pos/sell": "Sell",
   "/dashboard/pos/jobs": "Jobs",
   "/dashboard/pos/jobs/new": "New Job",
-  "/dashboard/pos/customers": "Customers",
   "/dashboard/pos/orders": "Orders",
   "/dashboard/pos/suppliers": "Suppliers",
   "/dashboard/pos/expenses": "Expenses",
@@ -30,7 +29,7 @@ const Spinner = () => (
 );
 
 export default function PosShell({ children }) {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const router   = useRouter();
   const pathname = usePathname();
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
@@ -109,13 +108,6 @@ export default function PosShell({ children }) {
                 <FaCog size={13} />
                 <span className="hidden sm:inline">Settings</span>
               </Link>
-              <button
-                onClick={() => { logout(); router.push("/auth/login"); }}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              >
-                <FaSignOutAlt size={13} />
-                <span className="hidden sm:inline">Sign out</span>
-              </button>
             </div>
           </div>
         </header>
@@ -167,13 +159,6 @@ export default function PosShell({ children }) {
                 {user.role === "superadmin" ? "Super Admin" : user.role === "admin" ? "Admin" : user.role}
               </p>
             </div>
-            <button
-              onClick={() => { logout(); router.push("/auth/login"); }}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            >
-              <FaSignOutAlt size={13} />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
           </div>
         </header>
 

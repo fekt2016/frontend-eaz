@@ -121,58 +121,70 @@ export default function JobsPage() {
             <p className="text-gray-600 text-sm mt-1">Try a different filter or create a new job.</p>
           </div>
         ) : (
-          <>
-            {/* Desktop table header */}
-            <div className="hidden sm:grid grid-cols-[auto_1fr_120px_140px_100px_auto_auto] gap-3 px-5 py-3 border-b border-gray-200 dark:border-gray-800 text-xs text-gray-500 font-medium uppercase tracking-wide">
-              <span>Job #</span>
-              <span>Customer</span>
-              <span>Device</span>
-              <span>Fault</span>
-              <span>Assigned</span>
-              <span>Status</span>
-              <span>Date</span>
-            </div>
-            <div className="divide-y divide-gray-200 dark:divide-gray-800">
-              {jobs.map(job => (
-                <Link
-                  key={job._id}
-                  href={`/dashboard/pos/jobs/${job._id}`}
-                  className="flex sm:grid sm:grid-cols-[auto_1fr_120px_140px_100px_auto_auto] gap-3 items-center px-5 py-4 hover:bg-gray-100/40 dark:hover:bg-gray-800/40 transition"
-                >
-                  <div className="flex items-center gap-2">
-                    {job.priority === "urgent" && <FaExclamationTriangle size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
-                    <span className="text-xs font-mono font-semibold text-brand-600 dark:text-brand-400 whitespace-nowrap">{job.jobNumber}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-900 dark:text-white truncate">{job.customer?.phone}</p>
-                      {job.customerRepairCount > 1 && (
-                        <span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full bg-brand-500/15 text-brand-600 dark:text-brand-400 font-medium">
-                          {job.customerRepairCount}×
-                        </span>
-                      )}
-                    </div>
-                    {job.customer?.name && <p className="text-xs text-gray-500 truncate">{job.customer.name}</p>}
-                  </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-300 truncate hidden sm:block">
-                    {[job.deviceBrand, job.deviceModel].filter(Boolean).join(" ").slice(0, 20) || "—"}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
-                    {job.faultDescription?.slice(0, 30)}{job.faultDescription?.length > 30 ? "…" : ""}
-                  </p>
-                  <span className={`text-xs truncate hidden sm:block ${job.assignedTo ? "text-gray-600 dark:text-gray-300" : "text-gray-600"}`}>
-                    {job.assignedTo?.name?.split(" ")[0] || "—"}
-                  </span>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[job.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-                    {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
-                  </span>
-                  <span className="text-xs text-gray-500 whitespace-nowrap hidden sm:block">
-                    {new Date(job.createdAt).toLocaleDateString("en-GH")}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </>
+          <div className="overflow-x-auto">
+            <table className="min-w-[820px] w-full text-sm">
+              <thead>
+                <tr className="text-left border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <th className="px-5 py-3">Job #</th>
+                  <th className="px-5 py-3">Customer</th>
+                  <th className="px-5 py-3">Device</th>
+                  <th className="px-5 py-3">Fault</th>
+                  <th className="px-5 py-3">Assigned</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3">Date</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {jobs.map(job => (
+                  <tr key={job._id} className="hover:bg-gray-100/40 dark:hover:bg-gray-800/40 transition">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-2">
+                        {job.priority === "urgent" && <FaExclamationTriangle size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
+                        <span className="text-xs font-mono font-semibold text-brand-600 dark:text-brand-400 whitespace-nowrap">{job.jobNumber}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-gray-900 dark:text-white truncate max-w-[160px]">{job.customer?.phone || "—"}</p>
+                        {job.customerRepairCount > 1 && (
+                          <span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full bg-brand-500/15 text-brand-600 dark:text-brand-400 font-medium">
+                            {job.customerRepairCount}×
+                          </span>
+                        )}
+                      </div>
+                      {job.customer?.name && <p className="text-xs text-gray-500 truncate max-w-[160px]">{job.customer.name}</p>}
+                    </td>
+                    <td className="px-5 py-3 text-xs text-gray-600 dark:text-gray-300 truncate max-w-[140px]">
+                      {[job.deviceBrand, job.deviceModel].filter(Boolean).join(" ").slice(0, 20) || "—"}
+                    </td>
+                    <td className="px-5 py-3 text-xs text-gray-500 dark:text-gray-400 truncate max-w-[160px]">
+                      {job.faultDescription?.slice(0, 30)}{job.faultDescription?.length > 30 ? "…" : ""}
+                    </td>
+                    <td className="px-5 py-3 text-xs text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                      {job.assignedTo?.name || "—"}
+                    </td>
+                    <td className="px-5 py-3">
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[job.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
+                        {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-xs text-gray-500 whitespace-nowrap">
+                      {new Date(job.createdAt).toLocaleDateString("en-GH")}
+                    </td>
+                    <td className="px-5 py-3 text-right whitespace-nowrap">
+                      <Link
+                        href={`/dashboard/pos/jobs/${job._id}`}
+                        className="inline-block text-xs font-semibold px-2.5 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-white transition"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

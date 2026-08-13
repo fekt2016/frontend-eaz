@@ -13,12 +13,14 @@ const sections = [
     icon: FaBoxes,
     title: "Inventory",
     description: "Manage repair parts and shop products from one place.",
+    adminOnly: true,
   },
   {
     href: "/dashboard/commerce/delivery-zones",
     icon: FaTruckFast,
     title: "Delivery Zones",
     description: "Define delivery fees and estimated times per zone.",
+    adminOnly: true,
   },
   {
     href: "/dashboard/commerce/orders",
@@ -32,11 +34,15 @@ export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const isAdmin = ["admin", "superadmin"].includes(user?.role);
+
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin"].includes(user?.role)) router.replace("/dashboard");
+    if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
   }, [user, authLoading, router]);
 
-  if (authLoading || !["admin", "superadmin"].includes(user?.role)) return null;
+  if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
+
+  const visibleSections = sections.filter((s) => !s.adminOnly || isAdmin);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
@@ -44,7 +50,7 @@ export default function AdminPage() {
         <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">Admin</h1>
         <p className="text-gray-500 text-sm mb-8">Manage your shop&apos;s products, delivery zones, and orders.</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {sections.map(({ href, icon: Icon, title, description }) => (
+          {visibleSections.map(({ href, icon: Icon, title, description }) => (
             <Link
               key={href}
               href={href}

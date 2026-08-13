@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { FaTachometerAlt, FaTimes, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
+import { FaTachometerAlt, FaTimes, FaSignOutAlt, FaUserCircle, FaGlobe } from "react-icons/fa";
 import { baseNav, adminNav, marketplaceNav, posNav } from "./dashboardNav";
 
 const POS_ROLES = ["superadmin", "admin", "staff", "technician"];
@@ -124,6 +124,15 @@ export default function Sidebar({ open, onClose }) {
           </>
         )}
 
+        {["staff"].includes(user?.role) && (
+          <>
+            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Marketplace</p>
+            {marketplaceNav.filter((n) => n.href !== "/dashboard/commerce/inventory").map((item) => (
+              <SidebarLink key={item.href} {...item} active={isActive(item.href)} onClick={onClose} />
+            ))}
+          </>
+        )}
+
         {isAdmin && (
           <>
             <p className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Admin</p>
@@ -140,6 +149,13 @@ export default function Sidebar({ open, onClose }) {
           <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{user?.name}</p>
           <p className="text-xs text-gray-500 truncate capitalize">{roleLabel}</p>
         </div>
+        <Link
+          href="/"
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+        >
+          <FaGlobe size={13} />
+          View Website
+        </Link>
         <Link
           href="/dashboard/settings"
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"

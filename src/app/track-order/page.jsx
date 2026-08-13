@@ -106,6 +106,12 @@ export default function TrackOrderPage() {
                 <div>
                   <p className="text-xs text-gray-400 dark:text-slate-500">Order Number</p>
                   <p className="font-display font-bold text-lg text-gray-900 dark:text-white">{order.orderNumber}</p>
+                  {order.trackingNumber && (
+                    <>
+                      <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">Tracking Number</p>
+                      <p className="font-mono text-sm font-semibold text-gray-900 dark:text-white">{order.trackingNumber}</p>
+                    </>
+                  )}
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badge.classes}`}>{badge.label}</span>
               </div>
@@ -142,6 +148,29 @@ export default function TrackOrderPage() {
                   <p className="text-gray-700 dark:text-slate-300">{order.customer.name}</p>
                   <p className="text-gray-500 dark:text-slate-400">{order.customer.phone}</p>
                   <p className="text-gray-500 dark:text-slate-400">{order.customer.address}</p>
+                </div>
+              )}
+
+              {(order.trackingHistory || []).length > 0 && (
+                <div className="mt-6">
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">Tracking History</p>
+                  <ol className="relative border-l border-gray-200 dark:border-slate-700 ml-2 space-y-6">
+                    {[...order.trackingHistory].reverse().map((h, i) => (
+                      <li key={i} className="ml-6">
+                        <span className="absolute -left-[9px] mt-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 bg-brand-500" />
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${(STATUS_STYLES[h.status] || STATUS_STYLES.pending).classes}`}>
+                            {(STATUS_STYLES[h.status] || STATUS_STYLES.pending).label}
+                          </span>
+                          <span className="text-xs text-gray-400 dark:text-slate-500">
+                            {new Date(h.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}
+                          </span>
+                        </div>
+                        {h.note && <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">{h.note}</p>}
+                        {h.location && <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500">{h.location}</p>}
+                      </li>
+                    ))}
+                  </ol>
                 </div>
               )}
             </div>

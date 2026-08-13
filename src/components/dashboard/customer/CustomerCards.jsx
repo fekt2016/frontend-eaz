@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaServer, FaGlobe, FaShoppingBag, FaTools } from "react-icons/fa";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { formatGhs } from "@/lib/shop";
 
 export function fmtDate(d) {
@@ -134,7 +135,10 @@ const REPAIR_STATUS = {
 export function ShopOrderCard({ order }) {
   const items = order.items?.reduce((n, i) => n + (i.qty || 0), 0) || 0;
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition">
+    <Link
+      href={`/dashboard/orders/${order._id}`}
+      className="block bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center flex-shrink-0">
@@ -150,16 +154,24 @@ export function ShopOrderCard({ order }) {
           <p className="text-sm font-semibold text-gray-900 dark:text-white mt-2">{formatGhs(order.total)}</p>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
 export function RepairCard({ job }) {
+  const { user } = useAuth();
+  const isStaff = ["superadmin", "admin", "staff", "technician"].includes(user?.role);
+  // Staff see the POS job detail so they can act on the job; customers land on
+  // the public tracking page.
+  const href = isStaff && job?._id
+    ? `/dashboard/pos/jobs/${job._id}`
+    : job.trackingToken ? `/track/${job.trackingToken}` : "#";
+
   const badge = REPAIR_STATUS[job.status] || REPAIR_STATUS.received;
   const device = [job.deviceBrand, job.deviceModel].filter(Boolean).join(" ") || "Device";
   return (
     <Link
-      href={job.trackingToken ? `/track/${job.trackingToken}` : "#"}
+      href={href}
       className="block bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition"
     >
       <div className="flex items-start justify-between gap-3">

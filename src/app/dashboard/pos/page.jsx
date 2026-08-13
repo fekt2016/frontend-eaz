@@ -73,7 +73,7 @@ export default function PosRoot() {
   const [loading, setLoading] = useState(true);
   const [tab,     setTab]     = useState("mine"); // 'mine' | 'all'
 
-  const showJobs = !!user && ["technician", "admin"].includes(user.role);
+  const showJobs = !!user && ["technician", "admin", "staff"].includes(user.role);
 
   useEffect(() => {
     if (authLoading) return;

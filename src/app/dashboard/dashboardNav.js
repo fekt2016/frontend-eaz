@@ -41,7 +41,6 @@ export const posNav = [
   { label: "Dashboard",  href: "/dashboard/pos/dashboard", icon: FaHome,     roles: ["superadmin","admin","staff","technician"] },
   { label: "My Jobs",    href: "/dashboard/pos",           icon: FaWrench,   roles: ["technician"] },
   { label: "Jobs",       href: "/dashboard/pos/jobs",      icon: FaWrench,   roles: ["superadmin","staff"] },
-  { label: "Customers",  href: "/dashboard/pos/customers", icon: FaUsers,    roles: ["superadmin","staff"] },
   { label: "Orders",     href: "/dashboard/pos/orders",    icon: FaShoppingBag, roles: ["superadmin","admin","staff"] },
   { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: FaTruck,    roles: ["superadmin","staff"] },
   { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: FaReceipt,  roles: ["superadmin","staff"] },

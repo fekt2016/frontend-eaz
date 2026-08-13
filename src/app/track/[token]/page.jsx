@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { formatPhoneInput } from "@/lib/sanitize";
-import { FaSpinner, FaCheckCircle, FaPhone, FaWrench } from "react-icons/fa";
+import { formatGhs } from "@/lib/shop";
+import { FaSpinner, FaCheckCircle, FaPhone, FaWrench, FaPlus, FaMinus, FaTrash, FaSearch, FaMotorcycle } from "react-icons/fa";
 
 const inputCls =
   "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-900";
@@ -37,14 +38,24 @@ export default function TrackRepairPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Part catalogue + cart
+  const [catalogue, setCatalogue] = useState([]);
+  const [catQuery, setCatQuery] = useState("");
+  const [cart, setCart] = useState([]); // { partId, name, sku, unitPriceGhs, quantity, stock }
+  const [zones, setZones] = useState([]);
+  const [zoneId, setZoneId] = useState("");
+
   // Order form state
-  const [activePartId, setActivePartId] = useState(null);
-  const [qty, setQty] = useState(1);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [placing, setPlacing] = useState(false);
   const [orderError, setOrderError] = useState("");
+
+  // Outstanding-balance payment state
+  const [balancePhone, setBalancePhone] = useState("");
+  const [balancePaying, setBalancePaying] = useState(false);
+  const [balanceError, setBalanceError] = useState("");
 
   const load = () => {
     setLoading(true);
@@ -60,24 +71,70 @@ export default function TrackRepairPage() {
 
   useEffect(() => { if (job?.customerName && !name) setName(job.customerName); }, [job]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const canOrder = job && ORDERABLE.includes(job.status) && (job.parts || []).length > 0;
+  const canOrder = job && ORDERABLE.includes(job.status);
 
-  const openOrder = (part) => {
-    setActivePartId(part.id);
-    setQty(1);
-    setOrderError("");
+  // Load the orderable parts catalogue + shipping zones whenever ordering is open.
+  useEffect(() => {
+    if (!canOrder) return;
+    api.get("/track/parts").then((r) => setCatalogue(r.data || [])).catch(() => {});
+    if (job?.dropoff === "rider") {
+      api.get("/delivery-zones").then((r) => {
+        const list = r.data || [];
+        setZones(list);
+        if (list.length === 1) setZoneId(list[0]._id);
+      }).catch(() => {});
+    }
+  }, [canOrder]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const filteredCatalogue = useMemo(() => {
+    const q = catQuery.trim().toLowerCase();
+    if (!q) return catalogue;
+    return catalogue.filter(
+      (p) => p.name.toLowerCase().includes(q) || (p.sku || "").toLowerCase().includes(q)
+    );
+  }, [catalogue, catQuery]);
+
+  const selectedZone = zones.find((z) => z._id === zoneId);
+
+  const addToCart = (part) => {
+    setCart((prev) => {
+      const existing = prev.find((i) => i.partId === part._id);
+      if (existing) {
+        if (existing.quantity >= part.quantity) return prev;
+        return prev.map((i) => i.partId === part._id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prev, { partId: part._id, name: part.name, sku: part.sku || "", unitPriceGhs: part.sellingPrice, quantity: 1, stock: part.quantity }];
+    });
   };
+
+  const changeQty = (partId, delta) => {
+    setCart((prev) => prev.map((i) => {
+      if (i.partId !== partId) return i;
+      const next = i.quantity + delta;
+      if (next <= 0) return i;
+      if (next > i.stock) return i;
+      return { ...i, quantity: next };
+    }));
+  };
+
+  const removeFromCart = (partId) => setCart((prev) => prev.filter((i) => i.partId !== partId));
+
+  const partsSubtotalGhs = cart.reduce((sum, i) => sum + i.unitPriceGhs * i.quantity, 0);
+  const shippingPesewas = selectedZone && job?.dropoff === "rider" ? selectedZone.fee : 0;
+  const totalPesewas = partsSubtotalGhs * 100 + shippingPesewas;
 
   const submitOrder = async (e) => {
     e.preventDefault();
     setOrderError("");
+    if (cart.length === 0) { setOrderError("Select at least one part to order."); return; }
     if (!name.trim()) { setOrderError("Please enter your name."); return; }
     if (!phone.trim()) { setOrderError("Please enter the phone number on the receipt."); return; }
+    if (job?.dropoff === "rider" && zones.length > 0 && !zoneId) { setOrderError("Please select a shipping zone."); return; }
     setPlacing(true);
     try {
-      const res = await api.post(`/track/${token}/part-orders`, {
-        partLineId: activePartId,
-        quantity: qty,
+      const res = await api.post(`/track/${token}/orders`, {
+        items: cart.map((i) => ({ partId: i.partId, quantity: i.quantity })),
+        ...(zoneId && { shippingZoneId: zoneId }),
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim(),
@@ -86,6 +143,20 @@ export default function TrackRepairPage() {
     } catch (err) {
       setOrderError(err.message || "Unable to start payment. Please try again.");
       setPlacing(false);
+    }
+  };
+
+  const payBalance = async (e) => {
+    e.preventDefault();
+    setBalanceError("");
+    if (!balancePhone.trim()) { setBalanceError("Please enter the phone number on the receipt."); return; }
+    setBalancePaying(true);
+    try {
+      const res = await api.post(`/track/${token}/balance-payment`, { phone: balancePhone.trim() });
+      window.location.href = res.data.authorizationUrl;
+    } catch (err) {
+      setBalanceError(err.message || "Unable to start payment. Please try again.");
+      setBalancePaying(false);
     }
   };
 
@@ -157,6 +228,12 @@ export default function TrackRepairPage() {
                 <dd className="font-medium text-right max-w-[70%]">{job.repairWork}</dd>
               </div>
             )}
+            {job.dropoff === "rider" && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-gray-400 dark:text-slate-500">Pickup</dt>
+                <dd className="font-medium text-right max-w-[70%]">{job.pickupAddress || "Rider pickup arranged"}</dd>
+              </div>
+            )}
             {job.estimatedCompletion && (
               <div className="flex justify-between gap-4">
                 <dt className="text-gray-400 dark:text-slate-500">Estimated completion</dt>
@@ -194,100 +271,242 @@ export default function TrackRepairPage() {
                       <p className="font-display font-bold text-lg text-brand-500">GH₵{part.priceGhs * part.quantity}</p>
                       {canOrder && part.priceGhs > 0 && (
                         <button
-                          onClick={() => openOrder(part)}
+                          onClick={() => addToCart({ _id: part.id, name: part.name, sku: "", sellingPrice: part.priceGhs, quantity: 99 })}
                           className="mt-2 rounded-full bg-gray-900 dark:bg-brand-500 px-4 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
                         >
-                          Pay for part
+                          Add to order
                         </button>
                       )}
                     </div>
                   </div>
-
-                  {activePartId === part.id && (
-                    <form onSubmit={submitOrder} className="mt-5 space-y-4 rounded-xl bg-gray-50 dark:bg-slate-950 p-4">
-                      <div>
-                        <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Quantity</label>
-                        <div className="flex items-center gap-3">
-                          {[1, 2, 3].map((n) => (
-                            <button
-                              key={n}
-                              type="button"
-                              onClick={() => setQty(n)}
-                              className={`w-12 rounded-xl border py-2 text-sm font-semibold transition ${
-                                qty === n
-                                  ? "border-gray-900 bg-gray-900 text-white dark:border-brand-500 dark:bg-brand-500 dark:text-gray-900"
-                                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-500"
-                              }`}
-                            >
-                              {n}
-                            </button>
-                          ))}
-                          <span className="text-sm text-gray-400 dark:text-slate-500 ml-auto">
-                            Total: <span className="font-semibold text-gray-900 dark:text-white">GH₵{part.priceGhs * qty}</span>
-                          </span>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Your name</label>
-                        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className={inputCls} />
-                      </div>
-                      <div>
-                        <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Phone on receipt</label>
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
-                          placeholder="024 000 0000"
-                          className={inputCls}
-                          required
-                        />
-                        <p className="mt-1.5 text-xs text-gray-400 dark:text-slate-500">Must match the phone number on your repair receipt.</p>
-                      </div>
-                      <div>
-                        <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Email <span className="font-normal text-gray-400 dark:text-slate-500">(optional — for faster updates)</span></label>
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="you@example.com"
-                          className={inputCls}
-                        />
-                      </div>
-                      {orderError && <p className="text-sm text-red-600 dark:text-red-400">{orderError}</p>}
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setActivePartId(null)}
-                          className="rounded-full border border-gray-200 dark:border-slate-700 px-4 py-2.5 text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={placing}
-                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 dark:bg-brand-500 py-2.5 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
-                        >
-                          {placing ? <FaSpinner size={13} className="animate-spin" /> : <FaPhone size={12} />}
-                          {placing ? "Opening Paystack…" : "Continue to payment"}
-                        </button>
-                      </div>
-                    </form>
-                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Part order history */}
-        {(job.partOrders || []).length > 0 && (
+        {/* Payment section — catalogue + cart + shipping */}
+        {canOrder && (
+          <div className="mt-8">
+            <h2 className="font-display font-bold text-xl mb-1">Order parts &amp; pay</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
+              {job.dropoff === "rider"
+                ? "Pick the parts you need and we'll include the rider shipping to your pickup address."
+                : "Pick the parts you need and pay now — we'll have them ready when your device is with us."}
+            </p>
+
+            {/* Catalogue */}
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+              <div className="relative">
+                <FaSearch size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+                <input
+                  value={catQuery}
+                  onChange={(e) => setCatQuery(e.target.value)}
+                  placeholder="Search parts (screen, battery, charging port…)"
+                  className={`${inputCls} pl-10`}
+                />
+              </div>
+
+              {filteredCatalogue.length === 0 ? (
+                <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
+                  {catalogue.length === 0
+                    ? "No parts are available to order right now. Call us on 024 438 8190 and we&apos;ll sort it out."
+                    : "No parts match your search."}
+                </p>
+              ) : (
+                <ul className="mt-4 divide-y divide-gray-100 dark:divide-slate-800">
+                  {filteredCatalogue.map((p) => {
+                    const inCart = cart.find((i) => i.partId === p._id);
+                    const outOfStock = p.quantity <= 0;
+                    return (
+                      <li key={p._id} className="flex items-center justify-between gap-4 py-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{p.name}</p>
+                          <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                            {p.sku ? `${p.sku} · ` : ""}GH₵{p.sellingPrice}{p.quantity <= 10 ? ` · only ${p.quantity} left` : ""}
+                          </p>
+                        </div>
+                        {outOfStock ? (
+                          <span className="text-xs font-semibold text-gray-400 dark:text-slate-500">Out of stock</span>
+                        ) : inCart ? (
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => changeQty(p._id, -1)} className="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                              <FaMinus size={10} />
+                            </button>
+                            <span className="w-6 text-center text-sm font-semibold">{inCart.quantity}</span>
+                            <button type="button" onClick={() => changeQty(p._id, 1)} className="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                              <FaPlus size={10} />
+                            </button>
+                            <button type="button" onClick={() => removeFromCart(p._id)} className="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition" aria-label="Remove">
+                              <FaTrash size={11} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button type="button" onClick={() => addToCart(p)} className="rounded-full bg-gray-900 dark:bg-brand-500 px-4 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
+                            Add
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            {/* Checkout */}
+            <form onSubmit={submitOrder} className="mt-6 space-y-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+              {cart.length > 0 && (
+                <div className="rounded-xl bg-gray-50 dark:bg-slate-950 p-4 space-y-2">
+                  {cart.map((i) => (
+                    <div key={i.partId} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-700 dark:text-slate-300">{i.name} <span className="text-gray-400 dark:text-slate-500">× {i.quantity}</span></span>
+                      <span className="font-semibold">GH₵{i.unitPriceGhs * i.quantity}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-200 dark:border-slate-800">
+                    <span className="text-gray-500 dark:text-slate-400">Subtotal</span>
+                    <span className="font-medium">GH₵{partsSubtotalGhs}</span>
+                  </div>
+                  {job.dropoff === "rider" && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500 dark:text-slate-400">Rider shipping</span>
+                      <span className="font-medium">{shippingPesewas > 0 ? formatGhs(shippingPesewas) : "—"}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-base font-semibold pt-2 border-t border-gray-200 dark:border-slate-800">
+                    <span>Total</span>
+                    <span className="text-brand-500">GH₵{(totalPesewas / 100).toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
+
+              {job.dropoff === "rider" && zones.length > 0 && (
+                <div>
+                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-slate-300">
+                    <FaMotorcycle className="text-brand-500" /> Shipping zone
+                  </label>
+                  <select
+                    value={zoneId}
+                    onChange={(e) => setZoneId(e.target.value)}
+                    className={`${inputCls} cursor-pointer`}
+                  >
+                    <option value="">Select your location</option>
+                    {zones.map((z) => (
+                      <option key={z._id} value={z._id}>{z.name} — {formatGhs(z.fee)} ({z.estimatedDays} day{z.estimatedDays > 1 ? "s" : ""})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Your name</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className={inputCls} />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Phone on receipt</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
+                  placeholder="024 000 0000"
+                  className={inputCls}
+                  required
+                />
+                <p className="mt-1.5 text-xs text-gray-400 dark:text-slate-500">Must match the phone number on your repair receipt.</p>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Email <span className="font-normal text-gray-400 dark:text-slate-500">(optional — for faster updates)</span></label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className={inputCls}
+                />
+              </div>
+              {orderError && <p className="text-sm text-red-600 dark:text-red-400">{orderError}</p>}
+              <button
+                type="submit"
+                disabled={placing || cart.length === 0}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 dark:bg-brand-500 py-3 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
+              >
+                {placing ? <FaSpinner size={13} className="animate-spin" /> : <FaPhone size={12} />}
+                {placing ? "Opening Paystack…" : cart.length === 0 ? "Add a part to continue" : `Pay ${(totalPesewas / 100).toFixed(2)} now`}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Outstanding-balance payment — for jobs with labour/diagnosis fees
+            (or any balance) the customer can settle it online with card or MoMo. */}
+        {job.canPayBalance && (
+          <div className="mt-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+            <h2 className="font-display font-bold text-xl mb-1">Pay outstanding balance</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-5">
+              {job.dropoff === "rider"
+                ? "Settle the remaining balance for your repair (parts, diagnosis and labour)."
+                : "Settle the remaining balance for your repair (parts, diagnosis and labour)."}
+            </p>
+
+            <div className="rounded-xl bg-gray-50 dark:bg-slate-950 p-4 mb-5 flex items-center justify-between">
+              <span className="text-sm text-gray-600 dark:text-slate-300">Outstanding balance</span>
+              <span className="font-display font-bold text-lg text-brand-500">{formatGhs(job.balanceDuePesewas)}</span>
+            </div>
+
+            <form onSubmit={payBalance} className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Phone on receipt</label>
+                <input
+                  type="tel"
+                  value={balancePhone}
+                  onChange={(e) => setBalancePhone(formatPhoneInput(e.target.value))}
+                  placeholder="024 000 0000"
+                  className={inputCls}
+                  required
+                />
+                <p className="mt-1.5 text-xs text-gray-400 dark:text-slate-500">Must match the phone number on your repair receipt.</p>
+              </div>
+              {balanceError && <p className="text-sm text-red-600 dark:text-red-400">{balanceError}</p>}
+              <button
+                type="submit"
+                disabled={balancePaying}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 dark:bg-brand-500 py-3 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
+              >
+                {balancePaying ? <FaSpinner size={13} className="animate-spin" /> : <FaCheckCircle size={12} />}
+                {balancePaying ? "Opening Paystack…" : `Pay ${formatGhs(job.balanceDuePesewas)} now`}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Order history */}
+        {(job.partOrders || []).length > 0 || (job.repairOrders || []).length > 0 ? (
           <div className="mt-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
             <div className="px-6 pt-5">
-              <h2 className="font-display font-bold text-lg">Part orders</h2>
+              <h2 className="font-display font-bold text-lg">Orders &amp; payments</h2>
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Payments you&apos;ve made for this repair.</p>
             </div>
             <ul className="divide-y divide-gray-100 dark:divide-slate-800 mt-3">
-              {job.partOrders.map((o) => {
+              {(job.repairOrders || []).map((o) => {
+                const badge = ORDER_STATUS[o.status] || ORDER_STATUS.pending;
+                const names = (o.items || []).map((i) => `${i.partName} ×${i.quantity}`).join(", ");
+                return (
+                  <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-4 text-sm">
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-white truncate">{names}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">
+                        {o.shippingFeePesewas > 0 ? "Parts + rider shipping · " : ""}
+                        {new Date(o.createdAt).toLocaleDateString("en-GH")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>{badge.label}</span>
+                      <span className="font-semibold">GH₵{(o.totalPesewas / 100).toFixed(2)}</span>
+                    </div>
+                  </li>
+                );
+              })}
+              {(job.partOrders || []).map((o) => {
                 const badge = ORDER_STATUS[o.status] || ORDER_STATUS.pending;
                 return (
                   <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-4 text-sm">
@@ -304,7 +523,7 @@ export default function TrackRepairPage() {
               })}
             </ul>
           </div>
-        )}
+        ) : null}
 
         <div className="mt-10 text-center">
           <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">Questions about your repair? Call us on <span className="font-medium text-gray-600 dark:text-slate-300">024 438 8190</span></p>

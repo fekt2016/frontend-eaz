@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
+import { FaPaperPlane } from "react-icons/fa6";
 import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 
@@ -46,12 +47,17 @@ export default function AdminOrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
+  const [trackStatus, setTrackStatus] = useState("processing");
+  const [trackNote, setTrackNote] = useState("");
+  const [trackLocation, setTrackLocation] = useState("");
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin"].includes(user?.role)) router.replace("/dashboard");
+    if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
   }, [user, authLoading, router]);
 
   const load = () => {
-    if (authLoading || !["admin", "superadmin"].includes(user?.role)) return;
+    if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return;
     api
       .get(`/orders/${id}`)
       .then((res) => setOrder(res.data))
@@ -64,7 +70,7 @@ export default function AdminOrderDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, authLoading, user]);
 
-  if (authLoading || !["admin", "superadmin"].includes(user?.role)) return null;
+  if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
 
   const handleStatus = async (status) => {
     setUpdating(true);
@@ -75,6 +81,25 @@ export default function AdminOrderDetailPage() {
       alert(err.message || "Update failed");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleTrackingUpdate = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.post(`/orders/${id}/tracking`, {
+        status: trackStatus,
+        note: trackNote,
+        location: trackLocation,
+      });
+      setTrackNote("");
+      setTrackLocation("");
+      load();
+    } catch (err) {
+      alert(err.message || "Update failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -105,6 +130,7 @@ export default function AdminOrderDetailPage() {
 
   const zone = order.deliveryZone;
   const deliveryFee = zone?.fee != null ? zone.fee : order.deliveryFee;
+  const history = order.trackingHistory || [];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
@@ -113,6 +139,12 @@ export default function AdminOrderDetailPage() {
           <div>
             <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">{order.orderNumber}</h1>
             <p className="text-gray-500 text-sm">Placed {formatDate(order.createdAt)}</p>
+            {order.trackingNumber && (
+              <p className="text-gray-500 text-sm mt-0.5">
+                Tracking number{" "}
+                <span className="font-mono font-semibold text-gray-900">{order.trackingNumber}</span>
+              </p>
+            )}
           </div>
           <span className={`text-xs font-medium px-3 py-1.5 rounded-full capitalize ${statusColors[order.status] || "bg-gray-100 text-gray-600"}`}>
             {order.status}
@@ -156,7 +188,7 @@ export default function AdminOrderDetailPage() {
           {order.paidAt && <Row label="Paid At" value={formatDate(order.paidAt)} />}
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Update Status</h2>
           <div className="flex flex-wrap gap-2">
             {STATUSES.map((s) => (
@@ -174,6 +206,77 @@ export default function AdminOrderDetailPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 mb-6">
+          <h2 className="font-semibold text-gray-900 text-sm mb-3">Add tracking update</h2>
+          <form onSubmit={handleTrackingUpdate} className="space-y-3">
+            <div className="grid sm:grid-cols-2 gap-3">
+              <label className="block">
+                <span className="text-xs font-medium text-gray-500">Status</span>
+                <select
+                  value={trackStatus}
+                  onChange={(e) => setTrackStatus(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400/40"
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-gray-500">Location (optional)</span>
+                <input
+                  type="text"
+                  value={trackLocation}
+                  onChange={(e) => setTrackLocation(e.target.value)}
+                  placeholder="e.g. Accra depot"
+                  className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40"
+                />
+              </label>
+            </div>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-500">Note (optional)</span>
+              <textarea
+                value={trackNote}
+                onChange={(e) => setTrackNote(e.target.value)}
+                rows={2}
+                placeholder="e.g. Handed to courier for delivery"
+                className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40 resize-none"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition disabled:opacity-50"
+            >
+              <FaPaperPlane size={10} /> {saving ? "Saving…" : "Add tracking update"}
+            </button>
+          </form>
+        </div>
+
+        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+          <h2 className="font-semibold text-gray-900 text-sm mb-4">Tracking history</h2>
+          {history.length === 0 ? (
+            <p className="text-sm text-gray-400">No tracking updates yet.</p>
+          ) : (
+            <ol className="relative border-l border-gray-200 ml-2 space-y-6">
+              {[...history].reverse().map((h, i) => (
+                <li key={i} className="ml-6">
+                  <span className="absolute -left-[9px] mt-1 w-4 h-4 rounded-full border-2 border-white bg-brand-500" />
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-gray-900 capitalize">{h.status}</span>
+                    <span className="text-xs text-gray-400">{formatDate(h.timestamp)}</span>
+                  </div>
+                  {h.note && <p className="text-sm text-gray-600 mt-1">{h.note}</p>}
+                  {h.location && <p className="text-xs text-gray-400 mt-0.5">{h.location}</p>}
+                  {h.updatedBy?.name && (
+                    <p className="text-xs text-gray-400 mt-0.5">by {h.updatedBy.name} ({h.updatedBy.role})</p>
+                  )}
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       </div>
     </div>

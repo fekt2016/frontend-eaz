@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import {
   FaArrowLeft, FaExclamationTriangle, FaTrash, FaSearch,
-  FaPrint, FaCheck, FaSpinner, FaMobileAlt, FaCheckCircle, FaTimesCircle, FaWrench, FaLink,
+  FaPrint, FaCheck, FaSpinner, FaMobileAlt, FaCheckCircle, FaTimesCircle, FaWrench, FaLink, FaCreditCard,
 } from "react-icons/fa";
 import { formatPhoneInput } from "@/lib/sanitize";
 import { printRepairReceipt } from "@/lib/printReceipt";
@@ -30,7 +30,7 @@ const STATUS_COLORS = {
 export default function JobDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const isTechnician = user?.role === "technician" || user?.role === "admin";
+  const isTechnician = user?.role === "technician";
 
   const [job,      setJob]      = useState(null);
   const [loading,  setLoading]  = useState(true);
@@ -71,6 +71,15 @@ export default function JobDetailPage() {
   const [momoMsg,      setMomoMsg]      = useState("");
   const [momoLoading,  setMomoLoading]  = useState(false);
   const [pollTimer,    setPollTimer]    = useState(null);
+
+  // Card charge
+  const [cardLoading,  setCardLoading]  = useState(false);
+  const [cardStatus,   setCardStatus]   = useState(null); // null|'pending'|'success'|'failed'
+  const [cardRef,      setCardRef]      = useState("");
+  const [cardUrl,      setCardUrl]      = useState("");
+  const [cardMsg,      setCardMsg]      = useState("");
+  const [cardAmount,   setCardAmount]   = useState("");
+  const [cardTimer,    setCardTimer]    = useState(null);
 
   const fetchJob = useCallback(async () => {
     try {
@@ -267,6 +276,68 @@ export default function JobDetailPage() {
     setMomoAmount("");
   };
 
+  // ── Card charge ────────────────────────────────────────────────────────────
+  const initiateCard = async () => {
+    const effectiveAmount = cardAmount || (balanceDue > 0 ? balanceDue : "");
+    if (!effectiveAmount) return;
+    setCardLoading(true);
+    setCardStatus(null);
+    setCardMsg("");
+    try {
+      const res = await api.post(`/pos/jobs/${id}/card-charge`, {
+        amount: Number(effectiveAmount),
+      });
+      setCardRef(res.reference);
+      setCardUrl(res.authorizationUrl);
+      setCardStatus("pending");
+      setCardMsg(res.message || "Payment link created. Open it for the customer…");
+      if (res.authorizationUrl) window.open(res.authorizationUrl, "_blank", "noopener");
+      startCardPolling(res.reference);
+    } catch (err) {
+      setCardStatus("failed");
+      setCardMsg(err.message || "Failed to create card charge.");
+    } finally {
+      setCardLoading(false);
+    }
+  };
+
+  const startCardPolling = (ref) => {
+    // Poll every 4 seconds for up to 5 minutes
+    let attempts = 0;
+    const max = 75;
+    const timer = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await api.get(`/pos/jobs/${id}/card-charge/${ref}`);
+        const { status, message } = res;
+        if (status === "success") {
+          clearInterval(timer);
+          setCardStatus("success");
+          setCardMsg(`Payment confirmed! GH₵${res.amount} received.`);
+          await fetchJob(); // reload payment history
+        } else if (status === "failed" || status === "abandoned") {
+          clearInterval(timer);
+          setCardStatus("failed");
+          setCardMsg(message || "Payment was not completed.");
+        } else if (attempts >= max) {
+          clearInterval(timer);
+          setCardStatus("failed");
+          setCardMsg("Timed out. Ask customer to retry or open the link again.");
+        }
+      } catch { /* keep polling */ }
+    }, 4000);
+    setCardTimer(timer);
+  };
+
+  const cancelCard = () => {
+    if (cardTimer) clearInterval(cardTimer);
+    setCardStatus(null);
+    setCardRef("");
+    setCardUrl("");
+    setCardMsg("");
+    setCardAmount("");
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center h-48">
       <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-brand-400 rounded-full animate-spin" />
@@ -347,6 +418,18 @@ export default function JobDetailPage() {
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Fault</p>
               <p className="text-sm text-gray-600 dark:text-gray-300">{job.faultDescription}</p>
+              {job.dropoff && (
+                <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20">
+                  <div>
+                    <p className="text-xs font-semibold text-brand-600 dark:text-brand-400">
+                      {job.dropoff === "rider" ? "Rider pickup requested" : "Customer will bring device in"}
+                    </p>
+                    {job.dropoff === "rider" && job.pickupAddress && (
+                      <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{job.pickupAddress}</p>
+                    )}
+                  </div>
+                </div>
+              )}
               {job.requiresDiagnosis && (
                 <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
                   <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Diagnosis required</span>
@@ -916,6 +999,95 @@ export default function JobDetailPage() {
                 >
                   {momoLoading ? <FaSpinner className="animate-spin" size={12} /> : <FaMobileAlt size={12} />}
                   Send Payment Request
+                </button>
+              </div>
+            )}
+          </div>
+          )}
+
+          {/* Card Payment — teller/admin only */}
+          {!isTechnician && (balanceDue > 0 || cardStatus === "pending" || cardStatus === "success") && (
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 space-y-4 print:hidden">
+            <div className="flex items-center gap-2">
+              <FaCreditCard size={14} className="text-brand-600 dark:text-brand-400" />
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Charge Card (Paystack)</p>
+            </div>
+
+            {cardStatus === "success" ? (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
+                <FaCheckCircle size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-green-600 dark:text-green-400">Payment confirmed</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg}</p>
+                </div>
+                <button
+                  onClick={cancelCard}
+                  className="ml-auto text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white transition"
+                >
+                  New
+                </button>
+              </div>
+            ) : cardStatus === "failed" ? (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
+                <FaTimesCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-red-600 dark:text-red-400">Payment failed</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg}</p>
+                </div>
+                <button
+                  onClick={cancelCard}
+                  className="ml-auto text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white transition"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : cardStatus === "pending" ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/10 border border-brand-500/30">
+                  <FaSpinner size={16} className="text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">Waiting for customer…</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg || "The Paystack payment page is open in a new tab."}</p>
+                    {cardRef && <p className="text-xs text-gray-600 mt-0.5 font-mono break-all">Ref: {cardRef}</p>}
+                    {cardUrl && (
+                      <a
+                        href={cardUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20"
+                      >
+                        <FaLink size={10} /> Reopen payment page
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={cancelCard}
+                  className="w-full py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className={labelCls}>Amount (GH₵)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={cardAmount || (balanceDue > 0 ? balanceDue : "")}
+                    onChange={e => setCardAmount(e.target.value)}
+                    placeholder="0.00"
+                    className={inputCls}
+                  />
+                </div>
+                <button
+                  onClick={initiateCard}
+                  disabled={cardLoading || (balanceDue <= 0 && !cardAmount)}
+                  className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {cardLoading ? <FaSpinner className="animate-spin" size={12} /> : <FaCreditCard size={12} />}
+                  Charge Card
                 </button>
               </div>
             )}

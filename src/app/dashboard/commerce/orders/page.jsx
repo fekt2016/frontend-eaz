@@ -33,21 +33,39 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [updating, setUpdating] = useState(null);
 
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin"].includes(user?.role)) router.replace("/dashboard");
+    if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
   }, [user, authLoading, router]);
 
-  useEffect(() => {
-    if (authLoading || !["admin", "superadmin"].includes(user?.role)) return;
+  const load = () => {
     api
       .get("/orders")
       .then((res) => setOrders(res.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return;
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user]);
 
-  if (authLoading || !["admin", "superadmin"].includes(user?.role)) return null;
+  if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
+
+  const handleStatus = async (order, status) => {
+    setUpdating(order._id);
+    try {
+      await api.patch(`/orders/${order._id}`, { status });
+      load();
+    } catch (err) {
+      alert(err.message || "Update failed");
+    } finally {
+      setUpdating(null);
+    }
+  };
 
   const visible = filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
@@ -85,35 +103,66 @@ export default function AdminOrdersPage() {
             <p className="text-gray-400 text-sm">No orders here.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {visible.map((order) => (
-              <Link
-                key={order._id}
-                href={`/dashboard/commerce/orders/${order._id}`}
-                className="block p-4 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 transition"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-gray-900">{order.orderNumber}</p>
+          <div className="rounded-2xl border border-gray-100 bg-gray-50 overflow-hidden">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-200 dark:border-slate-800 bg-gray-0">
+                  <th className="px-4 py-3 font-semibold">Order</th>
+                  <th className="px-4 py-3 font-semibold">Name</th>
+                  <th className="px-4 py-3 font-semibold">Date</th>
+                  <th className="px-4 py-3 font-semibold">Total</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3 font-semibold text-right">Update</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((order) => (
+                  <tr
+                    key={order._id}
+                    className="border-b border-gray-100 last:border-0 hover:bg-gray-100 dark:hover:bg-slate-900 transition"
+                  >
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/dashboard/commerce/orders/${order._id}`}
+                        className="font-semibold text-gray-900 hover:text-brand-600"
+                      >
+                        {order.orderNumber || order._id.slice(-6)}
+                      </Link>
+                      {order.trackingNumber && (
+                        <span className="block text-xs text-gray-400 font-mono">{order.trackingNumber}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {order.customer?.name || "—"}
+                      {order.customer?.phone ? (
+                        <span className="block text-xs text-gray-400">{order.customer.phone}</span>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">{formatDate(order.createdAt)}</td>
+                    <td className="px-4 py-3 font-medium text-gray-900">{formatGhs(order.total)}</td>
+                    <td className="px-4 py-3">
                       <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize ${statusColors[order.status] || "bg-gray-100 text-gray-600"}`}>
                         {order.status}
                       </span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {order.customer?.name} · {order.customer?.phone}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">{formatDate(order.createdAt)}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-gray-900">{formatGhs(order.total)}</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {order.items?.reduce((n, i) => n + (i.qty || 0), 0) || 0} items
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={order.status}
+                        disabled={updating === order._id}
+                        onChange={(e) => handleStatus(order, e.target.value)}
+                        className="text-xs font-semibold px-2 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 capitalize cursor-pointer disabled:opacity-50"
+                      >
+                        {STATUSES.filter((s) => s !== "all").map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
