@@ -200,7 +200,7 @@ export default function PosOrdersPage() {
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     {order.orderType === "repair"
                       ? formatGhs(order.totalPesewas)
-                      : `GH₵${Number(order.amountGhs || 0).toFixed(2)}`}
+                      : formatGhs(order.amountGhs)}
                   </p>
                   <div className="flex items-center gap-2 justify-end">
                     {savingId === order._id && <FaSpinner className="animate-spin text-gray-400" size={11} />}

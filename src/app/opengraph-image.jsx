@@ -1,9 +1,12 @@
 import { ImageResponse } from "next/og";
+import { SITE_URL } from "@/lib/seo";
 
 export const runtime = "edge";
 export const alt = "EazWorld | Digital Agency in Accra, Ghana";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const SITE_HOST = new URL(SITE_URL).host;
 
 export default function OgImage() {
   return new ImageResponse(
@@ -78,7 +81,7 @@ export default function OgImage() {
               </div>
             ))}
           </div>
-          <span style={{ color: "#475569", fontSize: "16px" }}>eazworld.com</span>
+          <span style={{ color: "#475569", fontSize: "16px" }}>{SITE_HOST}</span>
         </div>
       </div>
     ),

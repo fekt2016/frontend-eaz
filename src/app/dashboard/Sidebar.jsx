@@ -40,7 +40,7 @@ export default function Sidebar({ open, onClose }) {
   const visiblePosNav = posNav.filter(n => !n.roles || n.roles.includes(user?.role));
 
   useEffect(() => {
-    if (user && ["superadmin", "admin"].includes(user.role)) {
+    if (user && ["superadmin", "admin", "staff"].includes(user.role)) {
       api.get("/pos/inventory?lowStock=true&limit=1")
         .then(r => setLowStockCount(r.total || 0))
         .catch(() => {});
@@ -105,7 +105,7 @@ export default function Sidebar({ open, onClose }) {
           </>
         )}
 
-        {isAdmin && (
+        {["admin", "superadmin", "staff"].includes(user?.role) && (
           <>
             <p className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Marketplace</p>
             {marketplaceNav.map((item) => (
@@ -120,15 +120,6 @@ export default function Sidebar({ open, onClose }) {
                   </span>
                 ) : undefined}
               />
-            ))}
-          </>
-        )}
-
-        {["staff"].includes(user?.role) && (
-          <>
-            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Marketplace</p>
-            {marketplaceNav.filter((n) => n.href !== "/dashboard/commerce/inventory").map((item) => (
-              <SidebarLink key={item.href} {...item} active={isActive(item.href)} onClick={onClose} />
             ))}
           </>
         )}

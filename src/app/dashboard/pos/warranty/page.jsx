@@ -28,7 +28,7 @@ function JobWarrantyRow({ job, warrantyStatus }) {
 
   return (
     <Link
-      href={`/pos/jobs/${job._id}`}
+      href={`/dashboard/pos/jobs/${job._id}`}
       className="flex items-center justify-between px-5 py-4 hover:bg-gray-100/40 dark:hover:bg-gray-800/40 transition border-b border-gray-200 dark:border-gray-800 last:border-0"
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -116,7 +116,7 @@ export default function WarrantyPage() {
               {expiringSoon.map(j => (
                 <Link
                   key={j._id}
-                  href={`/pos/jobs/${j._id}`}
+                  href={`/dashboard/pos/jobs/${j._id}`}
                   className="text-xs px-2.5 py-1 rounded-lg bg-brand-500/15 text-brand-300 hover:bg-brand-500/30 transition font-mono"
                 >
                   {j.jobNumber} · {daysLeft(j.warrantyExpires)}d

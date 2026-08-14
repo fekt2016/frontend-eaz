@@ -35,11 +35,15 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("token")?.value;
 
-  // ── Always allow: static assets, Next internals, API proxy
+  // ── Always allow: Next internals, API proxy, and real static assets ──────
+  // Only known static-file extensions bypass middleware, so URLs like
+  // /dashboard/foo.bar still hit the auth/maintenance guards.
+  const STATIC_EXT_RE =
+    /\.(?:ico|png|svg|jpg|jpeg|gif|webp|txt|xml|json|woff|woff2|webmanifest|map)$/i;
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
-    pathname.includes(".")             // static files (.ico, .png, .svg …)
+    STATIC_EXT_RE.test(pathname)
   ) {
     return NextResponse.next();
   }
@@ -100,10 +104,25 @@ export async function middleware(request) {
     "/dashboard/domain-orders",
     "/dashboard/users",
     "/dashboard/emails",
-    "/dashboard/commerce",
+    // Delivery Zones — admin/superadmin only. Inventory and Products are
+    // open to staff too (they manage parts + shop products in the marketplace).
+    "/dashboard/commerce/delivery-zones",
   ];
   if (token && ADMIN_DASHBOARD_PATHS.some((p) => pathname.startsWith(p))) {
     if (!ADMIN_ROLES.includes(userRole)) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  // Staff-accessible dashboard pages (marketplace). The backend gates shop
+  // order APIs to admin + staff, so staff may open the marketplace overview
+  // and shop orders — but not the admin-only commerce subpages above.
+  const STAFF_DASHBOARD_PATHS = [
+    "/dashboard/commerce",
+    "/dashboard/commerce/orders",
+  ];
+  if (token && STAFF_DASHBOARD_PATHS.some((p) => pathname.startsWith(p))) {
+    if (!["admin", "superadmin", "staff"].includes(userRole)) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }

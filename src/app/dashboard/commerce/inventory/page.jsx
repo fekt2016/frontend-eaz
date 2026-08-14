@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
 import {
@@ -28,8 +29,8 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
   const [category,   setCategory]  = useState(part?.category   || "Other");
   const [qty,        setQty]       = useState(part?.quantity   ?? 0);
   const [threshold,  setThreshold] = useState(part?.lowStockThreshold ?? 3);
-  const [costPrice,  setCostPrice] = useState(part?.costPrice  ?? "");
-  const [sellPrice,  setSellPrice] = useState(part?.sellingPrice ?? "");
+  const [costPrice,  setCostPrice] = useState(part?.costPrice  ? part.costPrice / 100 : "");
+  const [sellPrice,  setSellPrice] = useState(part?.sellingPrice ? part.sellingPrice / 100 : "");
   const [supplierId, setSupplierId]= useState(part?.supplier?._id || part?.supplier || "");
   const [compat,     setCompat]    = useState(part?.compatibleWith?.join(", ") || "");
   const [notes,      setNotes]     = useState(part?.notes      || "");
@@ -60,8 +61,8 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
         category,
         quantity: Number(qty),
         lowStockThreshold: Number(threshold),
-        costPrice: Number(costPrice),
-        sellingPrice: Number(sellPrice),
+        costPrice: Math.round(Number(costPrice) * 100),
+        sellingPrice: Math.round(Number(sellPrice) * 100),
         supplier: supplierId || undefined,
         compatibleWith: compat ? compat.split(",").map(s => s.trim()).filter(Boolean) : [],
         notes: notes || undefined,
@@ -418,8 +419,8 @@ function PartsTab() {
                     <span className="text-xs font-mono text-gray-500 hidden sm:block">{p.barcode || "—"}</span>
                     <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{p.category}</span>
                     <span className={`text-sm font-semibold hidden sm:block ${lowStockFlag ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">GH₵{p.costPrice.toLocaleString()}</span>
-                    <span className="text-sm text-brand-600 dark:text-brand-400 font-medium hidden sm:block">GH₵{p.sellingPrice.toLocaleString()}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">GH₵{(p.costPrice / 100).toLocaleString()}</span>
+                    <span className="text-sm text-brand-600 dark:text-brand-400 font-medium hidden sm:block">GH₵{(p.sellingPrice / 100).toLocaleString()}</span>
                     <div className="flex items-center gap-2 ml-auto sm:ml-0">
                       <button onClick={() => setModal(p)} className="text-gray-500 hover:text-brand-400 transition"><FaEdit size={13} /></button>
                       <button onClick={() => handleDelete(p._id)} className="text-gray-500 hover:text-red-400 transition"><FaTrash size={12} /></button>
@@ -533,7 +534,7 @@ function ProductsTab() {
               return (
                 <div key={product._id} className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-100/30 dark:hover:bg-gray-800/30 transition ${!product.isActive ? "opacity-70" : ""}`}>
                   {product.images?.[0] ? (
-                    <img src={product.images[0]} alt={product.name} className="h-10 w-10 rounded-xl object-cover bg-gray-100" />
+                    <Image src={product.images[0]} alt={product.name} width={40} height={40} className="h-10 w-10 rounded-xl object-cover bg-gray-100" />
                   ) : (
                     <div className="h-10 w-10 rounded-xl bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
                   )}

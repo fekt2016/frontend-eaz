@@ -1,3 +1,5 @@
+import { SITE_URL } from "@/lib/seo";
+
 export const metadata = {
   title: "Web Design Pricing — Accra, Ghana",
   description:
@@ -5,9 +7,9 @@ export const metadata = {
   openGraph: {
     title: "Web Design Pricing | EazWorld",
     description: "Landing pages from GHS 800, business websites from GHS 2,500 — Accra, Ghana.",
-    url: "https://eazworld.com/services/web-design",
+    url: `${SITE_URL}/services/web-design`,
   },
-  alternates: { canonical: "https://eazworld.com/services/web-design" },
+  alternates: { canonical: `${SITE_URL}/services/web-design` },
 };
 
 export default function WebDesignLayout({ children }) {

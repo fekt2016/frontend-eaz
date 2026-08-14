@@ -1,6 +1,5 @@
 import { serviceDetails } from "@/data/serviceDetails";
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://eazworld.com";
+import { SITE_URL } from "@/lib/seo";
 
 export async function generateMetadata({ params }) {
   const service = serviceDetails.find((s) => s.slug === params.slug);
@@ -18,10 +17,10 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: `${service.title} | EazWorld`,
       description: service.tagline || service.description,
-      url: `${BASE_URL}/services/${service.slug}`,
+      url: `${SITE_URL}/services/${service.slug}`,
       type: "website",
     },
-    alternates: { canonical: `${BASE_URL}/services/${service.slug}` },
+    alternates: { canonical: `${SITE_URL}/services/${service.slug}` },
   };
 }
 

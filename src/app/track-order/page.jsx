@@ -109,7 +109,12 @@ export default function TrackOrderPage() {
                   {order.trackingNumber && (
                     <>
                       <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">Tracking Number</p>
-                      <p className="font-mono text-sm font-semibold text-gray-900 dark:text-white">{order.trackingNumber}</p>
+                      <Link
+                        href={`/track/order/${order.trackingNumber}`}
+                        className="font-mono text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+                      >
+                        {order.trackingNumber}
+                      </Link>
                     </>
                   )}
                 </div>

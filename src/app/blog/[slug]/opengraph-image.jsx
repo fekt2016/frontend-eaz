@@ -1,8 +1,12 @@
 import { ImageResponse } from "next/og";
+import { SITE_URL } from "@/lib/seo";
 
 export const runtime = "edge";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const SITE_HOST = new URL(SITE_URL).host;
 
 const CATEGORY_COLORS = {
   "SEO":              "#10b981",
@@ -18,7 +22,7 @@ const CATEGORY_COLORS = {
 
 async function getPost(slug) {
   try {
-    const res = await fetch(`https://eazworld.com/api/v1/posts/${slug}`, {
+    const res = await fetch(`${API_BASE}/posts/${slug}`, {
       next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
@@ -112,7 +116,7 @@ export default async function BlogOgImage({ params }) {
             </div>
             <span style={{ color: "#94a3b8", fontSize: "18px", fontWeight: 700 }}>EazWorld</span>
           </div>
-          <span style={{ color: "#334155", fontSize: "16px" }}>eazworld.com/blog</span>
+          <span style={{ color: "#334155", fontSize: "16px" }}>{SITE_HOST}/blog</span>
         </div>
       </div>
     ),

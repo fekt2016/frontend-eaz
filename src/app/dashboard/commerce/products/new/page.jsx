@@ -12,10 +12,10 @@ export default function AdminNewProductPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin"].includes(user?.role)) router.replace("/dashboard");
+    if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
   }, [user, authLoading, router]);
 
-  if (authLoading || !["admin", "superadmin"].includes(user?.role)) return null;
+  if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
 
   const handleSubmit = async (data) => {
     setSubmitting(true);

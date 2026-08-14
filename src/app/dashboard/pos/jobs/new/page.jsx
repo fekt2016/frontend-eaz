@@ -99,7 +99,7 @@ export default function NewJobPage() {
     setSelectedParts(prev => {
       const exists = prev.find(p => p.id === part._id);
       if (exists) return prev.map(p => p.id === part._id ? { ...p, quantity: (p.quantity || 1) + 1 } : p);
-      return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: Number(part.sellingPrice) || 0 }];
+      return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: (Number(part.sellingPrice) || 0) / 100 }];
     });
     setPartQuery(""); setPartResults([]); setShowPartDrop(false);
   };
@@ -146,13 +146,14 @@ export default function NewJobPage() {
         customerId, deviceType, deviceBrand, deviceModel, imei, color,
         faultDescription: faultDesc, priority,
         parts: selectedParts.map(p => ({ partId: p.id, quantity: p.quantity })),
-        paymentAmount: payAmount ? Number(payAmount) : 0,
+        // Money is entered in cedis and sent as integer pesewas (×100).
+        paymentAmount: payAmount ? Math.round(Number(payAmount) * 100) : 0,
         paymentMethod: payMethod,
         paymentReference: payRef || undefined,
         assignedTo: assignedTo || undefined,
         notes: notes || undefined,
         requiresDiagnosis,
-        diagnosisFee: requiresDiagnosis ? (Number(diagnosisFee) || 0) : 0,
+        diagnosisFee: requiresDiagnosis ? Math.round((Number(diagnosisFee) || 0) * 100) : 0,
       });
 
       const jobId = res.data?._id;
@@ -432,7 +433,7 @@ export default function NewJobPage() {
                       {p.sku && <p className="text-xs text-gray-500 truncate">{p.sku}</p>}
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">GH₵{(Number(p.sellingPrice) || 0).toLocaleString()}</p>
+                      <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">GH₵{((Number(p.sellingPrice) || 0) / 100).toLocaleString()}</p>
                       <p className={`text-xs ${Number(p.quantity) <= 0 ? "text-red-500" : "text-gray-500"}`}>Stock: {p.quantity}</p>
                     </div>
                   </button>

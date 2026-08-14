@@ -6,6 +6,7 @@ import ServicesGrid from "@/components/home/ServicesGrid";
 import Testimonials from "@/components/home/Testimonials";
 import BlogPreview from "@/components/home/BlogPreview";
 import CtaSection from "@/components/home/CtaSection";
+import { SITE_URL } from "@/lib/seo";
 
 export const metadata = {
   title: "EazWorld | Web Design, SEO, Branding & Phone Repair in Accra, Ghana",
@@ -14,7 +15,7 @@ export const metadata = {
   openGraph: {
     title: "EazWorld | Digital Agency in Accra, Ghana",
     description: "Web design, SEO, paid ads, branding, hosting and phone repair — all from one team in Accra.",
-    url: "https://eazworld.com",
+    url: SITE_URL,
     siteName: "EazWorld",
     type: "website",
   },

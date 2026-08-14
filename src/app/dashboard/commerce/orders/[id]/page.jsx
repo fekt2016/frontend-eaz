@@ -142,7 +142,12 @@ export default function AdminOrderDetailPage() {
             {order.trackingNumber && (
               <p className="text-gray-500 text-sm mt-0.5">
                 Tracking number{" "}
-                <span className="font-mono font-semibold text-gray-900">{order.trackingNumber}</span>
+                <Link
+                  href={`/track/order/${order.trackingNumber}`}
+                  className="font-mono font-semibold text-brand-600 hover:underline"
+                >
+                  {order.trackingNumber}
+                </Link>
               </p>
             )}
           </div>

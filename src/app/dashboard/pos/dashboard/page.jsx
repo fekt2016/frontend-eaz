@@ -3,11 +3,99 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { formatGhs } from "@/lib/shop";
 import { useAuth } from "@/context/AuthContext";
 import {
   FaWrench, FaUsers, FaClock, FaCheckCircle,
   FaExclamationTriangle, FaPlus, FaBoxes, FaBell, FaSpinner, FaShoppingBag,
 } from "react-icons/fa";
+
+const ORDER_STATUS_COLORS = {
+  pending:    "bg-brand-500/15 text-brand-600 dark:text-brand-400",
+  paid:       "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  processing: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
+  shipped:    "bg-purple-500/15 text-purple-600 dark:text-purple-400",
+  delivered:  "bg-green-500/15 text-green-600 dark:text-green-400",
+  cancelled:  "bg-red-500/15 text-red-600 dark:text-red-400",
+};
+
+function fmtShortDate(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("en-GH", { day: "numeric", month: "short" });
+}
+
+// Recent shop orders + online repair-part orders — so staff see commerce
+// activity, not just repair jobs, on their dashboard.
+function RecentOrdersList({ shopOrders, partOrders, loading }) {
+  const isEmpty = !loading && shopOrders.length === 0 && partOrders.length === 0;
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
+        <Link href="/dashboard/pos/orders" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">View all →</Link>
+      </div>
+      {loading ? (
+        <div className="p-5 space-y-3">
+          {[...Array(3)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+        </div>
+      ) : isEmpty ? (
+        <div className="p-8 text-center text-gray-500 text-sm">No orders yet.</div>
+      ) : (
+        <div className="divide-y divide-gray-200 dark:divide-gray-800">
+          {shopOrders.map(o => (
+            <Link
+              key={o._id}
+              href={`/dashboard/commerce/orders/${o._id}`}
+              className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
+                  <FaShoppingBag size={11} className="text-brand-600 dark:text-brand-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate font-mono">{o.orderNumber}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    Shop · {(o.items || []).reduce((n, i) => n + (i.qty || 0), 0)} item(s) · {fmtShortDate(o.createdAt)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{formatGhs(o.total)}</span>
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${ORDER_STATUS_COLORS[o.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
+                  {o.status}
+                </span>
+              </div>
+            </Link>
+          ))}
+          {partOrders.map(o => (
+            <Link
+              key={o._id}
+              href="/dashboard/pos/orders"
+              className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
+                  <FaBoxes size={11} className="text-brand-600 dark:text-brand-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{o.partName || "Part order"}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    Repair part · {o.job?.jobNumber || "—"} · {fmtShortDate(o.createdAt)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${ORDER_STATUS_COLORS[o.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
+                  {o.status}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const STATUS_COLORS = {
   received:   "bg-blue-500/15 text-blue-600 dark:text-blue-400",
@@ -90,6 +178,11 @@ function MyDashboard({ user }) {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
+  const [shopOrders, setShopOrders]   = useState([]);
+  const [partOrders, setPartOrders]   = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+
+  const isTech = user.role === "technician";
 
   useEffect(() => {
     api.get("/pos/my-overview")
@@ -98,8 +191,19 @@ function MyDashboard({ user }) {
       .finally(() => setLoading(false));
   }, []);
 
+  // Staff (not technicians) also see recent commerce activity. These endpoints
+  // are gated to admin/staff on the backend, so technicians never call them.
+  useEffect(() => {
+    if (isTech) { setOrdersLoading(false); return; }
+    Promise.all([
+      api.get("/orders?limit=5").then(r => r.data || []).catch(() => []),
+      api.get("/pos/part-orders").then(r => (r.data || []).slice(0, 5)).catch(() => []),
+    ])
+      .then(([shop, parts]) => { setShopOrders(shop); setPartOrders(parts); })
+      .finally(() => setOrdersLoading(false));
+  }, [isTech]);
+
   const stats  = data?.stats;
-  const isTech = user.role === "technician";
 
   if (error) return <p className="text-red-600 dark:text-red-400 text-sm p-5">{error}</p>;
 
@@ -141,8 +245,8 @@ function MyDashboard({ user }) {
           ) : (
             <>
               <StatCard label="My Sales"      value={stats?.mySalesCount}                                     icon={FaShoppingBag} color="text-purple-600 dark:text-purple-400" sub="Products sold (all time)" />
-              <StatCard label="Sales Revenue" value={`GH₵${(stats?.mySalesRevenue || 0).toLocaleString()}`}   icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="From my sales" />
-              <StatCard label="Today's Sales" value={`GH₵${(stats?.myTodaySalesRevenue || 0).toLocaleString()}`} icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
+              <StatCard label="Sales Revenue" value={`GH₵${((stats?.mySalesRevenue || 0) / 100).toLocaleString()}`}   icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="From my sales" />
+              <StatCard label="Today's Sales" value={`GH₵${((stats?.myTodaySalesRevenue || 0) / 100).toLocaleString()}`} icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
               <StatCard label="Low Stock"     value={stats?.lowStockCount}                                    icon={FaBoxes}       color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-500"} sub="Parts below threshold" />
             </>
           )}
@@ -151,6 +255,11 @@ function MyDashboard({ user }) {
 
       {/* Recent jobs — tap to update */}
       <RecentJobsList jobs={data?.recentJobs} loading={loading} />
+
+      {/* Recent orders — staff only (technicians aren't authorized for orders) */}
+      {!isTech && (
+        <RecentOrdersList shopOrders={shopOrders} partOrders={partOrders} loading={ordersLoading} />
+      )}
     </div>
   );
 }
@@ -220,8 +329,8 @@ function FullDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Today's Revenue"  value={`GH₵${(stats?.todayRevenue || 0).toLocaleString()}`}  icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="Payments received today" />
-          <StatCard label="Total Revenue"    value={`GH₵${(stats?.totalRevenue  || 0).toLocaleString()}`}  icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="All time" />
+          <StatCard label="Today's Revenue"  value={`GH₵${((stats?.todayRevenue || 0) / 100).toLocaleString()}`}  icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="Payments received today" />
+          <StatCard label="Total Revenue"    value={`GH₵${((stats?.totalRevenue  || 0) / 100).toLocaleString()}`}  icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="All time" />
           <StatCard label="Jobs Today"       value={stats?.todayJobs}      icon={FaWrench}           sub="New intake today" />
           <StatCard label="Total Jobs"       value={stats?.totalJobs}      icon={FaWrench}           color="text-blue-600 dark:text-blue-400" sub="All time" />
           <StatCard label="Pending"          value={stats?.pendingJobs}    icon={FaClock}            color="text-brand-600 dark:text-brand-400" sub="In progress" />
@@ -243,7 +352,7 @@ function FullDashboard() {
                   <div
                     className="w-full rounded-t-md bg-brand-500/70 hover:bg-brand-500 transition"
                     style={{ height: `${(day.total / max) * 100}%`, minHeight: 4 }}
-                    title={`GH₵${day.total.toLocaleString()}`}
+                    title={`GH₵${(day.total / 100).toLocaleString()}`}
                   />
                   <span className="text-xs text-gray-500">
                     {new Date(day._id).toLocaleDateString("en-GH", { weekday: "short" })}

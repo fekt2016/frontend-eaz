@@ -107,7 +107,7 @@ export default function BookRepairPage() {
 
           <div className="rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 p-4 mb-5 text-left">
             <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2">Track your repair</p>
-            <p className="text-xs text-gray-600 dark:text-slate-300 break-all mb-3">eazworld.co/track/{result.trackingToken}</p>
+            <p className="text-xs text-gray-600 dark:text-slate-300 break-all mb-3">{typeof window !== "undefined" ? window.location.origin : ""}/track/{result.trackingToken}</p>
             <div className="flex gap-2">
               <Link
                 href={`/track/${result.trackingToken}`}

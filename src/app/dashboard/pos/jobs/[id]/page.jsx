@@ -6,7 +6,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import {
-  FaArrowLeft, FaExclamationTriangle, FaTrash, FaSearch,
+  FaArrowLeft, FaExclamationTriangle, FaTrash, FaSearch, FaPlus,
   FaPrint, FaCheck, FaSpinner, FaMobileAlt, FaCheckCircle, FaTimesCircle, FaWrench, FaLink, FaCreditCard,
 } from "react-icons/fa";
 import { formatPhoneInput } from "@/lib/sanitize";
@@ -53,6 +53,7 @@ export default function JobDetailPage() {
   const [partQuery,     setPartQuery]     = useState("");
   const [partResults,   setPartResults]   = useState([]);
   const [showPartDrop,  setShowPartDrop]  = useState(false);
+  const [showParts,     setShowParts]     = useState(false);
   const partRef = useRef(null);
 
   // Manual payment
@@ -89,17 +90,19 @@ export default function JobDetailPage() {
       setStatus(j.status);
       setDiagnosis(j.diagnosis || "");
       setRepairWork(j.repairWork || "");
-      setLaborCost(j.laborCost?.toString() || "0");
+      // Money arrives from the API in integer pesewas; edit inputs work in cedis.
+      setLaborCost(String((j.laborCost || 0) / 100));
       setNotes(j.notes || "");
-      setDiagnosisFee(j.diagnosisFee?.toString() || "0");
+      setDiagnosisFee(String((j.diagnosisFee || 0) / 100));
       setSelectedParts(j.parts?.map(p => ({
         id:          p._id || p.part?._id || Math.random().toString(36).slice(2),
         name:        p.name || p.part?.name || "",
         quantity:    p.quantity || 1,
-        cost:        p.priceAtTime || 0,
-        costAtTime:  p.costAtTime  || 0,
+        cost:        (p.priceAtTime || 0) / 100, // pesewas → cedis
+        costAtTime:  (p.costAtTime  || 0) / 100,
         sku:         p.part?.sku || "",
       })) || []);
+      if (j.parts?.length) setShowParts(true);
       setEstimatedCompletion(j.estimatedCompletion ? new Date(j.estimatedCompletion).toISOString().slice(0, 16) : "");
       setWarrantyDays(String(j.warrantyDays || 0));
       setWarrantyNotes(j.warrantyNotes || "");
@@ -130,7 +133,7 @@ export default function JobDetailPage() {
     setSelectedParts(prev => {
       const exists = prev.find(p => p.id === part._id);
       if (exists) return prev.map(p => p.id === part._id ? { ...p, quantity: p.quantity + 1 } : p);
-      return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: part.sellingPrice || 0 }];
+      return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: (Number(part.sellingPrice) || 0) / 100 }];
     });
     setPartQuery(""); setPartResults([]); setShowPartDrop(false);
   };
@@ -143,7 +146,7 @@ export default function JobDetailPage() {
   const totalParts     = selectedParts.reduce((s, p) => s + (p.cost || 0) * (p.quantity || 1), 0);
   const totalPartsCost = selectedParts.reduce((s, p) => s + (p.costAtTime || 0) * (p.quantity || 1), 0);
   const totalAmount    = (job?.requiresDiagnosis ? (Number(diagnosisFee) || 0) : 0) + totalParts + (Number(laborCost) || 0);
-  const totalPaid      = job?.payments?.reduce((s, p) => s + p.amount, 0) || 0;
+  const totalPaid      = (job?.payments?.reduce((s, p) => s + p.amount, 0) || 0) / 100; // pesewas → cedis
   const balanceDue     = Math.max(0, totalAmount - totalPaid);
   const grossProfit    = totalAmount - totalPartsCost;
   const marginPct      = totalAmount > 0 ? Math.round((grossProfit / totalAmount) * 100) : 0;
@@ -166,12 +169,13 @@ export default function JobDetailPage() {
     setError("");
     try {
       await api.patch(`/pos/jobs/${id}`, {
-        status, diagnosis, repairWork, laborCost: Number(laborCost) || 0, notes,
-        diagnosisFee: Number(diagnosisFee) || 0,
+        // Money entered in cedis → sent as integer pesewas (×100).
+        status, diagnosis, repairWork, laborCost: Math.round((Number(laborCost) || 0) * 100), notes,
+        diagnosisFee: Math.round((Number(diagnosisFee) || 0) * 100),
         estimatedCompletion: estimatedCompletion || undefined,
         warrantyDays:  Number(warrantyDays) || 0,
         warrantyNotes: warrantyNotes || undefined,
-        parts: selectedParts.map(p => ({ name: p.name, quantity: p.quantity, cost: p.cost, partId: p.id })),
+        parts: selectedParts.map(p => ({ name: p.name, quantity: p.quantity, cost: Math.round((Number(p.cost) || 0) * 100), partId: p.id })),
       });
       await fetchJob();
     } catch (err) {
@@ -187,7 +191,7 @@ export default function JobDetailPage() {
     setPayLoading(true);
     try {
       await api.post(`/pos/jobs/${id}/payments`, {
-        amount: Number(payAmount), method: payMethod,
+        amount: Math.round(Number(payAmount) * 100), method: payMethod, // cedis → pesewas
         reference: payRef || undefined,
       });
       setPayAmount(""); setPayRef("");
@@ -208,11 +212,13 @@ export default function JobDetailPage() {
     });
   };
 
+  // The receipt renders in cedis, so hand it cedis values (local state is
+  // already cedis; payment amounts come from the API in pesewas → ÷100).
   const handlePrint = () => printRepairReceipt(
     { ...job, repairWork, laborCost: Number(laborCost) || 0, diagnosisFee: Number(diagnosisFee) || 0,
       parts: selectedParts.map(p => ({ name: p.name, quantity: p.quantity, priceAtTime: p.cost || 0 })),
       status, estimatedCompletion },
-    job?.payments || []
+    (job?.payments || []).map(p => ({ ...p, amount: (p.amount || 0) / 100 }))
   );
 
   // ── MoMo charge ─────────────────────────────────────────────────────────────
@@ -226,7 +232,7 @@ export default function JobDetailPage() {
       const res = await api.post(`/pos/jobs/${id}/momo-charge`, {
         phone:    momoPhone.trim(),
         provider: momoProvider,
-        amount:   Number(effectiveAmount),
+        amount:   Math.round(Number(effectiveAmount) * 100), // cedis → pesewas
       });
       setMomoRef(res.reference);
       setMomoStatus("pending");
@@ -252,7 +258,7 @@ export default function JobDetailPage() {
         if (status === "success") {
           clearInterval(timer);
           setMomoStatus("success");
-          setMomoMsg(`Payment confirmed! GH₵${res.amount} received.`);
+          setMomoMsg(`Payment confirmed! GH₵${((res.amount || 0) / 100).toLocaleString()} received.`);
           await fetchJob(); // reload payment history
         } else if (status === "failed" || status === "abandoned") {
           clearInterval(timer);
@@ -285,7 +291,7 @@ export default function JobDetailPage() {
     setCardMsg("");
     try {
       const res = await api.post(`/pos/jobs/${id}/card-charge`, {
-        amount: Number(effectiveAmount),
+        amount: Math.round(Number(effectiveAmount) * 100), // cedis → pesewas
       });
       setCardRef(res.reference);
       setCardUrl(res.authorizationUrl);
@@ -313,7 +319,7 @@ export default function JobDetailPage() {
         if (status === "success") {
           clearInterval(timer);
           setCardStatus("success");
-          setCardMsg(`Payment confirmed! GH₵${res.amount} received.`);
+          setCardMsg(`Payment confirmed! GH₵${((res.amount || 0) / 100).toLocaleString()} received.`);
           await fetchJob(); // reload payment history
         } else if (status === "failed" || status === "abandoned") {
           clearInterval(timer);
@@ -433,7 +439,7 @@ export default function JobDetailPage() {
               {job.requiresDiagnosis && (
                 <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
                   <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Diagnosis required</span>
-                  <span className="text-xs text-purple-300">· GH₵{(job.diagnosisFee || 0).toLocaleString()} charged upfront</span>
+                  <span className="text-xs text-purple-300">· GH₵{((job.diagnosisFee || 0) / 100).toLocaleString()} charged upfront</span>
                 </div>
               )}
               {job.repairWork && (
@@ -590,7 +596,21 @@ export default function JobDetailPage() {
             </div>
           </div>
 
-          {/* Parts — search by name, SKU, or barcode */}
+          {/* Parts — hidden until the teller searches */}
+          {!showParts && selectedParts.length === 0 ? (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Parts</p>
+                <button
+                  type="button"
+                  onClick={() => setShowParts(true)}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition"
+                >
+                  <FaPlus size={9} /> Add parts
+                </button>
+              </div>
+            </div>
+          ) : (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50">
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Parts</p>
@@ -624,7 +644,7 @@ export default function JobDetailPage() {
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">GH₵{(p.sellingPrice || 0).toLocaleString()}</p>
+                          <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">GH₵{((p.sellingPrice || 0) / 100).toLocaleString()}</p>
                           <p className="text-xs text-gray-500">Stock: {p.quantity}</p>
                         </div>
                       </button>
@@ -663,6 +683,7 @@ export default function JobDetailPage() {
               )}
             </div>
           </div>
+          )}
 
           {/* Device photos */}
           <JobPhotos
@@ -1105,7 +1126,7 @@ export default function JobDetailPage() {
                       <p className="text-sm text-gray-900 dark:text-white capitalize">{p.method}</p>
                       <p className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString("en-GH")}</p>
                     </div>
-                    <p className="text-sm font-semibold text-green-600 dark:text-green-400">GH₵{p.amount.toLocaleString()}</p>
+                    <p className="text-sm font-semibold text-green-600 dark:text-green-400">GH₵{((p.amount || 0) / 100).toLocaleString()}</p>
                   </div>
                 ))}
               </div>

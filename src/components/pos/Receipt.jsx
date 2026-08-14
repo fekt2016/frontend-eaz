@@ -19,6 +19,9 @@ export function Receipt({ sale, shopName = "EazWorld Repair Shop", shopPhone = "
 
   if (!sale) return null;
 
+  // Sale money fields are integer pesewas; the receipt shows cedis.
+  const c = (n) => ((Number(n) || 0) / 100).toFixed(2);
+
   const date = new Date(sale.createdAt).toLocaleString("en-GH", {
     day: "2-digit", month: "short", year: "numeric",
     hour: "2-digit", minute: "2-digit",
@@ -83,7 +86,7 @@ export function Receipt({ sale, shopName = "EazWorld Repair Shop", shopPhone = "
               <tr key={i}>
                 <td className="pr-1 max-w-[120px] truncate">{item.name}</td>
                 <td className="text-right px-1">{item.quantity}</td>
-                <td className="text-right">{item.subtotal.toFixed(2)}</td>
+                <td className="text-right">{c(item.subtotal)}</td>
               </tr>
             ))}
           </tbody>
@@ -94,15 +97,15 @@ export function Receipt({ sale, shopName = "EazWorld Repair Shop", shopPhone = "
         {/* Totals */}
         <div className="text-[10px] space-y-0.5">
           {sale.discount > 0 && (
-            <Row label="Subtotal" value={`GH₵${sale.subtotal.toFixed(2)}`} />
+            <Row label="Subtotal" value={`GH₵${c(sale.subtotal)}`} />
           )}
           {sale.discount > 0 && (
-            <Row label="Discount" value={`-GH₵${sale.discount.toFixed(2)}`} />
+            <Row label="Discount" value={`-GH₵${c(sale.discount)}`} />
           )}
-          <Row label="TOTAL" value={`GH₵${sale.total.toFixed(2)}`} bold />
-          <Row label={`Paid (${sale.paymentMethod.toUpperCase()})`} value={`GH₵${sale.amountPaid.toFixed(2)}`} />
+          <Row label="TOTAL" value={`GH₵${c(sale.total)}`} bold />
+          <Row label={`Paid (${sale.paymentMethod.toUpperCase()})`} value={`GH₵${c(sale.amountPaid)}`} />
           {sale.changeDue > 0 && (
-            <Row label="Change" value={`GH₵${sale.changeDue.toFixed(2)}`} />
+            <Row label="Change" value={`GH₵${c(sale.changeDue)}`} />
           )}
         </div>
 

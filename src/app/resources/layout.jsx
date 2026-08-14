@@ -1,3 +1,5 @@
+import { SITE_URL } from "@/lib/seo";
+
 export const metadata = {
   title: "Free Resources — SEO Checklists, Templates & Guides",
   description:
@@ -5,9 +7,9 @@ export const metadata = {
   openGraph: {
     title: "Free Resources | EazWorld",
     description: "Practical SEO checklists, templates and guides for Ghanaian businesses.",
-    url: "https://eazworld.com/resources",
+    url: `${SITE_URL}/resources`,
   },
-  alternates: { canonical: "https://eazworld.com/resources" },
+  alternates: { canonical: `${SITE_URL}/resources` },
 };
 
 export default function ResourcesLayout({ children }) {

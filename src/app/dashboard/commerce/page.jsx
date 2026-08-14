@@ -13,7 +13,6 @@ const sections = [
     icon: FaBoxes,
     title: "Inventory",
     description: "Manage repair parts and shop products from one place.",
-    adminOnly: true,
   },
   {
     href: "/dashboard/commerce/delivery-zones",
@@ -47,8 +46,8 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
       <div className="mx-auto max-w-4xl">
-        <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">Admin</h1>
-        <p className="text-gray-500 text-sm mb-8">Manage your shop&apos;s products, delivery zones, and orders.</p>
+        <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">Marketplace</h1>
+        <p className="text-gray-500 text-sm mb-8">Manage your shop&apos;s products, inventory, and orders.</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {visibleSections.map(({ href, icon: Icon, title, description }) => (
             <Link

@@ -9,7 +9,7 @@ export default function ProductsRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading && ["admin", "superadmin"].includes(user?.role)) {
+    if (!authLoading && ["admin", "superadmin", "staff"].includes(user?.role)) {
       router.replace("/dashboard/commerce/inventory");
     }
   }, [user, authLoading, router]);

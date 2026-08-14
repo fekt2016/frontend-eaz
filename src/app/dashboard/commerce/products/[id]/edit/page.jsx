@@ -15,11 +15,11 @@ export default function AdminEditProductPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin"].includes(user?.role)) router.replace("/dashboard");
+    if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (authLoading || !["admin", "superadmin"].includes(user?.role)) return;
+    if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return;
     api
       .get("/products/all")
       .then((res) => {
@@ -30,7 +30,7 @@ export default function AdminEditProductPage() {
       .finally(() => setLoading(false));
   }, [id, authLoading, user]);
 
-  if (authLoading || !["admin", "superadmin"].includes(user?.role)) return null;
+  if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
 
   const handleSubmit = async (data) => {
     setSubmitting(true);

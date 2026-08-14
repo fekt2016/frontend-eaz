@@ -1,4 +1,5 @@
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://eazworld.com";
+import { SITE_URL } from "@/lib/seo";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 async function getPost(slug) {
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      url: `${BASE_URL}/blog/${post.slug}`,
+      url: `${SITE_URL}/blog/${post.slug}`,
       type: "article",
       publishedTime: post.publishedAt,
       authors: [post.author || "EazWorld Team"],
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }) {
       title: post.title,
       description: post.excerpt,
     },
-    alternates: { canonical: `${BASE_URL}/blog/${post.slug}` },
+    alternates: { canonical: `${SITE_URL}/blog/${post.slug}` },
   };
 }
 

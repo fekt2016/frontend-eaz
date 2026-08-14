@@ -216,6 +216,22 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 space-y-0.5">
 
+          {user && (
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 py-2.5 border-b border-gray-50 dark:border-slate-800"
+            >
+              <span className="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                {user.name?.charAt(0).toUpperCase()}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-gray-900 dark:text-white truncate">{user.name}</span>
+                <span className="block text-xs text-gray-400 dark:text-slate-500">Go to Dashboard</span>
+              </span>
+            </Link>
+          )}
+
           <Link href="/" className={`block py-2.5 text-sm font-medium border-b border-gray-50 dark:border-slate-800 ${pathname === "/" ? "text-brand-500" : "text-gray-700 dark:text-slate-300"}`} onClick={() => setMobileOpen(false)}>
             Home
           </Link>
@@ -260,9 +276,6 @@ export default function Navbar() {
 
           {user ? (
             <>
-              <Link href="/dashboard" className="block py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 border-b border-gray-50 dark:border-slate-800" onClick={() => setMobileOpen(false)}>
-                Dashboard
-              </Link>
               <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="block w-full text-left py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300">
                 Sign Out
               </button>

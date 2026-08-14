@@ -1,5 +1,4 @@
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.eazworld.co";
+export const SITE_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 export const SITE_NAME = "EazWorld";
 

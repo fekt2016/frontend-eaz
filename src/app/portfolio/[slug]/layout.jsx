@@ -1,6 +1,5 @@
 import { PROJECTS } from "@/data/portfolioData";
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://eazworld.com";
+import { SITE_URL } from "@/lib/seo";
 
 export async function generateMetadata({ params }) {
   const project = PROJECTS.find((p) => p.slug === params.slug);
@@ -20,7 +19,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: `${project.title} | EazWorld Case Study`,
       description,
-      url: `${BASE_URL}/portfolio/${project.slug}`,
+      url: `${SITE_URL}/portfolio/${project.slug}`,
       type: "article",
       images: project.image
         ? [{ url: project.image, width: 1200, height: 630, alt: project.title }]
@@ -31,7 +30,7 @@ export async function generateMetadata({ params }) {
       title: `${project.title} | EazWorld Case Study`,
       description,
     },
-    alternates: { canonical: `${BASE_URL}/portfolio/${project.slug}` },
+    alternates: { canonical: `${SITE_URL}/portfolio/${project.slug}` },
   };
 }
 

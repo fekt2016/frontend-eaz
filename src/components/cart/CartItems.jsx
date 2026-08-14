@@ -9,6 +9,8 @@ import { formatGhs } from "@/lib/shop";
 export default function CartItems() {
   const { items, removeItem, updateQty } = useCart();
 
+  const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
+
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
@@ -29,11 +31,12 @@ export default function CartItems() {
 
   return (
     <ul className="divide-y divide-gray-100 dark:divide-slate-800">
-      {items.map((item) => (
-        <li key={item.slug} className="flex gap-4 py-4">
+      {items.map((item) => {
+        const itemHref = href(item.slug);
+        const thumb = itemHref ? (
           <Link
-            href={`/shop/${item.slug}`}
-className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800"
+            href={itemHref}
+            className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800"
           >
             <Image
               src={item.image || "https://placehold.co/200x200/1e1b4b/ffffff?text=Product"}
@@ -43,16 +46,34 @@ className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border borde
               className="object-cover"
             />
           </Link>
+        ) : (
+          <div className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800">
+            <Image
+              src={item.image || "https://placehold.co/200x200/1e1b4b/ffffff?text=Part"}
+              alt={item.name}
+              fill
+              sizes="80px"
+              className="object-cover"
+            />
+          </div>
+        );
+        return (
+        <li key={item.slug} className="flex gap-4 py-4">
+          {thumb}
           <div className="flex flex-1 flex-col">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">{item.category}</p>
+                {itemHref ? (
                 <Link
-                  href={`/shop/${item.slug}`}
+                  href={itemHref}
                   className="text-sm font-semibold text-gray-900 dark:text-white hover:text-brand-500 transition line-clamp-1"
                 >
                   {item.name}
                 </Link>
+                ) : (
+                <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">{item.name}</p>
+                )}
               </div>
               <button
                 type="button"
@@ -89,7 +110,8 @@ className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border borde
             </div>
           </div>
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }

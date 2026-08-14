@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FaArrowLeft, FaBoxOpen, FaPaperPlane } from "react-icons/fa6";
+import { FaArrowLeft, FaArrowRight, FaBoxOpen, FaPaperPlane } from "react-icons/fa6";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
@@ -99,7 +99,13 @@ export default function CustomerOrderDetailPage() {
           <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">Placed {fmtDate(order.createdAt)}</p>
           {order.trackingNumber && (
             <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">
-              Tracking number <span className="font-mono font-semibold text-gray-700 dark:text-slate-300">{order.trackingNumber}</span>
+              Tracking number{" "}
+              <Link
+                href={`/track/order/${order.trackingNumber}`}
+                className="font-mono font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+              >
+                {order.trackingNumber}
+              </Link>
             </p>
           )}
         </div>
@@ -156,33 +162,33 @@ export default function CustomerOrderDetailPage() {
       )}
 
       <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 mb-6">
-        <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-4">Tracking</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h2 className="font-semibold text-sm text-gray-900 dark:text-white">Shipping Status</h2>
+          <StatusBadge status={order.status} />
+        </div>
         {history.length === 0 ? (
-          <p className="text-sm text-gray-400 dark:text-slate-500">No tracking updates yet.</p>
+          <p className="text-sm text-gray-400 dark:text-slate-500">Tracking information is not available yet.</p>
         ) : (
-          <ol className="relative border-l border-gray-100 dark:border-slate-800 ml-2 space-y-6">
-            {[...history].reverse().map((h, i) => (
-              <li key={i} className="ml-6">
-                <span className="absolute -left-[9px] mt-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 bg-brand-500" />
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={h.status} />
-                    <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">{h.status}</span>
-                  </div>
-                  <span className="text-xs text-gray-400 dark:text-slate-500">{fmtDate(h.timestamp)}</span>
-                </div>
-                {h.note && <p className="text-sm text-gray-600 dark:text-slate-300 mt-1">{h.note}</p>}
-                {h.location && (
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 inline-flex items-center gap-1">
-                    <FaBoxOpen size={10} /> {h.location}
-                  </p>
-                )}
-                {h.updatedBy?.name && (
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Updated by {h.updatedBy.name}</p>
-                )}
-              </li>
-            ))}
-          </ol>
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">{history[history.length - 1].status}</p>
+            {history[history.length - 1].note && (
+              <p className="text-sm text-gray-600 dark:text-slate-300">{history[history.length - 1].note}</p>
+            )}
+            {history[history.length - 1].location && (
+              <p className="text-xs text-gray-400 dark:text-slate-500 inline-flex items-center gap-1">
+                <FaBoxOpen size={10} /> {history[history.length - 1].location}
+              </p>
+            )}
+            <p className="text-xs text-gray-400 dark:text-slate-500">{fmtDate(history[history.length - 1].timestamp)}</p>
+          </div>
+        )}
+        {order.trackingNumber && (
+          <Link
+            href={`/track/order/${order.trackingNumber}`}
+            className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+          >
+            View full tracking details <FaArrowRight size={10} />
+          </Link>
         )}
       </div>
 

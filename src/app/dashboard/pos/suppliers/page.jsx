@@ -242,7 +242,7 @@ export default function SuppliersPage() {
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <Link
-                        href={`/pos/suppliers/${s._id}`}
+                        href={`/dashboard/pos/suppliers/${s._id}`}
                         className="flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 hover:text-brand-300 transition"
                       >
                         Parts <FaChevronRight size={9} />

@@ -144,18 +144,18 @@ export default function ReportsPage() {
         <>
           {/* Key stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Stat label="Total Revenue"     value={`GH₵${(stats?.totalRevenue || 0).toLocaleString()}`}  color="text-green-600 dark:text-green-400"  icon={FaMoneyBillWave} sub={`${stats?.totalPayments || 0} payments`} />
-            <Stat label="Today's Revenue"   value={`GH₵${(stats?.todayRevenue  || 0).toLocaleString()}`} color="text-brand-600 dark:text-brand-400"  icon={FaChartBar}      sub="Payments today" />
+            <Stat label="Total Revenue"     value={`GH₵${((stats?.totalRevenue || 0) / 100).toLocaleString()}`}  color="text-green-600 dark:text-green-400"  icon={FaMoneyBillWave} sub={`${stats?.totalPayments || 0} payments`} />
+            <Stat label="Today's Revenue"   value={`GH₵${((stats?.todayRevenue  || 0) / 100).toLocaleString()}`} color="text-brand-600 dark:text-brand-400"  icon={FaChartBar}      sub="Payments today" />
             <Stat label="Total Jobs"        value={stats?.totalJobs}        icon={FaWrench}    sub="All time" />
             <Stat label="New Today"         value={stats?.todayJobs}        icon={FaWrench}    sub="Jobs created today" color="text-blue-600 dark:text-blue-400" />
             <Stat label="In Progress"       value={stats?.pendingJobs}      icon={FaSpinner}   color="text-brand-600 dark:text-brand-400" sub="Active repairs" />
             <Stat label="Ready to Collect"  value={stats?.readyJobs}        icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="Awaiting pickup" />
             <Stat label="Customers"         value={stats?.totalCustomers}   icon={FaUsers}     sub="Registered" />
             <Stat label="Low Stock"         value={stats?.lowStockCount}    icon={FaExclamationTriangle} color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"} sub="Parts below threshold" />
-            <Stat label="Total Expenses"    value={`GH₵${(stats?.totalExpenses || 0).toLocaleString()}`} color="text-red-600 dark:text-red-400" icon={FaReceipt} sub="Running costs" />
+            <Stat label="Total Expenses"    value={`GH₵${((stats?.totalExpenses || 0) / 100).toLocaleString()}`} color="text-red-600 dark:text-red-400" icon={FaReceipt} sub="Running costs" />
             <Stat
               label="Net Profit"
-              value={`GH₵${(stats?.netProfit || 0).toLocaleString()}`}
+              value={`GH₵${((stats?.netProfit || 0) / 100).toLocaleString()}`}
               color={(stats?.netProfit || 0) >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}
               icon={FaBalanceScale}
               sub="Revenue minus expenses"
@@ -170,11 +170,11 @@ export default function ReportsPage() {
                 {daily.map(day => (
                   <div key={day._id} className="flex-1 min-w-[28px] flex flex-col items-center gap-1.5">
                     <p className="text-xs text-gray-600 whitespace-nowrap" style={{ fontSize: "9px" }}>
-                      GH₵{day.total >= 1000 ? `${(day.total/1000).toFixed(1)}k` : day.total.toLocaleString()}
+                      GH₵{day.total >= 100000 ? `${(day.total/100000).toFixed(1)}k` : (day.total/100).toLocaleString()}
                     </p>
                     <div
                       className="w-full rounded-t-lg bg-brand-500/70 hover:bg-brand-500 transition"
-                      title={`GH₵${day.total.toLocaleString()} · ${day.count} payment${day.count !== 1 ? "s" : ""}`}
+                      title={`GH₵${(day.total/100).toLocaleString()} · ${day.count} payment${day.count !== 1 ? "s" : ""}`}
                       style={{ height: `${Math.max(4, (day.total / maxDailyRevenue) * 100)}%` }}
                     />
                     <span className="text-gray-600 whitespace-nowrap" style={{ fontSize: "9px" }}>
@@ -201,7 +201,7 @@ export default function ReportsPage() {
                     <div key={e._id}>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-gray-600 dark:text-gray-300 capitalize">{e._id}</span>
-                        <span className="text-gray-500 dark:text-gray-400">GH₵{e.total.toLocaleString()} · {pct}%</span>
+                        <span className="text-gray-500 dark:text-gray-400">GH₵{(e.total/100).toLocaleString()} · {pct}%</span>
                       </div>
                       <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-red-400/60" style={{ width: `${pct}%` }} />
@@ -212,12 +212,12 @@ export default function ReportsPage() {
               </div>
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 flex justify-between text-sm">
                 <span className="text-gray-500 dark:text-gray-400">Total Expenses</span>
-                <span className="text-red-600 dark:text-red-400 font-semibold">GH₵{(stats?.totalExpenses || 0).toLocaleString()}</span>
+                <span className="text-red-600 dark:text-red-400 font-semibold">GH₵{((stats?.totalExpenses || 0) / 100).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm mt-1">
                 <span className="text-gray-500 dark:text-gray-400">Net Profit</span>
                 <span className={`font-bold ${(stats?.netProfit || 0) >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                  GH₵{(stats?.netProfit || 0).toLocaleString()}
+                  GH₵{((stats?.netProfit || 0) / 100).toLocaleString()}
                 </span>
               </div>
             </div>
@@ -239,7 +239,7 @@ export default function ReportsPage() {
                             {METHOD_ICONS[m._id] || "💳"} {m._id}
                             <span className="text-xs text-gray-500">({m.count})</span>
                           </span>
-                          <span className="text-gray-900 dark:text-white font-semibold">GH₵{m.total.toLocaleString()}</span>
+                          <span className="text-gray-900 dark:text-white font-semibold">GH₵{(m.total/100).toLocaleString()}</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
                           <div className="h-1.5 rounded-full bg-brand-500 transition-all" style={{ width: `${pct}%` }} />
@@ -281,7 +281,7 @@ export default function ReportsPage() {
                         <span className="flex-1 text-sm text-gray-600 dark:text-gray-300 truncate">{p._id}</span>
                         <span className="text-xs text-gray-500">{p.timesUsed}×</span>
                         <span className={`text-xs font-medium w-12 text-right ${margin >= 40 ? "text-green-600 dark:text-green-400" : margin >= 20 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>{margin}%</span>
-                        <span className="text-sm text-brand-600 dark:text-brand-400 font-semibold w-24 text-right">GH₵{p.revenue.toLocaleString()}</span>
+                        <span className="text-sm text-brand-600 dark:text-brand-400 font-semibold w-24 text-right">GH₵{(p.revenue/100).toLocaleString()}</span>
                       </div>
                     );
                   })}
@@ -306,7 +306,7 @@ export default function ReportsPage() {
                           </div>
                           <div className="flex items-center gap-3 flex-shrink-0">
                             <span className={`text-xs font-semibold ${pct >= 50 ? "text-green-600 dark:text-green-400" : pct >= 25 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>{pct}%</span>
-                            <span className="text-sm font-bold text-green-600 dark:text-green-400 w-24 text-right">GH₵{job.grossProfit.toLocaleString()}</span>
+                            <span className="text-sm font-bold text-green-600 dark:text-green-400 w-24 text-right">GH₵{(job.grossProfit/100).toLocaleString()}</span>
                           </div>
                         </div>
                         <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -372,7 +372,7 @@ export default function ReportsPage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">GH₵{jobTotal.toLocaleString()}</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">GH₵{(jobTotal/100).toLocaleString()}</p>
                         <p className="text-xs text-gray-500">{new Date(job.createdAt).toLocaleDateString("en-GH")}</p>
                       </div>
                     </Link>

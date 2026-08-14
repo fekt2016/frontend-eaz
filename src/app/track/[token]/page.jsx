@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { formatPhoneInput } from "@/lib/sanitize";
-import { formatGhs } from "@/lib/shop";
-import { FaSpinner, FaCheckCircle, FaPhone, FaWrench, FaPlus, FaMinus, FaTrash, FaSearch, FaMotorcycle } from "react-icons/fa";
+import { formatGhs, stockBadge } from "@/lib/shop";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useCart } from "@/context/CartContext";
+import { FaSpinner, FaCheckCircle, FaPhone, FaWrench, FaSearch, FaMotorcycle, FaCartPlus } from "react-icons/fa";
 
 const inputCls =
   "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-900";
@@ -33,6 +36,7 @@ export default function TrackRepairPage() {
   const { token } = useParams();
   const searchParams = useSearchParams();
   const justPaid = searchParams.get("paid") === "1";
+  const { addItem, openCart } = useCart();
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -73,28 +77,40 @@ export default function TrackRepairPage() {
 
   const canOrder = job && ORDERABLE.includes(job.status);
 
-  // Load the orderable parts catalogue + shipping zones whenever ordering is open.
+  const debouncedQuery = useDebounce(catQuery, 300);
+
+  // Load the orderable parts catalogue from the real inventory (Part model —
+  // the same stock the POS sells from) whenever ordering is open. The search
+  // term is debounced and resolved server-side so results are always current.
   useEffect(() => {
     if (!canOrder) return;
-    api.get("/track/parts").then((r) => setCatalogue(r.data || [])).catch(() => {});
-    if (job?.dropoff === "rider") {
-      api.get("/delivery-zones").then((r) => {
-        const list = r.data || [];
-        setZones(list);
-        if (list.length === 1) setZoneId(list[0]._id);
-      }).catch(() => {});
-    }
+    const params = new URLSearchParams();
+    if (debouncedQuery.trim()) params.set("q", debouncedQuery.trim());
+    api.get(`/track/parts?${params.toString()}`).then((r) => setCatalogue(r.data || [])).catch(() => {});
+  }, [canOrder, debouncedQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!canOrder || job?.dropoff !== "rider") return;
+    api.get("/delivery-zones").then((r) => {
+      const list = r.data || [];
+      setZones(list);
+      if (list.length === 1) setZoneId(list[0]._id);
+    }).catch(() => {});
   }, [canOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const filteredCatalogue = useMemo(() => {
-    const q = catQuery.trim().toLowerCase();
-    if (!q) return catalogue;
-    return catalogue.filter(
-      (p) => p.name.toLowerCase().includes(q) || (p.sku || "").toLowerCase().includes(q)
-    );
-  }, [catalogue, catQuery]);
-
   const selectedZone = zones.find((z) => z._id === zoneId);
+
+  const addPartToShopCart = (part) => {
+    addItem({
+      slug: `part-${part._id}`,
+      name: part.name,
+      price: Math.round(Number(part.sellingPrice)),
+      images: part.images || [],
+      category: part.category,
+      stock: part.quantity,
+    });
+    openCart();
+  };
 
   const addToCart = (part) => {
     setCart((prev) => {
@@ -103,21 +119,9 @@ export default function TrackRepairPage() {
         if (existing.quantity >= part.quantity) return prev;
         return prev.map((i) => i.partId === part._id ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...prev, { partId: part._id, name: part.name, sku: part.sku || "", unitPriceGhs: part.sellingPrice, quantity: 1, stock: part.quantity }];
+      return [...prev, { partId: part._id, name: part.name, sku: part.sku || "", unitPriceGhs: Math.round(Number(part.sellingPrice)) / 100, quantity: 1, stock: part.quantity }];
     });
   };
-
-  const changeQty = (partId, delta) => {
-    setCart((prev) => prev.map((i) => {
-      if (i.partId !== partId) return i;
-      const next = i.quantity + delta;
-      if (next <= 0) return i;
-      if (next > i.stock) return i;
-      return { ...i, quantity: next };
-    }));
-  };
-
-  const removeFromCart = (partId) => setCart((prev) => prev.filter((i) => i.partId !== partId));
 
   const partsSubtotalGhs = cart.reduce((sum, i) => sum + i.unitPriceGhs * i.quantity, 0);
   const shippingPesewas = selectedZone && job?.dropoff === "rider" ? selectedZone.fee : 0;
@@ -265,10 +269,10 @@ export default function TrackRepairPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white">{part.name}</p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{part.quantity} × GH₵{part.priceGhs}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{part.quantity} × {formatGhs(part.priceGhs)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-display font-bold text-lg text-brand-500">GH₵{part.priceGhs * part.quantity}</p>
+                      <p className="font-display font-bold text-lg text-brand-500">{formatGhs(part.priceGhs * part.quantity)}</p>
                       {canOrder && part.priceGhs > 0 && (
                         <button
                           onClick={() => addToCart({ _id: part.id, name: part.name, sku: "", sellingPrice: part.priceGhs, quantity: 99 })}
@@ -288,11 +292,9 @@ export default function TrackRepairPage() {
         {/* Payment section — catalogue + cart + shipping */}
         {canOrder && (
           <div className="mt-8">
-            <h2 className="font-display font-bold text-xl mb-1">Order parts &amp; pay</h2>
+            <h2 className="font-display font-bold text-xl mb-1">Browse spare parts</h2>
             <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
-              {job.dropoff === "rider"
-                ? "Pick the parts you need and we'll include the rider shipping to your pickup address."
-                : "Pick the parts you need and pay now — we'll have them ready when your device is with us."}
+              Add any part to your cart and check out securely. Parts listed for your repair can be paid for below.
             </p>
 
             {/* Catalogue */}
@@ -307,49 +309,62 @@ export default function TrackRepairPage() {
                 />
               </div>
 
-              {filteredCatalogue.length === 0 ? (
+              {catQuery.trim().length === 0 ? (
                 <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
-                  {catalogue.length === 0
-                    ? "No parts are available to order right now. Call us on 024 438 8190 and we&apos;ll sort it out."
-                    : "No parts match your search."}
+                  Search for a part to see it below and add it to your order.
+                </p>
+              ) : catalogue.length === 0 ? (
+                <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
+                  No parts match your search right now. Call us on 024 438 8190 and we&apos;ll sort it out.
                 </p>
               ) : (
-                <ul className="mt-4 divide-y divide-gray-100 dark:divide-slate-800">
-                  {filteredCatalogue.map((p) => {
-                    const inCart = cart.find((i) => i.partId === p._id);
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {catalogue.map((p) => {
+                    const badge = stockBadge(p.quantity);
                     const outOfStock = p.quantity <= 0;
+                    const image = p.images?.[0] || "https://placehold.co/800x600/1e1b4b/ffffff?text=Part";
                     return (
-                      <li key={p._id} className="flex items-center justify-between gap-4 py-3">
-                        <div className="min-w-0">
-                          <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{p.name}</p>
-                          <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
-                            {p.sku ? `${p.sku} · ` : ""}GH₵{p.sellingPrice}{p.quantity <= 10 ? ` · only ${p.quantity} left` : ""}
-                          </p>
+                      <div key={p._id} className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
+                        <div className="relative aspect-[4/3]">
+                          <Image
+                            src={image}
+                            alt={p.name}
+                            fill
+                            sizes="(max-width: 640px) 100vw, 50vw"
+                            className="object-cover"
+                          />
+                          <span className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>
+                            {badge.label}
+                          </span>
                         </div>
-                        {outOfStock ? (
-                          <span className="text-xs font-semibold text-gray-400 dark:text-slate-500">Out of stock</span>
-                        ) : inCart ? (
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => changeQty(p._id, -1)} className="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
-                              <FaMinus size={10} />
-                            </button>
-                            <span className="w-6 text-center text-sm font-semibold">{inCart.quantity}</span>
-                            <button type="button" onClick={() => changeQty(p._id, 1)} className="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
-                              <FaPlus size={10} />
-                            </button>
-                            <button type="button" onClick={() => removeFromCart(p._id)} className="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition" aria-label="Remove">
-                              <FaTrash size={11} />
+                        <div className="flex flex-1 flex-col p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-brand-500 mb-0.5">{p.category}</p>
+                          <h3 className="font-display font-bold text-base text-gray-900 dark:text-white line-clamp-2">{p.name}</h3>
+                          {p.sku && (
+                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 font-mono">{p.sku}</p>
+                          )}
+                          {(p.compatibleWith || []).length > 0 && (
+                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Fits: {p.compatibleWith.join(", ")}</p>
+                          )}
+                          <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed line-clamp-3 mt-2 flex-1">
+                            {p.description || "Genuine replacement part — fitted and tested by our technicians."}
+                          </p>
+                          <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 dark:border-slate-800 pt-3">
+                            <p className="font-display font-bold text-lg text-gray-900 dark:text-white">{formatGhs(Number(p.sellingPrice))}</p>
+                            <button
+                              type="button"
+                              disabled={outOfStock}
+                              onClick={() => addPartToShopCart(p)}
+                              className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 dark:bg-brand-500 px-4 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-50"
+                            >
+                              <FaCartPlus size={11} /> Add to cart
                             </button>
                           </div>
-                        ) : (
-                          <button type="button" onClick={() => addToCart(p)} className="rounded-full bg-gray-900 dark:bg-brand-500 px-4 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
-                            Add
-                          </button>
-                        )}
-                      </li>
+                        </div>
+                      </div>
                     );
                   })}
-                </ul>
+                </div>
               )}
             </div>
 
@@ -516,7 +531,7 @@ export default function TrackRepairPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>{badge.label}</span>
-                      <span className="font-semibold">GH₵{o.amountGhs}</span>
+                      <span className="font-semibold">{formatGhs(o.amountGhs)}</span>
                     </div>
                   </li>
                 );

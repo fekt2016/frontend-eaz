@@ -13,6 +13,7 @@ import {
 import {
   StatCard, HostingCard, DomainCard, ShopOrderCard, RepairCard,
 } from "@/components/dashboard/customer/CustomerCards";
+import { formatGhs } from "@/lib/shop";
 
 /* ── Admin overview helpers ────────────────────────────────────────────── */
 
@@ -72,6 +73,7 @@ function AdminOverviewSection() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [consultations, setConsultations] = useState({ total: 0, new: 0, recent: [] });
+  const [shopOrders, setShopOrders] = useState([]);
 
   const [maint, setMaint]           = useState(null);
   const [maintSaving, setMaintSaving] = useState(false);
@@ -83,11 +85,13 @@ function AdminOverviewSection() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [overviewRes, contactsRes] = await Promise.all([
+      const [overviewRes, contactsRes, shopOrdersRes] = await Promise.all([
         api.get("/hosting/orders/admin-overview"),
         api.get("/contacts?type=consultation"),
+        api.get("/orders?limit=5"),
       ]);
       setData(overviewRes.data);
+      setShopOrders(shopOrdersRes.data || []);
       const all = contactsRes.data || [];
       setConsultations({
         total: all.length,
@@ -406,6 +410,31 @@ function AdminOverviewSection() {
           <div className="grid lg:grid-cols-2 gap-6 mb-6">
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50 dark:border-slate-800">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Shop Orders</h3>
+                <Link href="/dashboard/commerce/orders" className="text-xs text-brand-500 hover:text-brand-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
+              </div>
+              <div className="divide-y divide-gray-50 dark:divide-slate-800">
+                {shopOrders.length === 0 ? (
+                  <p className="text-xs text-gray-400 dark:text-slate-500 px-5 py-6 text-center">No shop orders yet</p>
+                ) : shopOrders.map((o) => (
+                  <Link key={o._id} href={`/dashboard/commerce/orders/${o._id}`} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white font-mono">{o.orderNumber}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">
+                        {(o.items || []).reduce((n, i) => n + (i.qty || 0), 0)} items · {fmtDate(o.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-700 dark:text-slate-300">{formatGhs(o.total)}</span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${statusColors[o.status] || "bg-gray-50 text-gray-500"}`}>{o.status}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50 dark:border-slate-800">
                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Hosting Orders</h3>
                 <Link href="/dashboard/hosting-orders" className="text-xs text-brand-500 hover:text-brand-600 font-semibold flex items-center gap-1">View all <FaChevronRight size={9} /></Link>
               </div>
@@ -461,6 +490,9 @@ function AdminOverviewSection() {
 function DashboardContent() {
   const { user } = useAuth();
   const isAdmin = ["admin", "superadmin"].includes(user?.role);
+  // Admin & staff see all shop orders; customers and technicians only see
+  // their own. GET /orders is gated to admin/staff on the backend.
+  const canSeeAllOrders = ["admin", "superadmin", "staff"].includes(user?.role);
 
   const [hosting, setHosting] = useState([]);
   const [domains, setDomains] = useState([]);
@@ -482,7 +514,7 @@ function DashboardContent() {
       .catch(() => {})
       .finally(() => setLoadingDomains(false));
 
-    api.get("/orders/mine")
+    api.get(canSeeAllOrders ? "/orders?limit=5" : "/orders/mine")
       .then((res) => setOrders(res.data || []))
       .catch(() => {})
       .finally(() => setLoadingOrders(false));
@@ -491,7 +523,7 @@ function DashboardContent() {
       .then((res) => setRepairs(res.data || []))
       .catch(() => {})
       .finally(() => setLoadingRepairs(false));
-  }, []);
+  }, [canSeeAllOrders]);
 
   const activeHosting = hosting.filter(o => o.status === "active").length;
   const activeDomains = domains.filter(o => o.status === "completed").length;
@@ -596,7 +628,7 @@ function DashboardContent() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
-                  <Link href="/dashboard/orders" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
+                  <Link href={canSeeAllOrders ? "/dashboard/commerce/orders" : "/dashboard/orders"} className="text-xs text-brand-500 hover:underline flex items-center gap-1">
                     View all <FaChevronRight size={9} />
                   </Link>
                 </div>
