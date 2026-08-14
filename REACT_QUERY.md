@@ -85,10 +85,11 @@ as a thrown error the hooks expose via `error`/`isError`.
 ## Migrated so far
 
 Staff POS dashboard (recent orders + jobs), commerce orders list (with status
-mutation + invalidation), the order tracking-detail page, the repair-job
-inventory parts search, and the customer `/track/[token]` parts catalogue
-(`usePublicParts`). Other pages still use the `useEffect + api` pattern and can
-be migrated incrementally — both coexist safely.
+mutation + invalidation), the customer orders list (`useOrders`/`useMyOrders` +
+status mutation), the order tracking-detail page, the repair-job inventory parts
+search, and the customer `/track/[token]` parts catalogue (`usePublicParts`).
+Other pages still use the `useEffect + api` pattern and can be migrated
+incrementally — both coexist safely.
 
 ## Env / URLs
 

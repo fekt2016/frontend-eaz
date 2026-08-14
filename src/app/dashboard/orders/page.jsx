@@ -1,45 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { FaShoppingBag, FaSpinner } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
+import { useOrders, useMyOrders, useUpdateOrderStatus } from "@/hooks/queries/useOrders";
 
 const ORDER_STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
 export default function CustomerOrdersPage() {
   const { user } = useAuth();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [drafts, setDrafts] = useState({});
-  const [updating, setUpdating] = useState(null);
 
+  // Admin/staff see all orders; customers see only their own. Both hooks are
+  // declared unconditionally (rules of hooks) but only the relevant one runs.
   const seesAll = ["admin", "superadmin", "staff"].includes(user?.role);
+  const allOrdersQ = useOrders({}, { enabled: !!user && seesAll });
+  const myOrdersQ = useMyOrders({ enabled: !!user && !seesAll });
+  const orders = seesAll ? (allOrdersQ.data ?? []) : (myOrdersQ.data ?? []);
+  const loading = seesAll ? allOrdersQ.isLoading : myOrdersQ.isLoading;
 
-  useEffect(() => {
-    api
-      .get(seesAll ? "/orders" : "/orders/mine")
-      .then((res) => setOrders(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [seesAll]);
+  const updateStatus = useUpdateOrderStatus();
+  // Mark the row whose status change is in flight.
+  const updating = updateStatus.isPending ? updateStatus.variables?.id : null;
 
   const setDraft = (id, status) => setDrafts((d) => ({ ...d, [id]: status }));
 
-  const handleStatusUpdate = async (id) => {
+  const handleStatusUpdate = (id) => {
     const status = drafts[id];
     if (!status) return;
-    setUpdating(id);
-    try {
-      await api.patch(`/orders/${id}`, { status });
-      setOrders((prev) => prev.map((o) => (o._id === id ? { ...o, status } : o)));
-    } catch (err) {
-      alert(err.message || "Update failed");
-    } finally {
-      setUpdating(null);
-    }
+    // The mutation invalidates ["orders"], so the list refetches automatically.
+    updateStatus.mutate(
+      { id, status },
+      { onError: (err) => alert(err.message || "Update failed") },
+    );
   };
 
   return (
