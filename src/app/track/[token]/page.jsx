@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { formatPhoneInput } from "@/lib/sanitize";
 import { formatGhs, stockBadge } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
+import { usePublicParts } from "@/hooks/queries/usePublicParts";
 import { useCart } from "@/context/CartContext";
 import { FaSpinner, FaCheckCircle, FaPhone, FaWrench, FaSearch, FaMotorcycle, FaCartPlus } from "react-icons/fa";
 
@@ -43,7 +44,6 @@ export default function TrackRepairPage() {
   const [error, setError] = useState("");
 
   // Part catalogue + cart
-  const [catalogue, setCatalogue] = useState([]);
   const [catQuery, setCatQuery] = useState("");
   const [cart, setCart] = useState([]); // { partId, name, sku, unitPriceGhs, quantity, stock }
   const [zones, setZones] = useState([]);
@@ -79,15 +79,13 @@ export default function TrackRepairPage() {
 
   const debouncedQuery = useDebounce(catQuery, 300);
 
-  // Load the orderable parts catalogue from the real inventory (Part model —
-  // the same stock the POS sells from) whenever ordering is open. The search
+  // Orderable parts catalogue from the real inventory (Part model — the same
+  // stock the POS sells from). Only fetched while ordering is open; the search
   // term is debounced and resolved server-side so results are always current.
-  useEffect(() => {
-    if (!canOrder) return;
-    const params = new URLSearchParams();
-    if (debouncedQuery.trim()) params.set("q", debouncedQuery.trim());
-    api.get(`/track/parts?${params.toString()}`).then((r) => setCatalogue(r.data || [])).catch(() => {});
-  }, [canOrder, debouncedQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { data: catalogue = [], isLoading: catalogueLoading } = usePublicParts(
+    { q: debouncedQuery },
+    { enabled: !!canOrder },
+  );
 
   useEffect(() => {
     if (!canOrder || job?.dropoff !== "rider") return;
@@ -313,6 +311,8 @@ export default function TrackRepairPage() {
                 <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
                   Search for a part to see it below and add it to your order.
                 </p>
+              ) : catalogueLoading ? (
+                <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">Searching parts…</p>
               ) : catalogue.length === 0 ? (
                 <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
                   No parts match your search right now. Call us on 024 438 8190 and we&apos;ll sort it out.
