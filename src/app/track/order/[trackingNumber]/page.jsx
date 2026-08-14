@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FaArrowLeft, FaLocationDot, FaSpinner } from "react-icons/fa6";
-import { api } from "@/lib/api";
 import { statusBadge } from "@/lib/orderStatus";
+import { useOrderTracking } from "@/hooks/queries/useTracking";
 
 function fmtDate(value) {
   if (!value) return "";
@@ -20,19 +19,7 @@ function fmtDate(value) {
 
 export default function OrderTrackingDetailPage() {
   const { trackingNumber } = useParams();
-  const [tracking, setTracking] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    setLoading(true);
-    setError("");
-    api
-      .get(`/orders/track/${encodeURIComponent(String(trackingNumber))}`)
-      .then((res) => setTracking(res.data))
-      .catch((err) => setError(err.message || "Tracking number not found"))
-      .finally(() => setLoading(false));
-  }, [trackingNumber]);
+  const { data: tracking, isLoading: loading, error } = useOrderTracking(trackingNumber);
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
@@ -55,7 +42,7 @@ export default function OrderTrackingDetailPage() {
 
         {!loading && error && (
           <div className="mt-12 rounded-2xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-5 py-4 text-sm text-red-600 dark:text-red-400">
-            {error}
+            {error.message || "Tracking number not found"}
           </div>
         )}
 

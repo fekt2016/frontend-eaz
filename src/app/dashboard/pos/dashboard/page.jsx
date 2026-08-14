@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { useAuth } from "@/context/AuthContext";
+import { useMyOverview, useOverview, usePartOrders } from "@/hooks/queries/usePosDashboard";
+import { useRecentOrders } from "@/hooks/queries/useOrders";
 import {
   FaWrench, FaUsers, FaClock, FaCheckCircle,
   FaExclamationTriangle, FaPlus, FaBoxes, FaBell, FaSpinner, FaShoppingBag,
@@ -175,37 +178,21 @@ function RecentJobsList({ jobs, loading }) {
 
 // ─── Personal dashboard for staff & technicians (scoped to the logged-in user) ──
 function MyDashboard({ user }) {
-  const [data,    setData]    = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState("");
-  const [shopOrders, setShopOrders]   = useState([]);
-  const [partOrders, setPartOrders]   = useState([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
-
   const isTech = user.role === "technician";
 
-  useEffect(() => {
-    api.get("/pos/my-overview")
-      .then(r => setData(r.data))
-      .catch(e => setError(e.message || "Failed to load dashboard."))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading, error } = useMyOverview();
 
   // Staff (not technicians) also see recent commerce activity. These endpoints
   // are gated to admin/staff on the backend, so technicians never call them.
-  useEffect(() => {
-    if (isTech) { setOrdersLoading(false); return; }
-    Promise.all([
-      api.get("/orders?limit=5").then(r => r.data || []).catch(() => []),
-      api.get("/pos/part-orders").then(r => (r.data || []).slice(0, 5)).catch(() => []),
-    ])
-      .then(([shop, parts]) => { setShopOrders(shop); setPartOrders(parts); })
-      .finally(() => setOrdersLoading(false));
-  }, [isTech]);
+  const recentOrdersQ = useRecentOrders(5, { enabled: !isTech });
+  const partOrdersQ   = usePartOrders("all", { enabled: !isTech });
+  const shopOrders    = recentOrdersQ.data ?? [];
+  const partOrders    = (partOrdersQ.data ?? []).slice(0, 5);
+  const ordersLoading = !isTech && (recentOrdersQ.isLoading || partOrdersQ.isLoading);
 
   const stats  = data?.stats;
 
-  if (error) return <p className="text-red-600 dark:text-red-400 text-sm p-5">{error}</p>;
+  if (error) return <p className="text-red-600 dark:text-red-400 text-sm p-5">{error.message || "Failed to load dashboard."}</p>;
 
   return (
     <div className="space-y-7">
@@ -267,40 +254,32 @@ function MyDashboard({ user }) {
 // ─── Full shop-wide dashboard for admin & superadmin ───────────────────────────
 function FullDashboard() {
   const { user } = useAuth();
-  const [data,       setData]       = useState(null);
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState("");
-  const [uncollected,setUncollected]= useState([]);
-  const [triggering, setTriggering] = useState(false);
   const [triggerMsg, setTriggerMsg] = useState("");
 
-  useEffect(() => {
-    api.get("/pos/overview")
-      .then(r => setData(r.data))
-      .catch(e => setError(e.message || "Failed to load dashboard."))
-      .finally(() => setLoading(false));
+  const { data, isLoading: loading, error } = useOverview();
 
-    api.get("/pos/reminders/uncollected?days=3")
-      .then(r => setUncollected(r.data || []))
-      .catch(() => {});
-  }, []);
+  // Uncollected devices is a small server list — cache it a minute.
+  const uncollectedQ = useQuery({
+    queryKey: ["pos", "uncollected", 3],
+    queryFn: () => api.get("/pos/reminders/uncollected?days=3").then((r) => r.data || []),
+    staleTime: 60_000,
+  });
+  const uncollected = uncollectedQ.data ?? [];
 
-  const handleTriggerReminders = async () => {
-    setTriggering(true); setTriggerMsg("");
-    try {
-      await api.post("/pos/reminders/trigger", {});
+  const triggerReminders = useMutation({
+    mutationFn: () => api.post("/pos/reminders/trigger", {}),
+    onSuccess: () => {
       setTriggerMsg("Reminders sent! Check server logs.");
       setTimeout(() => setTriggerMsg(""), 4000);
-    } catch (e) {
-      setTriggerMsg(e.message || "Failed.");
-    } finally {
-      setTriggering(false);
-    }
-  };
+    },
+    onError: (e) => setTriggerMsg(e.message || "Failed."),
+  });
+  const triggering = triggerReminders.isPending;
+  const handleTriggerReminders = () => triggerReminders.mutate();
 
   const stats = data?.stats;
 
-  if (error) return <p className="text-red-600 dark:text-red-400 text-sm p-5">{error}</p>;
+  if (error) return <p className="text-red-600 dark:text-red-400 text-sm p-5">{error.message || "Failed to load dashboard."}</p>;
 
   return (
     <div className="space-y-7">

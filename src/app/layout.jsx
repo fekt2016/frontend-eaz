@@ -2,6 +2,7 @@ import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import JsonLd from "@/components/common/JsonLd";
+import QueryProvider from "@/components/providers/QueryProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/cart/CartDrawer";
@@ -51,15 +52,17 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
       <body className="font-sans antialiased text-gray-900 dark:text-slate-100 bg-gray-50 dark:bg-slate-950 min-h-screen flex flex-col">
-        <ThemeProvider>
-          <AuthProvider>
-            <CartProvider>
-              <JsonLd data={organizationJsonLd()} />
-              <ConditionalLayout>{children}</ConditionalLayout>
-              <CartDrawer />
-            </CartProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <CartProvider>
+                <JsonLd data={organizationJsonLd()} />
+                <ConditionalLayout>{children}</ConditionalLayout>
+                <CartDrawer />
+              </CartProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

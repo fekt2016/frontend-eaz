@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
+import { useOrders, useUpdateOrderStatus } from "@/hooks/queries/useOrders";
 
 const statusColors = {
   pending: "bg-brand-50 text-brand-700",
@@ -30,41 +30,29 @@ function formatDate(value) {
 export default function AdminOrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
-  const [updating, setUpdating] = useState(null);
+
+  const isAllowed = ["admin", "superadmin", "staff"].includes(user?.role);
 
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
-  }, [user, authLoading, router]);
+    if (!authLoading && !isAllowed) router.replace("/dashboard");
+  }, [authLoading, isAllowed, router]);
 
-  const load = () => {
-    api
-      .get("/orders")
-      .then((res) => setOrders(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  };
+  const { data: orders = [], isLoading: loading } = useOrders(
+    {},
+    { enabled: !authLoading && isAllowed },
+  );
+  const updateStatus = useUpdateOrderStatus();
+  // While a row's update is in flight, mark that specific order id.
+  const updating = updateStatus.isPending ? updateStatus.variables?.id : null;
 
-  useEffect(() => {
-    if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return;
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
+  if (authLoading || !isAllowed) return null;
 
-  if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
-
-  const handleStatus = async (order, status) => {
-    setUpdating(order._id);
-    try {
-      await api.patch(`/orders/${order._id}`, { status });
-      load();
-    } catch (err) {
-      alert(err.message || "Update failed");
-    } finally {
-      setUpdating(null);
-    }
+  const handleStatus = (order, status) => {
+    updateStatus.mutate(
+      { id: order._id, status },
+      { onError: (err) => alert(err.message || "Update failed") },
+    );
   };
 
   const visible = filter === "all" ? orders : orders.filter((o) => o.status === filter);
