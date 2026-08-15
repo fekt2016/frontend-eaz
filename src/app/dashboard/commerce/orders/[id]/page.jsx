@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 import { FaPaperPlane } from "react-icons/fa6";
-import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
+import { useOrder, useUpdateOrderStatus, useAddTrackingEvent } from "@/hooks/queries/useOrders";
 
 const STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
@@ -43,64 +43,37 @@ export default function AdminOrderDetailPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { id } = useParams();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
+  const isAllowed = ["admin", "superadmin", "staff"].includes(user?.role);
 
   const [trackStatus, setTrackStatus] = useState("processing");
   const [trackNote, setTrackNote] = useState("");
   const [trackLocation, setTrackLocation] = useState("");
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
-  }, [user, authLoading, router]);
+    if (!authLoading && !isAllowed) router.replace("/dashboard");
+  }, [authLoading, isAllowed, router]);
 
-  const load = () => {
-    if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return;
-    api
-      .get(`/orders/${id}`)
-      .then((res) => setOrder(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  const { data: order, isLoading: loading } = useOrder(id, { enabled: !authLoading && isAllowed });
+  const updateStatus = useUpdateOrderStatus();
+  const addTracking = useAddTrackingEvent();
+  const updating = updateStatus.isPending;
+  const saving = addTracking.isPending;
+
+  if (authLoading || !isAllowed) return null;
+
+  const handleStatus = (status) => {
+    updateStatus.mutate({ id, status }, { onError: (err) => alert(err.message || "Update failed") });
   };
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, authLoading, user]);
-
-  if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
-
-  const handleStatus = async (status) => {
-    setUpdating(true);
-    try {
-      await api.patch(`/orders/${id}`, { status });
-      load();
-    } catch (err) {
-      alert(err.message || "Update failed");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleTrackingUpdate = async (e) => {
+  const handleTrackingUpdate = (e) => {
     e.preventDefault();
-    setSaving(true);
-    try {
-      await api.post(`/orders/${id}/tracking`, {
-        status: trackStatus,
-        note: trackNote,
-        location: trackLocation,
-      });
-      setTrackNote("");
-      setTrackLocation("");
-      load();
-    } catch (err) {
-      alert(err.message || "Update failed");
-    } finally {
-      setSaving(false);
-    }
+    addTracking.mutate(
+      { id, status: trackStatus, note: trackNote, location: trackLocation },
+      {
+        onSuccess: () => { setTrackNote(""); setTrackLocation(""); },
+        onError: (err) => alert(err.message || "Update failed"),
+      },
+    );
   };
 
   if (loading) {

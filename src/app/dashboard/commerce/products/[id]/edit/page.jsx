@@ -1,46 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
-import { api } from "@/lib/api";
 import ProductForm from "@/components/commerce/ProductForm";
+import { useAdminProducts, useUpdateProduct } from "@/hooks/queries/useProducts";
 
 export default function AdminEditProductPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+
+  const isAllowed = ["admin", "superadmin", "staff"].includes(user?.role);
+  const { data: products, isLoading: loading } = useAdminProducts({ enabled: !authLoading && isAllowed });
+  const product = (products ?? []).find((p) => p._id === id) || null;
+
+  const updateProduct = useUpdateProduct();
+  const submitting = updateProduct.isPending;
 
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
-  }, [user, authLoading, router]);
+    if (!authLoading && !isAllowed) router.replace("/dashboard");
+  }, [authLoading, isAllowed, router]);
 
-  useEffect(() => {
-    if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return;
-    api
-      .get("/products/all")
-      .then((res) => {
-        const found = (res.data || []).find((p) => p._id === id);
-        setProduct(found || null);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [id, authLoading, user]);
+  if (authLoading || !isAllowed) return null;
 
-  if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
-
-  const handleSubmit = async (data) => {
-    setSubmitting(true);
-    try {
-      await api.patch(`/products/${id}`, data);
-      router.push("/dashboard/commerce/inventory");
-    } catch (err) {
-      alert(err.message || "Failed to update product");
-      setSubmitting(false);
-    }
+  const handleSubmit = (data) => {
+    updateProduct.mutate(
+      { id, data },
+      {
+        onSuccess: () => router.push("/dashboard/commerce/inventory"),
+        onError: (err) => alert(err.message || "Failed to update product"),
+      },
+    );
   };
 
   return (

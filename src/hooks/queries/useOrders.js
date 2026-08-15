@@ -72,3 +72,13 @@ export function useUpdateOrderStatus() {
     },
   });
 }
+
+// Append a tracking event (status/note/location) to an order — staff/admin.
+export function useAddTrackingEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }) =>
+      api.post(`/orders/${id}/tracking`, body).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.orders.all }),
+  });
+}

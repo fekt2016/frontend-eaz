@@ -22,8 +22,13 @@ export const qk = {
   },
   products: {
     all: ["products"],
+    admin: ["products", "admin"],
     list: (params = {}) => ["products", "list", params],
     detail: (slug) => ["products", "detail", slug],
+  },
+  deliveryZones: {
+    all: ["delivery-zones"],
+    list: ["delivery-zones", "list"],
   },
   pos: {
     overview: (range = {}) => ["pos", "overview", range],

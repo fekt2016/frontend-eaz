@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
+import { useDeliveryZones, useCreateZone, useUpdateZone, useDeleteZone } from "@/hooks/queries/useDeliveryZones";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200";
@@ -14,26 +14,24 @@ function ZoneEditor({ zone, onDone }) {
   const [feeGhs, setFeeGhs] = useState((Number(zone.fee || 0) / 100).toFixed(2));
   const [days, setDays] = useState(zone.estimatedDays ?? "");
   const [isActive, setIsActive] = useState(zone.isActive ?? true);
-  const [saving, setSaving] = useState(false);
+  const updateZone = useUpdateZone();
+  const saving = updateZone.isPending;
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!name.trim() || !days) {
       alert("Name and estimated days are required.");
       return;
     }
-    setSaving(true);
-    try {
-      await api.patch(`/delivery-zones/${zone._id}`, {
+    updateZone.mutate(
+      {
+        id: zone._id,
         name: name.trim(),
         fee: Math.round((parseFloat(feeGhs) || 0) * 100),
         estimatedDays: parseInt(days, 10) || 0,
         isActive,
-      });
-      onDone();
-    } catch (err) {
-      alert(err.message || "Update failed");
-      setSaving(false);
-    }
+      },
+      { onSuccess: onDone, onError: (err) => alert(err.message || "Update failed") },
+    );
   };
 
   return (
@@ -88,71 +86,52 @@ function ZoneEditor({ zone, onDone }) {
 export default function AdminDeliveryZonesPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [zones, setZones] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
-  const [updating, setUpdating] = useState(null);
   const [newZone, setNewZone] = useState({ name: "", feeGhs: "", days: "", isActive: true });
-  const [creating, setCreating] = useState(false);
+
+  const isAllowed = ["admin", "superadmin"].includes(user?.role);
 
   useEffect(() => {
-    if (!authLoading && !["admin", "superadmin"].includes(user?.role)) router.replace("/dashboard");
-  }, [user, authLoading, router]);
+    if (!authLoading && !isAllowed) router.replace("/dashboard");
+  }, [authLoading, isAllowed, router]);
 
-  const load = () => {
-    setLoading(true);
-    api
-      .get("/delivery-zones/all")
-      .then((res) => setZones(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  };
+  const { data: zones = [], isLoading: loading } = useDeliveryZones({ enabled: !authLoading && isAllowed });
+  const createZone = useCreateZone();
+  const archiveZone = useUpdateZone();
+  const deleteZone = useDeleteZone();
+  const creating = createZone.isPending;
+  const updating = deleteZone.isPending
+    ? deleteZone.variables
+    : archiveZone.isPending
+    ? archiveZone.variables?.id
+    : null;
 
-  useEffect(() => {
-    if (authLoading || !["admin", "superadmin"].includes(user?.role)) return;
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
-
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (!newZone.name.trim() || !newZone.days) {
       alert("Zone name and estimated days are required.");
       return;
     }
-    setCreating(true);
-    try {
-      await api.post("/delivery-zones", {
+    createZone.mutate(
+      {
         name: newZone.name.trim(),
         fee: Math.round((parseFloat(newZone.feeGhs) || 0) * 100),
         estimatedDays: parseInt(newZone.days, 10) || 0,
         isActive: newZone.isActive,
-      });
-      setNewZone({ name: "", feeGhs: "", days: "", isActive: true });
-      load();
-    } catch (err) {
-      alert(err.message || "Failed to create zone");
-    } finally {
-      setCreating(false);
-    }
+      },
+      {
+        onSuccess: () => setNewZone({ name: "", feeGhs: "", days: "", isActive: true }),
+        onError: (err) => alert(err.message || "Failed to create zone"),
+      },
+    );
   };
 
-  const handleArchive = async (zone) => {
-    setUpdating(zone._id);
-    try {
-      if (zone.isActive) {
-        await api.delete(`/delivery-zones/${zone._id}`);
-      } else {
-        await api.patch(`/delivery-zones/${zone._id}`, { isActive: true });
-      }
-      load();
-    } catch (err) {
-      alert(err.message || "Update failed");
-    } finally {
-      setUpdating(null);
-    }
+  const handleArchive = (zone) => {
+    const onError = (err) => alert(err.message || "Update failed");
+    if (zone.isActive) deleteZone.mutate(zone._id, { onError });
+    else archiveZone.mutate({ id: zone._id, isActive: true }, { onError });
   };
 
-  if (authLoading || !["admin", "superadmin"].includes(user?.role)) return null;
+  if (authLoading || !isAllowed) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
@@ -243,7 +222,7 @@ export default function AdminDeliveryZonesPage() {
                   </div>
                 </div>
                 {editingId === zone._id && (
-                  <ZoneEditor zone={zone} onDone={() => { setEditingId(null); load(); }} />
+                  <ZoneEditor zone={zone} onDone={() => setEditingId(null)} />
                 )}
               </div>
             ))}

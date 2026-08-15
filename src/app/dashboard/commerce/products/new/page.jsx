@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
 import ProductForm from "@/components/commerce/ProductForm";
+import { useCreateProduct } from "@/hooks/queries/useProducts";
 
 export default function AdminNewProductPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
+  const createProduct = useCreateProduct();
+  const submitting = createProduct.isPending;
 
   useEffect(() => {
     if (!authLoading && !["admin", "superadmin", "staff"].includes(user?.role)) router.replace("/dashboard");
@@ -17,15 +18,11 @@ export default function AdminNewProductPage() {
 
   if (authLoading || !["admin", "superadmin", "staff"].includes(user?.role)) return null;
 
-  const handleSubmit = async (data) => {
-    setSubmitting(true);
-    try {
-      await api.post("/products", data);
-      router.push("/dashboard/commerce/inventory");
-    } catch (err) {
-      alert(err.message || "Failed to create product");
-      setSubmitting(false);
-    }
+  const handleSubmit = (data) => {
+    createProduct.mutate(data, {
+      onSuccess: () => router.push("/dashboard/commerce/inventory"),
+      onError: (err) => alert(err.message || "Failed to create product"),
+    });
   };
 
   return (
