@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
 import { FaWrench, FaSync, FaClock, FaExclamationTriangle } from "react-icons/fa";
+import { useJobs } from "@/hooks/queries/usePosJobs";
 
 const STATUS_COLORS = {
   received:           "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
@@ -68,9 +68,6 @@ const Spinner = () => (
 export default function PosRoot() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [myJobs,  setMyJobs]  = useState([]);
-  const [allJobs, setAllJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [tab,     setTab]     = useState("mine"); // 'mine' | 'all'
 
   const showJobs = !!user && ["technician", "admin", "staff"].includes(user.role);
@@ -81,21 +78,12 @@ export default function PosRoot() {
     if (!["technician", "admin"].includes(user.role)) { router.replace("/dashboard/pos/dashboard"); }
   }, [user, authLoading, router]);
 
-  const fetchJobs = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [mine, all] = await Promise.all([
-        api.get("/pos/jobs?assignedTo=me&limit=100"),
-        api.get("/pos/jobs?limit=100"),
-      ]);
-      setMyJobs(mine.data || []);
-      setAllJobs((all.data || []).filter(j => ACTIVE_STATUSES.includes(j.status)));
-    } catch { /* ignore */ } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { if (showJobs) fetchJobs(); }, [showJobs, fetchJobs]);
+  const mineQ = useJobs({ assignedTo: "me", limit: 100 }, { enabled: showJobs });
+  const allQ  = useJobs({ limit: 100 }, { enabled: showJobs });
+  const myJobs  = mineQ.data?.data ?? [];
+  const allJobs = (allQ.data?.data ?? []).filter(j => ACTIVE_STATUSES.includes(j.status));
+  const loading = mineQ.isLoading || allQ.isLoading;
+  const fetchJobs = () => { mineQ.refetch(); allQ.refetch(); };
 
   // While redirecting a non-technician/admin role (or auth loading), show a spinner.
   if (authLoading || !user || !showJobs) return <Spinner />;

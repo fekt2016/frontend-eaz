@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { api } from "@/lib/api";
+import { useState } from "react";
 import Link from "next/link";
+import { useOverview } from "@/hooks/queries/usePosDashboard";
 import {
   FaChartBar, FaMoneyBillWave, FaWrench, FaUsers,
   FaExclamationTriangle, FaCheckCircle, FaSpinner, FaReceipt, FaBalanceScale,
@@ -46,25 +46,11 @@ function Stat({ label, value, sub, color = "text-gray-900 dark:text-white", icon
 }
 
 export default function ReportsPage() {
-  const [data,    setData]    = useState(null);
-  const [loading, setLoading] = useState(true);
   const [preset,  setPreset]  = useState("30 days");
   const [from,    setFrom]    = useState("");
   const [to,      setTo]      = useState("");
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (from) params.set("from", from);
-      if (to)   params.set("to",   to);
-      const res = await api.get(`/pos/overview?${params}`);
-      setData(res.data);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  }, [from, to]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const { data, isLoading: loading } = useOverview({ from, to });
 
   const applyPreset = (p) => {
     setPreset(p.label);

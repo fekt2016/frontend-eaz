@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
 import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { useWarrantyJobs } from "@/hooks/queries/usePosJobs";
 
 const WARRANTY_COLORS = {
   active:        "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
@@ -70,17 +70,10 @@ function JobWarrantyRow({ job, warrantyStatus }) {
 }
 
 export default function WarrantyPage() {
-  const [data,    setData]    = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState("");
   const [tab,     setTab]     = useState("active");
 
-  useEffect(() => {
-    api.get("/pos/warranty")
-      .then(r => setData(r.data))
-      .catch(e => setError(e.message || "Failed to load warranty data."))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading, error: queryError } = useWarrantyJobs();
+  const error = queryError?.message || "";
 
   const activeJobs      = data?.active     || [];
   const expiringSoon    = data?.expiringSoon || [];

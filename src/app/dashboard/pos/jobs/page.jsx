@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
 import { FaPlus, FaSearch, FaWrench, FaExclamationTriangle } from "react-icons/fa";
+import { useJobs } from "@/hooks/queries/usePosJobs";
 
 const STATUS_TABS = [
   { key: "all",        label: "All" },
@@ -25,33 +25,16 @@ const STATUS_COLORS = {
 };
 
 export default function JobsPage() {
-  const [jobs,    setJobs]    = useState([]);
-  const [total,   setTotal]   = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState("");
   const [status,  setStatus]  = useState("all");
   const [q,       setQ]       = useState("");
   const [page,    setPage]    = useState(1);
   const limit = 20;
 
-  const fetchJobs = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const params = new URLSearchParams({ page, limit });
-      if (status !== "all") params.set("status", status);
-      if (q.trim()) params.set("q", q.trim());
-      const res = await api.get(`/pos/jobs?${params}`);
-      setJobs(res.data || []);
-      setTotal(res.total);
-    } catch (err) {
-      setError(err.message || "Failed to load jobs.");
-    } finally {
-      setLoading(false);
-    }
-  }, [status, q, page]);
-
-  useEffect(() => { fetchJobs(); }, [fetchJobs]);
+  const jobsQuery = useJobs({ page, limit, status, q: q.trim() });
+  const jobs    = jobsQuery.data?.data ?? [];
+  const total   = jobsQuery.data?.total ?? 0;
+  const loading = jobsQuery.isLoading;
+  const error   = jobsQuery.error?.message || "";
 
   const handleSearch = (e) => { setQ(e.target.value); setPage(1); };
   const handleStatus = (s) => { setStatus(s); setPage(1); };

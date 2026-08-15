@@ -43,4 +43,9 @@ export const qk = {
   repairs: {
     mine: ["repairs", "mine"],
   },
+  jobs: {
+    all: ["jobs"],
+    list: (params = {}) => ["jobs", "list", params],
+    warranty: ["jobs", "warranty"],
+  },
 };
