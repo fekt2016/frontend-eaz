@@ -2,14 +2,17 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { api } from "@/lib/api";
 import { FaCamera, FaTrash, FaTimes, FaExpand, FaSpinner } from "react-icons/fa";
+import { useUploadJobPhoto, useDeleteJobPhoto } from "@/hooks/queries/usePosJobs";
 
 export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = false }) {
   const fileRef    = useRef(null);
-  const [uploading, setUploading] = useState(false);
   const [error,     setError]     = useState("");
   const [lightbox,  setLightbox]  = useState(null); // index of photo being previewed
+
+  const uploadPhoto = useUploadJobPhoto(jobId);
+  const deletePhoto = useDeleteJobPhoto(jobId);
+  const uploading = uploadPhoto.isPending;
 
   const handleFiles = async (files) => {
     if (!files?.length) return;
@@ -17,16 +20,13 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
     for (const file of Array.from(files)) {
       if (!file.type.startsWith("image/")) { setError("Images only."); continue; }
       if (file.size > 8 * 1024 * 1024)    { setError("Max file size is 8 MB."); continue; }
-      setUploading(true);
       try {
         const fd = new FormData();
         fd.append("photo", file);
-        await api.upload(`/pos/jobs/${jobId}/photos`, fd);
+        await uploadPhoto.mutateAsync(fd);
         onUpdate?.();
       } catch (e) {
         setError(e.message || "Upload failed.");
-      } finally {
-        setUploading(false);
       }
     }
   };
@@ -34,7 +34,7 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
   const handleDelete = async (photoId) => {
     if (!confirm("Remove this photo?")) return;
     try {
-      await api.delete(`/pos/jobs/${jobId}/photos/${photoId}`);
+      await deletePhoto.mutateAsync(photoId);
       onUpdate?.();
     } catch (e) {
       setError(e.message || "Delete failed.");

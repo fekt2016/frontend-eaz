@@ -5,8 +5,8 @@ import Link from "next/link";
 import { z } from "zod";
 import { FaCheckCircle, FaMobileAlt, FaStore, FaMotorcycle, FaCopy, FaArrowRight, FaShieldAlt, FaClock } from "react-icons/fa";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
-import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useCreatePublicJob } from "@/hooks/queries/usePosJobs";
 
 const DEVICE_TYPES = ["Phone", "Tablet", "Laptop", "Smartwatch", "Other"];
 const BRANDS = ["Apple", "Samsung", "Tecno", "Infinix", "Itel", "Huawei", "Nokia", "Oppo", "Xiaomi", "OnePlus", "Other"];
@@ -36,9 +36,11 @@ export default function BookRepairPage() {
     faultDescription: "", dropoff: "bring", pickupAddress: "",
   });
   const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState("idle");
-  const [result, setResult] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  const createJob = useCreatePublicJob();
+  const status = createJob.isPending ? "loading" : createJob.isSuccess ? "success" : "idle";
+  const result = createJob.data ?? null;
 
   // Logged-in customer — pre-fill their details so it's a "create my own job"
   useEffect(() => {
@@ -78,15 +80,9 @@ export default function BookRepairPage() {
     }
 
     setErrors({});
-    setStatus("loading");
-    try {
-      const res = await api.post("/track/repair-requests", clean);
-      setResult(res.data);
-      setStatus("success");
-    } catch (err) {
-      setStatus("error");
-      setErrors({ form: err.message || "Something went wrong. Please try again." });
-    }
+    createJob.mutate(clean, {
+      onError: (err) => setErrors({ form: err.message || "Something went wrong. Please try again." }),
+    });
   };
 
   const copyLink = async () => {

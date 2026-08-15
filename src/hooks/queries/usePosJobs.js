@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, useMutation, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 
@@ -28,4 +28,20 @@ export function useWarrantyJobs(options = {}) {
     staleTime: 30_000,
     ...options,
   });
+}
+
+// Public self-serve repair booking (POST /track/repair-requests) — no auth.
+export function useCreatePublicJob() {
+  return useMutation({
+    mutationFn: (body) => api.post("/track/repair-requests", body).then((r) => r.data),
+  });
+}
+
+// Job intake photos (multipart upload / delete). The caller refreshes the job
+// via its own callback, so these don't invalidate a job query.
+export function useUploadJobPhoto(jobId) {
+  return useMutation({ mutationFn: (formData) => api.upload(`/pos/jobs/${jobId}/photos`, formData) });
+}
+export function useDeleteJobPhoto(jobId) {
+  return useMutation({ mutationFn: (photoId) => api.delete(`/pos/jobs/${jobId}/photos/${photoId}`) });
 }

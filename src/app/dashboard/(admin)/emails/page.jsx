@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { useEmailLogs } from "@/hooks/queries/useEmails";
 import {
   FaEnvelope, FaSearch, FaRedo, FaSpinner,
   FaCheckCircle, FaTimesCircle, FaFilter,
@@ -63,48 +63,32 @@ export default function AdminEmailLogsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  const [logs, setLogs]         = useState([]);
-  const [summary, setSummary]   = useState({ total: 0, sent: 0, failed: 0, today: 0 });
-  const [loading, setLoading]   = useState(true);
-  const [total, setTotal]       = useState(0);
   const [page, setPage]         = useState(1);
-  const [pages, setPages]       = useState(1);
-
   const [search, setSearch]     = useState("");
   const [typeFilter, setType]   = useState("all");
   const [statusFilter, setStatus] = useState("all");
 
-  useEffect(() => {
-    if (!authLoading && user?.role !== "admin") router.replace("/dashboard");
-  }, [user, authLoading, router]);
-
-  const fetchLogs = useCallback(async (pg = 1) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page: pg, limit: 50 });
-      if (typeFilter   !== "all") params.set("type",   typeFilter);
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      if (search.trim())          params.set("q",      search.trim());
-
-      const res = await api.get(`/admin/email-logs?${params}`);
-      const data = res.data;
-      setLogs(data.logs || []);
-      setTotal(data.total ?? 0);
-      setPage(data.page  ?? 1);
-      setPages(data.pages ?? 1);
-      if (data.summary) setSummary(data.summary);
-    } catch {
-      setLogs([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [typeFilter, statusFilter, search]);
+  const isAdmin = user?.role === "admin";
 
   useEffect(() => {
-    if (!authLoading && user?.role === "admin") fetchLogs(1);
-  }, [authLoading, user?.role, fetchLogs]);
+    if (!authLoading && !isAdmin) router.replace("/dashboard");
+  }, [authLoading, isAdmin, router]);
 
-  if (authLoading || user?.role !== "admin") return null;
+  const emailQ = useEmailLogs(
+    { page, limit: 50, type: typeFilter, status: statusFilter, q: search.trim() },
+    { enabled: !authLoading && isAdmin },
+  );
+  const logs    = emailQ.data?.logs ?? [];
+  const total   = emailQ.data?.total ?? 0;
+  const pages   = emailQ.data?.pages ?? 1;
+  const summary = emailQ.data?.summary ?? { total: 0, sent: 0, failed: 0, today: 0 };
+  const loading = emailQ.isLoading;
+  const fetchLogs = (pg = 1) => setPage(pg);
+
+  // Reset to page 1 whenever a filter/search changes.
+  useEffect(() => { setPage(1); }, [typeFilter, statusFilter, search]);
+
+  if (authLoading || !isAdmin) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
