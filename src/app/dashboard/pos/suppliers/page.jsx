@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { FaPlus, FaTruck, FaSearch, FaCheck, FaTimes, FaEdit, FaTrash, FaChevronRight } from "react-icons/fa";
+import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier } from "@/hooks/queries/useSuppliers";
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const labelCls = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
@@ -15,47 +15,34 @@ export default function SuppliersPage() {
   const { user } = useAuth();
   const isSuperAdmin = user?.role === "superadmin";
 
-  const [suppliers, setSuppliers] = useState([]);
-  const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState("");
   const [q,         setQ]         = useState("");
 
   const [showForm,  setShowForm]  = useState(false);
   const [form,      setForm]      = useState(EMPTY_FORM);
-  const [saving,    setSaving]    = useState(false);
   const [formError, setFormError] = useState("");
 
   const [editId,    setEditId]    = useState(null);
   const [editForm,  setEditForm]  = useState(EMPTY_FORM);
-  const [editSaving,setEditSaving]= useState(false);
 
-  const fetchSuppliers = useCallback(async () => {
-    setLoading(true); setError("");
-    try {
-      const params = new URLSearchParams();
-      if (q.trim()) params.set("q", q.trim());
-      const res = await api.get(`/pos/suppliers?${params}`);
-      setSuppliers(res.data || []);
-    } catch (e) {
-      setError(e.message || "Failed to load suppliers.");
-    } finally {
-      setLoading(false);
-    }
-  }, [q]);
+  const suppliersQ = useSuppliers({ q });
+  const suppliers  = suppliersQ.data ?? [];
+  const loading    = suppliersQ.isLoading;
 
-  useEffect(() => { fetchSuppliers(); }, [fetchSuppliers]);
+  const createSupplier = useCreateSupplier();
+  const updateSupplier = useUpdateSupplier();
+  const deleteSupplier = useDeleteSupplier();
+  const saving     = createSupplier.isPending;
+  const editSaving = updateSupplier.isPending;
 
-  const handleAdd = async (e) => {
+  const handleAdd = (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-    setSaving(true); setFormError("");
-    try {
-      await api.post("/pos/suppliers", form);
-      setForm(EMPTY_FORM); setShowForm(false);
-      await fetchSuppliers();
-    } catch (e) {
-      setFormError(e.message || "Failed to save.");
-    } finally { setSaving(false); }
+    setFormError("");
+    createSupplier.mutate(form, {
+      onSuccess: () => { setForm(EMPTY_FORM); setShowForm(false); },
+      onError: (err) => setFormError(err.message || "Failed to save."),
+    });
   };
 
   const startEdit = (s) => {
@@ -67,30 +54,23 @@ export default function SuppliersPage() {
     });
   };
 
-  const handleEdit = async (id) => {
-    setEditSaving(true);
-    try {
-      await api.patch(`/pos/suppliers/${id}`, editForm);
-      setEditId(null);
-      await fetchSuppliers();
-    } catch (e) {
-      setError(e.message || "Failed to update.");
-    } finally { setEditSaving(false); }
+  const handleEdit = (id) => {
+    updateSupplier.mutate(
+      { id, ...editForm },
+      { onSuccess: () => setEditId(null), onError: (err) => setError(err.message || "Failed to update.") },
+    );
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!confirm("Delete this supplier? Their parts will be unlinked.")) return;
-    try {
-      await api.delete(`/pos/suppliers/${id}`);
-      await fetchSuppliers();
-    } catch (e) { setError(e.message || "Failed to delete."); }
+    deleteSupplier.mutate(id, { onError: (err) => setError(err.message || "Failed to delete.") });
   };
 
-  const toggleActive = async (s) => {
-    try {
-      await api.patch(`/pos/suppliers/${s._id}`, { isActive: !s.isActive });
-      await fetchSuppliers();
-    } catch (e) { setError(e.message || "Failed to update."); }
+  const toggleActive = (s) => {
+    updateSupplier.mutate(
+      { id: s._id, isActive: !s.isActive },
+      { onError: (err) => setError(err.message || "Failed to update.") },
+    );
   };
 
   return (

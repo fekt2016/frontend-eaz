@@ -1,24 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
 import { FaArrowLeft, FaTruck, FaBoxes, FaExclamationTriangle, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+import { useSupplier } from "@/hooks/queries/useSuppliers";
 
 export default function SupplierDetailPage() {
   const { id } = useParams();
-  const [supplier, setSupplier] = useState(null);
-  const [parts,    setParts]    = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState("");
-
-  useEffect(() => {
-    api.get(`/pos/suppliers/${id}`)
-      .then(r => { setSupplier(r.data.supplier); setParts(r.data.parts || []); })
-      .catch(e => setError(e.message || "Failed to load."))
-      .finally(() => setLoading(false));
-  }, [id]);
+  const { data, isLoading: loading, error: queryError } = useSupplier(id);
+  const supplier = data?.supplier ?? null;
+  const parts    = data?.parts ?? [];
+  const error    = queryError?.message || "";
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">

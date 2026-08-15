@@ -12,7 +12,10 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { qk } from "@/lib/queryKeys";
+import { useCreateSale } from "@/hooks/queries/usePosSales";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { Receipt } from "@/components/pos/Receipt";
 import {
@@ -48,7 +51,9 @@ export default function SellPage() {
   const [amountPaid, setAmountPaid] = useState("");
   const [momoRef,    setMomoRef]    = useState("");
   const [discount,   setDiscount]   = useState("");
-  const [completing, setCompleting] = useState(false);
+  const qc = useQueryClient();
+  const createSale = useCreateSale();
+  const completing = createSale.isPending;
   const [payError,   setPayError]   = useState("");
 
   // Completed sale
@@ -176,7 +181,13 @@ export default function SellPage() {
     setResults([]);
 
     try {
-      const res = await api.get(`/pos/scan/${encodeURIComponent(code.trim())}`);
+      // Route through React Query's cache (fresh each scan) while keeping the
+      // imperative, scanner-driven flow.
+      const res = await qc.fetchQuery({
+        queryKey: ["scan", code.trim()],
+        queryFn: () => api.get(`/pos/scan/${encodeURIComponent(code.trim())}`),
+        staleTime: 0,
+      });
       if (res.type === "product") {
         addToCart(res.data);
         setScanInput("");
@@ -187,7 +198,11 @@ export default function SellPage() {
     } catch {
       // Not an exact scan match — fall back to search
       try {
-        const search = await api.get(`/pos/inventory?q=${encodeURIComponent(code.trim())}&retail=true&limit=8`);
+        const search = await qc.fetchQuery({
+          queryKey: qk.inventory.search(`${code.trim()}|retail`),
+          queryFn: () => api.get(`/pos/inventory?q=${encodeURIComponent(code.trim())}&retail=true&limit=8`),
+          staleTime: 10_000,
+        });
         if (search.data.length === 1) {
           addToCart(search.data[0]);
           setScanInput("");
@@ -202,42 +217,43 @@ export default function SellPage() {
     } finally {
       setScanning(false);
     }
-  }, []);
+  }, [qc]);
 
   // ── Search as user types (debounced) ─────────────────────────────────────────
   useEffect(() => {
     if (!scanInput.trim() || scanInput.length < 2) { setResults([]); return; }
     const t = setTimeout(async () => {
       try {
-        const res = await api.get(`/pos/inventory?q=${encodeURIComponent(scanInput)}&limit=8`);
+        const res = await qc.fetchQuery({
+          queryKey: qk.inventory.search(scanInput.trim()),
+          queryFn: () => api.get(`/pos/inventory?q=${encodeURIComponent(scanInput)}&limit=8`),
+          staleTime: 10_000,
+        });
         setResults(res.data);
       } catch { /* silent */ }
     }, 200);
     return () => clearTimeout(t);
-  }, [scanInput]);
+  }, [scanInput, qc]);
 
   const completeSale = async () => {
     if (!amountPaid || paid < total) {
       setPayError(`Enter amount paid. Need at least GH₵${total.toFixed(2)}`);
       return;
     }
-    setCompleting(true);
     setPayError("");
     try {
-      const res = await api.post("/pos/sales", {
+      // Money entered in cedis → sent as integer pesewas (×100).
+      const sale = await createSale.mutateAsync({
         items: cart.map(i => ({ partId: i.partId, quantity: i.quantity })),
         paymentMethod: payMethod,
-        // Money entered in cedis → sent as integer pesewas (×100).
         amountPaid: Math.round(paid * 100),
         discount: disc ? Math.round(disc * 100) : undefined,
         momoReference: momoRef || undefined,
       });
-      setCompletedSale(res.data);
+      setCompletedSale(sale);
       setShowPay(false);
     } catch (err) {
       setPayError(err.message || "Sale failed. Try again.");
-    } finally {
-      setCompleting(false);
     }
   };
 
