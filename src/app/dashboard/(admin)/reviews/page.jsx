@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
+import { useAllReviews, useApproveReview, useDeleteReview } from "@/hooks/queries/useReviews";
 import {
   FaSpinner, FaRedo, FaCheck, FaTimes, FaTrash,
   FaStar, FaSearch,
@@ -41,47 +41,26 @@ const SERVICE_COLORS = {
 
 export default function AdminReviewsPage() {
   const { user, loading: authLoading } = useAuth();
-  const [reviews, setReviews]   = useState([]);
-  const [loading, setLoading]   = useState(true);
   const [filter, setFilter]     = useState("all");   // all | pending | approved
   const [search, setSearch]     = useState("");
-  const [acting, setActing]     = useState({});       // { [id]: true } — per-row loading
 
-  const fetchReviews = useCallback(async () => {
-    setLoading(true);
-    try {
-      const json = await api.get("/reviews/all");
-      setReviews(json.data || []);
-    } catch {
-      setReviews([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const reviewsQ = useAllReviews({ enabled: !authLoading && user?.role === "admin" });
+  const reviews = reviewsQ.data ?? [];
+  const loading = reviewsQ.isLoading;
+  const fetchReviews = () => reviewsQ.refetch();
 
-  useEffect(() => {
-    if (!authLoading && user?.role === "admin") fetchReviews();
-  }, [authLoading, user?.role, fetchReviews]);
+  const approveReview = useApproveReview();
+  const deleteReview = useDeleteReview();
+  // Per-row loading derived from whichever mutation targets this id.
+  const isActing = (id) =>
+    (approveReview.isPending && approveReview.variables?.id === id) ||
+    (deleteReview.isPending && deleteReview.variables === id);
 
-  const setApproval = async (id, approved) => {
-    setActing((a) => ({ ...a, [id]: true }));
-    try {
-      await api.patch(`/reviews/${id}/approve`, { approved });
-      setReviews((prev) => prev.map((r) => (r._id === id ? { ...r, approved } : r)));
-    } catch {} finally {
-      setActing((a) => ({ ...a, [id]: false }));
-    }
-  };
+  const setApproval = (id, approved) => approveReview.mutate({ id, approved });
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!confirm("Delete this review permanently?")) return;
-    setActing((a) => ({ ...a, [id]: true }));
-    try {
-      await api.delete(`/reviews/${id}`);
-      setReviews((prev) => prev.filter((r) => r._id !== id));
-    } catch {} finally {
-      setActing((a) => ({ ...a, [id]: false }));
-    }
+    deleteReview.mutate(id);
   };
 
   if (authLoading) return null;
@@ -220,7 +199,7 @@ export default function AdminReviewsPage() {
 
                   {/* Right: actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {acting[r._id] ? (
+                    {isActing(r._id) ? (
                       <FaSpinner className="animate-spin text-gray-400" size={14} />
                     ) : (
                       <>

@@ -44,6 +44,15 @@ export const qk = {
   domains: {
     all: ["domains"],
     mine: ["domains", "mine"],
+    list: (params = {}) => ["domains", "list", params],
+  },
+  reviews: {
+    all: ["reviews"],
+    list: ["reviews", "all"],
+  },
+  emails: {
+    all: ["emails"],
+    list: (params = {}) => ["emails", "list", params],
   },
   repairs: {
     mine: ["repairs", "mine"],

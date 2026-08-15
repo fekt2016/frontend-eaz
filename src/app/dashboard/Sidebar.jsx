@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
+import { useInventory } from "@/hooks/queries/useInventory";
 import { FaTachometerAlt, FaTimes, FaSignOutAlt, FaUserCircle, FaGlobe } from "react-icons/fa";
 import { baseNav, adminNav, marketplaceNav, posNav } from "./dashboardNav";
 
@@ -32,20 +31,16 @@ export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
   const router   = useRouter();
   const pathname = usePathname();
-  const [lowStockCount, setLowStockCount] = useState(0);
 
   const isAdmin    = ["admin", "superadmin"].includes(user?.role);
   const isPosRole  = POS_ROLES.includes(user?.role);
+  const canSeeStock = ["superadmin", "admin", "staff"].includes(user?.role);
 
   const visiblePosNav = posNav.filter(n => !n.roles || n.roles.includes(user?.role));
 
-  useEffect(() => {
-    if (user && ["superadmin", "admin", "staff"].includes(user.role)) {
-      api.get("/pos/inventory?lowStock=true&limit=1")
-        .then(r => setLowStockCount(r.total || 0))
-        .catch(() => {});
-    }
-  }, [user]);
+  // Low-stock badge count (React Query — shared cache with the inventory page).
+  const lowStockQ = useInventory({ lowStock: true, limit: 1 }, { enabled: canSeeStock });
+  const lowStockCount = lowStockQ.data?.total ?? 0;
 
   const isActive = (href) => {
     if (href === "/dashboard" || href === "/dashboard/pos" || href === "/dashboard/pos/dashboard") {

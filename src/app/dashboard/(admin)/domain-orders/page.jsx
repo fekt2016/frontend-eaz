@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
 import { FaGlobe, FaSearch, FaRedo, FaSpinner, FaExternalLinkAlt } from "react-icons/fa";
+import { useAdminDomainOrders, useUpdateDomainOrderStatus } from "@/hooks/queries/useDomains";
 
 const statusColors = {
   pending:   "bg-brand-50 text-brand-700 ring-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:ring-brand-900/30",
@@ -28,51 +28,33 @@ function fmtDate(d) {
 export default function AdminDomainOrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [updating, setUpdating] = useState(null);
+
+  const isAdmin = user?.role === "admin";
 
   useEffect(() => {
-    if (!authLoading && user?.role !== "admin") router.replace("/dashboard");
-  }, [user, authLoading, router]);
+    if (!authLoading && !isAdmin) router.replace("/dashboard");
+  }, [authLoading, isAdmin, router]);
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (filter !== "all") params.set("status", filter);
-      const res = await api.get(`/domain/orders?${params}`);
-      const all = res.data?.data || res.data || [];
-      const q = search.trim().toLowerCase();
-      setOrders(q ? all.filter((o) =>
-        o.domain?.includes(q) || o.email?.includes(q) || o.customerName?.toLowerCase().includes(q)
-      ) : all);
-    } catch {
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [filter, search]);
+  const domainOrdersQ = useAdminDomainOrders(filter, { enabled: !authLoading && isAdmin });
+  const allOrders = domainOrdersQ.data ?? [];
+  const loading = domainOrdersQ.isLoading;
+  const fetchOrders = () => domainOrdersQ.refetch();
+  const q = search.trim().toLowerCase();
+  const orders = q
+    ? allOrders.filter((o) =>
+        o.domain?.includes(q) || o.email?.includes(q) || o.customerName?.toLowerCase().includes(q))
+    : allOrders;
 
-  useEffect(() => {
-    if (!authLoading && user?.role === "admin") fetchOrders();
-  }, [authLoading, user?.role, fetchOrders]);
+  const updateStatus = useUpdateDomainOrderStatus();
+  const updating = updateStatus.isPending ? updateStatus.variables?.id : null;
 
-  const handleStatusUpdate = async (orderId, status) => {
-    setUpdating(orderId);
-    try {
-      await api.patch(`/domain/orders/${orderId}/status`, { status });
-      await fetchOrders();
-    } catch (err) {
-      alert(err.message || "Update failed");
-    } finally {
-      setUpdating(null);
-    }
+  if (authLoading || !isAdmin) return null;
+
+  const handleStatusUpdate = (orderId, status) => {
+    updateStatus.mutate({ id: orderId, status }, { onError: (err) => alert(err.message || "Update failed") });
   };
-
-  if (authLoading || user?.role !== "admin") return null;
 
   const totalRevenue = orders.filter(o => o.status === "completed").reduce((s, o) => s + (o.price || 0), 0);
 
