@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaTools } from "react-icons/fa";
-import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { fmtDate } from "@/components/dashboard/customer/CustomerCards";
+import { useMyRepairs } from "@/hooks/queries/useRepairs";
 
 const REPAIR_STATUS = {
   received:          { label: "Received",          cls: "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
@@ -21,17 +20,9 @@ const REPAIR_STATUS = {
 export default function CustomerRepairsPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [repairs, setRepairs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: repairs = [], isLoading: loading } = useMyRepairs();
 
   const isStaff = ["superadmin", "admin", "staff", "technician"].includes(user?.role);
-
-  useEffect(() => {
-    api.get("/track/mine")
-      .then((res) => setRepairs(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-20">

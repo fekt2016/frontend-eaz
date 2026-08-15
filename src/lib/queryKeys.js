@@ -30,4 +30,17 @@ export const qk = {
     myOverview: ["pos", "my-overview"],
     partOrders: (status = "all") => ["pos", "part-orders", status],
   },
+  hosting: {
+    all: ["hosting"],
+    mine: ["hosting", "mine"],
+    adminOverview: ["hosting", "admin-overview"],
+    detail: (id) => ["hosting", "detail", id],
+  },
+  domains: {
+    all: ["domains"],
+    mine: ["domains", "mine"],
+  },
+  repairs: {
+    mine: ["repairs", "mine"],
+  },
 };

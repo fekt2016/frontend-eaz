@@ -1,21 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaGlobe } from "react-icons/fa";
-import { api } from "@/lib/api";
 import { DomainCard } from "@/components/dashboard/customer/CustomerCards";
+import { useDomainOrders } from "@/hooks/queries/useDomains";
 
 export default function CustomerDomainsPage() {
-  const [domains, setDomains] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get("/domain/orders")
-      .then((res) => setDomains(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: domains = [], isLoading: loading } = useDomainOrders();
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-20">

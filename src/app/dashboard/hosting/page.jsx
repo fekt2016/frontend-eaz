@@ -1,21 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaServer } from "react-icons/fa";
-import { api } from "@/lib/api";
 import { HostingCard } from "@/components/dashboard/customer/CustomerCards";
+import { useHostingOrders } from "@/hooks/queries/useHosting";
 
 export default function CustomerHostingPage() {
-  const [hosting, setHosting] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get("/hosting/orders")
-      .then((res) => setHosting(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: hosting = [], isLoading: loading } = useHostingOrders();
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-20">
