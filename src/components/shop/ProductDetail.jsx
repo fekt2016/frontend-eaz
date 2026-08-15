@@ -1,17 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaArrowLeft, FaMinus, FaPlus } from "react-icons/fa";
-import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
 import { useCart } from "@/context/CartContext";
+import { useProductBySlug } from "@/hooks/queries/useProducts";
 
 export default function ProductDetail({ slug }) {
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: product, isLoading: loading, error: queryError } = useProductBySlug(slug);
+  const error = queryError ? (queryError.message || "Product not found") : null;
   const [activeImage, setActiveImage] = useState(0);
   const [qty, setQty] = useState(1);
   const { addItem, openCart } = useCart();
@@ -22,27 +21,9 @@ export default function ProductDetail({ slug }) {
     openCart();
   };
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get(`/products/${slug}`);
-      setProduct(res.data);
-    } catch (err) {
-      setError(err.message || "Product not found");
-      setProduct(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
-
   useEffect(() => {
-    load();
     setActiveImage(0);
     setQty(1);
-  }, [load]);
-
-  useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [slug]);
 

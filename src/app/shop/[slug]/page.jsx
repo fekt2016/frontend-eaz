@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
     title: `${product.name} | Buy Online in Ghana – EazWorld`,
     description: truncate(product.description, 155) || `${product.name} — buy online in Ghana at EazWorld. Fast delivery, secure Paystack checkout.`,
     path: `/shop/${product.slug}`,
-    type: "product",
+    type: "website",
     image,
   });
 }

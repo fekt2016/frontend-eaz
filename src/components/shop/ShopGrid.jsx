@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight, FaSearch } from "react-icons/fa";
-import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useShopProducts } from "@/hooks/queries/useProducts";
 
 const CATEGORIES = [
   "Phones",
@@ -29,33 +29,15 @@ export default function ShopGrid({ activeCategory = "" }) {
   const debouncedQ = useDebounce(q, 400);
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
-  const [products, setProducts] = useState([]);
-  const [pagination, setPagination] = useState({ total: 0, pages: 1 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const params = new URLSearchParams({ page: String(page), limit: "12", sort });
-    if (activeCategory) params.set("category", activeCategory);
-    if (debouncedQ.trim()) params.set("q", debouncedQ.trim());
-
-    try {
-      const res = await api.get(`/products?${params.toString()}`);
-      setProducts(res.data || []);
-      setPagination({ total: res.total || 0, pages: res.pages || 1 });
-    } catch (err) {
-      setError(err.message || "Failed to load products");
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeCategory, debouncedQ, sort, page]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const { data, isLoading: loading, error: queryError } = useShopProducts({
+    page, limit: 12, sort,
+    category: activeCategory || undefined,
+    q: debouncedQ.trim() || undefined,
+  });
+  const products = data?.data ?? [];
+  const pagination = { total: data?.total ?? 0, pages: data?.pages ?? 1 };
+  const error = queryError ? (queryError.message || "Failed to load products") : null;
 
   useEffect(() => {
     setPage(1);

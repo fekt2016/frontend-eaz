@@ -1,41 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { FaCheckCircle, FaExclamationTriangle, FaSpinner } from "react-icons/fa";
-import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
+import { useOrderByReference } from "@/hooks/queries/useOrders";
 
 export default function OrderConfirmationPage({ params }) {
   const reference = params.reference;
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [polls, setPolls] = useState(0);
-
-  const load = useCallback(async () => {
-    try {
-      const res = await api.get(`/orders/by-reference/${reference}`);
-      setOrder(res.data);
-    } catch (err) {
-      setError(err.message || "Order not found");
-    } finally {
-      setLoading(false);
-    }
-  }, [reference]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    if (!order || order.status === "paid" || polls >= 8) return;
-    const t = setTimeout(() => {
-      setPolls((p) => p + 1);
-      load();
-    }, 4000);
-    return () => clearTimeout(t);
-  }, [order, polls, load]);
+  // The hook polls every 4s while unpaid and stops once the order is paid.
+  const { data: order, isLoading: loading, error: queryError } = useOrderByReference(reference);
+  const error = queryError ? (queryError.message || "Order not found") : null;
 
   if (loading) {
     return (

@@ -59,6 +59,28 @@ export function useMyOrder(id, options = {}) {
   });
 }
 
+// Public order-confirmation lookup by Paystack reference. Polls every 4s while
+// unpaid (and the tab is focused), stopping once the order is paid.
+export function useOrderByReference(reference, options = {}) {
+  return useQuery({
+    queryKey: ["orders", "by-reference", reference],
+    queryFn: () => api.get(`/orders/by-reference/${reference}`).then((r) => r.data),
+    enabled: !!reference,
+    staleTime: 0,
+    refetchInterval: (query) => (query.state.data?.status === "paid" ? false : 4000),
+    ...options,
+  });
+}
+
+// Guest order tracking (POST /orders/track — orderNumber + phone). A lookup, so
+// it's a mutation, not a cached query.
+export function useTrackOrder() {
+  return useMutation({
+    mutationFn: ({ orderNumber, phone }) =>
+      api.post("/orders/track", { orderNumber, phone }).then((r) => r.data),
+  });
+}
+
 // Update an order's status. On success, refresh everything under ["orders"]
 // (lists, recent, and this order's detail all live under that prefix) — scoped
 // to the orders domain, not the whole cache.

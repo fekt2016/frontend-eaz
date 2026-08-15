@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
@@ -44,6 +45,7 @@ function DomainsContentInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
+  const qc = useQueryClient();
 
   const doSearch = async (searchQuery) => {
     if (!searchQuery.trim()) return;
@@ -51,7 +53,12 @@ function DomainsContentInner() {
     setError("");
     setSearched(true);
     try {
-      const res = await api.get(`/domain/search?domain=${encodeURIComponent(searchQuery.trim())}`);
+      // Imperative search, routed through the React Query cache (dedupes repeat lookups).
+      const res = await qc.fetchQuery({
+        queryKey: ["domain-search", searchQuery.trim()],
+        queryFn: () => api.get(`/domain/search?domain=${encodeURIComponent(searchQuery.trim())}`),
+        staleTime: 60_000,
+      });
       const { results: allResults = [] } = res;
       const mapped = allResults.map((r) => {
         const tld = r.domain.includes(".") ? "." + r.domain.split(".").slice(1).join(".") : ".com";
@@ -73,6 +80,7 @@ function DomainsContentInner() {
 
   useEffect(() => {
     if (name) doSearch(name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
   const handleSearch = (e) => {

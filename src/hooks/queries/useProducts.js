@@ -19,6 +19,28 @@ export function useProducts(params = {}, options = {}) {
   });
 }
 
+// Paginated shop listing for the storefront grid — returns the full envelope
+// { data, total, pages, page } so the grid can render pagination.
+export function useShopProducts(params = {}, options = {}) {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v != null && v !== "") qs.set(k, String(v));
+  });
+  const suffix = qs.toString() ? `?${qs}` : "";
+  return useQuery({
+    queryKey: qk.products.list(params),
+    queryFn: () =>
+      api.get(`/products${suffix}`).then((r) => ({
+        data: r.data ?? [],
+        total: r.total ?? 0,
+        pages: r.pages ?? 1,
+        page: r.page ?? 1,
+      })),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
 export function useProductBySlug(slug, options = {}) {
   return useQuery({
     queryKey: qk.products.detail(slug),

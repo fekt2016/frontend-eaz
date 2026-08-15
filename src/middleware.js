@@ -14,7 +14,11 @@ async function getMaintenanceStatus() {
     const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')
       || (process.env.NODE_ENV === 'production' ? null : 'http://localhost:5000');
     if (!apiBase) return { active: false, message: '', scheduledEnd: null };
-    const res  = await fetch(`${apiBase}/api/v1/settings`, { cache: 'no-store' });
+    // Hard timeout so a slow/stale backend can't hang every page render
+    const res  = await fetch(`${apiBase}/api/v1/settings`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(3000),
+    });
     const json = await res.json();
     if (json.success) {
       _maintCache = {

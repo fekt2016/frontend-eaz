@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FaSearch, FaSpinner } from "react-icons/fa";
-import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
+import { useTrackOrder } from "@/hooks/queries/useOrders";
 
 const inputCls =
   "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-900";
@@ -21,30 +21,23 @@ const STATUS_STYLES = {
 export default function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
   const [phone, setPhone] = useState("");
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleTrack = async (e) => {
+  const trackOrder = useTrackOrder();
+  const order = trackOrder.data ?? null;
+  const loading = trackOrder.isPending;
+
+  const handleTrack = (e) => {
     e.preventDefault();
     setError("");
-    setOrder(null);
     if (!orderNumber.trim() || !phone.trim()) {
       setError("Please enter both your order number and phone number.");
       return;
     }
-    setLoading(true);
-    try {
-      const res = await api.post("/orders/track", {
-        orderNumber: orderNumber.trim(),
-        phone: phone.trim(),
-      });
-      setOrder(res.data);
-    } catch (err) {
-      setError(err.message || "Unable to find your order.");
-    } finally {
-      setLoading(false);
-    }
+    trackOrder.mutate(
+      { orderNumber: orderNumber.trim(), phone: phone.trim() },
+      { onError: (err) => setError(err.message || "Unable to find your order.") },
+    );
   };
 
   const badge = order ? STATUS_STYLES[order.status] || STATUS_STYLES.pending : null;
