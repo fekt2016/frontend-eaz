@@ -48,4 +48,13 @@ export const qk = {
     list: (params = {}) => ["jobs", "list", params],
     warranty: ["jobs", "warranty"],
   },
+  expenses: {
+    all: ["expenses"],
+    list: (params = {}) => ["expenses", "list", params],
+  },
+  suppliers: {
+    all: ["suppliers"],
+    list: (params = {}) => ["suppliers", "list", params],
+    detail: (id) => ["suppliers", "detail", id],
+  },
 };

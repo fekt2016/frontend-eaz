@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 
@@ -34,5 +34,17 @@ export function usePartOrders(status = "all", options = {}) {
     queryFn: () => api.get(`/pos/part-orders${suffix}`).then((r) => r.data ?? []),
     staleTime: 20_000,
     ...options,
+  });
+}
+
+// Update a part-order (or repair-order) status; refreshes the part-orders list.
+export function useUpdatePosOrderStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status, orderType }) => {
+      const endpoint = orderType === "repair" ? `/pos/repair-orders/${id}` : `/pos/part-orders/${id}`;
+      return api.patch(endpoint, { status }).then((r) => r.data);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["pos", "part-orders"] }),
   });
 }

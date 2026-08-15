@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { formatGhs } from "@/lib/shop";
 import { FaShoppingBag, FaWrench, FaSpinner } from "react-icons/fa";
+import { useOrders, useUpdateOrderStatus } from "@/hooks/queries/useOrders";
+import { usePartOrders, useUpdatePosOrderStatus } from "@/hooks/queries/usePosDashboard";
 
 const ALLOWED = ["superadmin", "admin", "staff"];
 
@@ -43,46 +44,39 @@ export default function PosOrdersPage() {
   const router = useRouter();
 
   const [tab, setTab] = useState("shop"); // 'shop' | 'parts'
-  const [shopOrders, setShopOrders] = useState([]);
-  const [partOrders, setPartOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [savingId, setSavingId] = useState(null);
+
+  const isAllowed = ALLOWED.includes(user?.role);
 
   // Only staff and above may manage orders; send technicians back to their jobs.
   useEffect(() => {
-    if (!authLoading && !ALLOWED.includes(user?.role)) router.replace("/dashboard/pos");
-  }, [user, authLoading, router]);
+    if (!authLoading && !isAllowed) router.replace("/dashboard/pos");
+  }, [authLoading, isAllowed, router]);
 
-  useEffect(() => {
-    if (authLoading || !ALLOWED.includes(user?.role)) return;
-    Promise.all([
-      api.get("/orders").then(r => setShopOrders(r.data || [])).catch(() => {}),
-      api.get("/pos/part-orders").then(r => setPartOrders(r.data || [])).catch(() => {}),
-    ]).finally(() => setLoading(false));
-  }, [authLoading, user]);
+  const shopQ = useOrders({}, { enabled: !authLoading && isAllowed });
+  const partQ = usePartOrders("all", { enabled: !authLoading && isAllowed });
+  const updateShop = useUpdateOrderStatus();
+  const updatePos = useUpdatePosOrderStatus();
 
-  if (authLoading || !ALLOWED.includes(user?.role)) return null;
+  const shopOrders = shopQ.data ?? [];
+  const partOrders = partQ.data ?? [];
+  const loading = shopQ.isLoading || partQ.isLoading;
+  const savingId = updateShop.isPending
+    ? updateShop.variables?.id
+    : updatePos.isPending
+    ? updatePos.variables?.id
+    : null;
 
-  const updateShopStatus = async (id, status) => {
-    setSavingId(id); setError("");
-    try {
-      await api.patch(`/orders/${id}`, { status });
-      setShopOrders(list => list.map(o => (o._id === id ? { ...o, status } : o)));
-    } catch (e) {
-      setError(e.message || "Failed to update order.");
-    } finally { setSavingId(null); }
+  if (authLoading || !isAllowed) return null;
+
+  const updateShopStatus = (id, status) => {
+    setError("");
+    updateShop.mutate({ id, status }, { onError: (e) => setError(e.message || "Failed to update order.") });
   };
 
-  const updatePartStatus = async (id, status, orderType) => {
-    setSavingId(id); setError("");
-    const endpoint = orderType === "repair" ? `/pos/repair-orders/${id}` : `/pos/part-orders/${id}`;
-    try {
-      await api.patch(endpoint, { status });
-      setPartOrders(list => list.map(o => (o._id === id ? { ...o, status } : o)));
-    } catch (e) {
-      setError(e.message || "Failed to update order.");
-    } finally { setSavingId(null); }
+  const updatePartStatus = (id, status, orderType) => {
+    setError("");
+    updatePos.mutate({ id, status, orderType }, { onError: (e) => setError(e.message || "Failed to update order.") });
   };
 
   const tabs = [

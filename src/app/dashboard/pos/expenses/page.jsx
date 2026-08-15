@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { api } from "@/lib/api";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   FaPlus, FaTrash, FaEdit, FaCheck, FaTimes, FaReceipt,
 } from "react-icons/fa";
+import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/queries/useExpenses";
 
 const CATEGORIES = [
   { value: "rent",         label: "Rent",         color: "text-blue-600 dark:text-blue-400",   bg: "bg-blue-500/15"   },
@@ -32,11 +32,6 @@ export default function ExpensesPage() {
   const { user } = useAuth();
   const isSuperAdmin = user?.role === "superadmin";
 
-  const [expenses, setExpenses] = useState([]);
-  const [total,    setTotal]    = useState(0);
-  const [summary,  setSummary]  = useState([]);
-  const [totalAmt, setTotalAmt] = useState(0);
-  const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState("");
 
   // Filters
@@ -53,7 +48,6 @@ export default function ExpensesPage() {
   const [formDesc,    setFormDesc]    = useState("");
   const [formDate,    setFormDate]    = useState(today());
   const [formNotes,   setFormNotes]   = useState("");
-  const [formSaving,  setFormSaving]  = useState(false);
   const [formError,   setFormError]   = useState("");
 
   // Edit
@@ -62,46 +56,38 @@ export default function ExpensesPage() {
   const [editCat,     setEditCat]     = useState("");
   const [editDesc,    setEditDesc]    = useState("");
   const [editDate,    setEditDate]    = useState("");
-  const [editSaving,  setEditSaving]  = useState(false);
 
-  const fetchExpenses = useCallback(async () => {
-    setLoading(true); setError("");
-    try {
-      const params = new URLSearchParams({ page, limit });
-      if (filterCat !== "all") params.set("category", filterCat);
-      if (filterFrom) params.set("from", filterFrom);
-      if (filterTo)   params.set("to",   filterTo);
-      const res = await api.get(`/pos/expenses?${params}`);
-      setExpenses(res.data || []);
-      setTotal(res.total   || 0);
-      setSummary(res.summary || []);
-      setTotalAmt(res.totalAmount || 0);
-    } catch (e) {
-      setError(e.message || "Failed to load expenses.");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, filterCat, filterFrom, filterTo]);
+  const expensesQ = useExpenses({ page, limit, category: filterCat, from: filterFrom, to: filterTo });
+  const expenses  = expensesQ.data?.data ?? [];
+  const total     = expensesQ.data?.total ?? 0;
+  const summary   = expensesQ.data?.summary ?? [];
+  const totalAmt  = expensesQ.data?.totalAmount ?? 0;
+  const loading   = expensesQ.isLoading;
 
-  useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
+  const createExpense = useCreateExpense();
+  const updateExpense = useUpdateExpense();
+  const deleteExpense = useDeleteExpense();
+  const formSaving = createExpense.isPending;
+  const editSaving = updateExpense.isPending;
 
-  const handleAdd = async (e) => {
+  const handleAdd = (e) => {
     e.preventDefault();
     if (!formAmount || !formDesc) return;
-    setFormSaving(true); setFormError("");
-    try {
-      await api.post("/pos/expenses", {
-        amount: Math.round(Number(formAmount) * 100), category: formCat, // cedis → pesewas
+    setFormError("");
+    // Money entered in cedis → sent as integer pesewas (×100). Invalidation refetches.
+    createExpense.mutate(
+      {
+        amount: Math.round(Number(formAmount) * 100), category: formCat,
         description: formDesc, date: formDate, notes: formNotes || undefined,
-      });
-      setFormAmount(""); setFormDesc(""); setFormNotes(""); setFormDate(today()); setFormCat("other");
-      setShowForm(false);
-      await fetchExpenses();
-    } catch (e) {
-      setFormError(e.message || "Failed to save.");
-    } finally {
-      setFormSaving(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          setFormAmount(""); setFormDesc(""); setFormNotes(""); setFormDate(today()); setFormCat("other");
+          setShowForm(false);
+        },
+        onError: (err) => setFormError(err.message || "Failed to save."),
+      },
+    );
   };
 
   const startEdit = (exp) => {
@@ -112,30 +98,19 @@ export default function ExpensesPage() {
     setEditDate(exp.date ? new Date(exp.date).toISOString().slice(0, 10) : today());
   };
 
-  const handleEdit = async (id) => {
-    setEditSaving(true);
-    try {
-      await api.patch(`/pos/expenses/${id}`, {
-        amount: Math.round(Number(editAmount) * 100), category: editCat, // cedis → pesewas
+  const handleEdit = (id) => {
+    updateExpense.mutate(
+      {
+        id, amount: Math.round(Number(editAmount) * 100), category: editCat, // cedis → pesewas
         description: editDesc, date: editDate,
-      });
-      setEditId(null);
-      await fetchExpenses();
-    } catch (e) {
-      setError(e.message || "Failed to update.");
-    } finally {
-      setEditSaving(false);
-    }
+      },
+      { onSuccess: () => setEditId(null), onError: (err) => setError(err.message || "Failed to update.") },
+    );
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!confirm("Delete this expense?")) return;
-    try {
-      await api.delete(`/pos/expenses/${id}`);
-      await fetchExpenses();
-    } catch (e) {
-      setError(e.message || "Failed to delete.");
-    }
+    deleteExpense.mutate(id, { onError: (err) => setError(err.message || "Failed to delete.") });
   };
 
   return (
