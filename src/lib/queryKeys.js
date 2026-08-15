@@ -39,7 +39,14 @@ export const qk = {
     all: ["hosting"],
     mine: ["hosting", "mine"],
     adminOverview: ["hosting", "admin-overview"],
+    adminList: (params = {}) => ["hosting", "admin-list", params],
     detail: (id) => ["hosting", "detail", id],
+  },
+  consultations: {
+    all: ["consultations"],
+  },
+  settings: {
+    all: ["settings"],
   },
   domains: {
     all: ["domains"],

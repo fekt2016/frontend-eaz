@@ -1,9 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
 import {
   FaServer, FaGlobe, FaShieldAlt, FaExternalLinkAlt,
   FaClock, FaChevronRight, FaUserCircle, FaUsers, FaMoneyBillWave,
@@ -14,6 +13,12 @@ import {
   StatCard, HostingCard, DomainCard, ShopOrderCard, RepairCard,
 } from "@/components/dashboard/customer/CustomerCards";
 import { formatGhs } from "@/lib/shop";
+import { useHostingOrders, useHostingAdminOverview } from "@/hooks/queries/useHosting";
+import { useDomainOrders } from "@/hooks/queries/useDomains";
+import { useMyRepairs } from "@/hooks/queries/useRepairs";
+import { useOrders, useMyOrders, useRecentOrders } from "@/hooks/queries/useOrders";
+import { useConsultations } from "@/hooks/queries/useContacts";
+import { useSettings, useUpdateSettings } from "@/hooks/queries/useSettings";
 
 /* ── Admin overview helpers ────────────────────────────────────────────── */
 
@@ -70,99 +75,61 @@ const consultationStatusColors = {
 /* ── Admin overview section (shown to admin/superadmin) ────────────────── */
 
 function AdminOverviewSection() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [consultations, setConsultations] = useState({ total: 0, new: 0, recent: [] });
-  const [shopOrders, setShopOrders] = useState([]);
+  const overviewQ = useHostingAdminOverview();
+  const consultationsQ = useConsultations();
+  const shopOrdersQ = useRecentOrders(5);
+  const fetchData = () => { overviewQ.refetch(); consultationsQ.refetch(); shopOrdersQ.refetch(); };
 
-  const [maint, setMaint]           = useState(null);
-  const [maintSaving, setMaintSaving] = useState(false);
+  const d = overviewQ.data ?? null;
+  const loading = overviewQ.isLoading || consultationsQ.isLoading || shopOrdersQ.isLoading;
+  const shopOrders = shopOrdersQ.data ?? [];
+  const allContacts = consultationsQ.data ?? [];
+  const consultations = {
+    total: allContacts.length,
+    new: allContacts.filter((c) => c.status === "new").length,
+    recent: allContacts.slice(0, 5),
+  };
+
+  // Maintenance settings (React Query) + local editor form state.
+  const settingsQ = useSettings();
+  const maint = settingsQ.data ?? null;
+  const updateSettings = useUpdateSettings();
+  const maintSaving = updateSettings.isPending;
   const [maintMsg, setMaintMsg]     = useState("");
   const [maintStart, setMaintStart] = useState("");
   const [maintEnd, setMaintEnd]     = useState("");
   const [maintExpanded, setMaintExpanded] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [overviewRes, contactsRes, shopOrdersRes] = await Promise.all([
-        api.get("/hosting/orders/admin-overview"),
-        api.get("/contacts?type=consultation"),
-        api.get("/orders?limit=5"),
-      ]);
-      setData(overviewRes.data);
-      setShopOrders(shopOrdersRes.data || []);
-      const all = contactsRes.data || [];
-      setConsultations({
-        total: all.length,
-        new: all.filter((c) => c.status === "new").length,
-        recent: all.slice(0, 5),
-      });
-    } catch {
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  const fetchMaintenance = useCallback(async () => {
-    try {
-      const json = await api.get("/settings");
-      if (json.success) {
-        const s = json.data;
-        setMaint(s);
-        setMaintMsg(s.maintenanceMessage   || "");
-        setMaintStart(s.maintenanceScheduledStart ? new Date(s.maintenanceScheduledStart).toISOString().slice(0, 16) : "");
-        setMaintEnd(s.maintenanceScheduledEnd   ? new Date(s.maintenanceScheduledEnd).toISOString().slice(0, 16)   : "");
-      }
-    } catch {}
-  }, []);
-
-  useEffect(() => { fetchMaintenance(); }, [fetchMaintenance]);
-
-  const toggleMaintenance = async () => {
+  useEffect(() => {
     if (!maint) return;
-    setMaintSaving(true);
-    try {
-      const json = await api.patch("/settings", { maintenanceMode: !maint.maintenanceMode });
-      if (json.success) setMaint(json.data);
-    } catch {}
-    finally { setMaintSaving(false); }
+    setMaintMsg(maint.maintenanceMessage || "");
+    setMaintStart(maint.maintenanceScheduledStart ? new Date(maint.maintenanceScheduledStart).toISOString().slice(0, 16) : "");
+    setMaintEnd(maint.maintenanceScheduledEnd ? new Date(maint.maintenanceScheduledEnd).toISOString().slice(0, 16) : "");
+  }, [maint]);
+
+  const toggleMaintenance = () => {
+    if (!maint) return;
+    updateSettings.mutate({ maintenanceMode: !maint.maintenanceMode });
   };
 
-  const saveMaintSchedule = async (e) => {
+  const saveMaintSchedule = (e) => {
     e.preventDefault();
-    setMaintSaving(true);
-    try {
-      const json = await api.patch("/settings", {
+    updateSettings.mutate(
+      {
         maintenanceMessage:        maintMsg,
         maintenanceScheduledStart: maintStart || null,
         maintenanceScheduledEnd:   maintEnd   || null,
-      });
-      if (json.success) { setMaint(json.data); setMaintExpanded(false); }
-    } catch {}
-    finally { setMaintSaving(false); }
+      },
+      { onSuccess: () => setMaintExpanded(false) },
+    );
   };
 
-  const clearSchedule = async () => {
-    setMaintSaving(true);
-    try {
-      const json = await api.patch("/settings", {
-        maintenanceScheduledStart: null,
-        maintenanceScheduledEnd:   null,
-      });
-      if (json.success) {
-        setMaint(json.data);
-        setMaintStart("");
-        setMaintEnd("");
-      }
-    } catch {}
-    finally { setMaintSaving(false); }
+  const clearSchedule = () => {
+    updateSettings.mutate(
+      { maintenanceScheduledStart: null, maintenanceScheduledEnd: null },
+      { onSuccess: () => { setMaintStart(""); setMaintEnd(""); } },
+    );
   };
-
-  const d = data;
 
   return (
     <>
@@ -494,36 +461,23 @@ function DashboardContent() {
   // their own. GET /orders is gated to admin/staff on the backend.
   const canSeeAllOrders = ["admin", "superadmin", "staff"].includes(user?.role);
 
-  const [hosting, setHosting] = useState([]);
-  const [domains, setDomains] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [repairs, setRepairs] = useState([]);
-  const [loadingHosting, setLoadingHosting] = useState(true);
-  const [loadingDomains, setLoadingDomains] = useState(true);
-  const [loadingOrders, setLoadingOrders] = useState(true);
-  const [loadingRepairs, setLoadingRepairs] = useState(true);
+  // Personal overview data — only fetched for non-admins (admins see the
+  // AdminOverviewSection above instead).
+  const enabled = !isAdmin;
+  const hostingQ = useHostingOrders({ enabled });
+  const domainsQ = useDomainOrders({ enabled });
+  const allOrdersQ = useOrders({ limit: 5 }, { enabled: enabled && canSeeAllOrders });
+  const myOrdersQ = useMyOrders({ enabled: enabled && !canSeeAllOrders });
+  const repairsQ = useMyRepairs({ enabled });
 
-  useEffect(() => {
-    api.get("/hosting/orders")
-      .then((res) => setHosting(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingHosting(false));
-
-    api.get("/domain/orders")
-      .then((res) => setDomains(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingDomains(false));
-
-    api.get(canSeeAllOrders ? "/orders?limit=5" : "/orders/mine")
-      .then((res) => setOrders(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingOrders(false));
-
-    api.get("/track/mine")
-      .then((res) => setRepairs(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingRepairs(false));
-  }, [canSeeAllOrders]);
+  const hosting = hostingQ.data ?? [];
+  const domains = domainsQ.data ?? [];
+  const orders = canSeeAllOrders ? (allOrdersQ.data ?? []) : (myOrdersQ.data ?? []);
+  const repairs = repairsQ.data ?? [];
+  const loadingHosting = hostingQ.isLoading;
+  const loadingDomains = domainsQ.isLoading;
+  const loadingOrders = canSeeAllOrders ? allOrdersQ.isLoading : myOrdersQ.isLoading;
+  const loadingRepairs = repairsQ.isLoading;
 
   const activeHosting = hosting.filter(o => o.status === "active").length;
   const activeDomains = domains.filter(o => o.status === "completed").length;

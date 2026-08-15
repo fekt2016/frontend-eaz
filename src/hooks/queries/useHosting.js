@@ -11,3 +11,13 @@ export function useHostingOrders(options = {}) {
     ...options,
   });
 }
+
+// Admin business overview (GET /hosting/orders/admin-overview).
+export function useHostingAdminOverview(options = {}) {
+  return useQuery({
+    queryKey: qk.hosting.adminOverview,
+    queryFn: () => api.get("/hosting/orders/admin-overview").then((r) => r.data),
+    staleTime: 30_000,
+    ...options,
+  });
+}
