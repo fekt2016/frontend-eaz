@@ -39,6 +39,7 @@ export const qk = {
     all: ["hosting"],
     mine: ["hosting", "mine"],
     adminOverview: ["hosting", "admin-overview"],
+    adminSummary: ["hosting", "admin-summary"],
     adminList: (params = {}) => ["hosting", "admin-list", params],
     detail: (id) => ["hosting", "detail", id],
   },
@@ -77,5 +78,15 @@ export const qk = {
     all: ["suppliers"],
     list: (params = {}) => ["suppliers", "list", params],
     detail: (id) => ["suppliers", "detail", id],
+  },
+  reports: {
+    analytics: (range = {}) => ["reports", "analytics", range],
+  },
+  activityLogs: {
+    all: ["activity-logs"],
+    list: (params = {}) => ["activity-logs", "list", params],
+  },
+  users: {
+    all: ["auth", "users"],
   },
 };

@@ -75,7 +75,7 @@ export default function PosRoot() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) { router.replace("/auth/login?redirect=/dashboard/pos"); return; }
-    if (!["technician", "admin"].includes(user.role)) { router.replace("/dashboard/pos/dashboard"); }
+    if (!["technician", "admin"].includes(user.role)) { router.replace("/dashboard"); }
   }, [user, authLoading, router]);
 
   const mineQ = useJobs({ assignedTo: "me", limit: 100 }, { enabled: showJobs });

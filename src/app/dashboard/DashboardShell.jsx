@@ -1,18 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { FaBars, FaSignOutAlt } from "react-icons/fa";
+import { FaBars } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 
 const roleLabel = (role) =>
   role === "superadmin" ? "Super Admin" : role === "admin" ? "Admin" : role;
 
 export default function DashboardShell({ children, title = "Dashboard" }) {
-  const { user, logout } = useAuth();
-  const router   = useRouter();
+  const { user } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -20,7 +19,7 @@ export default function DashboardShell({ children, title = "Dashboard" }) {
   useEffect(() => { setOpen(false); }, [pathname]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+    <div className="h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 flex">
 
       {/* Mobile overlay */}
       {open && (
@@ -57,13 +56,6 @@ export default function DashboardShell({ children, title = "Dashboard" }) {
               <p className="text-xs font-semibold text-gray-900 dark:text-white truncate max-w-[140px]">{user?.name}</p>
               <p className="text-xs text-gray-500 truncate capitalize">{roleLabel(user?.role)}</p>
             </div>
-            <button
-              onClick={() => { logout(); router.push("/auth/login"); }}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            >
-              <FaSignOutAlt size={13} />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
           </div>
         </header>
 

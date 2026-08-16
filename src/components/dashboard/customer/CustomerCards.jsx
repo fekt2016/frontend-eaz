@@ -5,12 +5,14 @@
 // old single-tabbed /dashboard page so the Hosting / Domains / Orders pages
 // and the Overview all render the same cards.
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaServer, FaGlobe, FaShoppingBag, FaTools } from "react-icons/fa";
-import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { formatGhs } from "@/lib/shop";
+import { useHostingOrders } from "@/hooks/queries/useHosting";
+import { useDomainOrders } from "@/hooks/queries/useDomains";
+import { useMyOrders } from "@/hooks/queries/useOrders";
+import { useMyRepairs } from "@/hooks/queries/useRepairs";
 
 export function fmtDate(d) {
   if (!d) return "—";
@@ -192,36 +194,19 @@ export function RepairCard({ job }) {
 
 // Combined customer dashboard data — shop orders, hosting, domains, repairs.
 export function useCustomerData() {
-  const [hosting, setHosting] = useState([]);
-  const [domains, setDomains] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [repairs, setRepairs] = useState([]);
-  const [loadingHosting, setLoadingHosting] = useState(true);
-  const [loadingDomains, setLoadingDomains] = useState(true);
-  const [loadingOrders, setLoadingOrders] = useState(true);
-  const [loadingRepairs, setLoadingRepairs] = useState(true);
+  const hostingQ = useHostingOrders();
+  const domainsQ = useDomainOrders();
+  const ordersQ = useMyOrders();
+  const repairsQ = useMyRepairs();
 
-  useEffect(() => {
-    api.get("/hosting/orders")
-      .then((res) => setHosting(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingHosting(false));
-
-    api.get("/domain/orders")
-      .then((res) => setDomains(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingDomains(false));
-
-    api.get("/orders/mine")
-      .then((res) => setOrders(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingOrders(false));
-
-    api.get("/track/mine")
-      .then((res) => setRepairs(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingRepairs(false));
-  }, []);
+  const hosting = hostingQ.data ?? [];
+  const domains = domainsQ.data ?? [];
+  const orders = ordersQ.data ?? [];
+  const repairs = repairsQ.data ?? [];
+  const loadingHosting = hostingQ.isLoading;
+  const loadingDomains = domainsQ.isLoading;
+  const loadingOrders = ordersQ.isLoading;
+  const loadingRepairs = repairsQ.isLoading;
 
   const activeHosting = hosting.filter((o) => o.status === "active").length;
   const activeDomains = domains.filter((o) => o.status === "completed").length;

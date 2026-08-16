@@ -43,7 +43,7 @@ export default function SellPage() {
   const [scanError, setScanError] = useState("");
 
   // Cart
-  const [cart, setCart] = useState([]); // [{ partId, name, barcode, unitPrice, quantity, stock }]
+  const [cart, setCart] = useState([]); // [{ key, partId?, productId?, name, barcode, unitPrice, quantity, stock }]
 
   // Payment panel
   const [showPay,    setShowPay]    = useState(false);
@@ -89,31 +89,43 @@ export default function SellPage() {
     setScanError("");
     setResults([]);
     setCart(prev => {
-      const exists = prev.find(i => i.partId === part._id);
+      // Shop products are flagged `_kind: 'product'` by the API; parts are not.
+      const isProduct = part._kind === "product";
+      const key       = isProduct ? `p:${part._id}` : `r:${part._id}`;
+      const exists    = prev.find(i => i.key === key);
+      const stock     = Number(part.quantity) || 0;
+      const allowNeg  = Boolean(part.allowNegativeStock);
+
       if (exists) {
-        if (exists.quantity >= part.quantity && !part.allowNegativeStock) {
-          setScanError(`Max stock for "${part.name}" reached (${part.quantity})`);
+        if (exists.quantity >= stock && !allowNeg) {
+          setScanError(`Max stock for "${part.name}" reached (${stock})`);
           return prev;
         }
-        return prev.map(i => i.partId === part._id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map(i => i.key === key ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      if (part.quantity < 1 && !part.allowNegativeStock) {
+      if (stock < 1 && !allowNeg) {
         setScanError(`"${part.name}" is out of stock.`);
         return prev;
       }
       return [...prev, {
-        partId: part._id, name: part.name, barcode: part.barcode,
-        unitPrice: Math.round(Number(part.sellingPrice) || 0) / 100, quantity: 1, stock: part.quantity,
-        allowNegativeStock: part.allowNegativeStock,
+        key,
+        partId:     isProduct ? undefined : part._id,
+        productId:  isProduct ? part._id : undefined,
+        name:       part.name,
+        barcode:    part.barcode || part.sku,
+        unitPrice:  Math.round(Number(part.sellingPrice) || Number(part.price) || 0) / 100,
+        quantity:   1,
+        stock,
+        allowNegativeStock: allowNeg,
       }];
     });
   };
 
-  const removeFromCart = (partId) => setCart(prev => prev.filter(i => i.partId !== partId));
+  const removeFromCart = (key) => setCart(prev => prev.filter(i => i.key !== key));
 
-  const changeQty = (partId, delta) => {
+  const changeQty = (key, delta) => {
     setCart(prev => prev.map(i => {
-      if (i.partId !== partId) return i;
+      if (i.key !== key) return i;
       const next = i.quantity + delta;
       if (next <= 0) return null;
       if (next > i.stock && !i.allowNegativeStock) return i;
@@ -158,9 +170,9 @@ export default function SellPage() {
       // + / - adjust last cart item
       if (!showPay && document.activeElement === scanRef.current) {
         const last = cart.length - 1;
-        if (e.key === "+" && last >= 0) { e.preventDefault(); changeQty(cart[last].partId, 1); }
-        if (e.key === "-" && last >= 0) { e.preventDefault(); changeQty(cart[last].partId, -1); }
-        if (e.key === "Delete" && last >= 0) { e.preventDefault(); removeFromCart(cart[last].partId); }
+        if (e.key === "+" && last >= 0) { e.preventDefault(); changeQty(cart[last].key, 1); }
+        if (e.key === "-" && last >= 0) { e.preventDefault(); changeQty(cart[last].key, -1); }
+        if (e.key === "Delete" && last >= 0) { e.preventDefault(); removeFromCart(cart[last].key); }
       }
     };
     window.addEventListener("keydown", handler);
@@ -200,7 +212,7 @@ export default function SellPage() {
       try {
         const search = await qc.fetchQuery({
           queryKey: qk.inventory.search(`${code.trim()}|retail`),
-          queryFn: () => api.get(`/pos/inventory?q=${encodeURIComponent(code.trim())}&retail=true&limit=8`),
+          queryFn: () => api.get(`/pos/inventory?q=${encodeURIComponent(code.trim())}&retail=true&includeProducts=true&limit=8`),
           staleTime: 10_000,
         });
         if (search.data.length === 1) {
@@ -226,7 +238,7 @@ export default function SellPage() {
       try {
         const res = await qc.fetchQuery({
           queryKey: qk.inventory.search(scanInput.trim()),
-          queryFn: () => api.get(`/pos/inventory?q=${encodeURIComponent(scanInput)}&limit=8`),
+          queryFn: () => api.get(`/pos/inventory?q=${encodeURIComponent(scanInput)}&includeProducts=true&limit=8`),
           staleTime: 10_000,
         });
         setResults(res.data);
@@ -244,7 +256,7 @@ export default function SellPage() {
     try {
       // Money entered in cedis → sent as integer pesewas (×100).
       const sale = await createSale.mutateAsync({
-        items: cart.map(i => ({ partId: i.partId, quantity: i.quantity })),
+        items: cart.map(i => ({ partId: i.partId, productId: i.productId, quantity: i.quantity })),
         paymentMethod: payMethod,
         amountPaid: Math.round(paid * 100),
         discount: disc ? Math.round(disc * 100) : undefined,
@@ -394,7 +406,7 @@ export default function SellPage() {
             ) : (
               cart.map((item, idx) => (
                 <div
-                  key={item.partId}
+                  key={item.key}
                   className={`flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800 last:border-0 ${idx === cart.length - 1 ? "bg-brand-500/5" : ""}`}
                 >
                   {/* Item info */}
@@ -405,12 +417,12 @@ export default function SellPage() {
 
                   {/* Qty controls */}
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => changeQty(item.partId, -1)} className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center justify-center transition">
+                    <button onClick={() => changeQty(item.key, -1)} className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center justify-center transition">
                       <FaMinus size={9} />
                     </button>
                     <span className="text-sm font-bold text-gray-900 dark:text-white w-6 text-center">{item.quantity}</span>
                     <button
-                      onClick={() => changeQty(item.partId, 1)}
+                      onClick={() => changeQty(item.key, 1)}
                       disabled={item.quantity >= item.stock && !item.allowNegativeStock}
                       className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center justify-center transition disabled:opacity-30"
                     >
@@ -422,7 +434,7 @@ export default function SellPage() {
                   <p className="text-sm font-bold text-gray-900 dark:text-white w-20 text-right">GH₵{(item.unitPrice * item.quantity).toFixed(2)}</p>
 
                   {/* Remove */}
-                  <button onClick={() => removeFromCart(item.partId)} className="text-gray-600 hover:text-red-400 transition ml-1">
+                  <button onClick={() => removeFromCart(item.key)} className="text-gray-600 hover:text-red-400 transition ml-1">
                     <FaTrash size={11} />
                   </button>
                 </div>

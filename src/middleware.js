@@ -108,6 +108,7 @@ export async function middleware(request) {
     "/dashboard/domain-orders",
     "/dashboard/users",
     "/dashboard/emails",
+    "/dashboard/activity-logs",
     // Delivery Zones — admin/superadmin only. Inventory and Products are
     // open to staff too (they manage parts + shop products in the marketplace).
     "/dashboard/commerce/delivery-zones",

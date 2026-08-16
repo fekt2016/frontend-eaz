@@ -11,7 +11,6 @@ import Sidebar from "../Sidebar";
 
 const PAGE_TITLES = {
   "/dashboard/pos": "My Jobs",
-  "/dashboard/pos/dashboard": "Dashboard",
   "/dashboard/pos/sell": "Sell",
   "/dashboard/pos/jobs": "Jobs",
   "/dashboard/pos/jobs/new": "New Job",
@@ -61,7 +60,7 @@ export default function PosShell({ children }) {
   // Technicians get a horizontal top navigation bar instead of the left sidebar.
   if (user.role === "technician") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+      <div className="h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 flex flex-col">
         <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-4 px-4 sm:px-6 py-3">
             <Link href="/dashboard/pos" className="flex items-center gap-2.5 flex-shrink-0">
@@ -76,7 +75,7 @@ export default function PosShell({ children }) {
 
             <nav className="flex items-center gap-1 flex-1 overflow-x-auto">
               {visibleNav.map(({ label, href, icon: Icon }) => {
-                const active = pathname === href || (!["/dashboard/pos", "/dashboard/pos/dashboard"].includes(href) && pathname.startsWith(href));
+                const active = pathname === href || (!["/dashboard", "/dashboard/pos"].includes(href) && pathname.startsWith(href));
                 return (
                   <Link
                     key={href}
@@ -120,7 +119,7 @@ export default function PosShell({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+    <div className="h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 flex">
 
       {/* Mobile overlay */}
       {sidebarOpen && (

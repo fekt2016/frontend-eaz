@@ -10,6 +10,7 @@ export function useCreateSale() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["inventory"] });
       qc.invalidateQueries({ queryKey: ["parts"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
     },
   });
 }
