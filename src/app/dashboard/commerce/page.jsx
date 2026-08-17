@@ -2,28 +2,27 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { FaTruckFast, FaClipboardList } from "react-icons/fa6";
-import { FaBoxes } from "react-icons/fa";
+import { Truck, ClipboardList, Boxes } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 const sections = [
   {
     href: "/dashboard/commerce/inventory",
-    icon: FaBoxes,
+    icon: Boxes,
     title: "Inventory",
     description: "Manage repair parts and shop products from one place.",
   },
   {
     href: "/dashboard/commerce/delivery-zones",
-    icon: FaTruckFast,
+    icon: Truck,
     title: "Delivery Zones",
     description: "Define delivery fees and estimated times per zone.",
     adminOnly: true,
   },
   {
     href: "/dashboard/commerce/orders",
-    icon: FaClipboardList,
+    icon: ClipboardList,
     title: "Orders",
     description: "Review and manage all shop orders.",
   },

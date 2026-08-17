@@ -10,7 +10,7 @@ import { formatGhs, stockBadge } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePublicParts } from "@/hooks/queries/usePublicParts";
 import { useCart } from "@/context/CartContext";
-import { FaSpinner, FaCheckCircle, FaPhone, FaWrench, FaSearch, FaMotorcycle, FaCartPlus } from "react-icons/fa";
+import { Loader2, CheckCircle2, Phone, Wrench, Search, Motorbike, ShoppingCart } from "lucide-react";
 
 const inputCls =
   "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-900";
@@ -165,7 +165,7 @@ export default function TrackRepairPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-4 pt-28 pb-24">
-        <FaSpinner size={20} className="animate-spin text-gray-400 dark:text-slate-500" />
+        <Loader2 size={20} className="animate-spin text-gray-400 dark:text-slate-500" />
       </div>
     );
   }
@@ -174,7 +174,7 @@ export default function TrackRepairPage() {
     return (
       <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
         <div className="mx-auto max-w-xl text-center">
-          <FaWrench size={28} className="mx-auto mb-4 text-gray-300 dark:text-slate-700" />
+          <Wrench size={28} className="mx-auto mb-4 text-gray-300 dark:text-slate-700" />
           <h1 className="font-display font-black text-2xl mb-2">Repair not found</h1>
           <p className="text-sm text-gray-500 dark:text-slate-400 mb-8">
             {error || "We couldn't find a repair for that link. Check the link from your SMS or receipt."}
@@ -200,7 +200,7 @@ export default function TrackRepairPage() {
 
         {justPaid && (
           <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/10 px-5 py-4">
-            <FaCheckCircle className="text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400" />
             <p className="text-sm text-emerald-700 dark:text-emerald-400">Payment received. We&apos;ll start the repair once your part arrives.</p>
           </div>
         )}
@@ -298,7 +298,7 @@ export default function TrackRepairPage() {
             {/* Catalogue */}
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
               <div className="relative">
-                <FaSearch size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+                <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
                 <input
                   value={catQuery}
                   onChange={(e) => setCatQuery(e.target.value)}
@@ -357,7 +357,7 @@ export default function TrackRepairPage() {
                               onClick={() => addPartToShopCart(p)}
                               className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 dark:bg-brand-500 px-4 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-50"
                             >
-                              <FaCartPlus size={11} /> Add to cart
+                              <ShoppingCart size={11} /> Add to cart
                             </button>
                           </div>
                         </div>
@@ -398,7 +398,7 @@ export default function TrackRepairPage() {
               {job.dropoff === "rider" && zones.length > 0 && (
                 <div>
                   <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-slate-300">
-                    <FaMotorcycle className="text-brand-500" /> Shipping zone
+                    <Motorbike size={12} className="text-brand-500" /> Shipping zone
                   </label>
                   <select
                     value={zoneId}
@@ -445,7 +445,7 @@ export default function TrackRepairPage() {
                 disabled={placing || cart.length === 0}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 dark:bg-brand-500 py-3 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
               >
-                {placing ? <FaSpinner size={13} className="animate-spin" /> : <FaPhone size={12} />}
+                {placing ? <Loader2 size={13} className="animate-spin" /> : <Phone size={12} />}
                 {placing ? "Opening Paystack…" : cart.length === 0 ? "Add a part to continue" : `Pay ${(totalPesewas / 100).toFixed(2)} now`}
               </button>
             </form>
@@ -487,7 +487,7 @@ export default function TrackRepairPage() {
                 disabled={balancePaying}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 dark:bg-brand-500 py-3 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
               >
-                {balancePaying ? <FaSpinner size={13} className="animate-spin" /> : <FaCheckCircle size={12} />}
+                {balancePaying ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={12} />}
                 {balancePaying ? "Opening Paystack…" : `Pay ${formatGhs(job.balanceDuePesewas)} now`}
               </button>
             </form>

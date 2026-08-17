@@ -6,9 +6,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEmailLogs } from "@/hooks/queries/useEmails";
 import {
-  FaEnvelope, FaSearch, FaRedo, FaSpinner,
-  FaCheckCircle, FaTimesCircle, FaFilter,
-} from "react-icons/fa";
+  Mail, Search, RotateCw, Loader2,
+  CheckCircle2, XCircle, Filter,
+} from "lucide-react";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -101,7 +101,7 @@ export default function AdminEmailLogsPage() {
           </Link>
           <div className="flex items-center gap-3 mb-2">
             <span className="w-11 h-11 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <FaEnvelope size={17} className="text-blue-600 dark:text-blue-400" />
+              <Mail size={17} className="text-blue-600 dark:text-blue-400" />
             </span>
             <div>
               <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Email Logs</h1>
@@ -131,7 +131,7 @@ export default function AdminEmailLogsPage() {
 
             {/* Search */}
             <div className="relative flex-1">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={12} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={12} />
               <input
                 type="search"
                 value={search}
@@ -143,7 +143,7 @@ export default function AdminEmailLogsPage() {
 
             {/* Type filter */}
             <div className="relative">
-              <FaFilter className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={11} />
+              <Filter className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={11} />
               <select
                 value={typeFilter}
                 onChange={(e) => setType(e.target.value)}
@@ -165,7 +165,7 @@ export default function AdminEmailLogsPage() {
               ))}
               <button type="button" onClick={() => fetchLogs(1)} disabled={loading}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
-                <FaRedo size={10} className={loading ? "animate-spin" : ""} /> Refresh
+                <RotateCw size={10} className={loading ? "animate-spin" : ""} /> Refresh
               </button>
             </div>
           </div>
@@ -174,12 +174,12 @@ export default function AdminEmailLogsPage() {
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-20 gap-3 text-gray-400 dark:text-slate-500">
-            <FaSpinner className="animate-spin text-2xl text-blue-500" />
+            <Loader2 size={24} className="animate-spin text-blue-500" />
             <span className="text-sm">Loading logs…</span>
           </div>
         ) : logs.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-sm">
-            <FaEnvelope className="mx-auto text-gray-200 dark:text-slate-700 mb-3" size={32} />
+            <Mail className="mx-auto text-gray-200 dark:text-slate-700 mb-3" size={32} />
             <p className="text-gray-400 dark:text-slate-500 text-sm">No email logs found.</p>
             {(typeFilter !== "all" || statusFilter !== "all" || search) && (
               <button onClick={() => { setType("all"); setStatus("all"); setSearch(""); }}
@@ -209,11 +209,11 @@ export default function AdminEmailLogsPage() {
                         <td className="px-4 py-3">
                           {log.status === "sent" ? (
                             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                              <FaCheckCircle size={11} /> Sent
+                              <CheckCircle2 size={11} /> Sent
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400" title={log.error || ""}>
-                              <FaTimesCircle size={11} /> Failed
+                              <XCircle size={11} /> Failed
                             </span>
                           )}
                         </td>

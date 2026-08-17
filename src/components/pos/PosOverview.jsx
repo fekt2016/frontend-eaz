@@ -1,8 +1,9 @@
 import Link from "next/link";
 import {
-  FaMoneyBillWave, FaWrench, FaUsers, FaExclamationTriangle,
-  FaCheckCircle, FaSpinner, FaReceipt, FaBalanceScale, FaChartBar,
-} from "react-icons/fa";
+  Banknote, Wrench, Users, TriangleAlert,
+  CheckCircle2, Loader2, Receipt, Scale, ChartColumn,
+  CreditCard, SmartphoneNfc,
+} from "lucide-react";
 
 const STATUS_COLORS = {
   received:          "bg-blue-500/20 text-blue-600 dark:text-blue-400",
@@ -15,9 +16,9 @@ const STATUS_COLORS = {
 };
 
 const METHOD_ICONS = {
-  cash: "💵",
-  momo: "📱",
-  card: "💳",
+  cash: Banknote,
+  momo: SmartphoneNfc,
+  card: CreditCard,
 };
 
 function Stat({ label, value, sub, color = "text-gray-900 dark:text-white", icon: Icon }) {
@@ -64,20 +65,20 @@ export default function PosOverview({ data, loading }) {
     <>
       {/* Key stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Stat label="Total Revenue"     value={`GH₵${((stats?.totalRevenue || 0) / 100).toLocaleString()}`}  color="text-green-600 dark:text-green-400"  icon={FaMoneyBillWave} sub={`${stats?.totalPayments || 0} payments`} />
-        <Stat label="Today's Revenue"   value={`GH₵${((stats?.todayRevenue  || 0) / 100).toLocaleString()}`} color="text-brand-600 dark:text-brand-400"  icon={FaChartBar}      sub="Payments today" />
-        <Stat label="Total Jobs"        value={stats?.totalJobs}        icon={FaWrench}    sub="All time" />
-        <Stat label="New Today"         value={stats?.todayJobs}        icon={FaWrench}    sub="Jobs created today" color="text-blue-600 dark:text-blue-400" />
-        <Stat label="In Progress"       value={stats?.pendingJobs}      icon={FaSpinner}   color="text-brand-600 dark:text-brand-400" sub="Active repairs" />
-        <Stat label="Ready to Collect"  value={stats?.readyJobs}        icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="Awaiting pickup" />
-        <Stat label="Customers"         value={stats?.totalCustomers}   icon={FaUsers}     sub="Registered" />
-        <Stat label="Low Stock"         value={stats?.lowStockCount}    icon={FaExclamationTriangle} color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"} sub="Parts below threshold" />
-        <Stat label="Total Expenses"    value={`GH₵${((stats?.totalExpenses || 0) / 100).toLocaleString()}`} color="text-red-600 dark:text-red-400" icon={FaReceipt} sub="Running costs" />
+        <Stat label="Total Revenue"     value={`GH₵${((stats?.totalRevenue || 0) / 100).toLocaleString()}`}  color="text-green-600 dark:text-green-400"  icon={Banknote} sub={`${stats?.totalPayments || 0} payments`} />
+        <Stat label="Today's Revenue"   value={`GH₵${((stats?.todayRevenue  || 0) / 100).toLocaleString()}`} color="text-brand-600 dark:text-brand-400"  icon={ChartColumn}      sub="Payments today" />
+        <Stat label="Total Jobs"        value={stats?.totalJobs}        icon={Wrench}    sub="All time" />
+        <Stat label="New Today"         value={stats?.todayJobs}        icon={Wrench}    sub="Jobs created today" color="text-blue-600 dark:text-blue-400" />
+        <Stat label="In Progress"       value={stats?.pendingJobs}      icon={Loader2}   color="text-brand-600 dark:text-brand-400" sub="Active repairs" />
+        <Stat label="Ready to Collect"  value={stats?.readyJobs}        icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub="Awaiting pickup" />
+        <Stat label="Customers"         value={stats?.totalCustomers}   icon={Users}     sub="Registered" />
+        <Stat label="Low Stock"         value={stats?.lowStockCount}    icon={TriangleAlert} color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"} sub="Parts below threshold" />
+        <Stat label="Total Expenses"    value={`GH₵${((stats?.totalExpenses || 0) / 100).toLocaleString()}`} color="text-red-600 dark:text-red-400" icon={Receipt} sub="Running costs" />
         <Stat
           label="Net Profit"
           value={`GH₵${((stats?.netProfit || 0) / 100).toLocaleString()}`}
           color={(stats?.netProfit || 0) >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}
-          icon={FaBalanceScale}
+          icon={Scale}
           sub="Revenue minus expenses"
         />
       </div>
@@ -156,7 +157,7 @@ export default function PosOverview({ data, loading }) {
                   <div key={m._id}>
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="text-gray-600 dark:text-gray-300 capitalize flex items-center gap-1.5">
-                        {METHOD_ICONS[m._id] || "💳"} {m._id}
+                        {(() => { const M = METHOD_ICONS[m._id] || CreditCard; return <M size={13} />; })()} {m._id}
                         <span className="text-xs text-gray-500">({m.count})</span>
                       </span>
                       <span className="text-gray-900 dark:text-white font-semibold">GH₵{(m.total/100).toLocaleString()}</span>

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { FaMapMarkerAlt, FaClock, FaPhone, FaEnvelope, FaWhatsapp, FaCheckCircle, FaWifi, FaSnowflake, FaCar } from "react-icons/fa";
+import { MapPin, Clock, Phone, Mail, CheckCircle2, Wifi, Snowflake, Car, Star } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -10,12 +11,12 @@ export const metadata = buildMetadata({
 });
 
 const amenities = [
-  { icon: FaSnowflake, label: "Air Conditioning" },
-  { icon: FaWifi, label: "Free WiFi" },
-  { icon: FaCar, label: "Free Parking" },
-  { icon: FaCheckCircle, label: "Comfortable Waiting Area" },
-  { icon: FaCheckCircle, label: "Refreshments" },
-  { icon: FaCheckCircle, label: "Friendly Staff" },
+  { icon: Snowflake, label: "Air Conditioning" },
+  { icon: Wifi, label: "Free WiFi" },
+  { icon: Car, label: "Free Parking" },
+  { icon: CheckCircle2, label: "Comfortable Waiting Area" },
+  { icon: CheckCircle2, label: "Refreshments" },
+  { icon: CheckCircle2, label: "Friendly Staff" },
 ];
 
 const testimonials = [
@@ -43,10 +44,10 @@ export default function VisitUs() {
               <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Open Now
             </div>
             {[
-              { icon: FaMapMarkerAlt, label: "Address", value: "E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra" },
-              { icon: FaClock, label: "Hours", value: "Mon–Fri: 9AM–6PM · Sat: 10AM–4PM · Sun: Closed" },
-              { icon: FaPhone, label: "Phone", value: "+233 24 438 8190 / +233 23 522 2207" },
-              { icon: FaEnvelope, label: "Email", href: "mailto:info@eazworld.co", value: "info@eazworld.co" },
+              { icon: MapPin, label: "Address", value: "E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra" },
+              { icon: Clock, label: "Hours", value: "Mon–Fri: 9AM–6PM · Sat: 10AM–4PM · Sun: Closed" },
+              { icon: Phone, label: "Phone", value: "+233 24 438 8190 / +233 23 522 2207" },
+              { icon: Mail, label: "Email", href: "mailto:info@eazworld.co", value: "info@eazworld.co" },
             ].map(({ icon: Ic, label, value, href }) => (
               <div key={label} className="flex items-start gap-3 text-sm">
                 <Ic className="text-brand-500 mt-0.5 flex-shrink-0" />
@@ -124,7 +125,9 @@ export default function VisitUs() {
           <div className="grid md:grid-cols-2 gap-5">
             {testimonials.map((t) => (
               <div key={t.name} className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-                <p className="text-brand-400 text-sm mb-3">{"★".repeat(5)}</p>
+                <div className="flex gap-0.5 text-brand-400 text-sm mb-3">
+                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={14} className="text-brand-400" />)}
+                </div>
                 <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</p>
                 <p className="font-semibold text-gray-900 dark:text-white text-sm">{t.name}</p>
                 <p className="text-gray-400 dark:text-slate-500 text-xs">{t.service}</p>

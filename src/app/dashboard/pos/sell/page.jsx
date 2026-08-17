@@ -19,10 +19,10 @@ import { useCreateSale } from "@/hooks/queries/usePosSales";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { Receipt } from "@/components/pos/Receipt";
 import {
-  FaBarcode, FaTrash, FaPlus, FaMinus,
-  FaCheckCircle, FaSpinner, FaExclamationTriangle,
-  FaPrint, FaTimes,
-} from "react-icons/fa";
+  Barcode, Trash2, Plus, Minus,
+  CheckCircle2, Loader2, TriangleAlert,
+  Printer, X,
+} from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -287,7 +287,7 @@ export default function SellPage() {
     return (
       <div className="max-w-sm mx-auto space-y-4 pt-4">
         <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-5 text-center">
-          <FaCheckCircle size={32} className="text-green-600 dark:text-green-400 mx-auto mb-2" />
+          <CheckCircle2 size={32} className="text-green-600 dark:text-green-400 mx-auto mb-2" />
           <p className="text-gray-900 dark:text-white font-bold text-lg">Sale Complete</p>
           <p className="text-gray-500 dark:text-gray-400 text-sm">{completedSale.saleNumber}</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">GH₵{((completedSale.total || 0) / 100).toFixed(2)}</p>
@@ -306,7 +306,7 @@ export default function SellPage() {
             onClick={() => window.print()}
             className="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition text-sm font-medium"
           >
-            <FaPrint size={13} /> Print Receipt
+            <Printer size={13} /> Print Receipt
           </button>
           <button
             onClick={newSale}
@@ -330,8 +330,8 @@ export default function SellPage() {
         <div className="relative">
           <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-gray-500">
             {scanning
-              ? <FaSpinner size={14} className="animate-spin text-brand-600 dark:text-brand-400" />
-              : <FaBarcode size={14} />}
+              ? <Loader2 size={14} className="animate-spin text-brand-600 dark:text-brand-400" />
+              : <Barcode size={14} />}
           </div>
           <input
             ref={scanRef}
@@ -350,7 +350,7 @@ export default function SellPage() {
           />
           {scanInput && (
             <button onClick={() => { setScanInput(""); setResults([]); focusScan(); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 dark:hover:text-white">
-              <FaTimes size={13} />
+              <X size={13} />
             </button>
           )}
         </div>
@@ -358,7 +358,7 @@ export default function SellPage() {
         {/* Scan error / info */}
         {scanError && (
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm">
-            <FaExclamationTriangle size={12} className="flex-shrink-0" />
+            <TriangleAlert size={12} className="flex-shrink-0" />
             {scanError}
           </div>
         )}
@@ -391,7 +391,7 @@ export default function SellPage() {
             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Cart ({cart.length} item{cart.length !== 1 ? "s" : ""})</p>
             {cart.length > 0 && (
               <button onClick={clearCart} className="text-xs text-red-600 dark:text-red-400 hover:underline flex items-center gap-1">
-                <FaTimes size={10} /> Clear
+                <X size={10} /> Clear
               </button>
             )}
           </div>
@@ -400,7 +400,7 @@ export default function SellPage() {
           <div className="flex-1 overflow-y-auto">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-gray-600">
-                <FaBarcode size={28} className="mb-2 opacity-30" />
+                <Barcode size={28} className="mb-2 opacity-30" />
                 <p className="text-sm">Scan or search a product to begin</p>
               </div>
             ) : (
@@ -418,7 +418,7 @@ export default function SellPage() {
                   {/* Qty controls */}
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => changeQty(item.key, -1)} className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center justify-center transition">
-                      <FaMinus size={9} />
+                      <Minus size={9} />
                     </button>
                     <span className="text-sm font-bold text-gray-900 dark:text-white w-6 text-center">{item.quantity}</span>
                     <button
@@ -426,7 +426,7 @@ export default function SellPage() {
                       disabled={item.quantity >= item.stock && !item.allowNegativeStock}
                       className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center justify-center transition disabled:opacity-30"
                     >
-                      <FaPlus size={9} />
+                      <Plus size={9} />
                     </button>
                   </div>
 
@@ -435,7 +435,7 @@ export default function SellPage() {
 
                   {/* Remove */}
                   <button onClick={() => removeFromCart(item.key)} className="text-gray-600 hover:text-red-400 transition ml-1">
-                    <FaTrash size={11} />
+                    <Trash2 size={11} />
                   </button>
                 </div>
               ))
@@ -544,8 +544,8 @@ export default function SellPage() {
               className="w-full py-3.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-base transition disabled:opacity-40 flex items-center justify-center gap-2"
             >
               {completing
-                ? <><FaSpinner className="animate-spin" size={14} /> Processing…</>
-                : <><FaCheckCircle size={14} /> Complete Sale (Enter)</>}
+                ? <><Loader2 className="animate-spin" size={14} /> Processing…</>
+                : <><CheckCircle2 size={14} /> Complete Sale (Enter)</>}
             </button>
 
             <button onClick={() => { setShowPay(false); focusScan(); }} className="w-full py-2 text-gray-500 hover:text-gray-900 dark:hover:text-white text-sm transition">

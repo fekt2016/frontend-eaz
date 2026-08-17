@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
-import { FaShieldAlt } from "react-icons/fa";
+import { ShieldCheck } from "lucide-react";
 
 function Verify2FAInner() {
   const { setUser } = useAuth();
@@ -63,7 +63,7 @@ function Verify2FAInner() {
           <Link href="/" className="font-display font-black text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <div className="mt-6 mb-4 flex justify-center">
             <span className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center">
-              <FaShieldAlt size={24} className="text-violet-500" />
+              <ShieldCheck size={24} className="text-violet-500" />
             </span>
           </div>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Two-factor authentication</h1>

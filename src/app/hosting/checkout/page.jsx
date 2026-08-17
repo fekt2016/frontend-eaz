@@ -7,6 +7,7 @@ import { SHARED_PLANS, WORDPRESS_PLANS } from "@/data/hostingHostingData";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { Check, CheckCircle2, CreditCard, Landmark, SmartphoneNfc, X } from "lucide-react";
 
 const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-800";
 
@@ -101,9 +102,9 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
 
   const statusBadge = () => {
     if (status === "checking") return <span className="flex items-center gap-1.5 text-xs text-gray-400"><span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />Checking availability…</span>;
-    if (status === "available") return <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">✓ Available{domainInfo?.price ? ` — GH₵${domainInfo.price}/yr` : ""}</span>;
-    if (status === "taken") return <span className="text-xs font-semibold text-red-500">✗ Already registered — try a different name or TLD</span>;
-    if (status === "owned") return <span className="flex items-center gap-1.5 text-xs font-semibold text-brand-600">★ You already ordered this domain</span>;
+    if (status === "available") return <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600"><Check size={12} className="shrink-0" /> Available{domainInfo?.price ? ` — GH₵${domainInfo.price}/yr` : ""}</span>;
+    if (status === "taken") return <span className="flex items-center gap-1.5 text-xs font-semibold text-red-500"><X size={12} className="shrink-0" /> Already registered — try a different name or TLD</span>;
+    if (status === "owned") return <span className="flex items-center gap-1.5 text-xs font-semibold text-brand-600"><CheckCircle2 size={12} className="shrink-0" /> You already ordered this domain</span>;
     if (status === "error") return <span className="text-xs text-gray-400">Could not check — enter manually or skip</span>;
     return null;
   };
@@ -229,7 +230,7 @@ function StepIndicator({ step }) {
           <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
             i + 1 < step ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900" : i + 1 === step ? "border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white" : "border border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-500"
           }`}>
-            {i + 1 < step ? "✓" : i + 1}
+            {i + 1 < step ? <Check size={16} /> : i + 1}
           </div>
           <span className={`ml-2 hidden text-sm sm:inline ${i + 1 <= step ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-slate-500"}`}>{label}</span>
           {i < steps.length - 1 && <span className="mx-2 h-px w-6 bg-gray-200 dark:bg-slate-700 sm:w-12" />}
@@ -351,7 +352,7 @@ function HostingCheckoutPageInner() {
                   <ul className="space-y-1 text-sm text-gray-500 dark:text-slate-400 mb-6">
                     {plan.features.slice(0, 6).map((f) => (
                       <li key={f} className="flex items-center gap-2">
-                        <span className="text-brand-500">✓</span>
+                        <Check size={12} className="text-brand-500 shrink-0" />
                         {/^free\s+/i.test(f) ? <span><span className="text-brand-500 font-bold">FREE</span> {f.replace(/^free\s+/i, "")}</span> : <span>{f}</span>}
                       </li>
                     ))}
@@ -449,13 +450,13 @@ function HostingCheckoutPageInner() {
                   <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h2>
                   <div className="space-y-3">
                     {[
-                      { id: "paystack_card", icon: "💳", title: "Pay with Card", desc: "Visa, Mastercard via Paystack" },
-                      { id: "mobile_money", icon: "📱", title: "Mobile Money", desc: "MTN MoMo or Vodafone Cash" },
-                      { id: "bank_transfer", icon: "🏦", title: "Bank Transfer", desc: "Manual bank transfer — activate within 2–4 hrs" },
+                      { id: "paystack_card", icon: CreditCard, title: "Pay with Card", desc: "Visa, Mastercard via Paystack" },
+                      { id: "mobile_money", icon: SmartphoneNfc, title: "Mobile Money", desc: "MTN MoMo or Vodafone Cash" },
+                      { id: "bank_transfer", icon: Landmark, title: "Bank Transfer", desc: "Manual bank transfer — activate within 2–4 hrs" },
                     ].map((m) => (
                       <button key={m.id} type="button" onClick={() => setPaymentMethod(m.id)}
                         className={`w-full rounded-xl border p-4 text-left transition ${paymentMethod === m.id ? "border-brand-300 dark:border-brand-600 bg-brand-50 dark:bg-brand-900/20" : "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-200 dark:hover:border-slate-600"}`}>
-                        <span className="text-2xl">{m.icon}</span>
+                        <m.icon size={24} />
                         <div className="mt-2 font-semibold text-gray-900 dark:text-white">{m.title}</div>
                         <div className="text-sm text-gray-500 dark:text-slate-400">{m.desc}</div>
                       </button>
@@ -499,7 +500,7 @@ function HostingCheckoutPageInner() {
                 </div>
                 <div className="flex flex-wrap gap-4 pt-2 text-xs text-gray-400 dark:text-slate-500">
                   <span>🔒 256-bit SSL Secured</span>
-                  <span>✓ Instant Activation (card/MM)</span>
+                  <span className="inline-flex items-center gap-1"><Check size={12} /> Instant Activation (card/MM)</span>
                   <span>📋 Invoice Emailed</span>
                   <span>🔄 30-day Money Back</span>
                 </div>
@@ -539,10 +540,10 @@ function HostingCheckoutPageInner() {
             </div>
 
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-xs text-gray-400 dark:text-slate-500 space-y-1.5">
-              <p>✓ 30-day money-back guarantee</p>
-              <p>✓ Free SSL on all plans</p>
-              <p>✓ 24/7 expert support</p>
-              <p>✓ No setup fees</p>
+              <p className="flex items-center gap-1.5"><Check size={12} className="shrink-0" /> 30-day money-back guarantee</p>
+              <p className="flex items-center gap-1.5"><Check size={12} className="shrink-0" /> Free SSL on all plans</p>
+              <p className="flex items-center gap-1.5"><Check size={12} className="shrink-0" /> 24/7 expert support</p>
+              <p className="flex items-center gap-1.5"><Check size={12} className="shrink-0" /> No setup fees</p>
             </div>
           </div>
         </div>

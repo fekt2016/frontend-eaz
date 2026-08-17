@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { FaCheckCircle, FaEye, FaEyeSlash } from "react-icons/fa";
+import { CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { api } from "@/lib/api";
 
@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
         <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           {success ? (
             <div className="text-center py-4">
-              <FaCheckCircle className="text-emerald-500 text-3xl mx-auto mb-3" />
+              <CheckCircle2 size={30} className="text-emerald-500 mx-auto mb-3" />
               <p className="font-semibold text-gray-900 dark:text-white mb-1">Password updated!</p>
               <p className="text-gray-500 dark:text-slate-400 text-sm">Redirecting you to sign in...</p>
             </div>
@@ -61,7 +61,7 @@ export default function ResetPasswordPage() {
                 <div className="relative">
                   <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" className={`${inputCls} pr-12`} required />
                   <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
-                    {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>

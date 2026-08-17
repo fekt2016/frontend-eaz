@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { FaCheckCircle, FaPalette, FaSearch, FaBullhorn, FaStar, FaHashtag, FaEnvelope, FaMobileAlt } from "react-icons/fa";
+import { CheckCircle2, Palette, Search, Megaphone, Star, Hash, Mail, Smartphone } from "lucide-react";
 import ServicesGrid from "@/components/home/ServicesGrid";
 import { buildMetadata } from "@/lib/seo";
 
 const iconStrip = [
-  { icon: FaPalette, label: "Web Design", accent: "#F5A623" },
-  { icon: FaSearch, label: "SEO", accent: "#10b981" },
-  { icon: FaBullhorn, label: "Paid Ads", accent: "#3b82f6" },
-  { icon: FaStar, label: "Branding", accent: "#8b5cf6" },
-  { icon: FaHashtag, label: "Social Media", accent: "#ec4899" },
-  { icon: FaEnvelope, label: "Email", accent: "#f59e0b" },
-  { icon: FaMobileAlt, label: "Phone Repair", accent: "#06b6d4" },
+  { icon: Palette, label: "Web Design", accent: "#F5A623" },
+  { icon: Search, label: "SEO", accent: "#10b981" },
+  { icon: Megaphone, label: "Paid Ads", accent: "#3b82f6" },
+  { icon: Star, label: "Branding", accent: "#8b5cf6" },
+  { icon: Hash, label: "Social Media", accent: "#ec4899" },
+  { icon: Mail, label: "Email", accent: "#f59e0b" },
+  { icon: Smartphone, label: "Phone Repair", accent: "#06b6d4" },
 ];
 
 export const metadata = buildMetadata({
@@ -72,9 +72,9 @@ export default function ServicesPage() {
 
             {/* Stats row */}
             <div className="flex gap-8 mb-7">
-              {[["150+", "Active sellers"], ["15k+", "Products listed"], ["4.7★", "Average rating"]].map(([val, lbl]) => (
+              {[["150+", "Active sellers"], ["15k+", "Products listed"], ["4.7", "Average rating", true]].map(([val, lbl, rating]) => (
                 <div key={lbl}>
-                  <p className="font-display font-bold text-2xl text-gray-900 dark:text-white">{val}</p>
+                  <p className="font-display font-bold text-2xl text-gray-900 dark:text-white">{val}{rating && <Star size={16} className="inline-block -mt-0.5 ml-1" />}</p>
                   <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">{lbl}</p>
                 </div>
               ))}
@@ -84,7 +84,7 @@ export default function ServicesPage() {
             <ul className="space-y-2 mb-8">
               {["Web Design & Development", "Brand Identity", "SEO & Content", "Paid Advertising", "Social Media", "Email Marketing"].map((s) => (
                 <li key={s} className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
-                  <FaCheckCircle size={13} className="text-brand-500 flex-shrink-0" />
+                  <CheckCircle2 size={13} className="text-brand-500 flex-shrink-0" />
                   {s}
                 </li>
               ))}
@@ -110,9 +110,9 @@ export default function ServicesPage() {
 
             {/* Mock top stats */}
             <div className="grid grid-cols-3 gap-2">
-              {[["150+", "Sellers", "#F5A623"], ["15k+", "Products", "#10b981"], ["4.7★", "Rating", "#3b82f6"]].map(([v, l, c]) => (
+              {[["150+", "Sellers", "#F5A623"], ["15k+", "Products", "#10b981"], ["4.7", "Rating", "#3b82f6", true]].map(([v, l, c, rating]) => (
                 <div key={l} className="rounded-xl p-3 text-center" style={{ background: `${c}10` }}>
-                  <p className="font-bold text-gray-900 dark:text-white text-sm">{v}</p>
+                  <p className="font-bold text-gray-900 dark:text-white text-sm">{v}{rating && <Star size={12} className="inline-block -mt-0.5 ml-0.5" />}</p>
                   <p className="text-gray-400 dark:text-slate-500 text-xs">{l}</p>
                 </div>
               ))}

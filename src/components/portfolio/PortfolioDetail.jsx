@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useInView } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { FaArrowLeft, FaCheckCircle, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, X, Check, Star, Rocket, Link2, Link as LinkIcon, Atom, BarChart3, Bell, Cog, CreditCard, Flame, Globe, Hexagon, Leaf, Lock, Map, MapPin, Monitor, Palette, PenLine, Pencil, Printer, Shield, ShoppingBag, ShoppingCart, Smartphone, SmartphoneNfc, Target, TrendingUp, Triangle, Wrench, Zap } from "lucide-react";
 import { PROJECTS } from "@/data/portfolioData";
 import CountUpNumber from "@/components/caseStudy/CountUpNumber";
 
@@ -20,19 +20,20 @@ const CATEGORY_COLORS = {
 
 function getTechIcon(tag) {
   const map = {
-    WooCommerce: "🛒", WordPress: "🌐", React: "⚛", "React.js": "⚛",
-    "React Native": "📱", Flutter: "🦋", "Node.js": "🟢", Node: "🟢",
-    MongoDB: "🍃", Paystack: "💳", Firebase: "🔥", Shopify: "🛍",
-    "Next.js": "▲", Next: "▲", "Framer Motion": "🎨", SEO: "📈",
-    "Technical SEO": "📈", cPanel: "⚙", SSL: "🔒", "Google Analytics": "📊",
-    "Local SEO": "📍", "Content Marketing": "✍", "Content Strategy": "✍",
-    "Brand Strategy": "🎯", "Brand Guidelines": "🎯", "Logo Design": "✏",
-    Print: "🖨", "Google Maps API": "🗺", "MTN MoMo": "📲",
-    "Mobile Money": "📲", "Push Notifications": "🔔", "Real-time Orders": "⚡",
-    "VPS Hosting": "🖥", "DNS Management": "🌐", "Security Audit": "🛡",
-    "Bulk Domains": "🔗",
+    WooCommerce: ShoppingCart, WordPress: Globe, React: Atom, "React.js": Atom,
+    "React Native": Smartphone, Node: Hexagon, "Node.js": Hexagon,
+    MongoDB: Leaf, Paystack: CreditCard, Firebase: Flame, Shopify: ShoppingBag,
+    "Next.js": Triangle, Next: Triangle, "Framer Motion": Palette, SEO: TrendingUp,
+    "Technical SEO": TrendingUp, cPanel: Cog, SSL: Lock, "Google Analytics": BarChart3,
+    "Local SEO": MapPin, "Content Marketing": PenLine, "Content Strategy": PenLine,
+    "Brand Strategy": Target, "Brand Guidelines": Target, "Logo Design": Pencil,
+    Print: Printer, "Google Maps API": Map, "MTN MoMo": SmartphoneNfc,
+    "Mobile Money": SmartphoneNfc, "Push Notifications": Bell, "Real-time Orders": Zap,
+    "VPS Hosting": Monitor, "DNS Management": Globe, "Security Audit": Shield,
+    "Bulk Domains": LinkIcon,
   };
-  return map[tag] || "🔧";
+  if (tag === "Flutter") return "🦋"; // exception — no butterfly icon in lucide
+  return map[tag] || Wrench;
 }
 
 function getChallengeBullets(category) {
@@ -163,7 +164,7 @@ export default function PortfolioDetail({ slug }) {
             onClick={() => router.push("/portfolio")}
             className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition flex-shrink-0"
           >
-            <FaArrowLeft size={12} /> All Projects
+            <ArrowLeft size={12} /> All Projects
           </button>
           <motion.p
             initial={{ opacity: 0 }}
@@ -184,7 +185,11 @@ export default function PortfolioDetail({ slug }) {
               }}
               className={`text-xs px-3 py-1.5 rounded-full border transition ${copied ? "border-emerald-400 text-emerald-600" : "border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-700 dark:hover:text-slate-300"}`}
             >
-              {copied ? "Copied ✓" : "🔗 Copy Link"}
+              {copied ? (
+                <span className="inline-flex items-center gap-1">Copied <Check size={10} /></span>
+              ) : (
+                <span className="inline-flex items-center gap-1"><Link2 size={10} /> Copy Link</span>
+              )}
             </button>
             <span className={`hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[project.category] || "bg-gray-100 text-gray-600"}`}>
               {project.category}
@@ -330,7 +335,7 @@ export default function PortfolioDetail({ slug }) {
               <ul className="space-y-2">
                 {getSolutionBullets(project.category).map((b) => (
                   <li key={b} className="flex items-start gap-2.5 text-sm text-gray-600 dark:text-slate-400">
-                    <FaCheckCircle size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
                     {b}
                   </li>
                 ))}
@@ -373,7 +378,7 @@ export default function PortfolioDetail({ slug }) {
                 <ul className="space-y-2">
                   {(project.results || []).slice(0, 3).map((r) => (
                     <li key={r.label} className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
-                      <span className="text-emerald-500 font-bold">✓</span>
+                      <Check size={14} className="text-emerald-500 flex-shrink-0" />
                       {r.value} {r.label}
                     </li>
                   ))}
@@ -420,7 +425,7 @@ export default function PortfolioDetail({ slug }) {
             </div>
 
             <div className="p-5 rounded-2xl bg-brand-50 border border-brand-100 text-center">
-              <p className="text-2xl mb-2">🚀</p>
+              <Rocket size={24} className="mb-2 mx-auto text-brand-500" />
               <h4 className="font-semibold text-gray-900 text-sm mb-1">Like What You See?</h4>
               <p className="text-gray-500 dark:text-gray-500 text-xs leading-relaxed mb-4">We can build something this impactful for your business.</p>
               <button
@@ -490,13 +495,13 @@ export default function PortfolioDetail({ slug }) {
               className="max-w-[90vw] max-h-[85vh] rounded-2xl object-contain shadow-2xl"
             />
             <button onClick={closeLightbox} className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition">
-              <FaTimes size={14} />
+              <X size={14} />
             </button>
             <button onClick={(e) => { e.stopPropagation(); showPrev(); }} className="absolute left-5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition">
-              <FaChevronLeft size={14} />
+              <ChevronLeft size={14} />
             </button>
             <button onClick={(e) => { e.stopPropagation(); showNext(); }} className="absolute right-5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition">
-              <FaChevronRight size={14} />
+              <ChevronRight size={14} />
             </button>
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
               {lightboxIndex + 1} / {images.length}
@@ -519,7 +524,9 @@ export default function PortfolioDetail({ slug }) {
             <div className="text-left">
               <p className="font-semibold text-gray-900 dark:text-white text-sm">{project.testimonial?.author}</p>
               <p className="text-gray-400 dark:text-slate-500 text-xs">{project.testimonial?.role}</p>
-              <p className="text-brand-400 text-xs mt-0.5">★★★★★</p>
+              <div className="flex items-center gap-0.5 text-brand-400 mt-0.5">
+                {[0, 1, 2, 3, 4].map((i) => <Star key={i} size={14} />)}
+              </div>
             </div>
           </div>
           <div className="inline-flex items-center gap-1.5 mt-5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
@@ -537,12 +544,15 @@ export default function PortfolioDetail({ slug }) {
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Built With</h2>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
-            {(project.tags || []).map((tag) => (
-              <div key={tag} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-sm text-gray-700 dark:text-slate-300">
-                <span>{getTechIcon(tag)}</span>
-                {tag}
-              </div>
-            ))}
+            {(project.tags || []).map((tag) => {
+              const tech = getTechIcon(tag);
+              return (
+                <div key={tag} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-sm text-gray-700 dark:text-slate-300">
+                  {typeof tech === "string" ? <span>{tech}</span> : <tech size={15} />}
+                  {tag}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -619,9 +629,9 @@ export default function PortfolioDetail({ slug }) {
             </button>
           </div>
           <div className="flex flex-wrap justify-center gap-5 text-xs text-gray-500">
-            <span>✓ Free Consultation</span>
-            <span>✓ No Long-term Contracts</span>
-            <span>✓ Results Guaranteed</span>
+            <span className="inline-flex items-center gap-1"><Check size={10} className="text-emerald-500" /> Free Consultation</span>
+            <span className="inline-flex items-center gap-1"><Check size={10} className="text-emerald-500" /> No Long-term Contracts</span>
+            <span className="inline-flex items-center gap-1"><Check size={10} className="text-emerald-500" /> Results Guaranteed</span>
           </div>
         </div>
       </section>

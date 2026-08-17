@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { FaPlus, FaTruck, FaSearch, FaCheck, FaTimes, FaEdit, FaTrash, FaChevronRight } from "react-icons/fa";
+import { Plus, Truck, Search, Check, X, Pen, Trash2, ChevronRight } from "lucide-react";
 import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier } from "@/hooks/queries/useSuppliers";
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
@@ -79,7 +79,7 @@ export default function SuppliersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FaTruck className="text-brand-600 dark:text-brand-400" size={17} /> Suppliers
+            <Truck className="text-brand-600 dark:text-brand-400" size={17} /> Suppliers
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">{suppliers.length} supplier{suppliers.length !== 1 ? "s" : ""}</p>
         </div>
@@ -88,7 +88,7 @@ export default function SuppliersPage() {
             onClick={() => setShowForm(v => !v)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
           >
-            <FaPlus size={11} /> Add Supplier
+            <Plus size={11} /> Add Supplier
           </button>
         )}
       </div>
@@ -127,7 +127,7 @@ export default function SuppliersPage() {
             {formError && <p className="text-red-600 dark:text-red-400 text-xs">{formError}</p>}
             <div className="flex gap-3">
               <button type="submit" disabled={saving} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50">
-                <FaCheck size={11} /> {saving ? "Saving…" : "Save Supplier"}
+                <Check size={11} /> {saving ? "Saving…" : "Save Supplier"}
               </button>
               <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition">
                 Cancel
@@ -139,7 +139,7 @@ export default function SuppliersPage() {
 
       {/* Search */}
       <div className="relative">
-        <FaSearch size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+        <Search size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
         <input
           value={q}
           onChange={e => setQ(e.target.value)}
@@ -158,7 +158,7 @@ export default function SuppliersPage() {
           </div>
         ) : suppliers.length === 0 ? (
           <div className="py-16 text-center">
-            <FaTruck size={24} className="text-gray-700 mx-auto mb-3" />
+            <Truck size={24} className="text-gray-700 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400 font-medium">No suppliers yet</p>
             {isSuperAdmin && <p className="text-gray-600 text-sm mt-1">Add your first supplier to get started.</p>}
           </div>
@@ -193,10 +193,10 @@ export default function SuppliersPage() {
                     </div>
                     <div className="flex gap-3">
                       <button onClick={() => handleEdit(s._id)} disabled={editSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50">
-                        <FaCheck size={11} /> {editSaving ? "Saving…" : "Save"}
+                        <Check size={11} /> {editSaving ? "Saving…" : "Save"}
                       </button>
                       <button onClick={() => setEditId(null)} className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition">
-                        <FaTimes size={11} />
+                        <X size={11} />
                       </button>
                     </div>
                   </div>
@@ -204,7 +204,7 @@ export default function SuppliersPage() {
                   /* Normal row */
                   <div className="flex items-center gap-4 px-5 py-4">
                     <div className="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center flex-shrink-0">
-                      <FaTruck size={13} className="text-brand-600 dark:text-brand-400" />
+                      <Truck size={13} className="text-brand-600 dark:text-brand-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -225,18 +225,18 @@ export default function SuppliersPage() {
                         href={`/dashboard/pos/suppliers/${s._id}`}
                         className="flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 hover:text-brand-300 transition"
                       >
-                        Parts <FaChevronRight size={9} />
+                        Parts <ChevronRight size={9} />
                       </Link>
                       {isSuperAdmin && (
                         <>
                           <button onClick={() => toggleActive(s)} className={`w-8 h-8 rounded-lg border flex items-center justify-center transition text-xs ${s.isActive ? "border-green-500/30 text-green-600 dark:text-green-400 hover:bg-green-500/10" : "border-gray-300 dark:border-gray-700 text-gray-500 hover:text-gray-900 dark:hover:text-white"}`} title={s.isActive ? "Deactivate" : "Activate"}>
-                            {s.isActive ? "✓" : "○"}
+                            {s.isActive ? <Check size={11} /> : "○"}
                           </button>
                           <button onClick={() => startEdit(s)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-brand-400 hover:border-brand-500/50 flex items-center justify-center transition">
-                            <FaEdit size={11} />
+                            <Pen size={11} />
                           </button>
                           <button onClick={() => handleDelete(s._id)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-red-400 hover:border-red-500/50 flex items-center justify-center transition">
-                            <FaTrash size={11} />
+                            <Trash2 size={11} />
                           </button>
                         </>
                       )}

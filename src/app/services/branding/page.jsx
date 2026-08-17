@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { FaCheckCircle, FaWhatsapp } from "react-icons/fa";
+import { CheckCircle2 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 
 export const metadata = {
   title: "Branding & Identity Pricing | EazWorld",
@@ -142,7 +143,7 @@ export default function BrandingPage() {
                 <ul className="space-y-2 mb-5 flex-1">
                   {pkg.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-xs text-gray-700 dark:text-slate-300">
-                      <FaCheckCircle className="text-emerald-500 mt-0.5 flex-shrink-0" size={11} />
+                      <CheckCircle2 className="text-emerald-500 mt-0.5 flex-shrink-0" size={11} />
                       {f}
                     </li>
                   ))}

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { FaBars } from "react-icons/fa";
+import { Menu } from "lucide-react";
 import Sidebar from "./Sidebar";
 
 const roleLabel = (role) =>
@@ -36,7 +36,7 @@ export default function DashboardShell({ children, title = "Dashboard" }) {
         {/* Topbar (mobile) */}
         <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <button onClick={() => setOpen(true)} className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1" aria-label="Open menu">
-            <FaBars size={18} />
+            <Menu size={18} />
           </button>
           <span className="font-bold text-gray-900 dark:text-white text-sm">{title}</span>
           <div className="flex items-center gap-2">

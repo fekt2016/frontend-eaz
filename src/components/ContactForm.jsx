@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { z } from "zod";
-import { FaCheckCircle } from "react-icons/fa";
+import { CheckCircle2 } from "lucide-react";
 import { sanitizeName, sanitizeEmail, sanitizeText, sanitizeMessage } from "@/lib/sanitize";
 
 const schema = z.object({
@@ -62,7 +62,7 @@ export default function ContactForm() {
     return (
       <div className="text-center py-10">
         <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-4">
-          <FaCheckCircle className="text-emerald-500 text-2xl" />
+          <CheckCircle2 size={24} className="text-emerald-500" />
         </div>
         <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-2">Message Sent!</h3>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-5">We&apos;ll get back to you within 24 hours.</p>

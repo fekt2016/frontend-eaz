@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { FaCheckCircle, FaWhatsapp } from "react-icons/fa";
+import { Banknote, CheckCircle2, Handshake, MapPin, Star, Zap } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import HeroCarousel from "@/components/home/HeroCarousel";
 import RecentProducts from "@/components/home/RecentProducts";
 import ServicesGrid from "@/components/home/ServicesGrid";
@@ -24,15 +25,15 @@ export const metadata = {
 const stats = [
   { value: "4+",    label: "Years in Accra" },
   { value: "50+",   label: "Projects Delivered" },
-  { value: "4.9★",  label: "Client Rating" },
+  { value: "4.9",  label: "Client Rating", rating: true },
   { value: "24hr",  label: "Response Time" },
 ];
 
 const whyUs = [
-  { icon: "🇬🇭", title: "Accra-Based Team",    desc: "We know the Ghanaian market, the culture, and what works locally." },
-  { icon: "💰", title: "GHS Pricing",          desc: "All prices in cedis. Pay via Paystack, Mobile Money or bank transfer." },
-  { icon: "🤝", title: "Honest Advice",        desc: "We tell you what you actually need — no unnecessary upsells." },
-  { icon: "⚡", title: "Fast Delivery",         desc: "Most websites live within 2 weeks. Most repairs done same day." },
+  { icon: MapPin, title: "Accra-Based Team",    desc: "We know the Ghanaian market, the culture, and what works locally." },
+  { icon: Banknote, title: "GHS Pricing",          desc: "All prices in cedis. Pay via Paystack, Mobile Money or bank transfer." },
+  { icon: Handshake, title: "Honest Advice",        desc: "We tell you what you actually need — no unnecessary upsells." },
+  { icon: Zap, title: "Fast Delivery",         desc: "Most websites live within 2 weeks. Most repairs done same day." },
 ];
 
 export default function Home() {
@@ -43,9 +44,9 @@ export default function Home() {
       {/* STATS BAR */}
       <section className="py-10 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {stats.map(({ value, label }) => (
+          {stats.map(({ value, label, rating }) => (
             <div key={label}>
-              <p className="font-display font-black text-3xl text-brand-500">{value}</p>
+              <p className="font-display font-black text-3xl text-brand-500">{value}{rating && <Star size={20} className="inline-block -mt-1 ml-1" />}</p>
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
             </div>
           ))}
@@ -64,9 +65,9 @@ export default function Home() {
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {whyUs.map(({ icon, title, desc }) => (
+            {whyUs.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
-                <span className="text-3xl mb-4 block">{icon}</span>
+                <Icon size={28} className="mb-4 text-brand-500" />
                 <p className="font-semibold text-gray-900 dark:text-white text-sm mb-2">{title}</p>
                 <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed">{desc}</p>
               </div>
@@ -89,14 +90,14 @@ export default function Home() {
             <ul className="space-y-2 mb-7">
               {["Web Design & Development", "Brand Identity", "SEO & Content Marketing", "Paid Advertising", "Social Media Management", "Email Marketing"].map((s) => (
                 <li key={s} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                  <FaCheckCircle size={13} className="text-brand-500 flex-shrink-0" /> {s}
+                  <CheckCircle2 size={13} className="text-brand-500 flex-shrink-0" /> {s}
                 </li>
               ))}
             </ul>
             <div className="flex flex-wrap gap-6 mb-8">
-              {[["150+", "Sellers"], ["15k+", "Products"], ["4.7★", "Rating"], ["500+", "Daily Transactions"]].map(([val, label]) => (
+              {[["150+", "Sellers"], ["15k+", "Products"], ["4.7", "Rating", true], ["500+", "Daily Transactions"]].map(([val, label, rating]) => (
                 <div key={label}>
-                  <p className="font-display font-bold text-2xl text-gray-900 dark:text-white">{val}</p>
+                  <p className="font-display font-bold text-2xl text-gray-900 dark:text-white">{val}{rating && <Star size={16} className="inline-block -mt-0.5 ml-1" />}</p>
                   <p className="text-gray-400 dark:text-slate-500 text-xs">{label}</p>
                 </div>
               ))}

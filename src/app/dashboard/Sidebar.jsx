@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useInventory } from "@/hooks/queries/useInventory";
-import { FaTachometerAlt, FaTimes, FaSignOutAlt } from "react-icons/fa";
+import { Gauge, LogOut, X } from "lucide-react";
 import { baseNav, adminNav, marketplaceNav, posNav } from "./dashboardNav";
 
 const POS_ROLES = ["superadmin", "admin", "staff", "technician"];
@@ -59,7 +59,7 @@ export default function Sidebar({ open, onClose }) {
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-            <FaTachometerAlt size={13} className="text-gray-900 dark:text-white" />
+            <Gauge size={13} className="text-gray-900 dark:text-white" />
           </div>
           <div>
             <p className="font-bold text-gray-900 dark:text-white text-sm leading-none">EazWorld</p>
@@ -68,7 +68,7 @@ export default function Sidebar({ open, onClose }) {
         </Link>
         <div className="flex items-center gap-1.5">
           <button onClick={onClose} className="lg:hidden text-gray-500 hover:text-gray-900 dark:hover:text-white p-1" aria-label="Close menu">
-            <FaTimes size={14} />
+            <X size={14} />
           </button>
         </div>
       </div>
@@ -129,7 +129,7 @@ export default function Sidebar({ open, onClose }) {
           onClick={() => { logout(); router.push("/auth/login"); }}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
         >
-          <FaSignOutAlt size={13} />
+          <LogOut size={13} />
           Sign out
         </button>
       </div>

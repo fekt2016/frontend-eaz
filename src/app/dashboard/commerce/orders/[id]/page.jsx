@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
-import { FaPaperPlane } from "react-icons/fa6";
+import { Send } from "lucide-react";
 import { formatGhs } from "@/lib/shop";
 import { useOrder, useUpdateOrderStatus, useAddTrackingEvent } from "@/hooks/queries/useOrders";
 
@@ -228,7 +228,7 @@ export default function AdminOrderDetailPage() {
               disabled={saving}
               className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition disabled:opacity-50"
             >
-              <FaPaperPlane size={10} /> {saving ? "Saving…" : "Add tracking update"}
+              <Send size={10} /> {saving ? "Saving…" : "Add tracking update"}
             </button>
           </form>
         </div>

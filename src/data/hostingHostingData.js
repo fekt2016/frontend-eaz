@@ -1,3 +1,5 @@
+import { Globe, Lock, HardDrive, Cog, MessageSquare, Zap, RefreshCw, Wrench } from "lucide-react";
+
 export const SHARED_PLANS = [
   {
     name: "Deluxe",
@@ -242,12 +244,12 @@ export const WORDPRESS_PLANS = [
 ];
 
 export const HOSTING_FEATURES = [
-  { icon: "🌐", title: "Free Domain (1yr)", description: "Get a free domain name for the first year with any annual plan." },
-  { icon: "🔒", title: "Free SSL Certificate", description: "Let's Encrypt SSL auto-installed on all websites at no extra cost." },
-  { icon: "💾", title: "Daily Backups", description: "Automatic daily backups stored for 30 days — restore in one click." },
-  { icon: "⚙️", title: "cPanel Control Panel", description: "Industry-standard cPanel for easy website and email management." },
-  { icon: "💬", title: "24/7 Expert Support", description: "Real humans available around the clock via live chat and email." },
-  { icon: "⚡", title: "99.9% Uptime Guarantee", description: "SLA-backed uptime guarantee — we credit you if we fall short." },
-  { icon: "🔄", title: "Free Website Migration", description: "We migrate your existing website to EazWorld free of charge." },
-  { icon: "🔧", title: "One-click WordPress", description: "Install WordPress, Joomla, Drupal and 50+ apps in one click." },
+  { icon: Globe, title: "Free Domain (1yr)", description: "Get a free domain name for the first year with any annual plan." },
+  { icon: Lock, title: "Free SSL Certificate", description: "Let's Encrypt SSL auto-installed on all websites at no extra cost." },
+  { icon: HardDrive, title: "Daily Backups", description: "Automatic daily backups stored for 30 days — restore in one click." },
+  { icon: Cog, title: "cPanel Control Panel", description: "Industry-standard cPanel for easy website and email management." },
+  { icon: MessageSquare, title: "24/7 Expert Support", description: "Real humans available around the clock via live chat and email." },
+  { icon: Zap, title: "99.9% Uptime Guarantee", description: "SLA-backed uptime guarantee — we credit you if we fall short." },
+  { icon: RefreshCw, title: "Free Website Migration", description: "We migrate your existing website to EazWorld free of charge." },
+  { icon: Wrench, title: "One-click WordPress", description: "Install WordPress, Joomla, Drupal and 50+ apps in one click." },
 ];

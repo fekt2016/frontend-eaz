@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { ShieldCheck, TriangleAlert, CheckCircle2, XCircle } from "lucide-react";
 import { useWarrantyJobs } from "@/hooks/queries/usePosJobs";
 
 const WARRANTY_COLORS = {
@@ -33,7 +33,7 @@ function JobWarrantyRow({ job, warrantyStatus }) {
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
-          <FaShieldAlt size={11} className={
+          <ShieldCheck size={11} className={
             warrantyStatus === "active"        ? "text-green-600 dark:text-green-400" :
             warrantyStatus === "expiring_soon" ? "text-brand-600 dark:text-brand-400" : "text-gray-500"
           } />
@@ -91,7 +91,7 @@ export default function WarrantyPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FaShieldAlt className="text-green-600 dark:text-green-400" size={18} /> Warranty Tracker
+            <ShieldCheck className="text-green-600 dark:text-green-400" size={18} /> Warranty Tracker
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">Track active warranties and upcoming expirations</p>
         </div>
@@ -100,7 +100,7 @@ export default function WarrantyPage() {
       {/* Alert banner — expiring soon */}
       {!loading && expiringSoon.length > 0 && (
         <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl bg-brand-500/10 border border-brand-500/30">
-          <FaExclamationTriangle size={14} className="text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" />
+          <TriangleAlert size={14} className="text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">
               {expiringSoon.length} warranty{expiringSoon.length !== 1 ? "s" : ""} expiring within 7 days
@@ -130,7 +130,7 @@ export default function WarrantyPage() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Active</p>
-              <FaCheckCircle size={13} className="text-green-600 dark:text-green-400" />
+              <CheckCircle2 size={13} className="text-green-600 dark:text-green-400" />
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{activeJobs.length}</p>
             <p className="text-xs text-gray-500 mt-0.5">Valid warranties</p>
@@ -138,7 +138,7 @@ export default function WarrantyPage() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Expiring</p>
-              <FaExclamationTriangle size={13} className="text-brand-600 dark:text-brand-400" />
+              <TriangleAlert size={13} className="text-brand-600 dark:text-brand-400" />
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{expiringSoon.length}</p>
             <p className="text-xs text-gray-500 mt-0.5">Within 7 days</p>
@@ -146,7 +146,7 @@ export default function WarrantyPage() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Expired</p>
-              <FaTimesCircle size={13} className="text-gray-500" />
+              <XCircle size={13} className="text-gray-500" />
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{expiredJobs.length}</p>
             <p className="text-xs text-gray-500 mt-0.5">Last 90 days</p>
@@ -185,7 +185,7 @@ export default function WarrantyPage() {
           <p className="text-red-600 dark:text-red-400 text-sm p-5">{error}</p>
         ) : displayJobs.length === 0 ? (
           <div className="py-16 text-center">
-            <FaShieldAlt size={24} className="text-gray-700 mx-auto mb-3" />
+            <ShieldCheck size={24} className="text-gray-700 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400 font-medium">No warranties in this category</p>
             <p className="text-gray-600 text-sm mt-1">
               {tab === "active"   ? "No active warranties right now." :

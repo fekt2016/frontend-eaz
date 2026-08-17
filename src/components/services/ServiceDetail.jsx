@@ -3,7 +3,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import { FaCheckCircle, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { CheckCircle2, ChevronDown, ChevronUp, Star } from "lucide-react";
 import { serviceDetails } from "@/data/serviceDetails";
 
 function FAQ({ items }) {
@@ -18,7 +18,7 @@ function FAQ({ items }) {
             className="w-full flex items-center justify-between px-6 py-4 text-left text-gray-900 dark:text-white font-medium text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition"
           >
             {item.q}
-            {open === i ? <FaChevronUp className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" size={12} /> : <FaChevronDown className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" size={12} />}
+            {open === i ? <ChevronUp className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" size={12} /> : <ChevronDown className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" size={12} />}
           </button>
           {open === i && (
             <div className="px-6 pb-4 text-gray-500 dark:text-slate-400 text-sm leading-relaxed bg-white dark:bg-slate-900">
@@ -104,7 +104,7 @@ export default function ServiceDetail({ slug }) {
             <ul className="space-y-2.5">
               {service.deliverables.map((d) => (
                 <li key={d} className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-slate-300">
-                  <FaCheckCircle size={13} className="text-brand-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle2 size={13} className="text-brand-500 mt-0.5 flex-shrink-0" />
                   {d}
                 </li>
               ))}
@@ -115,8 +115,8 @@ export default function ServiceDetail({ slug }) {
             <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-3">Saiisai Marketplace</h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-5">{service.saiisaiExample}</p>
             <div className="flex gap-5 mb-5">
-              {[["150+", "Sellers"], ["15k+", "Products"], ["4.7★", "Rating"]].map(([val, label]) => (
-                <div key={label}><p className="font-bold text-gray-900 dark:text-white">{val}</p><p className="text-gray-400 dark:text-slate-500 text-xs">{label}</p></div>
+              {[["150+", "Sellers"], ["15k+", "Products"], ["4.7", "Rating", true]].map(([val, label, rating]) => (
+                <div key={label}><p className="font-bold text-gray-900 dark:text-white">{val}{rating && <Star size={13} className="inline-block -mt-0.5 ml-1" />}</p><p className="text-gray-400 dark:text-slate-500 text-xs">{label}</p></div>
               ))}
             </div>
             <Link href="/portfolio/saiisai" className="text-brand-500 text-sm font-medium hover:underline">Read the full case study →</Link>

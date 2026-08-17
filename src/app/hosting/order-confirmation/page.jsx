@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { FaCheckCircle } from "react-icons/fa";
+import { CheckCircle2 } from "lucide-react";
 
 export default function HostingOrderConfirmationPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24 flex items-center justify-center">
       <div className="mx-auto max-w-md text-center">
-        <FaCheckCircle className="text-emerald-500 text-5xl mx-auto mb-6" />
+        <CheckCircle2 size={48} className="text-emerald-500 text-5xl mx-auto mb-6" />
         <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-2">Order confirmed</h1>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">
           Thank you for your order. We&apos;ll activate your hosting shortly and send you an email with account details.

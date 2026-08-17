@@ -4,9 +4,9 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { z } from "zod";
 import {
-  FaFileAlt, FaTable, FaTools, FaClipboardList,
-  FaDownload, FaCheckCircle, FaTimes,
-} from "react-icons/fa";
+  FileText, Table, Wrench, ClipboardList,
+  Download, CheckCircle2, X,
+} from "lucide-react";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -91,10 +91,10 @@ const resources = [
 const TABS = ["All", "Guide", "Template", "Checklist"];
 
 const TYPE_ICONS = {
-  Guide: FaFileAlt,
-  Template: FaTable,
-  Checklist: FaClipboardList,
-  Tool: FaTools,
+  Guide: FileText,
+  Template: Table,
+  Checklist: ClipboardList,
+  Tool: Wrench,
 };
 
 const TYPE_COLORS = {
@@ -143,11 +143,11 @@ function DownloadModal({ resource, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
-          <FaTimes />
+          <X size={16} />
         </button>
         {status === "success" ? (
           <div className="text-center">
-            <FaCheckCircle className="text-brand-500 text-4xl mx-auto mb-4" />
+            <CheckCircle2 size={36} className="text-brand-500 mx-auto mb-4" />
             <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-2">Check Your Inbox!</h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
               We&apos;ve sent <strong className="text-gray-900 dark:text-white">{resource.title}</strong> to <strong className="text-brand-500">{email}</strong>.
@@ -177,7 +177,7 @@ function DownloadModal({ resource, onClose }) {
                 disabled={status === "loading"}
                 className="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-700 disabled:opacity-50 transition text-sm flex items-center justify-center gap-2"
               >
-                <FaDownload className="text-sm" />
+                <Download size={14} />
                 {status === "loading" ? "Sending..." : "Send to My Email"}
               </button>
               <p className="text-gray-400 dark:text-slate-500 text-xs text-center">Free, no spam. We&apos;ll send it straight to your inbox.</p>
@@ -242,7 +242,7 @@ export default function ResourcesListing() {
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
             >
               {filtered.map((resource) => {
-                const Icon = TYPE_ICONS[resource.type] || FaFileAlt;
+                const Icon = TYPE_ICONS[resource.type] || FileText;
                 return (
                   <div
                     key={resource.id}
@@ -250,7 +250,7 @@ export default function ResourcesListing() {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${TYPE_COLORS[resource.type]}`}>
-                        <Icon className="text-xs" /> {resource.type}
+                        <Icon size={12} /> {resource.type}
                       </span>
                       <span className="text-gray-400 dark:text-slate-500 text-xs">{resource.format}</span>
                     </div>
@@ -263,7 +263,7 @@ export default function ResourcesListing() {
                         onClick={() => setSelected(resource)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 transition"
                       >
-                        <FaDownload className="text-xs" /> Download
+                        <Download size={12} /> Download
                       </button>
                     </div>
                   </div>

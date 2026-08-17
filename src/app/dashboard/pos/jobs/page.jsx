@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaPlus, FaSearch, FaWrench, FaExclamationTriangle } from "react-icons/fa";
+import { Plus, Search, Wrench, TriangleAlert } from "lucide-react";
 import { useJobs } from "@/hooks/queries/usePosJobs";
 
 const STATUS_TABS = [
@@ -51,7 +51,7 @@ export default function JobsPage() {
           href="/dashboard/pos/jobs/new"
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
         >
-          <FaPlus size={11} /> New Job
+          <Plus size={11} /> New Job
         </Link>
       </div>
 
@@ -64,7 +64,7 @@ export default function JobsPage() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <FaSearch size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+          <Search size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             value={q}
             onChange={handleSearch}
@@ -99,7 +99,7 @@ export default function JobsPage() {
           </div>
         ) : jobs.length === 0 ? (
           <div className="py-16 text-center">
-            <FaWrench size={24} className="text-gray-700 mx-auto mb-3" />
+            <Wrench size={24} className="text-gray-700 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400 font-medium">No jobs found</p>
             <p className="text-gray-600 text-sm mt-1">Try a different filter or create a new job.</p>
           </div>
@@ -123,7 +123,7 @@ export default function JobsPage() {
                   <tr key={job._id} className="hover:bg-gray-100/40 dark:hover:bg-gray-800/40 transition">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
-                        {job.priority === "urgent" && <FaExclamationTriangle size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
+                        {job.priority === "urgent" && <TriangleAlert size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
                         <span className="text-xs font-mono font-semibold text-brand-600 dark:text-brand-400 whitespace-nowrap">{job.jobNumber}</span>
                       </div>
                     </td>

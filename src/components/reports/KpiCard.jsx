@@ -1,4 +1,4 @@
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { ArrowUp, ArrowDown } from "lucide-react";
 
 const TONES = {
   brand:  "text-brand-600 dark:text-brand-400",
@@ -34,7 +34,7 @@ export default function KpiCard({ label, value, icon: Icon, tone = "brand", sub,
               ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
               : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400"
           }`}>
-            {up ? <FaArrowUp size={9} /> : <FaArrowDown size={9} />}
+            {up ? <ArrowUp size={9} /> : <ArrowDown size={9} />}
             {Math.abs(delta.value).toLocaleString()}%
           </span>
         )}

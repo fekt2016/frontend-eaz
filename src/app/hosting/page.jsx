@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SHARED_PLANS, WORDPRESS_PLANS, HOSTING_FEATURES } from "@/data/hostingHostingData";
+import { Banknote, Check, Lock, MapPin, Phone, RefreshCw, X, Zap } from "lucide-react";
 
 function scrollTo(id) {
   if (typeof window === "undefined") return;
@@ -61,7 +62,7 @@ export default function Hosting() {
         <div className="mx-auto max-w-6xl grid gap-5 sm:grid-cols-2 md:grid-cols-4">
           {HOSTING_FEATURES.map((f) => (
             <div key={f.title} className="flex items-start gap-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-              <span className="text-2xl">{f.icon}</span>
+              <f.icon size={22} />
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">{f.title}</p>
                 <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{f.description}</p>
@@ -203,7 +204,7 @@ export default function Hosting() {
                       const ok = p.features.includes(row.feat);
                       return (
                         <td key={p.name} className="px-5 py-3 text-sm">
-                          {ok ? <span className="font-bold text-emerald-500">✓</span> : <span className="text-gray-200 dark:text-slate-700 font-bold">✗</span>}
+                          {ok ? <Check size={14} className="inline-block -mt-0.5 text-emerald-500" /> : <X size={14} className="inline-block -mt-0.5 text-gray-200 dark:text-slate-700" />}
                         </td>
                       );
                     })}
@@ -226,15 +227,15 @@ export default function Hosting() {
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {[
-              { icon: "🇬🇭", title: "Built for Ghana & Africa", desc: "Local support, GHS pricing, and servers optimised for African internet speeds." },
-              { icon: "🔒", title: "Security First", desc: "Free SSL, DDoS protection, Web Application Firewall, and daily malware scans on every plan." },
-              { icon: "📞", title: "Real Human Support", desc: "Talk to a real person — not a bot. Our team is available 24/7 via chat and email." },
-              { icon: "⚡", title: "NVMe SSD Speed", desc: "Up to 10× faster than traditional HDD hosting. Your website loads instantly." },
-              { icon: "🔄", title: "Free Migration", desc: "Moving from another host? We handle the migration for free — zero downtime guaranteed." },
-              { icon: "💰", title: "30-Day Money Back", desc: "Not satisfied? Get a full refund within 30 days. No questions asked." },
+              { icon: MapPin, title: "Built for Ghana & Africa", desc: "Local support, GHS pricing, and servers optimised for African internet speeds." },
+              { icon: Lock, title: "Security First", desc: "Free SSL, DDoS protection, Web Application Firewall, and daily malware scans on every plan." },
+              { icon: Phone, title: "Real Human Support", desc: "Talk to a real person — not a bot. Our team is available 24/7 via chat and email." },
+              { icon: Zap, title: "NVMe SSD Speed", desc: "Up to 10× faster than traditional HDD hosting. Your website loads instantly." },
+              { icon: RefreshCw, title: "Free Migration", desc: "Moving from another host? We handle the migration for free — zero downtime guaranteed." },
+              { icon: Banknote, title: "30-Day Money Back", desc: "Not satisfied? Get a full refund within 30 days. No questions asked." },
             ].map((item) => (
               <div key={item.title} className="rounded-2xl border border-gray-100 dark:border-slate-800 p-6 hover:border-brand-200 dark:hover:border-brand-900/30 hover:shadow-sm transition">
-                <span className="text-3xl mb-3 block">{item.icon}</span>
+                <item.icon size={28} className="mb-3" />
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h3>
                 <p className="text-sm text-gray-500 dark:text-slate-400">{item.desc}</p>
               </div>
@@ -327,7 +328,7 @@ function PlanCard({ plan, billing, planType }) {
       <ul className="flex-1 space-y-1.5 mb-5">
         {plan.features.slice(0, 7).map((f) => (
           <li key={f} className="flex items-start gap-2 text-[0.78rem] text-gray-500 dark:text-slate-400">
-            <span className="mt-0.5 text-brand-500 shrink-0">✓</span>
+            <span className="mt-0.5 shrink-0"><Check size={12} className="text-brand-500" /></span>
             {/^free\s+/i.test(f) ? (
               <span><span className="font-bold text-brand-500">FREE</span> {f.replace(/^free\s+/i, "")}</span>
             ) : f}

@@ -6,9 +6,9 @@ import Image from "next/image";
 import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
 import {
-  FaPlus, FaSearch, FaEdit, FaTrash, FaExclamationTriangle, FaBarcode, FaBoxOpen,
-  FaWrench,
-} from "react-icons/fa";
+  Plus, Search, Pen, Trash2, TriangleAlert, Barcode, PackageOpen,
+  Wrench,
+} from "lucide-react";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
 const CATEGORIES = ["Screen", "Battery", "Charging Port", "Speaker", "Camera", "Button", "Housing", "Board", "Accessory", "Cable", "IC / Chip", "Other"];
@@ -93,7 +93,7 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
           <div>
             <label className={labelCls}>
               <span className="flex items-center gap-1.5">
-                <FaBarcode size={11} className="text-brand-600 dark:text-brand-400" />
+                <Barcode size={11} className="text-brand-600 dark:text-brand-400" />
                 Barcode
                 {!editing && <span className="text-brand-500 font-normal normal-case tracking-normal ml-1">— scan now or type</span>}
               </span>
@@ -288,7 +288,7 @@ function PartsTab() {
                 ? "bg-brand-500/20 border-brand-500/50 text-brand-300"
                 : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500"
             }`}>
-              <FaBarcode size={11} className={scanFlash ? "text-brand-600 dark:text-brand-400" : ""} />
+              <Barcode size={11} className={scanFlash ? "text-brand-600 dark:text-brand-400" : ""} />
               {scanFlash ? "Scanned!" : "Scan ready"}
             </div>
           )}
@@ -296,7 +296,7 @@ function PartsTab() {
             onClick={() => openNew()}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
           >
-            <FaPlus size={11} /> Add Part
+            <Plus size={11} /> Add Part
           </button>
         </div>
       </div>
@@ -305,7 +305,7 @@ function PartsTab() {
       {lowStockItems.length > 0 && (
         <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <FaExclamationTriangle size={13} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+            <TriangleAlert size={13} className="text-red-600 dark:text-red-400 flex-shrink-0" />
             <p className="text-sm font-semibold text-red-600 dark:text-red-400">
               {lowStockItems.length} item{lowStockItems.length > 1 ? "s" : ""} low on stock
             </p>
@@ -323,7 +323,7 @@ function PartsTab() {
                 onClick={() => setModal(p)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 border border-red-500/20 cursor-pointer hover:border-red-500/40 transition"
               >
-                <FaBoxOpen size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+                <PackageOpen size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />
                 <span className="text-xs text-gray-900 dark:text-white truncate max-w-[120px]">{p.name}</span>
                 <span className={`text-xs font-bold ml-1 ${p.quantity === 0 ? "text-red-500" : "text-orange-600 dark:text-orange-400"}`}>
                   {p.quantity === 0 ? "Out" : `${p.quantity} left`}
@@ -342,7 +342,7 @@ function PartsTab() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <FaSearch size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+          <Search size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             value={q}
             onChange={e => { setQ(e.target.value); setPage(1); }}
@@ -364,14 +364,14 @@ function PartsTab() {
             lowStock ? "bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-400" : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
           }`}
         >
-          <FaExclamationTriangle size={11} /> Low stock
+          <TriangleAlert size={11} /> Low stock
         </button>
       </div>
 
       {/* Scan hint */}
       {modal === null && parts.length === 0 && !loading && !q && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
-          <FaBarcode size={18} className="text-brand-600 dark:text-brand-400 flex-shrink-0" />
+          <Barcode size={18} className="text-brand-600 dark:text-brand-400 flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-brand-300">Scanner ready</p>
             <p className="text-xs text-gray-500 mt-0.5">Point your barcode scanner at any part to add it to inventory &mdash; or click &ldquo;Add Part&rdquo; to enter manually.</p>
@@ -385,7 +385,7 @@ function PartsTab() {
           <div className="p-5 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
         ) : parts.length === 0 ? (
           <div className="py-14 text-center">
-            <FaWrench size={24} className="text-gray-700 mx-auto mb-3" />
+            <Wrench size={24} className="text-gray-700 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400 font-medium">No parts found</p>
             <p className="text-gray-600 text-sm mt-1">Scan a barcode or click &ldquo;Add Part&rdquo; to get started.</p>
           </div>
@@ -408,7 +408,7 @@ function PartsTab() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
-                        {lowStockFlag && <FaExclamationTriangle size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
+                        {lowStockFlag && <TriangleAlert size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
                         {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400 flex-shrink-0">Retail</span>}
                       </div>
                       {p.sku && <p className="text-xs text-gray-500">SKU: {p.sku}</p>}
@@ -422,8 +422,8 @@ function PartsTab() {
                     <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">GH₵{(p.costPrice / 100).toLocaleString()}</span>
                     <span className="text-sm text-brand-600 dark:text-brand-400 font-medium hidden sm:block">GH₵{(p.sellingPrice / 100).toLocaleString()}</span>
                     <div className="flex items-center gap-2 ml-auto sm:ml-0">
-                      <button onClick={() => setModal(p)} className="text-gray-500 hover:text-brand-400 transition"><FaEdit size={13} /></button>
-                      <button onClick={() => handleDelete(p._id)} className="text-gray-500 hover:text-red-400 transition"><FaTrash size={12} /></button>
+                      <button onClick={() => setModal(p)} className="text-gray-500 hover:text-brand-400 transition"><Pen size={13} /></button>
+                      <button onClick={() => handleDelete(p._id)} className="text-gray-500 hover:text-red-400 transition"><Trash2 size={12} /></button>
                     </div>
                   </div>
                 );
@@ -514,7 +514,7 @@ function ProductsTab() {
           href="/dashboard/commerce/products/new"
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
         >
-          <FaPlus size={11} /> Add Product
+          <Plus size={11} /> Add Product
         </Link>
       </div>
 
@@ -523,7 +523,7 @@ function ProductsTab() {
           <div className="p-5 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
         ) : products.length === 0 ? (
           <div className="py-14 text-center">
-            <FaBoxOpen size={24} className="text-gray-700 mx-auto mb-3" />
+            <PackageOpen size={24} className="text-gray-700 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400 font-medium">No products yet</p>
             <p className="text-gray-600 text-sm mt-1">Click &ldquo;Add Product&rdquo; to create your first shop product.</p>
           </div>
@@ -587,8 +587,8 @@ export default function InventoryPage() {
   const [tab, setTab] = useState("parts");
 
   const tabs = [
-    { id: "parts",    label: "Repair Parts",  icon: FaWrench },
-    { id: "products", label: "Shop Products", icon: FaBoxOpen },
+    { id: "parts",    label: "Repair Parts",  icon: Wrench },
+    { id: "products", label: "Shop Products", icon: PackageOpen },
   ];
 
   return (

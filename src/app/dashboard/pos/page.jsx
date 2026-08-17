@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { FaWrench, FaSync, FaClock, FaExclamationTriangle } from "react-icons/fa";
+import { Wrench, RefreshCw, Clock, TriangleAlert } from "lucide-react";
 import { useJobs } from "@/hooks/queries/usePosJobs";
 
 const STATUS_COLORS = {
@@ -30,7 +30,7 @@ function JobRow({ job }) {
           <span className="text-sm font-mono font-semibold text-gray-900 dark:text-white">{job.jobNumber}</span>
           {job.priority === "urgent" && (
             <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded-full">
-              <FaExclamationTriangle size={8} /> Urgent
+              <TriangleAlert size={8} /> Urgent
             </span>
           )}
         </div>
@@ -46,7 +46,7 @@ function JobRow({ job }) {
       </div>
       {job.estimatedCompletion && (
         <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 flex-shrink-0">
-          <FaClock size={10} />
+          <Clock size={10} />
           {new Date(job.estimatedCompletion).toLocaleDateString("en-GH", { dateStyle: "medium" })}
         </div>
       )}
@@ -113,7 +113,7 @@ export default function PosRoot() {
           onClick={fetchJobs}
           className="w-9 h-9 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
         >
-          <FaSync size={12} className={loading ? "animate-spin" : ""} />
+          <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
         </button>
       </div>
 
@@ -162,7 +162,7 @@ export default function PosRoot() {
           </div>
         ) : jobs.length === 0 ? (
           <div className="py-16 text-center text-gray-500">
-            <FaWrench size={24} className="mx-auto mb-3 opacity-30" />
+            <Wrench size={24} className="mx-auto mb-3 opacity-30" />
             <p className="text-sm">{tab === "mine" ? "No jobs assigned to you." : "No active jobs."}</p>
           </div>
         ) : (

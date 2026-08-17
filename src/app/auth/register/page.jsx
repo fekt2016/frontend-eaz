@@ -1,10 +1,9 @@
 "use client";
 
 import { Suspense, useState, useMemo } from "react";
-import { FaCheck, FaTimes } from "react-icons/fa";
+import { Check, Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { sanitizeName, sanitizeEmail, sanitizePhone, getPasswordRules, validatePassword } from "@/lib/sanitize";
@@ -83,7 +82,7 @@ function RegisterPageInner() {
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" className={`${inputCls} pr-12`} required />
                 <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition" aria-label={showPassword ? "Hide" : "Show"}>
-                  {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
               {/* Password strength checklist */}
@@ -92,8 +91,8 @@ function RegisterPageInner() {
                   {passwordRules.map(({ rule, met }) => (
                     <div key={rule} className="flex items-center gap-2">
                       {met
-                        ? <FaCheck size={10} className="text-emerald-500 flex-shrink-0" />
-                        : <FaTimes size={10} className="text-red-400 flex-shrink-0" />
+                        ? <Check size={10} className="text-emerald-500 flex-shrink-0" />
+                        : <X size={10} className="text-red-400 flex-shrink-0" />
                       }
                       <span className={`text-xs ${met ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-slate-400"}`}>
                         {rule}
@@ -108,7 +107,7 @@ function RegisterPageInner() {
               <div className="relative">
                 <input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat password" className={`${inputCls} pr-12`} required />
                 <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition" aria-label={showConfirmPassword ? "Hide" : "Show"}>
-                  {showConfirmPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>

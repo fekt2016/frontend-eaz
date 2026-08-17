@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FaArrowLeft, FaArrowRight, FaBoxOpen, FaPaperPlane } from "react-icons/fa6";
+import { ArrowLeft, ArrowRight, PackageOpen, Send } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
@@ -72,7 +72,7 @@ export default function CustomerOrderDetailPage() {
         <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center">
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-2">Order not found.</p>
           <Link href="/dashboard/orders" className="text-sm text-brand-500 hover:underline inline-flex items-center gap-1.5">
-            <FaArrowLeft size={11} /> Back to My Orders
+            <ArrowLeft size={11} /> Back to My Orders
           </Link>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function CustomerOrderDetailPage() {
         href="/dashboard/orders"
         className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition"
       >
-        <FaArrowLeft size={11} /> Back to My Orders
+        <ArrowLeft size={11} /> Back to My Orders
       </Link>
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
@@ -155,7 +155,7 @@ export default function CustomerOrderDetailPage() {
               disabled={saving}
               className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-50"
             >
-              <FaPaperPlane size={10} /> {saving ? "Saving…" : "Add tracking update"}
+              <Send size={10} /> {saving ? "Saving…" : "Add tracking update"}
             </button>
           </form>
         </div>
@@ -176,7 +176,7 @@ export default function CustomerOrderDetailPage() {
             )}
             {history[history.length - 1].location && (
               <p className="text-xs text-gray-400 dark:text-slate-500 inline-flex items-center gap-1">
-                <FaBoxOpen size={10} /> {history[history.length - 1].location}
+                <PackageOpen size={10} /> {history[history.length - 1].location}
               </p>
             )}
             <p className="text-xs text-gray-400 dark:text-slate-500">{fmtDate(history[history.length - 1].timestamp)}</p>
@@ -187,7 +187,7 @@ export default function CustomerOrderDetailPage() {
             href={`/track/order/${order.trackingNumber}`}
             className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
           >
-            View full tracking details <FaArrowRight size={10} />
+            View full tracking details <ArrowRight size={10} />
           </Link>
         )}
       </div>

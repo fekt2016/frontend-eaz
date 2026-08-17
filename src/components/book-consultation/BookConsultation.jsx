@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { z } from "zod";
-import { FaCheckCircle, FaWhatsapp, FaClock, FaStar, FaShieldAlt, FaArrowRight } from "react-icons/fa";
+import { CheckCircle2, Clock, Star, ShieldCheck, ArrowRight, Mail, Phone, Lock, Globe, TrendingUp, Target, Sparkles, Smartphone, Cloud, MessageSquare } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText, sanitizeMessage } from "@/lib/sanitize";
 
 const schema = z.object({
@@ -17,20 +18,20 @@ const schema = z.object({
 });
 
 const services = [
-  { id: "Web Design & Development", label: "Web Design", icon: "🌐", desc: "Website or web app" },
-  { id: "SEO & Content", label: "SEO & Content", icon: "📈", desc: "Rank higher on Google" },
-  { id: "Paid Advertising", label: "Paid Ads", icon: "🎯", desc: "Facebook, Google ads" },
-  { id: "Branding & Identity", label: "Branding", icon: "✨", desc: "Logo & brand identity" },
-  { id: "Social Media", label: "Social Media", icon: "📱", desc: "Grow your audience" },
-  { id: "Email Marketing", label: "Email Marketing", icon: "📧", desc: "Campaigns & automation" },
-  { id: "Web Hosting", label: "Hosting", icon: "☁️", desc: "Fast & reliable hosting" },
-  { id: "Not sure — need advice", label: "Not Sure Yet", icon: "💬", desc: "Let's figure it out" },
+  { id: "Web Design & Development", label: "Web Design", icon: Globe, desc: "Website or web app" },
+  { id: "SEO & Content", label: "SEO & Content", icon: TrendingUp, desc: "Rank higher on Google" },
+  { id: "Paid Advertising", label: "Paid Ads", icon: Target, desc: "Facebook, Google ads" },
+  { id: "Branding & Identity", label: "Branding", icon: Sparkles, desc: "Logo & brand identity" },
+  { id: "Social Media", label: "Social Media", icon: Smartphone, desc: "Grow your audience" },
+  { id: "Email Marketing", label: "Email Marketing", icon: Mail, desc: "Campaigns & automation" },
+  { id: "Web Hosting", label: "Hosting", icon: Cloud, desc: "Fast & reliable hosting" },
+  { id: "Not sure — need advice", label: "Not Sure Yet", icon: MessageSquare, desc: "Let's figure it out" },
 ];
 
 const trust = [
-  { icon: <FaStar className="text-brand-400" />, value: "4.9/5", label: "Client Rating" },
-  { icon: <FaClock className="text-brand-400" />, value: "< 24hrs", label: "Response Time" },
-  { icon: <FaShieldAlt className="text-brand-400" />, value: "No Pressure", label: "Honest Advice" },
+  { icon: <Star className="text-brand-400" />, value: "4.9/5", label: "Client Rating" },
+  { icon: <Clock className="text-brand-400" />, value: "< 24hrs", label: "Response Time" },
+  { icon: <ShieldCheck className="text-brand-400" />, value: "No Pressure", label: "Honest Advice" },
 ];
 
 const steps = [
@@ -105,7 +106,7 @@ export default function BookConsultation() {
       <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4 pt-16">
         <div className="max-w-md w-full text-center p-10 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-5">
-            <FaCheckCircle className="text-emerald-500 text-3xl" />
+            <CheckCircle2 className="text-emerald-500 text-3xl" />
           </div>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-2">You&apos;re Booked In!</h1>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-6 leading-relaxed">
@@ -116,7 +117,7 @@ export default function BookConsultation() {
             <ul className="space-y-1.5">
               {["Check your email for our reply", "Pick a time slot that suits you", "Join the 30-min video or phone call", "Leave with a clear plan & estimate"].map((s) => (
                 <li key={s} className="flex items-center gap-2 text-xs text-gray-600 dark:text-slate-400">
-                  <FaCheckCircle className="text-brand-400 flex-shrink-0" size={10} /> {s}
+                  <CheckCircle2 className="text-brand-400 flex-shrink-0" size={10} /> {s}
                 </li>
               ))}
             </ul>
@@ -226,7 +227,7 @@ export default function BookConsultation() {
                           : "border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500"
                       }`}
                     >
-                      <span className="text-xl leading-none">{s.icon}</span>
+                      <s.icon size={20} className="shrink-0" />
                       <span className="font-semibold">{s.label}</span>
                       <span className="text-gray-400 dark:text-slate-500 text-[10px] leading-tight font-normal">{s.desc}</span>
                     </button>
@@ -259,7 +260,7 @@ export default function BookConsultation() {
                 {status === "loading" ? (
                   <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending…</>
                 ) : (
-                  <>Book My Free Consultation <FaArrowRight size={12} /></>
+                  <>Book My Free Consultation <ArrowRight size={12} /></>
                 )}
               </button>
 
@@ -271,7 +272,7 @@ export default function BookConsultation() {
               )}
 
               <p className="text-gray-400 dark:text-slate-500 text-xs text-center">
-                🔒 Your info is never shared. We respond within 24 hours.
+                <Lock size={11} className="inline-block align-text-bottom text-gray-400 dark:text-slate-500" /> Your info is never shared. We respond within 24 hours.
               </p>
             </form>
           </div>
@@ -301,7 +302,7 @@ export default function BookConsultation() {
                 {reviews.map((r) => (
                   <blockquote key={r._id} className="p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                     <div className="flex gap-0.5 mb-2">
-                      {[1,2,3,4,5].map((s) => <FaStar key={s} size={11} className={s <= r.rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />)}
+                      {[1,2,3,4,5].map((s) => <Star key={s} size={11} className={s <= r.rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />)}
                     </div>
                     <p className="text-gray-600 dark:text-slate-300 text-xs italic leading-relaxed mb-3">&ldquo;{r.review}&rdquo;</p>
                     <div className="flex items-center gap-2">
@@ -325,10 +326,10 @@ export default function BookConsultation() {
             <div className="p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
               <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 mb-3">Prefer to reach us directly?</p>
               <a href="mailto:info@eazworld.co" className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition mb-2">
-                <span className="text-base">✉️</span> info@eazworld.co
+                <Mail size={14} className="text-gray-400 dark:text-slate-500 flex-shrink-0" /> info@eazworld.co
               </a>
               <a href="tel:+233244388190" className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition mb-3">
-                <span className="text-base">📞</span> +233 24 438 8190
+                <Phone size={14} className="text-gray-400 dark:text-slate-500 flex-shrink-0" /> +233 24 438 8190
               </a>
               <a
                 href="https://wa.me/233244388190"

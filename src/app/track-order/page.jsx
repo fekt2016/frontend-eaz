@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaSearch, FaSpinner } from "react-icons/fa";
+import { Loader2, Search } from "lucide-react";
 import { formatGhs } from "@/lib/shop";
 import { useTrackOrder } from "@/hooks/queries/useOrders";
 
@@ -87,7 +87,7 @@ export default function TrackOrderPage() {
             disabled={loading}
             className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gray-900 dark:bg-brand-500 py-3 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
           >
-            {loading ? <FaSpinner size={14} className="animate-spin" /> : <FaSearch size={13} />}
+            {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={13} />}
             {loading ? "Looking up..." : "Track Order"}
           </button>
         </form>

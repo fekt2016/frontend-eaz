@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { FaShoppingCart, FaTimes } from "react-icons/fa";
+import { ShoppingCart, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { formatGhs } from "@/lib/shop";
 import CartItems from "./CartItems";
@@ -45,7 +45,7 @@ export default function CartDrawer() {
           >
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 px-5 py-4">
               <div className="flex items-center gap-2">
-                <FaShoppingCart className="text-brand-500" size={16} />
+                <ShoppingCart className="text-brand-500" size={16} />
                 <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white">Your Cart</h2>
                 {count > 0 && (
                   <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-bold text-white">{count}</span>
@@ -57,7 +57,7 @@ export default function CartDrawer() {
                 className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition"
                 aria-label="Close cart"
               >
-                <FaTimes size={18} />
+                <X size={18} />
               </button>
             </div>
 
