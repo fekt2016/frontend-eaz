@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { FaBars, FaTimes, FaUserCircle, FaChevronDown, FaShoppingCart } from "react-icons/fa";
@@ -70,8 +71,15 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="font-display font-bold text-xl text-gray-900 dark:text-white">
-          Eaz<span className="text-brand-500">World</span>
+        <Link href="/" className="flex items-center" aria-label="EazWorld home">
+          <Image
+            src="/logo.png"
+            alt="EazWorld"
+            width={512}
+            height={440}
+            className="h-9 w-auto"
+            priority
+          />
         </Link>
 
         {/* Desktop nav */}
@@ -105,7 +113,7 @@ export default function Navbar() {
                       className={`flex items-start gap-2.5 p-3 rounded-xl transition group ${
                         pathname === href
                           ? "bg-brand-50 dark:bg-brand-900/20"
-                          : "hover:bg-gray-50 dark:hover:bg-slate-800"
+                          : "hover:bg-paper dark:hover:bg-slate-800"
                       }`}
                     >
                       <span className="text-lg leading-none mt-0.5 flex-shrink-0">{icon}</span>

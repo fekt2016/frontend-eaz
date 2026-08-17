@@ -9,6 +9,7 @@ import {
   FaEnvelope, FaMobileAlt, FaChevronLeft, FaChevronRight,
 } from "react-icons/fa";
 import { useTheme } from "@/context/ThemeContext";
+import StarRule from "@/components/common/StarRule";
 
 const slides = [
   {
@@ -86,7 +87,12 @@ const slides = [
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [ready, setReady] = useState(false);
   const { isDark } = useTheme();
+
+  useEffect(() => {
+    setReady(true);
+  }, []);
 
   const next = useCallback(() => setCurrent((c) => (c + 1) % slides.length), []);
   const prev = useCallback(() => setCurrent((c) => (c - 1 + slides.length) % slides.length), []);
@@ -109,15 +115,16 @@ export default function HeroCarousel() {
   const slide = slides[current];
   const Icon = slide.icon;
 
-  // In dark mode use a deep dark bg with a subtle tint of the accent colour
-  const heroBg = isDark
-    ? `linear-gradient(135deg, #020617 0%, ${slide.accent}0d 100%)`
-    : slide.bg;
+  // In dark mode use a deep dark bg with a subtle tint of the accent colour.
+  // Applied only after mount so first paint uses the paper/ink classes below.
+  const heroBg = ready && isDark
+    ? `linear-gradient(135deg, #161209 0%, ${slide.accent}0d 100%)`
+    : ready ? slide.bg : undefined;
 
   return (
     <section
-      className="relative overflow-hidden"
-      style={{ minHeight: "85vh", background: heroBg, transition: "background 0.8s ease" }}
+      className="relative overflow-hidden bg-paper dark:bg-ink"
+      style={{ minHeight: "85vh", transition: "background 0.8s ease", ...(heroBg ? { background: heroBg } : {}) }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       aria-label="Hero carousel"
@@ -145,11 +152,13 @@ export default function HeroCarousel() {
                 <Icon size={28} style={{ color: slide.accent }} />
               </div>
 
-              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: slide.accent }}>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] mb-3" style={{ color: slide.accent }}>
                 {slide.service}
               </p>
 
-              <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl text-gray-900 dark:text-white mb-6 leading-tight">
+              <StarRule className="mb-6" />
+
+              <h1 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl text-gray-900 dark:text-white mb-6 leading-tight">
                 {slide.headline}
               </h1>
 
@@ -199,8 +208,8 @@ export default function HeroCarousel() {
                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mb-2">
                   <FaStar className="text-emerald-600 dark:text-emerald-400" size={16} />
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase">Success Rate</p>
-                <p className="text-lg font-black text-gray-900 dark:text-white">99.9%</p>
+                <p className="font-mono text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase">Success Rate</p>
+                <p className="font-mono text-lg font-bold text-gray-900 dark:text-white">99.9%</p>
               </motion.div>
             </motion.div>
           </div>
@@ -238,7 +247,7 @@ export default function HeroCarousel() {
             className="h-2 rounded-full transition-all duration-500"
             style={{
               width: i === current ? "32px" : "8px",
-              background: i === current ? slide.accent : isDark ? "#475569" : "#d1d5db",
+              background: i === current ? slide.accent : ready && isDark ? "#475569" : "#d1d5db",
             }}
           />
         ))}

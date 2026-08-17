@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaWhatsapp, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 
 const columns = [
@@ -44,11 +45,22 @@ const social = [
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-50 dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 text-gray-900 dark:text-slate-100 transition-colors">
+    <footer className="bg-paper dark:bg-ink border-t border-gray-100 dark:border-slate-800 text-gray-900 dark:text-slate-100 transition-colors">
+      <div className="h-0.5 w-full flex" aria-hidden="true">
+        <span className="flex-1 bg-star-red" />
+        <span className="flex-1 bg-star-gold" />
+        <span className="flex-1 bg-star-green" />
+      </div>
       <div className="max-w-6xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
         <div>
-          <Link href="/" className="font-display font-bold text-xl text-gray-900 dark:text-white">
-            Eaz<span className="text-brand-500">World</span>
+          <Link href="/" className="inline-block" aria-label="EazWorld home">
+            <Image
+              src="/logo.png"
+              alt="EazWorld"
+              width={512}
+              height={440}
+              className="h-10 w-auto"
+            />
           </Link>
           <p className="text-gray-500 dark:text-slate-400 mt-3 text-sm leading-relaxed">
             Premium digital agency in Accra, Ghana. Web design, hosting, domains, and phone repair.
@@ -88,7 +100,7 @@ export default function Footer() {
 
         {columns.map((col) => (
           <div key={col.title}>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4">{col.title}</h3>
+            <h3 className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400 mb-4">{col.title}</h3>
             <ul className="space-y-2.5">
               {col.links.map((link) => (
                 <li key={link.label}>

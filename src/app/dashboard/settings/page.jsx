@@ -79,7 +79,7 @@ function ProfileSection({ user, onUpdate }) {
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1.5">Email address</label>
-          <input type="email" value={user?.email || ""} disabled className={`${inputCls} bg-gray-50 text-gray-400 cursor-not-allowed`} />
+          <input type="email" value={user?.email || ""} disabled className={`${inputCls} bg-paper text-gray-400 cursor-not-allowed`} />
           <p className="text-xs text-gray-400 mt-1">Email cannot be changed.</p>
         </div>
         <div>
@@ -256,7 +256,7 @@ function TwoFactorSection({ user, onUpdate }) {
       <div className="space-y-4">
 
         {/* Status banner */}
-        <div className={`flex items-center justify-between p-4 rounded-xl border ${enabled ? "bg-emerald-50 border-emerald-100" : "bg-gray-50 border-gray-100"}`}>
+        <div className={`flex items-center justify-between p-4 rounded-xl border ${enabled ? "bg-emerald-50 border-emerald-100" : "bg-paper border-gray-100"}`}>
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${enabled ? "bg-emerald-100" : "bg-gray-200"}`}>
               <FaShieldAlt size={14} className={enabled ? "text-emerald-600" : "text-gray-400"} />
@@ -338,19 +338,20 @@ function TwoFactorSection({ user, onUpdate }) {
 // ─── Theme Section ────────────────────────────────────────────────────────────
 
 function ThemeSection() {
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleTheme, mounted } = useTheme();
+  const dark = mounted && isDark;
   return (
-    <SectionCard icon={isDark ? FaMoon : FaSun} title="Appearance" description="Choose how EazWorld looks for you." iconColor={isDark ? "bg-slate-700" : "bg-brand-400"}>
+    <SectionCard icon={dark ? FaMoon : FaSun} title="Appearance" description="Choose how EazWorld looks for you." iconColor={dark ? "bg-slate-700" : "bg-brand-400"}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-900 dark:text-white">{isDark ? "Dark mode" : "Light mode"}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{isDark ? "Easy on the eyes at night." : "Clean and bright interface."}</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-white">{dark ? "Dark mode" : "Light mode"}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{dark ? "Easy on the eyes at night." : "Clean and bright interface."}</p>
         </div>
         <button onClick={toggleTheme}
           className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none
-            ${isDark ? "bg-brand-500" : "bg-gray-200"}`}>
+            ${dark ? "bg-brand-500" : "bg-gray-200"}`}>
           <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform
-            ${isDark ? "translate-x-6" : "translate-x-1"}`} />
+            ${dark ? "translate-x-6" : "translate-x-1"}`} />
         </button>
       </div>
     </SectionCard>
@@ -367,7 +368,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24 transition-colors">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24 transition-colors">
       <div className="mx-auto max-w-2xl">
 
         {/* Header */}

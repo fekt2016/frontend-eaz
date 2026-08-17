@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { api } from "@/lib/api";
-import { formatGhs, stockBadge } from "@/lib/shop";
+import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
+import StarRule from "@/components/common/StarRule";
 
 // Shop showcase on the homepage — a quick look at the newest items, placed after
 // the agency story & proof.
@@ -15,7 +16,7 @@ export default function RecentProducts() {
   useEffect(() => {
     let active = true;
     api
-      .get("/products?limit=8&sort=newest")
+      .get("/products?limit=8&sort=newest&kind=product")
       .then((res) => { if (active) setProducts(res.data || []); })
       .catch(() => {})
       .finally(() => { if (active) setLoading(false); });
@@ -30,7 +31,8 @@ export default function RecentProducts() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Just Added</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Just Added</p>
+            <StarRule className="mb-4" />
             <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">
               Recent Products
             </h2>
@@ -78,23 +80,36 @@ export default function RecentProducts() {
 
 function RecentCard({ product }) {
   const badge = stockBadge(product.stock);
-  const image = product.images?.[0] || "https://placehold.co/800x600/1e1b4b/ffffff?text=Product";
+  const images = product.images?.length
+    ? product.images
+    : ["https://placehold.co/800x600/1e1b4b/ffffff.png?text=Product"];
+  const primary = placeholderToPng(images[0]);
+  const secondary = images[1] ? placeholderToPng(images[1]) : null; // shown on hover when the product has a 2nd image
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-md hover:-translate-y-1 transition duration-300">
       <Link href={`/shop/${product.slug}`} className="relative block overflow-hidden aspect-[4/3]">
         <Image
-          src={image}
+          src={primary}
           alt={product.name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className={`object-cover transition-all duration-500 group-hover:scale-105 ${secondary ? "group-hover:opacity-0" : ""}`}
         />
+        {secondary && (
+          <Image
+            src={secondary}
+            alt={`${product.name} — alternate view`}
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
+            className="object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+          />
+        )}
         <span className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>
           {badge.label}
         </span>
       </Link>
       <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-500 mb-0.5 truncate">{product.category}</p>
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-400 mb-0.5 truncate">{product.category}</p>
         <h3 className="font-display font-bold text-sm text-gray-900 dark:text-white group-hover:text-brand-500 transition mb-2 line-clamp-2">
           {product.name}
         </h3>

@@ -5,37 +5,35 @@ import { getCookie, setCookie } from "@/lib/cookies";
 
 const ThemeContext = createContext(null);
 
+function resolveTheme() {
+  if (typeof window === "undefined") return "light";
+  const saved = getCookie("eazworld-theme");
+  if (saved === "dark" || saved === "light") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(resolveTheme);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Read saved theme from cookie or fall back to system preference
-    const saved = getCookie("eazworld-theme");
-    if (saved === "dark" || saved === "light") {
-      setTheme(saved);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
     }
-    // Persist theme preference for 1 year
     setCookie("eazworld-theme", theme, { days: 365 });
-  }, [theme, mounted]);
+  }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === "dark" }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === "dark", mounted }}>
       {children}
     </ThemeContext.Provider>
   );

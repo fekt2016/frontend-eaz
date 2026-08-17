@@ -1,4 +1,5 @@
-import { Playfair_Display, DM_Sans } from "next/font/google";
+import { Space_Grotesk, DM_Sans, Space_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import JsonLd from "@/components/common/JsonLd";
@@ -9,16 +10,22 @@ import CartDrawer from "@/components/cart/CartDrawer";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { SITE_URL, SITE_NAME, organizationJsonLd } from "@/lib/seo";
 
-const playfair = Playfair_Display({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["400", "700", "900"],
-  variable: "--font-playfair",
+  weight: ["400", "500", "700"],
+  variable: "--font-space-grotesk",
 });
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500"],
   variable: "--font-dm-sans",
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-space-mono",
 });
 
 export const metadata = {
@@ -29,7 +36,10 @@ export const metadata = {
   },
   description: "Ghana's trusted digital agency. Web design, SEO, paid ads, branding, social media, email marketing, hosting and phone repair in Accra.",
   keywords: ["web design Accra", "SEO Ghana", "digital marketing Ghana", "phone repair Accra", "web hosting Ghana", "digital agency Accra"],
-  icons: { icon: "/favicon.ico" },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
@@ -48,10 +58,19 @@ export const metadata = {
   alternates: { canonical: SITE_URL },
 };
 
+const themeInit = `(function(){try{
+  var c=document.cookie.match(/(?:^|; )eazworld-theme=([^;]*)/);
+  var t=c&&c[1];
+  if(t!=="dark"&&t!=="light"){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}
+  var el=document.documentElement;
+  if(t==="dark"){el.classList.add("dark");}else{el.classList.remove("dark");}
+}catch(e){}})();`;
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
-      <body className="font-sans antialiased text-gray-900 dark:text-slate-100 bg-gray-50 dark:bg-slate-950 min-h-screen flex flex-col">
+    <html lang="en" className={`${spaceGrotesk.variable} ${dmSans.variable} ${spaceMono.variable}`} suppressHydrationWarning>
+      <body className="font-sans antialiased text-gray-900 dark:text-slate-100 bg-paper dark:bg-ink min-h-screen flex flex-col">
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInit }} />
         <QueryProvider>
           <ThemeProvider>
             <AuthProvider>
