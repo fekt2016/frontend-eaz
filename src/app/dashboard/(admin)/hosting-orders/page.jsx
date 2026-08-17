@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import {
-  FaTrash,
-  FaSearch,
-  FaRedo,
-  FaExternalLinkAlt,
-  FaClipboardList,
-  FaExclamationTriangle,
-  FaSpinner,
-  FaServer,
-  FaCheckCircle,
-} from "react-icons/fa";
+  Trash2,
+  Search,
+  RotateCw,
+  ExternalLink,
+  ClipboardList,
+  TriangleAlert,
+  Loader2,
+  Server,
+  CheckCircle2,
+} from "lucide-react";
 
 const statusColors = {
   pending: "bg-brand-50 text-brand-700 ring-brand-100",
@@ -230,7 +230,7 @@ export default function AdminHostingOrdersPage() {
             </Link>
             <div className="flex items-center gap-3 mb-2">
               <span className="w-11 h-11 rounded-xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center">
-                <FaServer size={20} className="text-brand-600 dark:text-brand-400" />
+                <Server size={20} className="text-brand-600 dark:text-brand-400" />
               </span>
               <div>
                 <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Hosting — Admin</h1>
@@ -250,7 +250,7 @@ export default function AdminHostingOrdersPage() {
                 disabled={loading && summaryLoading}
                 className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600 transition disabled:opacity-50"
               >
-                <FaRedo size={11} /> Refresh metrics & list
+                <RotateCw size={11} /> Refresh metrics & list
               </button>
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function AdminHostingOrdersPage() {
                 key={i}
                 className="flex items-start gap-2 rounded-xl border border-brand-200 dark:border-brand-900/40 bg-brand-50 dark:bg-brand-900/20 px-4 py-3 text-sm text-brand-900 dark:text-brand-300"
               >
-                <FaExclamationTriangle className="shrink-0 mt-0.5 text-brand-600" />
+                <TriangleAlert className="shrink-0 mt-0.5 text-brand-600" />
                 <span>{msg}</span>
               </div>
             ))}
@@ -309,7 +309,7 @@ export default function AdminHostingOrdersPage() {
         <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm mb-4">
           <div className="flex flex-col lg:flex-row lg:items-center gap-4">
             <div className="relative flex-1 min-w-[12rem]">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={13} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={13} />
               <input
                 type="search"
                 value={searchInput}
@@ -336,14 +336,14 @@ export default function AdminHostingOrdersPage() {
             </div>
           </div>
           <p className="mt-3 text-[11px] text-gray-400 dark:text-slate-500">
-            <FaClipboardList className="inline mr-1 -mt-px" size={11} /> Up to <strong className="text-gray-600 dark:text-slate-400">200</strong> rows per request —
+            <ClipboardList className="inline mr-1 -mt-px" size={11} /> Up to <strong className="text-gray-600 dark:text-slate-400">200</strong> rows per request —
             tighten filters if you rely on pagination later.
           </p>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-500 dark:text-slate-400">
-            <FaSpinner className="animate-spin text-2xl text-brand-500" />
+            <Loader2 size={24} className="animate-spin text-brand-500" />
             <span className="text-sm">Loading orders…</span>
           </div>
         ) : orders.length === 0 ? (
@@ -382,7 +382,7 @@ export default function AdminHostingOrdersPage() {
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700"
                               >
-                                PDF receipt <FaExternalLinkAlt size={9} />
+                                PDF receipt <ExternalLink size={9} />
                               </a>
                             ) : (
                               <a href={order.proofUploadUrl} target="_blank" rel="noopener noreferrer" className="block">
@@ -422,7 +422,7 @@ export default function AdminHostingOrdersPage() {
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium capitalize ring-1 ${statusColors[order.status] || "bg-gray-100 text-gray-600 ring-gray-100"
                               }`}
                           >
-                            {order.status === "active" ? <FaCheckCircle size={10} /> : null}
+                            {order.status === "active" ? <CheckCircle2 size={10} /> : null}
                             {order.status}
                           </span>
                         </td>
@@ -464,7 +464,7 @@ export default function AdminHostingOrdersPage() {
                                 onClick={() => handleAdminCpanel(order._id)}
                                 className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-50 inline-flex items-center gap-1"
                               >
-                                {cpanelBusy === order._id ? <FaSpinner size={11} className="animate-spin" /> : null}
+                                {cpanelBusy === order._id ? <Loader2 size={11} className="animate-spin" /> : null}
                                 cPanel
                               </button>
                             )}
@@ -525,7 +525,7 @@ export default function AdminHostingOrdersPage() {
                               disabled={deleting === order._id}
                               className="p-1.5 rounded-full text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50"
                             >
-                              {deleting === order._id ? <FaSpinner size={13} className="animate-spin" /> : <FaTrash size={13} />}
+                              {deleting === order._id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                             </button>
                           </div>
                         </td>
