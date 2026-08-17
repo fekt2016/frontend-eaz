@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { FaGlobe, FaSearch, FaRedo, FaSpinner, FaExternalLinkAlt } from "react-icons/fa";
+import { FaRedo, FaSpinner } from "react-icons/fa";
+import { Globe, Search, RotateCw, Loader2, ExternalLink } from "lucide-react";
 import { useAdminDomainOrders, useUpdateDomainOrderStatus, useRetryDomainRegistration } from "@/hooks/queries/useDomains";
 
 const statusColors = {
@@ -77,7 +78,7 @@ export default function AdminDomainOrdersPage() {
           <Link href="/dashboard" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Dashboard</Link>
           <div className="flex items-center gap-3 mb-2">
             <span className="w-11 h-11 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-              <FaGlobe size={18} className="text-violet-600 dark:text-violet-400" />
+              <Globe size={18} className="text-violet-600 dark:text-violet-400" />
             </span>
             <div>
               <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Domain Orders</h1>
@@ -105,7 +106,7 @@ export default function AdminDomainOrdersPage() {
         <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm mb-4">
           <div className="flex flex-col lg:flex-row lg:items-center gap-4">
             <div className="relative flex-1">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={12} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={12} />
               <input
                 type="search"
                 value={search}
@@ -122,8 +123,8 @@ export default function AdminDomainOrdersPage() {
                 </button>
               ))}
               <button type="button" onClick={fetchOrders} disabled={loading}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
-                <FaRedo size={10} className={loading ? "animate-spin" : ""} /> Refresh
+className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
+                <RotateCw size={10} className={loading ? "animate-spin" : ""} /> Refresh
               </button>
             </div>
           </div>
@@ -132,7 +133,7 @@ export default function AdminDomainOrdersPage() {
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-20 gap-3 text-gray-400 dark:text-slate-500">
-            <FaSpinner className="animate-spin text-2xl text-brand-500" />
+            <Loader2 className="animate-spin text-brand-500" size={24} />
             <span className="text-sm">Loading orders…</span>
           </div>
         ) : orders.length === 0 ? (
@@ -197,7 +198,7 @@ export default function AdminDomainOrdersPage() {
                           {o.paystackReference && (
                             <a href={`https://dashboard.paystack.com/#/transactions`} target="_blank" rel="noopener noreferrer"
                               className="text-xs font-semibold px-2.5 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 inline-flex items-center gap-1">
-                              Paystack <FaExternalLinkAlt size={9} />
+                              Paystack <ExternalLink size={9} />
                             </a>
                           )}
                         </div>

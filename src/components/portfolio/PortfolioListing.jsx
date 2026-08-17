@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { FaSearch } from "react-icons/fa";
+import { Search } from "lucide-react";
 import { PROJECTS, CATEGORIES } from "@/data/portfolioData";
 import { usePortfolioFilter } from "@/hooks/usePortfolio";
 
@@ -97,7 +97,7 @@ export default function PortfolioListing() {
           </div>
           <div className="flex items-center gap-3">
             <div className="relative w-full sm:w-52">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search projects..."
@@ -133,7 +133,7 @@ export default function PortfolioListing() {
 
           {filteredProjects.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-16 text-center">
-              <p className="text-2xl mb-3">🔍</p>
+              <Search size={24} className="mb-3 text-gray-400" />
               <p className="font-semibold text-gray-900 dark:text-white mb-2">No projects found</p>
               <p className="text-gray-400 dark:text-slate-500 text-sm mb-5 max-w-sm">Try a different category or search term.</p>
               <button

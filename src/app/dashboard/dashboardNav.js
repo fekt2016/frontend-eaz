@@ -1,49 +1,48 @@
 // Single source of truth for the shared app sidebar. Every page that uses a
 // sidenav (dashboard, commerce, POS) renders the same sections, role-gated.
 import {
-  FaTachometerAlt, FaStore, FaCalendarAlt, FaComments,
-  FaStar, FaFileAlt, FaServer, FaGlobe, FaUsers, FaEnvelope,
-  FaBarcode, FaWrench, FaBoxes, FaChartBar, FaReceipt, FaTruck, FaShieldAlt,
-  FaShoppingBag, FaHistory,
-} from "react-icons/fa";
+  Barcode, BarChart3, Boxes, CalendarDays, FileText, Gauge, Globe,
+  History, Mail, MessagesSquare, Receipt, Server, ShieldCheck,
+  ShoppingBag, Star, Store, Truck, Users, Wrench,
+} from "lucide-react";
 
 // Shown to every logged-in dashboard user.
 export const baseNav = [
-  { href: "/dashboard", icon: FaTachometerAlt, label: "Overview" },
-  { href: "/dashboard/orders", icon: FaShoppingBag, label: "Shop Orders" },
-  { href: "/dashboard/repairs", icon: FaWrench, label: "My Repairs" },
-  { href: "/dashboard/hosting", icon: FaServer, label: "Hosting" },
-  { href: "/dashboard/domains", icon: FaGlobe, label: "Domains" },
+  { href: "/dashboard", icon: Gauge, label: "Overview" },
+  { href: "/dashboard/orders", icon: ShoppingBag, label: "Shop Orders" },
+  { href: "/dashboard/repairs", icon: Wrench, label: "My Repairs" },
+  { href: "/dashboard/hosting", icon: Server, label: "Hosting" },
+  { href: "/dashboard/domains", icon: Globe, label: "Domains" },
 ];
 
 // Admin/superadmin only.
 export const adminNav = [
-  { href: "/dashboard/consultations", icon: FaCalendarAlt, label: "Consultations" },
-  { href: "/dashboard/chats", icon: FaComments, label: "Chat Sessions" },
-  { href: "/dashboard/reviews", icon: FaStar, label: "Reviews" },
-  { href: "/dashboard/blog", icon: FaFileAlt, label: "Blog Posts" },
-  { href: "/dashboard/hosting-orders", icon: FaServer, label: "Hosting Orders" },
-  { href: "/dashboard/domain-orders", icon: FaGlobe, label: "Domain Orders" },
-  { href: "/dashboard/users", icon: FaUsers, label: "Users" },
-  { href: "/dashboard/emails", icon: FaEnvelope, label: "Email Logs" },
-  { href: "/dashboard/activity-logs", icon: FaHistory, label: "Activity Log" },
+  { href: "/dashboard/consultations", icon: CalendarDays, label: "Consultations" },
+  { href: "/dashboard/chats", icon: MessagesSquare, label: "Chat Sessions" },
+  { href: "/dashboard/reviews", icon: Star, label: "Reviews" },
+  { href: "/dashboard/blog", icon: FileText, label: "Blog Posts" },
+  { href: "/dashboard/hosting-orders", icon: Server, label: "Hosting Orders" },
+  { href: "/dashboard/domain-orders", icon: Globe, label: "Domain Orders" },
+  { href: "/dashboard/users", icon: Users, label: "Users" },
+  { href: "/dashboard/emails", icon: Mail, label: "Email Logs" },
+  { href: "/dashboard/activity-logs", icon: History, label: "Activity Log" },
 ];
 
 // Admin/superadmin only — sits below the Repair Shop POS section.
 export const marketplaceNav = [
-  { href: "/dashboard/commerce", icon: FaStore, label: "Marketplace" },
-  { href: "/dashboard/commerce/inventory", icon: FaBoxes, label: "Inventory" },
+  { href: "/dashboard/commerce", icon: Store, label: "Marketplace" },
+  { href: "/dashboard/commerce/inventory", icon: Boxes, label: "Inventory" },
 ];
 
 // roles: if undefined, visible to all POS roles.
 // superadmin = full access; admin = repair steps only; staff = full except staff mgmt (also handles sales); technician = repairs
 export const posNav = [
-  { label: "Sell",       href: "/dashboard/pos/sell",      icon: FaBarcode,  roles: ["superadmin","staff"] },
-  { label: "My Jobs",    href: "/dashboard/pos",           icon: FaWrench,   roles: ["technician"] },
-  { label: "Jobs",       href: "/dashboard/pos/jobs",      icon: FaWrench,   roles: ["superadmin","staff"] },
-  { label: "Orders",     href: "/dashboard/pos/orders",    icon: FaShoppingBag, roles: ["superadmin","admin","staff"] },
-  { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: FaTruck,    roles: ["superadmin","staff"] },
-  { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: FaReceipt,  roles: ["superadmin","staff"] },
-  { label: "Warranty",   href: "/dashboard/pos/warranty",  icon: FaShieldAlt, roles: ["superadmin","staff"] },
-  { label: "Reports",    href: "/dashboard/pos/reports",   icon: FaChartBar, roles: ["superadmin","admin","staff"] },
+  { label: "Sell",       href: "/dashboard/pos/sell",      icon: Barcode,  roles: ["superadmin","staff"] },
+  { label: "My Jobs",    href: "/dashboard/pos",           icon: Wrench,   roles: ["technician"] },
+  { label: "Jobs",       href: "/dashboard/pos/jobs",      icon: Wrench,   roles: ["superadmin","staff"] },
+  { label: "Orders",     href: "/dashboard/pos/orders",    icon: ShoppingBag, roles: ["superadmin","admin","staff"] },
+  { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: Truck,    roles: ["superadmin","staff"] },
+  { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: Receipt,  roles: ["superadmin","staff"] },
+  { label: "Warranty",   href: "/dashboard/pos/warranty",  icon: ShieldCheck, roles: ["superadmin","staff"] },
+  { label: "Reports",    href: "/dashboard/pos/reports",   icon: BarChart3, roles: ["superadmin","admin","staff"] },
 ];

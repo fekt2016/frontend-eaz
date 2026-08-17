@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
-import { FaEnvelope, FaRedo } from "react-icons/fa";
+import { Mail, RotateCw } from "lucide-react";
 
 function VerifyPageInner() {
   const { setUser } = useAuth();
@@ -116,7 +116,7 @@ function VerifyPageInner() {
           <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <div className="mt-6 mb-4 flex justify-center">
             <span className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center">
-              <FaEnvelope size={24} className="text-brand-500" />
+              <Mail size={24} className="text-brand-500" />
             </span>
           </div>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Check your email</h1>
@@ -186,7 +186,7 @@ function VerifyPageInner() {
                 onClick={handleResend}
                 disabled={resendLoading || resendCooldown > 0}
                 className="inline-flex items-center gap-2 text-sm font-semibold text-brand-500 hover:text-brand-600 disabled:opacity-50 transition">
-                <FaRedo size={11} className={resendLoading ? "animate-spin" : ""} />
+                <RotateCw size={11} className={resendLoading ? "animate-spin" : ""} />
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
               </button>
             </div>

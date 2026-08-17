@@ -4,10 +4,10 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import {
-  FaServer, FaGlobe, FaClock, FaChevronRight, FaUserCircle,
-  FaWrench, FaCheckCircle, FaExclamationTriangle, FaPlus, FaBoxes, FaShoppingBag,
-  FaTools, FaSpinner,
-} from "react-icons/fa";
+  Server, Globe, Clock, ChevronRight, CircleUser,
+  Wrench, CheckCircle2, TriangleAlert, Plus, Boxes, ShoppingBag,
+  Loader2,
+} from "lucide-react";
 import {
   StatCard, HostingCard, DomainCard, ShopOrderCard, RepairCard,
 } from "@/components/dashboard/customer/CustomerCards";
@@ -60,7 +60,7 @@ function RecentOrdersList({ shopOrders, partOrders, loading }) {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
-                  <FaShoppingBag size={11} className="text-brand-600 dark:text-brand-400" />
+                  <ShoppingBag size={11} className="text-brand-600 dark:text-brand-400" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate font-mono">{o.orderNumber}</p>
@@ -85,7 +85,7 @@ function RecentOrdersList({ shopOrders, partOrders, loading }) {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
-                  <FaBoxes size={11} className="text-brand-600 dark:text-brand-400" />
+                  <Boxes size={11} className="text-brand-600 dark:text-brand-400" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{o.partName || "Part order"}</p>
@@ -158,7 +158,7 @@ function RecentJobsList({ jobs, loading }) {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
-                  <FaWrench size={11} className="text-brand-600 dark:text-brand-400" />
+                  <Wrench size={11} className="text-brand-600 dark:text-brand-400" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{job.jobNumber}</p>
@@ -169,7 +169,7 @@ function RecentJobsList({ jobs, loading }) {
               </div>
               <div className="flex items-center gap-3 flex-shrink-0 ml-3">
                 {job.priority === "urgent" && (
-                  <FaExclamationTriangle size={11} className="text-red-600 dark:text-red-400" />
+                  <TriangleAlert size={11} className="text-red-600 dark:text-red-400" />
                 )}
                 <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[job.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
                   {STATUS_LABEL[job.status] || job.status}
@@ -216,7 +216,7 @@ function MyDashboard({ user }) {
           href="/dashboard/pos/jobs/new"
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
         >
-          <FaPlus size={11} /> New Job
+          <Plus size={11} /> New Job
         </Link>
       </div>
 
@@ -229,19 +229,19 @@ function MyDashboard({ user }) {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <PosStatCard label={isTech ? "My Jobs" : "Jobs I Created"} value={stats?.myTotalJobs}     icon={FaWrench}      color="text-blue-600 dark:text-blue-400" sub="All time" />
-          <PosStatCard label="Pending"                                value={stats?.myPendingJobs}   icon={FaClock}       color="text-brand-600 dark:text-brand-400" sub="In progress" />
-          <PosStatCard label="Ready"                                  value={stats?.myReadyJobs}     icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="Waiting for collection" />
-          <PosStatCard label="Completed"                              value={stats?.myCompletedJobs} icon={FaCheckCircle} sub="Collected" />
+          <PosStatCard label={isTech ? "My Jobs" : "Jobs I Created"} value={stats?.myTotalJobs}     icon={Wrench}      color="text-blue-600 dark:text-blue-400" sub="All time" />
+          <PosStatCard label="Pending"                                value={stats?.myPendingJobs}   icon={Clock}       color="text-brand-600 dark:text-brand-400" sub="In progress" />
+          <PosStatCard label="Ready"                                  value={stats?.myReadyJobs}     icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub="Waiting for collection" />
+          <PosStatCard label="Completed"                              value={stats?.myCompletedJobs} icon={CheckCircle2} sub="Collected" />
 
           {isTech ? (
-            <PosStatCard label="Assigned Today" value={stats?.myTodayJobs} icon={FaWrench} sub="New today" />
+            <PosStatCard label="Assigned Today" value={stats?.myTodayJobs} icon={Wrench} sub="New today" />
           ) : (
             <>
-              <PosStatCard label="My Sales"      value={stats?.mySalesCount}                                     icon={FaShoppingBag} color="text-purple-600 dark:text-purple-400" sub="Products sold (all time)" />
-              <PosStatCard label="Sales Revenue" value={formatGhs(stats?.mySalesRevenue || 0)}   icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="From my sales" />
-              <PosStatCard label="Today's Sales" value={formatGhs(stats?.myTodaySalesRevenue || 0)} icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
-              <PosStatCard label="Low Stock"     value={stats?.lowStockCount}                                    icon={FaBoxes}       color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-500"} sub="Parts below threshold" />
+<PosStatCard label="My Sales"      value={stats?.mySalesCount}                                     icon={ShoppingBag} color="text-purple-600 dark:text-purple-400" sub="Products sold (all time)" />
+              <PosStatCard label="Sales Revenue" value={`GH₵${((stats?.mySalesRevenue || 0) / 100).toLocaleString()}`}   icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub="From my sales" />
+              <PosStatCard label="Today's Sales" value={`GH₵${((stats?.myTodaySalesRevenue || 0) / 100).toLocaleString()}`} icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
+              <PosStatCard label="Low Stock"     value={stats?.lowStockCount}                                    icon={Boxes}       color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-500"} sub="Parts below threshold" />
             </>
           )}
         </div>
@@ -278,7 +278,7 @@ function FullDashboard() {
           href="/dashboard/pos/jobs/new"
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
         >
-          <FaPlus size={11} /> New Job
+          <Plus size={11} /> New Job
         </Link>
       </div>
 
@@ -343,7 +343,7 @@ function MaintenanceCard() {
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
             maint.maintenanceActive ? "bg-red-500" : "bg-slate-200 dark:bg-slate-700"
           }`}>
-            <FaTools size={14} className={maint.maintenanceActive ? "text-white" : "text-gray-500 dark:text-slate-400"} />
+            <Wrench size={14} className={maint.maintenanceActive ? "text-white" : "text-gray-500 dark:text-slate-400"} />
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -421,7 +421,7 @@ function MaintenanceCard() {
 
           {maintStart && !maintEnd && (
             <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800">
-              <FaExclamationTriangle size={12} className="text-brand-500 mt-0.5 flex-shrink-0" />
+              <TriangleAlert size={12} className="text-brand-500 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-brand-700 dark:text-brand-400">
                 <strong>No end time set.</strong> Once the start time passes, maintenance will stay active indefinitely until you turn it off manually.
               </p>
@@ -444,7 +444,7 @@ function MaintenanceCard() {
               disabled={maintSaving}
               className="text-xs font-bold px-4 py-2 rounded-full bg-brand-500 hover:bg-brand-400 text-white transition disabled:opacity-50 flex items-center gap-1.5"
             >
-              {maintSaving ? <FaSpinner size={10} className="animate-spin" /> : null}
+              {maintSaving ? <Loader2 size={10} className="animate-spin" /> : null}
               Save settings
             </button>
           </div>
@@ -482,7 +482,7 @@ function CustomerOverview() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center">
-            <FaUserCircle size={24} className="text-brand-500" />
+            <CircleUser size={24} className="text-brand-500" />
           </div>
           <div>
             <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white">
@@ -493,16 +493,16 @@ function CustomerOverview() {
         </div>
         <div className="flex gap-2">
           <Link href="/dashboard/settings" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition">
-            <FaUserCircle size={12} /> Settings
+            <CircleUser size={12} /> Settings
           </Link>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard icon={FaServer} label="Active Hosting" value={activeHosting} color="bg-brand-400" />
-        <StatCard icon={FaGlobe} label="Active Domains" value={activeDomains} color="bg-blue-500" />
-        <StatCard icon={FaClock} label="Pending Orders" value={pendingOrders} color="bg-gray-400" />
+        <StatCard icon={Server} label="Active Hosting" value={activeHosting} color="bg-brand-400" />
+        <StatCard icon={Globe} label="Active Domains" value={activeDomains} color="bg-blue-500" />
+        <StatCard icon={Clock} label="Pending Orders" value={pendingOrders} color="bg-gray-400" />
       </div>
 
       {/* Overview */}
@@ -512,7 +512,7 @@ function CustomerOverview() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 dark:text-white">Recent Hosting</h2>
             <Link href="/dashboard/hosting" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
-              View all <FaChevronRight size={9} />
+              View all <ChevronRight size={9} />
             </Link>
           </div>
           {loadingHosting ? (
@@ -538,7 +538,7 @@ function CustomerOverview() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 dark:text-white">Recent Domains</h2>
             <Link href="/dashboard/domains" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
-              View all <FaChevronRight size={9} />
+              View all <ChevronRight size={9} />
             </Link>
           </div>
           {loadingDomains ? (
@@ -564,7 +564,7 @@ function CustomerOverview() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
             <Link href="/dashboard/orders" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
-              View all <FaChevronRight size={9} />
+              View all <ChevronRight size={9} />
             </Link>
           </div>
           {loadingOrders ? (
@@ -590,7 +590,7 @@ function CustomerOverview() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 dark:text-white">Recent Repairs</h2>
             <Link href="/dashboard/repairs" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
-              View all <FaChevronRight size={9} />
+              View all <ChevronRight size={9} />
             </Link>
           </div>
           {loadingRepairs ? (

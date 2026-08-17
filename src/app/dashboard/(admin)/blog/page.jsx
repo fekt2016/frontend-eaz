@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { FaPlus, FaEdit, FaTrash, FaRedo, FaSpinner, FaEye, FaEyeSlash, FaStar, FaTimes, FaCheck } from "react-icons/fa";
+import { Plus, Pen, Trash2, RotateCw, Loader2, Eye, EyeOff, Star, X, Check, PenLine } from "lucide-react";
 
 const CATEGORIES = ["SEO", "Web Design", "Case Study", "Social Media", "Branding", "Phone Repair", "Paid Advertising", "Email Marketing", "General"];
 
@@ -41,7 +41,7 @@ function PostForm({ initial, onSave, onCancel, saving }) {
             {initial?._id ? "Edit Post" : "New Post"}
           </h2>
           <button onClick={onCancel} className="text-gray-400 hover:text-gray-700 dark:hover:text-white transition">
-            <FaTimes size={16} />
+            <X size={16} />
           </button>
         </div>
 
@@ -104,7 +104,7 @@ function PostForm({ initial, onSave, onCancel, saving }) {
             disabled={saving || !fields.title || !fields.excerpt || !fields.content}
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition"
           >
-            {saving ? <FaSpinner className="animate-spin" size={12} /> : <FaCheck size={12} />}
+            {saving ? <Loader2 className="animate-spin" size={12} /> : <Check size={12} />}
             {saving ? "Saving…" : initial?._id ? "Save Changes" : "Publish Post"}
           </button>
         </div>
@@ -203,13 +203,13 @@ export default function AdminBlogPage() {
           <div className="flex items-center gap-2">
             <button onClick={fetchPosts} disabled={loading}
               className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 transition disabled:opacity-50">
-              <FaRedo size={11} className={loading ? "animate-spin" : ""} /> Refresh
+              <RotateCw size={11} className={loading ? "animate-spin" : ""} /> Refresh
             </button>
             <button
               onClick={() => { setEditing(null); setShowForm(true); }}
               className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
             >
-              <FaPlus size={11} /> New Post
+              <Plus size={11} /> New Post
             </button>
           </div>
         </div>
@@ -217,12 +217,12 @@ export default function AdminBlogPage() {
         {/* Posts list */}
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <FaSpinner className="animate-spin text-2xl text-brand-500" />
+            <Loader2 className="animate-spin text-brand-500" size={24} />
             <span className="text-sm">Loading posts…</span>
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-4xl mb-4">✍️</p>
+            <PenLine size={36} className="mb-4 mx-auto text-gray-400 dark:text-slate-500" />
             <p className="font-semibold text-gray-900 dark:text-white mb-2">No posts yet</p>
             <p className="text-gray-400 dark:text-slate-500 text-sm mb-5">Create your first blog post.</p>
             <button onClick={() => { setEditing(null); setShowForm(true); }}
@@ -241,7 +241,7 @@ export default function AdminBlogPage() {
                     </span>
                     {post.featured && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400 border border-brand-200 dark:border-brand-800/30">
-                        <FaStar size={9} /> Featured
+                        <Star size={9} /> Featured
                       </span>
                     )}
                     {!post.published && (
@@ -262,26 +262,26 @@ export default function AdminBlogPage() {
                     title={post.published ? "Unpublish" : "Publish"}
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition ${post.published ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
                   >
-                    {post.published ? <FaEye size={13} /> : <FaEyeSlash size={13} />}
+                    {post.published ? <Eye size={13} /> : <EyeOff size={13} />}
                   </button>
                   <button
                     onClick={() => handleToggle(post, "featured")}
                     title={post.featured ? "Remove featured" : "Mark featured"}
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition ${post.featured ? "text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
                   >
-                    <FaStar size={13} />
+                    <Star size={13} />
                   </button>
                   <button
                     onClick={() => handleEdit(post)}
                     className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-white transition"
                   >
-                    <FaEdit size={13} />
+                    <Pen size={13} />
                   </button>
                   <button
                     onClick={() => handleDelete(post._id)}
                     className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition"
                   >
-                    <FaTrash size={12} />
+                    <Trash2 size={12} />
                   </button>
                 </div>
               </div>

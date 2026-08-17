@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaTools } from "react-icons/fa";
+import { Wrench } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { fmtDate } from "@/components/dashboard/customer/CustomerCards";
 import { useMyRepairs } from "@/hooks/queries/useRepairs";
@@ -42,7 +42,7 @@ export default function CustomerRepairsPage() {
         </div>
       ) : repairs.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-10 text-center">
-          <FaTools size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
+          <Wrench size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-2">No repairs linked to your account yet.</p>
           <p className="text-xs text-gray-300 dark:text-slate-600 mb-4">Create a repair job online — bring your device in or have a rider collect it.</p>
           <Link href="/repair" className="text-sm font-semibold px-5 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">

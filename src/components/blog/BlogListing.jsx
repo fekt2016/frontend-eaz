@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { FaSearch, FaClock } from "react-icons/fa";
+import { Search, Clock, Inbox } from "lucide-react";
 
 const CATEGORIES = ["All", "SEO", "Web Design", "Case Study", "Social Media", "Branding", "Phone Repair", "Paid Advertising", "Email Marketing", "General"];
 
@@ -33,7 +33,7 @@ function PostCard({ post }) {
       <div className="flex items-center justify-between mb-3">
         <CategoryPill cat={post.category} />
         <span className="text-gray-400 dark:text-slate-500 text-xs flex items-center gap-1">
-          <FaClock size={10} /> {post.readTime}
+          <Clock size={10} /> {post.readTime}
         </span>
       </div>
       <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-2 group-hover:text-brand-500 transition leading-snug">
@@ -132,7 +132,7 @@ export default function BlogListing() {
                     <span>{new Date(featured.publishedAt || featured.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
                   )}
                   <span>·</span>
-                  <span className="flex items-center gap-1"><FaClock size={10} /> {featured.readTime}</span>
+                  <span className="flex items-center gap-1"><Clock size={10} /> {featured.readTime}</span>
                 </div>
               </div>
               <Link href={`/blog/${featured.slug}`}
@@ -165,7 +165,7 @@ export default function BlogListing() {
               ))}
             </div>
             <div className="relative w-full sm:w-56">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 text-xs" />
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Search articles…"
@@ -187,7 +187,7 @@ export default function BlogListing() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20 text-gray-400 dark:text-slate-500">
-              <p className="text-3xl mb-3">📭</p>
+              <Inbox size={30} className="mb-3 mx-auto text-gray-400 dark:text-slate-500" />
               <p className="font-semibold text-gray-900 dark:text-white mb-1">No articles found</p>
               <p className="text-sm">Try a different search or category.</p>
             </div>

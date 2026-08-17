@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { formatGhs } from "@/lib/shop";
-import { FaShoppingBag, FaWrench, FaSpinner } from "react-icons/fa";
+import { ShoppingBag, Wrench, Loader2 } from "lucide-react";
 import { useOrders, useUpdateOrderStatus } from "@/hooks/queries/useOrders";
 import { usePartOrders, useUpdatePosOrderStatus } from "@/hooks/queries/usePosDashboard";
 
@@ -80,8 +80,8 @@ export default function PosOrdersPage() {
   };
 
   const tabs = [
-    { key: "shop",  label: "Shop Orders", icon: FaShoppingBag, count: shopOrders.length },
-    { key: "parts", label: "Part Orders", icon: FaWrench,      count: partOrders.length },
+    { key: "shop",  label: "Shop Orders", icon: ShoppingBag, count: shopOrders.length },
+    { key: "parts", label: "Part Orders", icon: Wrench,      count: partOrders.length },
   ];
 
   return (
@@ -138,7 +138,7 @@ export default function PosOrdersPage() {
                   <div className="text-right shrink-0 space-y-2">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatGhs(order.total)}</p>
                     <div className="flex items-center gap-2 justify-end">
-                      {savingId === order._id && <FaSpinner className="animate-spin text-gray-400" size={11} />}
+                      {savingId === order._id && <Loader2 className="animate-spin text-gray-400" size={11} />}
                       <select
                         value={order.status}
                         disabled={savingId === order._id}
@@ -197,7 +197,7 @@ export default function PosOrdersPage() {
                       : formatGhs(order.amountGhs)}
                   </p>
                   <div className="flex items-center gap-2 justify-end">
-                    {savingId === order._id && <FaSpinner className="animate-spin text-gray-400" size={11} />}
+                    {savingId === order._id && <Loader2 className="animate-spin text-gray-400" size={11} />}
                     <select
                       value={order.status}
                       disabled={savingId === order._id}

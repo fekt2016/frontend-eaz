@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaShoppingBag, FaSpinner } from "react-icons/fa";
+import { ShoppingBag, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
 import { useOrders, useMyOrders, useUpdateOrderStatus } from "@/hooks/queries/useOrders";
@@ -62,7 +62,7 @@ export default function CustomerOrdersPage() {
         </div>
       ) : orders.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-10 text-center">
-          <FaShoppingBag size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
+          <ShoppingBag size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-2">
             {seesAll ? "No shop orders yet." : "No shop orders linked to your account."}
           </p>
@@ -138,7 +138,7 @@ export default function CustomerOrdersPage() {
                             disabled={updating === o._id || (drafts[o._id] ?? o.status) === o.status}
                             className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-50"
                           >
-                            {updating === o._id ? <FaSpinner className="animate-spin" size={10} /> : "Update"}
+                            {updating === o._id ? <Loader2 className="animate-spin" size={10} /> : "Update"}
                           </button>
                         </div>
                       </td>

@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
-  FaUser, FaLock, FaShieldAlt, FaCheckCircle,
-  FaTimesCircle, FaEye, FaEyeSlash, FaSpinner, FaMoon, FaSun,
-} from "react-icons/fa";
+  User, Lock, ShieldCheck, CheckCircle2,
+  XCircle, Eye, EyeOff, Loader2, Moon, Sun,
+} from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { sanitizeName, sanitizePhone } from "@/lib/sanitize";
 
@@ -19,7 +19,7 @@ function Alert({ type, message }) {
   if (!message) return null;
   return (
     <div className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm ${type === "success" ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
-      {type === "success" ? <FaCheckCircle size={13} /> : <FaTimesCircle size={13} />}
+      {type === "success" ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
       {message}
     </div>
   );
@@ -71,7 +71,7 @@ function ProfileSection({ user, onUpdate }) {
   };
 
   return (
-    <SectionCard icon={FaUser} title="Profile Information" description="Update your name and phone number." iconColor="bg-blue-500">
+    <SectionCard icon={User} title="Profile Information" description="Update your name and phone number." iconColor="bg-blue-500">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1.5">Full name</label>
@@ -89,7 +89,7 @@ function ProfileSection({ user, onUpdate }) {
         <Alert type={status.type} message={status.message} />
         <button type="submit" disabled={loading}
           className="px-5 py-2.5 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition disabled:opacity-50 flex items-center gap-2">
-          {loading && <FaSpinner className="animate-spin" size={12} />}
+          {loading && <Loader2 className="animate-spin" size={12} />}
           {loading ? "Saving…" : "Save changes"}
         </button>
       </form>
@@ -136,7 +136,7 @@ function PasswordSection() {
   const strengthColor = ["", "bg-red-400", "bg-brand-400", "bg-blue-400", "bg-emerald-500"];
 
   return (
-    <SectionCard icon={FaLock} title="Change Password" description="Choose a strong password for your account." iconColor="bg-brand-500">
+    <SectionCard icon={Lock} title="Change Password" description="Choose a strong password for your account." iconColor="bg-brand-500">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1.5">Current password</label>
@@ -145,7 +145,7 @@ function PasswordSection() {
               placeholder="Enter current password" className={`${inputCls} pr-11`} required />
             <button type="button" onClick={() => setShowCurrent(v => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition">
-              {showCurrent ? <FaEyeSlash size={15} /> : <FaEye size={15} />}
+              {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
         </div>
@@ -156,7 +156,7 @@ function PasswordSection() {
               placeholder="Min 8 characters" className={`${inputCls} pr-11`} required />
             <button type="button" onClick={() => setShowNew(v => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition">
-              {showNew ? <FaEyeSlash size={15} /> : <FaEye size={15} />}
+              {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
           {newPass && (
@@ -180,7 +180,7 @@ function PasswordSection() {
         <Alert type={status.type} message={status.message} />
         <button type="submit" disabled={loading}
           className="px-5 py-2.5 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition disabled:opacity-50 flex items-center gap-2">
-          {loading && <FaSpinner className="animate-spin" size={12} />}
+          {loading && <Loader2 className="animate-spin" size={12} />}
           {loading ? "Changing…" : "Change password"}
         </button>
       </form>
@@ -251,7 +251,7 @@ function TwoFactorSection({ user, onUpdate }) {
   };
 
   return (
-    <SectionCard icon={FaShieldAlt} title="Two-Factor Authentication"
+    <SectionCard icon={ShieldCheck} title="Two-Factor Authentication"
       description="Add an extra layer of security to your account." iconColor="bg-violet-500">
       <div className="space-y-4">
 
@@ -259,7 +259,7 @@ function TwoFactorSection({ user, onUpdate }) {
         <div className={`flex items-center justify-between p-4 rounded-xl border ${enabled ? "bg-emerald-50 border-emerald-100" : "bg-paper border-gray-100"}`}>
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${enabled ? "bg-emerald-100" : "bg-gray-200"}`}>
-              <FaShieldAlt size={14} className={enabled ? "text-emerald-600" : "text-gray-400"} />
+              <ShieldCheck size={14} className={enabled ? "text-emerald-600" : "text-gray-400"} />
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-900">{enabled ? "2FA is enabled" : "2FA is disabled"}</p>
@@ -275,7 +275,7 @@ function TwoFactorSection({ user, onUpdate }) {
             ) : (
               <button onClick={requestEnable} disabled={loading}
                 className="text-xs font-semibold px-3 py-1.5 rounded-full bg-violet-600 text-white hover:bg-violet-700 transition disabled:opacity-50 flex items-center gap-1.5">
-                {loading && <FaSpinner className="animate-spin" size={10} />}
+                {loading && <Loader2 className="animate-spin" size={10} />}
                 Enable
               </button>
             )
@@ -300,7 +300,7 @@ function TwoFactorSection({ user, onUpdate }) {
             <div className="flex gap-2">
               <button onClick={confirmEnable} disabled={loading}
                 className="px-4 py-2 rounded-full bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 transition disabled:opacity-50 flex items-center gap-1.5">
-                {loading && <FaSpinner className="animate-spin" size={10} />} Confirm
+                {loading && <Loader2 className="animate-spin" size={10} />} Confirm
               </button>
               <button onClick={() => { setStep("idle"); setPin(["","","","","",""]); }}
                 className="px-4 py-2 rounded-full border border-gray-200 text-gray-600 text-xs font-semibold hover:border-gray-300 transition">
@@ -319,7 +319,7 @@ function TwoFactorSection({ user, onUpdate }) {
             <div className="flex gap-2">
               <button onClick={confirmDisable} disabled={loading}
                 className="px-4 py-2 rounded-full bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition disabled:opacity-50 flex items-center gap-1.5">
-                {loading && <FaSpinner className="animate-spin" size={10} />} Disable 2FA
+                {loading && <Loader2 className="animate-spin" size={10} />} Disable 2FA
               </button>
               <button onClick={() => { setStep("idle"); setPassword(""); }}
                 className="px-4 py-2 rounded-full border border-gray-200 text-gray-600 text-xs font-semibold hover:border-gray-300 transition">
@@ -341,7 +341,7 @@ function ThemeSection() {
   const { isDark, toggleTheme, mounted } = useTheme();
   const dark = mounted && isDark;
   return (
-    <SectionCard icon={dark ? FaMoon : FaSun} title="Appearance" description="Choose how EazWorld looks for you." iconColor={dark ? "bg-slate-700" : "bg-brand-400"}>
+<SectionCard icon={dark ? Moon : Sun} title="Appearance" description="Choose how EazWorld looks for you." iconColor={dark ? "bg-slate-700" : "bg-brand-400"}>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-900 dark:text-white">{dark ? "Dark mode" : "Light mode"}</p>

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { FaCamera, FaTrash, FaTimes, FaExpand, FaSpinner } from "react-icons/fa";
+import { Camera, Trash2, X, Expand, Loader2 } from "lucide-react";
 import { useUploadJobPhoto, useDeleteJobPhoto } from "@/hooks/queries/usePosJobs";
 
 export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = false }) {
@@ -51,7 +51,7 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-800 bg-gray-800/50">
         <div className="flex items-center gap-2">
-          <FaCamera size={12} className="text-brand-400" />
+          <Camera size={12} className="text-brand-400" />
           <p className="text-xs font-semibold text-gray-300 uppercase tracking-wide">
             Device Photos
           </p>
@@ -64,8 +64,8 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
             className="flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition disabled:opacity-50"
           >
             {uploading
-              ? <><FaSpinner className="animate-spin" size={10} /> Uploading…</>
-              : <><FaCamera size={10} /> Add Photo</>}
+              ? <><Loader2 className="animate-spin" size={10} /> Uploading…</>
+              : <><Camera size={10} /> Add Photo</>}
           </button>
         )}
       </div>
@@ -82,9 +82,9 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
             className="border-2 border-dashed border-gray-700 hover:border-brand-500/50 rounded-xl p-8 text-center cursor-pointer transition group"
           >
             {uploading ? (
-              <FaSpinner size={24} className="text-brand-400 animate-spin mx-auto mb-2" />
+              <Loader2 size={24} className="text-brand-400 animate-spin mx-auto mb-2" />
             ) : (
-              <FaCamera size={24} className="text-gray-600 group-hover:text-brand-400 mx-auto mb-2 transition" />
+              <Camera size={24} className="text-gray-600 group-hover:text-brand-400 mx-auto mb-2 transition" />
             )}
             <p className="text-sm text-gray-500 group-hover:text-gray-300 transition">
               {uploading ? "Uploading…" : "Click or drag photos here"}
@@ -114,14 +114,14 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
                     onClick={() => setLightbox(i)}
                     className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/40 flex items-center justify-center transition"
                   >
-                    <FaExpand size={10} className="text-white" />
+                    <Expand size={10} className="text-white" />
                   </button>
                   {!readOnly && (
                     <button
                       onClick={() => handleDelete(photo._id)}
                       className="w-7 h-7 rounded-lg bg-red-500/60 hover:bg-red-500 flex items-center justify-center transition"
                     >
-                      <FaTrash size={9} className="text-white" />
+                      <Trash2 size={9} className="text-white" />
                     </button>
                   )}
                 </div>
@@ -142,8 +142,8 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
                 className="aspect-square rounded-xl border-2 border-dashed border-gray-700 hover:border-brand-500/50 flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-brand-400 transition disabled:opacity-50"
               >
                 {uploading
-                  ? <FaSpinner size={16} className="animate-spin" />
-                  : <FaCamera size={16} />}
+                  ? <Loader2 size={16} className="animate-spin" />
+                  : <Camera size={16} />}
                 <span className="text-xs">{uploading ? "…" : "Add"}</span>
               </button>
             )}
@@ -170,7 +170,7 @@ export default function JobPhotos({ jobId, photos = [], onUpdate, readOnly = fal
             onClick={() => setLightbox(null)}
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition"
           >
-            <FaTimes size={16} />
+            <X size={16} />
           </button>
           {lightbox > 0 && (
             <button

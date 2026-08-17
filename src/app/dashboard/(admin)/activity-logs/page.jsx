@@ -8,10 +8,10 @@ import { useActivityLogs } from "@/hooks/queries/useActivityLogs";
 import { useUsers } from "@/hooks/queries/useUsers";
 import DateRangeFilter from "@/components/reports/DateRangeFilter";
 import {
-  FaHistory, FaSearch, FaRedo, FaSpinner, FaTimes,
-  FaUser, FaServer, FaHashtag, FaNetworkWired, FaFingerprint,
-  FaCheckCircle, FaTimesCircle, FaChevronDown,
-} from "react-icons/fa";
+  History, Search, RotateCw, Loader2, X,
+  User, Server, Hash, Network, Fingerprint,
+  CheckCircle2, XCircle, ChevronDown,
+} from "lucide-react";
 import {
   actionLabel, resourceLabel, actorLabel, roleLabel,
   fmtDateTime, changesSummary,
@@ -64,7 +64,7 @@ function DetailModal({ log, onClose }) {
             <span className="text-xs text-gray-400 dark:text-slate-500">{fmtDateTime(log.createdAt)}</span>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition" aria-label="Close">
-            <FaTimes size={13} />
+            <X size={13} />
           </button>
         </div>
 
@@ -79,7 +79,7 @@ function DetailModal({ log, onClose }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 mb-1.5 flex items-center gap-1.5">
-                <FaUser size={10} /> Actor
+                <User size={10} /> Actor
               </p>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-900 dark:text-white">{actorLabel(log)}</span>
@@ -92,7 +92,7 @@ function DetailModal({ log, onClose }) {
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 mb-1.5 flex items-center gap-1.5">
-                <FaServer size={10} /> Resource
+                <Server size={10} /> Resource
               </p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">{resourceLabel(log.resourceType)}</p>
               {log.resourceName && <p className="text-xs text-gray-400 dark:text-slate-500 mt-1 truncate">{log.resourceName}</p>}
@@ -146,7 +146,7 @@ function DetailModal({ log, onClose }) {
             {log.ip && (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
-                  <FaNetworkWired size={10} /> IP
+                  <Network size={10} /> IP
                 </p>
                 <p className="text-xs text-gray-700 dark:text-slate-300 font-mono break-all">{log.ip}</p>
               </div>
@@ -154,7 +154,7 @@ function DetailModal({ log, onClose }) {
             {log.requestId && (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
-                  <FaFingerprint size={10} /> Request ID
+                  <Fingerprint size={10} /> Request ID
                 </p>
                 <p className="text-xs text-gray-700 dark:text-slate-300 font-mono break-all">{log.requestId}</p>
               </div>
@@ -162,7 +162,7 @@ function DetailModal({ log, onClose }) {
             {log.resourceId && (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
-                  <FaHashtag size={10} /> Resource ID
+                  <Hash size={10} /> Resource ID
                 </p>
                 <p className="text-xs text-gray-700 dark:text-slate-300 font-mono break-all">{log.resourceId}</p>
               </div>
@@ -259,7 +259,7 @@ export default function ActivityLogsPage() {
           </Link>
           <div className="flex items-center gap-3 mb-2">
             <span className="w-11 h-11 rounded-xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center">
-              <FaHistory size={17} className="text-brand-600 dark:text-brand-400" />
+              <History size={17} className="text-brand-600 dark:text-brand-400" />
             </span>
             <div>
               <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Activity Log</h1>
@@ -287,7 +287,7 @@ export default function ActivityLogsPage() {
 
             {/* Search */}
             <div className="relative lg:col-span-2">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={12} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={12} />
               <input
                 type="search"
                 value={search}
@@ -314,7 +314,7 @@ export default function ActivityLogsPage() {
                   </optgroup>
                 ))}
               </select>
-              <FaChevronDown size={10} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+              <ChevronDown size={10} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
             </div>
 
             {/* Resource */}
@@ -329,7 +329,7 @@ export default function ActivityLogsPage() {
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <FaChevronDown size={10} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+              <ChevronDown size={10} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
             </div>
 
             {/* Role */}
@@ -344,7 +344,7 @@ export default function ActivityLogsPage() {
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <FaChevronDown size={10} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+              <ChevronDown size={10} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
             </div>
           </div>
 
@@ -362,7 +362,7 @@ export default function ActivityLogsPage() {
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <FaChevronDown size={10} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+              <ChevronDown size={10} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
             </div>
 
             {/* Status buttons */}
@@ -374,8 +374,8 @@ export default function ActivityLogsPage() {
                 </button>
               ))}
               <button type="button" onClick={() => logQ.refetch()} disabled={logQ.isFetching}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
-                <FaRedo size={10} className={logQ.isFetching ? "animate-spin" : ""} /> Refresh
+className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
+                <RotateCw size={10} className={logQ.isFetching ? "animate-spin" : ""} /> Refresh
               </button>
             </div>
           </div>
@@ -384,12 +384,12 @@ export default function ActivityLogsPage() {
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-20 gap-3 text-gray-400 dark:text-slate-500">
-            <FaSpinner className="animate-spin text-2xl text-brand-500" />
+            <Loader2 size={24} className="animate-spin text-brand-500" />
             <span className="text-sm">Loading activity…</span>
           </div>
         ) : logs.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-sm">
-            <FaHistory className="mx-auto text-gray-200 dark:text-slate-700 mb-3" size={32} />
+            <History className="mx-auto text-gray-200 dark:text-slate-700 mb-3" size={32} />
             <p className="text-gray-400 dark:text-slate-500 text-sm">No activity matches your filters.</p>
             {hasFilters && (
               <button
@@ -444,11 +444,11 @@ export default function ActivityLogsPage() {
                           <td className="px-4 py-3">
                             {log.status === "failure" ? (
                               <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400">
-                                <FaTimesCircle size={11} /> Failed
+                                <XCircle size={11} /> Failed
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                                <FaCheckCircle size={11} /> Success
+                                <CheckCircle2 size={11} /> Success
                               </span>
                             )}
                           </td>

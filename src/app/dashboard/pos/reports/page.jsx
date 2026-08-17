@@ -6,9 +6,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useReportsAnalytics } from "@/hooks/queries/useReports";
 import { formatGhs } from "@/lib/shop";
 import {
-  FaMoneyBillWave, FaShoppingBag, FaChartLine, FaCheckCircle, FaWrench,
-  FaBarcode, FaGlobe, FaBoxes, FaBalanceScale,
-} from "react-icons/fa";
+  Banknote, ShoppingBag, ChartLine, CheckCircle2, Wrench,
+  Barcode, Globe, Boxes, Scale,
+} from "lucide-react";
 
 import Card from "@/components/reports/Card";
 import KpiCard from "@/components/reports/KpiCard";
@@ -431,7 +431,7 @@ export default function ReportsPage() {
           <KpiCard
             label="Total Revenue"
             value={formatGhs(kpi.revenue.total)}
-            icon={FaMoneyBillWave}
+            icon={Banknote}
             tone="green"
             delta={data.previous ? { value: data.previous.revenueChangePct } : null}
             sub={data.previous ? "vs previous period" : "All time"}
@@ -439,7 +439,7 @@ export default function ReportsPage() {
           <KpiCard
             label="Total Orders"
             value={kpi.orders.total}
-            icon={FaShoppingBag}
+            icon={ShoppingBag}
             tone="brand"
             delta={data.previous ? { value: data.previous.ordersChangePct } : null}
             sub={data.previous ? "vs previous period" : "All time"}
@@ -447,21 +447,21 @@ export default function ReportsPage() {
           <KpiCard
             label="Avg Order Value"
             value={formatGhs(kpi.orders.aov)}
-            icon={FaChartLine}
+            icon={ChartLine}
             tone="blue"
             delta={data.previous && data.previous.aov > 0 ? { value: deltaPct(kpi.orders.aov, data.previous.aov) } : null}
             sub="Per paid order"
           />
-          <KpiCard label="Completed Orders" value={kpi.orders.paid} icon={FaCheckCircle} tone="green" sub="Paid & fulfilled" />
-          <KpiCard label="Repair Revenue" value={formatGhs(kpi.repairs.revenue)} icon={FaWrench} tone="brand" sub={`${kpi.repairs.completed} collected`} />
-          <KpiCard label="POS Sales" value={formatGhs(kpi.revenue.posSales)} icon={FaBarcode} tone="blue" sub="Over-the-counter" />
-          <KpiCard label="Online Shop Revenue" value={formatGhs(kpi.revenue.shopOrders)} icon={FaGlobe} tone="purple" sub="Shop orders" />
-          <KpiCard label="Inventory Value" value={formatGhs(kpi.inventory.valueSell)} icon={FaBoxes} tone="gray" sub={`${(kpi.inventory.units ?? 0).toLocaleString()} units`} />
+          <KpiCard label="Completed Orders" value={kpi.orders.paid} icon={CheckCircle2} tone="green" sub="Paid & fulfilled" />
+          <KpiCard label="Repair Revenue" value={formatGhs(kpi.repairs.revenue)} icon={Wrench} tone="brand" sub={`${kpi.repairs.completed} collected`} />
+          <KpiCard label="POS Sales" value={formatGhs(kpi.revenue.posSales)} icon={Barcode} tone="blue" sub="Over-the-counter" />
+          <KpiCard label="Online Shop Revenue" value={formatGhs(kpi.revenue.shopOrders)} icon={Globe} tone="purple" sub="Shop orders" />
+          <KpiCard label="Inventory Value" value={formatGhs(kpi.inventory.valueSell)} icon={Boxes} tone="gray" sub={`${(kpi.inventory.units ?? 0).toLocaleString()} units`} />
           {showExpenses && (
             <KpiCard
               label="Net Profit"
               value={formatGhs(kpi.expenses.netProfit)}
-              icon={FaBalanceScale}
+              icon={Scale}
               tone={(kpi.expenses.netProfit || 0) >= 0 ? "green" : "red"}
               sub="Revenue minus expenses"
             />

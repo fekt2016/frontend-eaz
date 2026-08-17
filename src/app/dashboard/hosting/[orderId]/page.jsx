@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { FaDownload, FaUpload, FaCheckCircle, FaExternalLinkAlt, FaTrash, FaRedo, FaKey } from "react-icons/fa";
+import { Download, Upload, CheckCircle2, ExternalLink, Trash2, RotateCw, Key } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -312,7 +312,7 @@ export default function HostingOrderDetailPage() {
               {renewLoading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <FaRedo size={12} />
+                <RotateCw size={12} />
               )}
               {isExpired ? "Renew & Restore Hosting" : "Renew Subscription"}
             </button>
@@ -328,7 +328,7 @@ export default function HostingOrderDetailPage() {
               {loginLoading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <FaExternalLinkAlt size={12} />
+                <ExternalLink size={12} />
               )}
               Manage Hosting (cPanel)
             </button>
@@ -344,7 +344,7 @@ export default function HostingOrderDetailPage() {
               {pwLoading ? (
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
               ) : (
-                <FaKey size={12} />
+                <Key size={12} />
               )}
               Reset cPanel Password
             </button>
@@ -389,7 +389,7 @@ export default function HostingOrderDetailPage() {
               onClick={handleInvoiceDownload}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white transition"
             >
-              <FaDownload size={13} />
+              <Download size={13} />
               Download Invoice
             </button>
           )}
@@ -403,7 +403,7 @@ export default function HostingOrderDetailPage() {
                 disabled={uploading}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition disabled:opacity-60"
               >
-                <FaUpload size={13} />
+                <Upload size={13} />
                 {uploading ? "Uploading..." : "Upload Payment Proof"}
               </button>
               {uploadError && <p className="text-red-500 text-xs mt-2 text-center">{uploadError}</p>}
@@ -413,7 +413,7 @@ export default function HostingOrderDetailPage() {
           {/* Proof already uploaded */}
           {isBankTransfer && (order.proofUploadUrl || uploadSuccess) && order.status === "pending" && (
             <div className="flex items-center gap-2 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30">
-              <FaCheckCircle className="text-emerald-500 dark:text-emerald-400 shrink-0" />
+              <CheckCircle2 size={16} className="text-emerald-500 dark:text-emerald-400 shrink-0" />
               <p className="text-sm text-emerald-700 dark:text-emerald-400">Payment proof uploaded. We&apos;ll verify and activate your account within 24 hours.</p>
             </div>
           )}
@@ -425,7 +425,7 @@ export default function HostingOrderDetailPage() {
               disabled={deleteLoading}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-red-100 text-red-500 text-sm font-medium hover:bg-red-50 transition mt-8"
             >
-              <FaTrash size={12} />
+              <Trash2 size={12} />
               {deleteLoading ? "Deleting..." : "Delete Order from System"}
             </button>
           )}

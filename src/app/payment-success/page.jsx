@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FaCheckCircle } from "react-icons/fa";
+import { CheckCircle2 } from "lucide-react";
 import { Suspense } from "react";
 
 const CONTENT = {
@@ -41,7 +41,7 @@ function PaymentSuccessContent() {
     <div className="min-h-[60vh] bg-paper dark:bg-ink flex items-center justify-center px-4 pt-24">
       <div className="max-w-md text-center">
         <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
-          <FaCheckCircle className="text-emerald-500 text-4xl" />
+          <CheckCircle2 size={36} className="text-emerald-500" />
         </div>
         <h1 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-4">{content.title}</h1>
         <p className="text-gray-500 dark:text-slate-400 mb-8 leading-relaxed">{content.message}</p>

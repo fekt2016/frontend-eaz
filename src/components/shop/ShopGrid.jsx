@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaChevronLeft, FaChevronRight, FaSearch } from "react-icons/fa";
+import { AlertTriangle, ChevronLeft, ChevronRight, Search, ShoppingBag } from "lucide-react";
 import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useShopProducts } from "@/hooks/queries/useProducts";
@@ -78,7 +78,7 @@ export default function ShopGrid({ activeCategory = "" }) {
           </div>
           <div className="flex items-center gap-3 w-full lg:w-auto">
             <div className="relative w-full sm:w-52">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 text-xs" />
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Search products..."
@@ -129,8 +129,8 @@ export default function ShopGrid({ activeCategory = "" }) {
           </div>
 
           {error ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
-              <p className="text-2xl mb-3">⚠️</p>
+<div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
+              <AlertTriangle size={24} className="text-gray-400 dark:text-slate-500 mb-3" />
               <p className="font-semibold text-gray-900 dark:text-white mb-2">Something went wrong</p>
               <p className="text-gray-400 dark:text-slate-500 text-sm mb-5 max-w-sm">{error}</p>
               <button
@@ -155,8 +155,8 @@ export default function ShopGrid({ activeCategory = "" }) {
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
-              <p className="text-2xl mb-3">🛍️</p>
+<div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
+              <ShoppingBag size={24} className="text-gray-400 dark:text-slate-500 mb-3" />
               <p className="font-semibold text-gray-900 dark:text-white mb-2">No products found</p>
               <p className="text-gray-400 dark:text-slate-500 text-sm mb-5 max-w-sm">Try a different category or search term.</p>
               <Link
@@ -183,7 +183,7 @@ export default function ShopGrid({ activeCategory = "" }) {
                 onClick={() => setPage((p) => p - 1)}
                 className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition disabled:opacity-40 disabled:pointer-events-none"
               >
-                <FaChevronLeft size={10} /> Prev
+                <ChevronLeft size={10} /> Prev
               </button>
               <span className="text-xs text-gray-400 dark:text-slate-500">
                 Page {page} of {pagination.pages}
@@ -194,7 +194,7 @@ export default function ShopGrid({ activeCategory = "" }) {
                 onClick={() => setPage((p) => p + 1)}
                 className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition disabled:opacity-40 disabled:pointer-events-none"
               >
-                Next <FaChevronRight size={10} />
+                Next <ChevronRight size={10} />
               </button>
             </div>
           )}

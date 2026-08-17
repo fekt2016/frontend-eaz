@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FaArrowLeft, FaLocationDot, FaSpinner } from "react-icons/fa6";
+import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { statusBadge } from "@/lib/orderStatus";
 import { useOrderTracking } from "@/hooks/queries/useTracking";
 
@@ -28,7 +28,7 @@ export default function OrderTrackingDetailPage() {
           href="/track-order"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition"
         >
-          <FaArrowLeft size={11} /> Track another order
+          <ArrowLeft size={11} /> Track another order
         </Link>
 
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mt-6 mb-2">Order Tracking</p>
@@ -36,7 +36,7 @@ export default function OrderTrackingDetailPage() {
 
         {loading && (
           <div className="mt-12 flex justify-center">
-            <FaSpinner size={22} className="animate-spin text-brand-500" />
+            <Loader2 size={22} className="animate-spin text-brand-500" />
           </div>
         )}
 
@@ -74,7 +74,7 @@ export default function OrderTrackingDetailPage() {
                   )}
                   {tracking.latestEvent.location && (
                     <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 inline-flex items-center gap-1">
-                      <FaLocationDot size={10} /> {tracking.latestEvent.location}
+                      <MapPin size={10} /> {tracking.latestEvent.location}
                     </p>
                   )}
                 </div>
@@ -104,7 +104,7 @@ export default function OrderTrackingDetailPage() {
                         {h.note && <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">{h.note}</p>}
                         {h.location && (
                           <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 inline-flex items-center gap-1">
-                            <FaLocationDot size={10} /> {h.location}
+                            <MapPin size={10} /> {h.location}
                           </p>
                         )}
                       </li>

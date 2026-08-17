@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
-  FaComments, FaTimes, FaPaperPlane, FaWhatsapp,
-  FaRedo, FaUserShield, FaSpinner, FaClock, FaHeadset,
-} from "react-icons/fa";
+  MessageSquare, X, Send, RotateCw,
+  ShieldCheck, Loader2, Clock, Headset,
+} from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeMessage } from "@/lib/sanitize";
 import { getCookie, setCookie, removeCookie } from "@/lib/cookies";
@@ -79,7 +80,7 @@ function MessageBubble({ msg }) {
     return (
       <div className="flex justify-start mb-3">
         <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white flex-shrink-0 mr-2 mt-1">
-          <FaUserShield size={12} />
+<ShieldCheck size={12} />
         </div>
         <div className="max-w-[82%]">
           <p className="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 mb-1 ml-1">EazWorld Team</p>
@@ -143,11 +144,11 @@ function HumanRequestForm({ user, onSubmit, onCancel }) {
     <div className="flex-shrink-0 border-t border-indigo-100 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-950/30 px-4 pt-3 pb-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <FaUserShield size={13} className="text-indigo-500" />
+          <ShieldCheck size={13} className="text-indigo-500" />
           <p className="text-sm font-semibold text-gray-900 dark:text-white">Connect to live support</p>
         </div>
         <button onClick={onCancel} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition">
-          <FaTimes size={12} />
+          <X size={12} />
         </button>
       </div>
       <form onSubmit={handleSubmit} className="space-y-2">
@@ -177,7 +178,7 @@ function HumanRequestForm({ user, onSubmit, onCancel }) {
           className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-indigo-400 transition resize-none" />
         <button type="submit" disabled={!canSubmit || sending}
           className="w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 transition disabled:opacity-50">
-          {sending ? <FaSpinner size={12} className="animate-spin" /> : <FaUserShield size={12} />}
+          {sending ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
           {sending ? "Sending request…" : "Request Live Support"}
         </button>
       </form>
@@ -190,7 +191,7 @@ function AdminChatBadge() {
   return (
     <Link href="/dashboard/chats"
       className="fixed bottom-5 right-4 sm:right-6 z-50 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all">
-      <FaUserShield size={14} /><span>Admin Chats</span>
+      <ShieldCheck size={14} /><span>Admin Chats</span>
     </Link>
   );
 }
@@ -508,7 +509,7 @@ export default function ChatWidget() {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-sm">
-                  {isLive || isPending ? <FaUserShield size={14} /> : "E"}
+                  {isLive || isPending ? <ShieldCheck size={14} /> : "E"}
                 </div>
                 <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-gray-900 ${
                   isLive ? "bg-emerald-400" : isPending ? "bg-brand-400 animate-pulse" : isEnded ? "bg-gray-400" : "bg-emerald-400"
@@ -532,10 +533,10 @@ export default function ChatWidget() {
                 <FaWhatsapp size={16} />
               </a>
               <button onClick={handleReset} title="New conversation" className="p-1.5 rounded-lg text-gray-400 hover:bg-slate-800 transition">
-                <FaRedo size={12} />
+                <RotateCw size={12} />
               </button>
               <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-slate-800 transition">
-                <FaTimes size={14} />
+                <X size={14} />
               </button>
             </div>
           </div>
@@ -543,7 +544,7 @@ export default function ChatWidget() {
           {/* Status banners */}
           {isPending && (
             <div className="px-4 py-2.5 bg-brand-50 dark:bg-brand-900/20 border-b border-brand-100 dark:border-brand-900/30 flex items-center gap-2.5">
-              <FaClock size={11} className="text-brand-500 flex-shrink-0 animate-pulse" />
+              <Clock size={11} className="text-brand-500 flex-shrink-0 animate-pulse" />
               <p className="text-[11px] text-brand-700 dark:text-brand-400 font-medium">
                 Waiting for an agent to accept your chat request…
               </p>
@@ -552,7 +553,7 @@ export default function ChatWidget() {
           {isLive && (
             <div className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <FaUserShield size={11} className="text-indigo-500 flex-shrink-0" />
+                <ShieldCheck size={11} className="text-indigo-500 flex-shrink-0" />
                 <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium truncate">
                   Live support — replies arrive here automatically
                 </p>
@@ -591,7 +592,7 @@ export default function ChatWidget() {
             {isPending && (
               <div className="flex justify-start mb-3">
                 <div className="w-7 h-7 rounded-full bg-brand-400 flex items-center justify-center text-white flex-shrink-0 mr-2 mt-1">
-                  <FaClock size={11} />
+                  <Clock size={11} />
                 </div>
                 <div className="px-3.5 py-2.5 rounded-2xl rounded-tl-sm bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 text-xs text-brand-700 dark:text-brand-400">
                   Waiting for an agent to accept your request…
@@ -664,7 +665,7 @@ export default function ChatWidget() {
                   className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition disabled:opacity-50" />
                 <button type="submit" disabled={!input.trim() || typing}
                   className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
-                  <FaPaperPlane size={13} />
+<Send size={13} />
                 </button>
               </form>
               {/* Persistent "Talk to a Human" button — always visible in bot mode */}
@@ -673,7 +674,7 @@ export default function ChatWidget() {
                   onClick={handleTalkToHuman}
                   className="w-full flex items-center justify-center gap-2 text-xs font-semibold py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition"
                 >
-                  <FaHeadset size={11} />
+                  <Headset size={11} />
                   Talk to a Human
                 </button>
               </div>
@@ -689,7 +690,7 @@ export default function ChatWidget() {
                 className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition" />
               <button type="submit" disabled={!input.trim()}
                 className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
-                <FaPaperPlane size={13} />
+                <Send size={13} />
               </button>
             </form>
           )}
@@ -701,7 +702,7 @@ export default function ChatWidget() {
                 Waiting for agent to accept…
               </div>
               <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
-                <FaSpinner size={13} className="text-gray-400 animate-spin" />
+                <Loader2 size={13} className="text-gray-400 animate-spin" />
               </div>
             </div>
           )}
@@ -713,7 +714,7 @@ export default function ChatWidget() {
       <button onClick={() => setOpen((v) => !v)}
         className="fixed bottom-5 right-4 sm:right-6 z-50 w-14 h-14 rounded-full bg-brand-500 hover:bg-brand-400 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
         aria-label="Open chat">
-        {open ? <FaTimes size={20} /> : <FaComments size={22} />}
+        {open ? <X size={20} /> : <MessageSquare size={22} />}
         {!open && unread > 0 && (
           <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
             {unread}

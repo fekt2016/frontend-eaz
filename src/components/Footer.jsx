@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaWhatsapp, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaWhatsapp } from "react-icons/fa";
+import { MapPin, Phone } from "lucide-react";
 
 const columns = [
   {
@@ -67,11 +68,11 @@ export default function Footer() {
           </p>
           <div className="mt-4 space-y-2">
             <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-slate-400">
-              <FaMapMarkerAlt className="text-brand-500 mt-0.5 flex-shrink-0" size={11} />
+              <MapPin className="text-brand-500 mt-0.5 flex-shrink-0" size={11} />
               <span>E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
-              <FaPhone className="text-brand-500 flex-shrink-0" size={11} />
+              <Phone className="text-brand-500 flex-shrink-0" size={11} />
               <a href="tel:+233244388190" className="hover:text-gray-900 dark:hover:text-white transition">+233 24 438 8190</a>
             </div>
             <a

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { formatGhs } from "@/lib/shop";
 import {
-  FaPlus, FaTrash, FaEdit, FaCheck, FaTimes, FaReceipt,
-} from "react-icons/fa";
+  Plus, Trash2, Pen, Check, X, Receipt,
+} from "lucide-react";
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/queries/useExpenses";
 
 const CATEGORIES = [
@@ -120,7 +120,7 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FaReceipt className="text-brand-600 dark:text-brand-400" size={17} /> Expenses
+            <Receipt className="text-brand-600 dark:text-brand-400" size={17} /> Expenses
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">Track shop running costs and see true profit</p>
         </div>
@@ -129,7 +129,7 @@ export default function ExpensesPage() {
             onClick={() => setShowForm(v => !v)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
           >
-            <FaPlus size={11} /> Add Expense
+            <Plus size={11} /> Add Expense
           </button>
         )}
       </div>
@@ -166,7 +166,7 @@ export default function ExpensesPage() {
             {formError && <p className="text-red-600 dark:text-red-400 text-xs">{formError}</p>}
             <div className="flex gap-3">
               <button type="submit" disabled={formSaving} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50">
-                <FaCheck size={11} /> {formSaving ? "Saving…" : "Save Expense"}
+                <Check size={11} /> {formSaving ? "Saving…" : "Save Expense"}
               </button>
               <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition">
                 Cancel
@@ -260,7 +260,7 @@ export default function ExpensesPage() {
           </div>
         ) : expenses.length === 0 ? (
           <div className="py-16 text-center">
-            <FaReceipt size={24} className="text-gray-700 mx-auto mb-3" />
+            <Receipt size={24} className="text-gray-700 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400 font-medium">No expenses found</p>
             {isSuperAdmin && <p className="text-gray-600 text-sm mt-1">Click &quot;Add Expense&quot; to log your first expense.</p>}
           </div>
@@ -292,7 +292,7 @@ export default function ExpensesPage() {
                           {editSaving ? "…" : "Save"}
                         </button>
                         <button onClick={() => setEditId(null)} className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-xs transition">
-                          <FaTimes size={11} />
+                          <X size={11} />
                         </button>
                       </div>
                     </div>
@@ -317,10 +317,10 @@ export default function ExpensesPage() {
                       {isSuperAdmin && (
                         <div className="flex gap-1.5 flex-shrink-0">
                           <button onClick={() => startEdit(exp)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-brand-400 hover:border-brand-500/50 flex items-center justify-center transition">
-                            <FaEdit size={11} />
+                            <Pen size={11} />
                           </button>
                           <button onClick={() => handleDelete(exp._id)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-red-400 hover:border-red-500/50 flex items-center justify-center transition">
-                            <FaTrash size={11} />
+                            <Trash2 size={11} />
                           </button>
                         </div>
                       )}

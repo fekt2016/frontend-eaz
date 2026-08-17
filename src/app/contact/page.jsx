@@ -1,6 +1,7 @@
 import ContactForm from "@/components/ContactForm";
 import Link from "next/link";
-import { FaMapMarkerAlt, FaClock, FaEnvelope, FaPhone, FaWhatsapp } from "react-icons/fa";
+import { MapPin, Clock, Mail, Phone } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -33,11 +34,11 @@ export default function Contact() {
               <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Contact Details</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3 text-sm">
-                  <FaEnvelope className="text-brand-500 mt-0.5 flex-shrink-0" />
+                  <Mail className="text-brand-500 mt-0.5 flex-shrink-0" />
                   <a href="mailto:info@eazworld.co" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">info@eazworld.co</a>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <FaPhone className="text-brand-500 mt-0.5 flex-shrink-0" />
+                  <Phone className="text-brand-500 mt-0.5 flex-shrink-0" />
                   <div className="flex flex-col gap-0.5">
                     <a href="tel:+233244388190" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">+233 24 438 8190</a>
                     <a href="tel:+233235222207" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">+233 23 522 2207</a>
@@ -51,11 +52,11 @@ export default function Contact() {
                   </a>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <FaMapMarkerAlt className="text-brand-500 mt-0.5 flex-shrink-0" />
+                  <MapPin className="text-brand-500 mt-0.5 flex-shrink-0" />
                   <span className="text-gray-600 dark:text-slate-400">E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <FaClock className="text-brand-500 mt-0.5 flex-shrink-0" />
+                  <Clock className="text-brand-500 mt-0.5 flex-shrink-0" />
                   <span className="text-gray-600 dark:text-slate-400">Mon–Fri 9AM–6PM, Sat 10AM–4PM</span>
                 </div>
               </div>

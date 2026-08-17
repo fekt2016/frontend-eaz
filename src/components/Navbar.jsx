@@ -4,21 +4,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { FaBars, FaTimes, FaUserCircle, FaChevronDown, FaShoppingCart } from "react-icons/fa";
+import { ChevronDown, CircleUser, Menu, ShoppingCart, X, Globe, TrendingUp, Target, Sparkles, Smartphone, Mail, Wrench, Cloud, Link as LinkIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const serviceLinks = [
-  { href: "/services/web-design",   label: "Web Design & Dev",   icon: "🌐", desc: "Websites & web apps" },
-  { href: "/services/seo",          label: "SEO & Content",       icon: "📈", desc: "Rank higher on Google" },
-  { href: "/services/paid-ads",     label: "Paid Advertising",    icon: "🎯", desc: "Facebook & Google ads" },
-  { href: "/services/branding",     label: "Branding & Identity", icon: "✨", desc: "Logo & brand design" },
-  { href: "/services/social-media", label: "Social Media",        icon: "📱", desc: "Grow your audience" },
-  { href: "/services/email",        label: "Email Marketing",     icon: "📧", desc: "Campaigns & automation" },
-  { href: "/services/phone-repair", label: "Phone Repair",        icon: "🔧", desc: "iPhone, Samsung & more" },
-  { href: "/hosting",               label: "Web Hosting",         icon: "☁️", desc: "Fast & managed hosting" },
-  { href: "/domains",               label: "Domain Registration", icon: "🔗", desc: "Find your .com or .gh" },
+  { href: "/services/web-design",   label: "Web Design & Dev",   icon: Globe, desc: "Websites & web apps" },
+  { href: "/services/seo",          label: "SEO & Content",       icon: TrendingUp, desc: "Rank higher on Google" },
+  { href: "/services/paid-ads",     label: "Paid Advertising",    icon: Target, desc: "Facebook & Google ads" },
+  { href: "/services/branding",     label: "Branding & Identity", icon: Sparkles, desc: "Logo & brand design" },
+  { href: "/services/social-media", label: "Social Media",        icon: Smartphone, desc: "Grow your audience" },
+  { href: "/services/email",        label: "Email Marketing",     icon: Mail, desc: "Campaigns & automation" },
+  { href: "/services/phone-repair", label: "Phone Repair",        icon: Wrench, desc: "iPhone, Samsung & more" },
+  { href: "/hosting",               label: "Web Hosting",         icon: Cloud, desc: "Fast & managed hosting" },
+  { href: "/domains",               label: "Domain Registration", icon: LinkIcon, desc: "Find your .com or .gh" },
 ];
 
 const topLinks = [
@@ -97,7 +97,7 @@ export default function Navbar() {
               className={`flex items-center gap-1 text-sm font-medium transition ${isServiceActive ? "text-brand-500" : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"}`}
             >
               Services
-              <FaChevronDown size={10} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={10} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
             </button>
 
             {servicesOpen && (
@@ -106,7 +106,7 @@ export default function Navbar() {
                 <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-slate-900 border-l border-t border-gray-100 dark:border-slate-800 rotate-45" />
 
                 <div className="grid grid-cols-3 gap-1 mb-3">
-                  {serviceLinks.map(({ href, label, icon, desc }) => (
+                  {serviceLinks.map(({ href, label, icon: Icon, desc }) => (
                     <Link
                       key={href}
                       href={href}
@@ -116,7 +116,7 @@ export default function Navbar() {
                           : "hover:bg-paper dark:hover:bg-slate-800"
                       }`}
                     >
-                      <span className="text-lg leading-none mt-0.5 flex-shrink-0">{icon}</span>
+                      <Icon size={18} className="mt-0.5 flex-shrink-0" />
                       <div>
                         <p className={`text-xs font-semibold leading-tight ${pathname === href ? "text-brand-600 dark:text-brand-400" : "text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white"}`}>
                           {label}
@@ -160,7 +160,7 @@ export default function Navbar() {
             className="relative p-2 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition"
             aria-label="Open cart"
           >
-            <FaShoppingCart size={18} />
+            <ShoppingCart size={18} />
             {count > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white">
                 {count}
@@ -172,7 +172,7 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center gap-3">
               <Link href="/dashboard" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition">
-                <FaUserCircle size={16} className="text-brand-500" />
+                <CircleUser size={16} className="text-brand-500" />
                 {user.name.split(" ")[0]}
               </Link>
               <button onClick={handleLogout} className="text-sm font-medium px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white transition">
@@ -201,7 +201,7 @@ export default function Navbar() {
             className="relative p-2 text-gray-600 dark:text-slate-400"
             aria-label="Open cart"
           >
-            <FaShoppingCart size={18} />
+            <ShoppingCart size={18} />
             {count > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white">
                 {count}
@@ -215,7 +215,7 @@ export default function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Menu"
           >
-            {mobileOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
@@ -251,19 +251,19 @@ export default function Navbar() {
               className={`flex items-center justify-between w-full py-2.5 text-sm font-medium ${isServiceActive ? "text-brand-500" : "text-gray-700 dark:text-slate-300"}`}
             >
               Services
-              <FaChevronDown size={10} className={`transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={10} className={`transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`} />
             </button>
 
             {mobileServicesOpen && (
               <div className="pb-2 space-y-0.5 pl-2">
-                {serviceLinks.map(({ href, label, icon }) => (
+                {serviceLinks.map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
                     href={href}
                     className={`flex items-center gap-2.5 py-2 text-sm ${pathname === href ? "text-brand-500 font-medium" : "text-gray-600 dark:text-slate-400"}`}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <span className="text-base w-5 text-center">{icon}</span>
+                    <Icon size={16} className="flex-shrink-0" />
                     {label}
                   </Link>
                 ))}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FaGlobe } from "react-icons/fa";
+import { Globe } from "lucide-react";
 import { DomainCard } from "@/components/dashboard/customer/CustomerCards";
 import { useDomainOrders } from "@/hooks/queries/useDomains";
 
@@ -26,7 +26,7 @@ export default function CustomerDomainsPage() {
         </div>
       ) : domains.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-10 text-center">
-          <FaGlobe size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
+          <Globe size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-4">No domains registered yet.</p>
           <Link href="/domains" className="text-sm font-semibold px-5 py-2.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition">
             Search Domains

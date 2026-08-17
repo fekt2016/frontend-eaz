@@ -6,7 +6,7 @@
 // and the Overview all render the same cards.
 
 import Link from "next/link";
-import { FaServer, FaGlobe, FaShoppingBag, FaTools } from "react-icons/fa";
+import { Server, Globe, ShoppingBag, Wrench } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { formatGhs } from "@/lib/shop";
 import { useHostingOrders } from "@/hooks/queries/useHosting";
@@ -60,7 +60,7 @@ export function HostingCard({ order }) {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
-            <FaServer size={16} className="text-brand-500" />
+            <Server size={16} className="text-brand-500" />
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{order.planType} — {order.tier}</p>
@@ -71,8 +71,8 @@ export function HostingCard({ order }) {
       </div>
 
       {order.domain && (
-        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-paper dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-          <FaGlobe size={12} className="text-gray-400 dark:text-slate-500" />
+<div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-paper dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
+          <Globe size={12} className="text-gray-400 dark:text-slate-500" />
           <span className="text-xs text-gray-600 dark:text-slate-300 font-mono">{order.domain}</span>
         </div>
       )}
@@ -111,7 +111,7 @@ export function DomainCard({ order }) {
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-            <FaGlobe size={16} className="text-blue-500" />
+            <Globe size={16} className="text-blue-500" />
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white font-mono">{order.domain}</p>
@@ -144,7 +144,7 @@ export function ShopOrderCard({ order }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center flex-shrink-0">
-            <FaShoppingBag size={15} className="text-brand-500" />
+            <ShoppingBag size={15} className="text-brand-500" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{order.orderNumber}</p>
@@ -179,7 +179,7 @@ export function RepairCard({ job }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
-            <FaTools size={15} className="text-blue-500" />
+            <Wrench size={15} className="text-blue-500" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{device}</p>

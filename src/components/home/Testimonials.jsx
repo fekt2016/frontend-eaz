@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FaStar } from "react-icons/fa";
+import { Star } from "lucide-react";
 import StarRule from "@/components/common/StarRule";
 
 export default function Testimonials() {
@@ -67,7 +67,7 @@ export default function Testimonials() {
               <div key={t._id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-7">
                 <div className="flex gap-0.5 mb-4">
                   {[1,2,3,4,5].map((s) => (
-                    <FaStar key={s} size={13} className={s <= t.rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />
+                    <Star key={s} size={13} className={s <= t.rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />
                   ))}
                 </div>
                 <p className="text-gray-700 dark:text-slate-300 leading-relaxed mb-6">&ldquo;{t.review}&rdquo;</p>
@@ -92,7 +92,7 @@ export default function Testimonials() {
             <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">Share your feedback — it helps others find us.</p>
           </div>
           <Link href="/reviews#leave-review" className="flex-shrink-0 px-6 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">
-            Leave a Review ★
+            Leave a Review <Star size={12} className="inline-block -mt-0.5 text-brand-400" />
           </Link>
         </div>
 

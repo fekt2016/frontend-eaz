@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaCheckCircle } from "react-icons/fa";
+import { CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { sanitizeEmail } from "@/lib/sanitize";
 
@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
         <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           {sent ? (
             <div className="text-center py-4">
-              <FaCheckCircle className="text-emerald-500 text-3xl mx-auto mb-3" />
+              <CheckCircle2 size={30} className="text-emerald-500 mx-auto mb-3" />
               <p className="font-semibold text-gray-900 dark:text-white mb-1">Check your inbox</p>
               <p className="text-gray-500 dark:text-slate-400 text-sm">If that email exists in our system, we&apos;ve sent a reset link.</p>
             </div>

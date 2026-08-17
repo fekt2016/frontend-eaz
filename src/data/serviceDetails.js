@@ -1,16 +1,16 @@
 import {
-  FaGlobe,
-  FaServer,
-  FaPalette,
-  FaSearch,
-  FaMobileAlt,
-  FaChartLine,
-} from "react-icons/fa";
+  Globe,
+  Server,
+  Palette,
+  Search,
+  Smartphone,
+  ChartLine,
+} from "lucide-react";
 
 export const serviceDetails = [
   {
     slug: "web-design",
-    icon: FaPalette,
+    icon: Palette,
     title: "Web Design & Development",
     tagline: "Websites that look great, load fast, and convert visitors into customers.",
     description:
@@ -47,7 +47,7 @@ export const serviceDetails = [
   },
   {
     slug: "web-hosting",
-    icon: FaServer,
+    icon: Server,
     title: "Web Hosting",
     tagline: "Enterprise-grade hosting from Accra, built for African businesses.",
     description:
@@ -83,7 +83,7 @@ export const serviceDetails = [
   },
   {
     slug: "domain-registration",
-    icon: FaGlobe,
+    icon: Globe,
     title: "Domain Registration",
     tagline: "Secure your brand's home on the internet.",
     description:
@@ -116,7 +116,7 @@ export const serviceDetails = [
   },
   {
     slug: "seo",
-    icon: FaSearch,
+    icon: Search,
     title: "SEO & Content Marketing",
     tagline: "Get found by customers who are already searching for what you offer.",
     description:
@@ -151,7 +151,7 @@ export const serviceDetails = [
   },
   {
     slug: "mobile-development",
-    icon: FaMobileAlt,
+    icon: Smartphone,
     title: "Mobile Development",
     tagline: "Native and cross-platform apps that users love.",
     description:
@@ -186,7 +186,7 @@ export const serviceDetails = [
   },
   {
     slug: "web-marketing",
-    icon: FaChartLine,
+    icon: ChartLine,
     title: "Web Marketing",
     tagline: "Data-driven campaigns that generate leads and revenue.",
     description:

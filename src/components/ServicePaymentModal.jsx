@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { FaCheck, FaTimes, FaLock, FaSpinner, FaEye, FaEyeSlash, FaUser } from "react-icons/fa";
+import { Check, X, Lock, Loader2, Eye, EyeOff, User } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText, getPasswordRules, validatePassword } from "@/lib/sanitize";
@@ -112,7 +112,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
             <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Pay 50% deposit to get started</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-            <FaTimes size={14} />
+            <X size={14} />
           </button>
         </div>
 
@@ -140,7 +140,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>
                 <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{user.email}</p>
               </div>
-              <FaUser size={11} className="text-gray-300 dark:text-slate-600 flex-shrink-0 ml-auto" />
+              <User size={11} className="text-gray-300 dark:text-slate-600 flex-shrink-0 ml-auto" />
             </div>
           )}
 
@@ -177,14 +177,14 @@ export default function ServicePaymentModal({ pkg, onClose }) {
                     className={`${inputCls} pr-10`}
                   />
                   <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
-                    {showPassword ? <FaEyeSlash size={13} /> : <FaEye size={13} />}
+                    {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
                 {password.length > 0 && (
                   <div className="mt-2 space-y-1.5 bg-paper dark:bg-slate-800/50 rounded-xl p-3">
                     {passwordRules.map(({ rule, met }) => (
                       <div key={rule} className="flex items-center gap-2">
-                        {met ? <FaCheck size={9} className="text-emerald-500 flex-shrink-0" /> : <FaTimes size={9} className="text-red-400 flex-shrink-0" />}
+                        {met ? <Check size={9} className="text-emerald-500 flex-shrink-0" /> : <X size={9} className="text-red-400 flex-shrink-0" />}
                         <span className={`text-xs ${met ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-slate-400"}`}>{rule}</span>
                       </div>
                     ))}
@@ -247,9 +247,9 @@ export default function ServicePaymentModal({ pkg, onClose }) {
             className="w-full py-3 rounded-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
-              <><FaSpinner className="animate-spin" size={13} /> Redirecting to payment…</>
+              <><Loader2 className="animate-spin" size={13} /> Redirecting to payment…</>
             ) : (
-              <><FaLock size={11} /> Pay GH₵{pkg.deposit.toLocaleString()} Deposit</>
+              <><Lock size={11} /> Pay GH₵{pkg.deposit.toLocaleString()} Deposit</>
             )}
           </button>
 

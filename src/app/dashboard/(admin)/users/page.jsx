@@ -4,10 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
-  FaSpinner, FaRedo, FaEdit, FaBan, FaCheckCircle,
-  FaTimes, FaSearch, FaShieldAlt, FaUser, FaKey, FaEye, FaEyeSlash,
-  FaPlus, FaUserCog, FaTools,
-} from "react-icons/fa";
+  Loader2, RotateCw, Pen, Ban, CheckCircle2,
+  X, Search, ShieldCheck, User, Key, Eye, EyeOff,
+  Plus, UserCog, Wrench,
+} from "lucide-react";
 
 function fmtDate(d) {
   if (!d) return "—";
@@ -31,11 +31,11 @@ const roleStyles = {
 };
 
 const roleIcons = {
-  superadmin: FaShieldAlt,
-  admin:      FaShieldAlt,
-  user:       FaUser,
-  staff:      FaUserCog,
-  technician: FaTools,
+  superadmin: ShieldCheck,
+  admin:      ShieldCheck,
+  user:       User,
+  staff:      UserCog,
+  technician: Wrench,
 };
 
 // ─── Create User Modal ─────────────────────────────────────────────────────
@@ -78,12 +78,12 @@ function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <FaPlus size={13} />
+              <Plus size={13} />
             </div>
             <p className="font-semibold text-gray-900 dark:text-white text-sm">Create User</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-            <FaTimes size={13} />
+            <X size={13} />
           </button>
         </div>
 
@@ -127,7 +127,7 @@ function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
               >
-                {showPassword ? <FaEyeSlash size={13} /> : <FaEye size={13} />}
+                {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
               </button>
             </div>
             <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Share this with the user — they can change it later from their settings.</p>
@@ -163,7 +163,7 @@ function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
             disabled={saving}
             className="flex-1 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
-            {saving ? <FaSpinner className="animate-spin" size={12} /> : <FaPlus size={11} />}
+            {saving ? <Loader2 className="animate-spin" size={12} /> : <Plus size={11} />}
             {saving ? "Creating…" : "Create User"}
           </button>
         </div>
@@ -215,7 +215,7 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
             <p className="font-semibold text-gray-900 dark:text-white text-sm">Edit User</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-            <FaTimes size={13} />
+            <X size={13} />
           </button>
         </div>
 
@@ -269,7 +269,7 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
             disabled={saving}
             className="flex-1 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
-            {saving ? <FaSpinner className="animate-spin" size={12} /> : null}
+            {saving ? <Loader2 className="animate-spin" size={12} /> : null}
             {saving ? "Saving…" : "Save Changes"}
           </button>
         </div>
@@ -304,7 +304,7 @@ function BlockModal({ user, onClose, onSaved }) {
       <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800">
         <div className="px-6 py-5">
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 ${blocking ? "bg-red-100 dark:bg-red-900/30" : "bg-emerald-100 dark:bg-emerald-900/30"}`}>
-            {blocking ? <FaBan size={20} className="text-red-500" /> : <FaCheckCircle size={20} className="text-emerald-500" />}
+            {blocking ? <Ban size={20} className="text-red-500" /> : <CheckCircle2 size={20} className="text-emerald-500" />}
           </div>
           <h3 className="font-bold text-center text-gray-900 dark:text-white mb-1">
             {blocking ? "Block User" : "Unblock User"}
@@ -340,7 +340,7 @@ function BlockModal({ user, onClose, onSaved }) {
               blocking ? "bg-red-500 hover:bg-red-600" : "bg-emerald-600 hover:bg-emerald-700"
             }`}
           >
-            {saving ? <FaSpinner className="animate-spin" size={12} /> : null}
+            {saving ? <Loader2 className="animate-spin" size={12} /> : null}
             {blocking ? "Block User" : "Unblock User"}
           </button>
         </div>
@@ -387,7 +387,7 @@ function ChangePasswordModal({ user, onClose }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-              <FaKey size={13} className="text-violet-500" />
+              <Key size={13} className="text-violet-500" />
             </div>
             <div>
               <p className="font-semibold text-gray-900 dark:text-white text-sm">Change Password</p>
@@ -395,7 +395,7 @@ function ChangePasswordModal({ user, onClose }) {
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-            <FaTimes size={13} />
+            <X size={13} />
           </button>
         </div>
 
@@ -403,7 +403,7 @@ function ChangePasswordModal({ user, onClose }) {
           {success ? (
             <div className="text-center py-4">
               <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-3">
-                <FaCheckCircle size={22} className="text-emerald-500" />
+                <CheckCircle2 size={22} className="text-emerald-500" />
               </div>
               <p className="font-semibold text-gray-900 dark:text-white mb-1">Password Updated</p>
               <p className="text-xs text-gray-400 dark:text-slate-500">The new password is active immediately.</p>
@@ -435,7 +435,7 @@ function ChangePasswordModal({ user, onClose }) {
                     onClick={() => setShowNew((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
                   >
-                    {showNew ? <FaEyeSlash size={13} /> : <FaEye size={13} />}
+                    {showNew ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
               </div>
@@ -456,7 +456,7 @@ function ChangePasswordModal({ user, onClose }) {
                     onClick={() => setShowConfirm((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
                   >
-                    {showConfirm ? <FaEyeSlash size={13} /> : <FaEye size={13} />}
+                    {showConfirm ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
               </div>
@@ -470,7 +470,7 @@ function ChangePasswordModal({ user, onClose }) {
                   disabled={saving}
                   className="flex-1 py-2.5 rounded-full bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
                 >
-                  {saving ? <FaSpinner className="animate-spin" size={12} /> : <FaKey size={11} />}
+                  {saving ? <Loader2 className="animate-spin" size={12} /> : <Key size={11} />}
                   {saving ? "Saving…" : "Set Password"}
                 </button>
               </div>
@@ -543,21 +543,21 @@ export default function AdminUsersPage() {
               onClick={() => setCreateOpen(true)}
               className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white transition"
             >
-              <FaPlus size={11} /> Create User
+              <Plus size={11} /> Create User
             </button>
             <button
               onClick={fetchUsers}
               disabled={loading}
               className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50"
             >
-              <FaRedo size={11} className={loading ? "animate-spin" : ""} /> Refresh
+              <RotateCw size={11} className={loading ? "animate-spin" : ""} /> Refresh
             </button>
           </div>
         </div>
 
         {/* Search */}
         <div className="relative mb-6">
-          <FaSearch size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             value={search}
@@ -570,7 +570,7 @@ export default function AdminUsersPage() {
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <FaSpinner className="animate-spin text-2xl text-brand-500" />
+            <Loader2 size={24} className="animate-spin text-brand-500" />
             <span className="text-sm">Loading users…</span>
           </div>
         ) : filtered.length === 0 ? (
@@ -608,7 +608,7 @@ export default function AdminUsersPage() {
                       <td className="px-5 py-3.5 text-sm text-gray-500 dark:text-slate-400">{u.phone || "—"}</td>
                       <td className="px-5 py-3.5">
                         {(() => {
-                          const RoleIcon = roleIcons[u.role] || FaUser;
+                          const RoleIcon = roleIcons[u.role] || User;
                           return (
                             <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${roleStyles[u.role] || "bg-paper text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
                               <RoleIcon size={8} />
@@ -621,7 +621,7 @@ export default function AdminUsersPage() {
                         {u.isBlocked ? (
                           <div>
                             <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-                              <FaBan size={8} /> Blocked
+                              <Ban size={8} /> Blocked
                             </span>
                             {u.blockedReason && (
                               <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5 max-w-[120px] truncate" title={u.blockedReason}>
@@ -643,14 +643,14 @@ export default function AdminUsersPage() {
                             title="Edit user"
                             className="p-2 rounded-lg text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-300 transition"
                           >
-                            <FaEdit size={13} />
+                            <Pen size={13} />
                           </button>
                           <button
                             onClick={() => setPasswordTarget(u)}
                             title="Change password"
                             className="p-2 rounded-lg text-gray-400 dark:text-slate-500 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 dark:hover:text-violet-400 transition"
                           >
-                            <FaKey size={13} />
+                            <Key size={13} />
                           </button>
                           {String(u._id) !== String(me?._id) && (
                             <button
@@ -662,7 +662,7 @@ export default function AdminUsersPage() {
                                   : "text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                               }`}
                             >
-                              {u.isBlocked ? <FaCheckCircle size={13} /> : <FaBan size={13} />}
+                              {u.isBlocked ? <CheckCircle2 size={13} /> : <Ban size={13} />}
                             </button>
                           )}
                         </div>

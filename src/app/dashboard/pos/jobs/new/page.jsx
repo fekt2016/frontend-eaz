@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
-import { FaSearch, FaPlus, FaArrowLeft } from "react-icons/fa";
+import { Search, Plus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
 
@@ -171,7 +171,7 @@ export default function NewJobPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href="/dashboard/pos/jobs" className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
-          <FaArrowLeft size={12} />
+          <ArrowLeft size={12} />
         </Link>
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">New Repair Job</h1>
@@ -205,7 +205,7 @@ export default function NewJobPage() {
             <div ref={dropdownRef} className="relative">
               <label className={labelCls}>Search customer *</label>
               <div className="relative">
-                <FaSearch size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Search size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
                   type="text"
                   autoComplete="off"
@@ -409,7 +409,7 @@ export default function NewJobPage() {
           <div ref={partRef} className="relative">
             <label className={labelCls}>Search parts to order <span className="text-gray-600">(optional)</span></label>
             <div className="relative">
-              <FaSearch size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+              <Search size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
               <input
                 value={partQuery}
                 onChange={e => { setPartQuery(e.target.value); setShowPartDrop(true); }}
@@ -515,7 +515,7 @@ export default function NewJobPage() {
           disabled={loading}
           className="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? "Creating…" : <><FaPlus size={11} /> Create Job Ticket</>}
+          {loading ? "Creating…" : <><Plus size={11} /> Create Job Ticket</>}
         </button>
       </form>
     </div>

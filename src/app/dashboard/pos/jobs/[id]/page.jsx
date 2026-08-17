@@ -13,9 +13,9 @@ import { JobInvoice } from "./_components/JobInvoice";
 import { STATUS_COLORS } from "./_components/jobStatus";
 import { useAuth } from "@/context/AuthContext";
 import {
-  FaTrash, FaSearch, FaPlus,
-  FaCheck, FaSpinner, FaMobileAlt, FaCheckCircle, FaTimesCircle, FaWrench, FaLink, FaCreditCard,
-} from "react-icons/fa";
+  Trash2, Search, Plus,
+  Check, Loader2, Smartphone, CheckCircle2, XCircle, Wrench, Link2, CreditCard,
+} from "lucide-react";
 import { formatPhoneInput } from "@/lib/sanitize";
 import { printRepairReceipt } from "@/lib/printReceipt";
 import JobPhotos from "@/components/pos/JobPhotos";
@@ -222,7 +222,7 @@ export default function JobDetailPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-5 print:p-0 print:space-y-4">
       {/* Header */}
-      <JobHeader
+<JobHeader
         job={job}
         linkCopied={linkCopied}
         saving={saving}
@@ -242,7 +242,7 @@ export default function JobDetailPage() {
           {/* Technician section */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 print:hidden">
             <div className="flex items-center gap-2 px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50">
-              <FaWrench size={11} className="text-brand-600 dark:text-brand-400" />
+              <Wrench size={11} className="text-brand-600 dark:text-brand-400" />
               <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">Technician Update</p>
             </div>
             <div className="p-5 space-y-4">
@@ -366,7 +366,7 @@ export default function JobDetailPage() {
                   onClick={() => setShowParts(true)}
                   className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition"
                 >
-                  <FaPlus size={9} /> Add parts
+                  <Plus size={9} /> Add parts
                 </button>
               </div>
             </div>
@@ -379,7 +379,7 @@ export default function JobDetailPage() {
             <div className="p-5 space-y-3">
               {/* Search input */}
               <div ref={partRef} className="relative print:hidden">
-                <FaSearch size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Search size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
                   value={partQuery}
                   onChange={e => { setPartQuery(e.target.value); setShowPartDrop(true); }}
@@ -435,7 +435,7 @@ export default function JobDetailPage() {
                         GH₵{((p.cost || 0) * p.quantity).toLocaleString()}
                       </p>
                       <button onClick={() => removePart(p.id)} className="text-gray-600 hover:text-red-400 transition print:hidden">
-                        <FaTrash size={11} />
+                        <Trash2 size={11} />
                       </button>
                     </div>
                   ))}
@@ -585,7 +585,7 @@ export default function JobDetailPage() {
                   disabled={payLoading || !payAmount}
                   className="w-full py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {payLoading ? <FaSpinner className="animate-spin" size={12} /> : <FaCheck size={12} />}
+                  {payLoading ? <Loader2 className="animate-spin" size={12} /> : <Check size={12} />}
                   Record Payment
                 </button>
               </form>
@@ -597,13 +597,13 @@ export default function JobDetailPage() {
           {!isTechnician && (balanceDue > 0 || momoStatus === "pending" || momoStatus === "success") && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 space-y-4 print:hidden">
             <div className="flex items-center gap-2">
-              <FaMobileAlt size={14} className="text-brand-600 dark:text-brand-400" />
+              <Smartphone size={14} className="text-brand-600 dark:text-brand-400" />
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Request MoMo Payment</p>
             </div>
 
             {momoStatus === "success" ? (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
-                <FaCheckCircle size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                <CheckCircle2 size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-green-600 dark:text-green-400">Payment confirmed</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{momoMsg}</p>
@@ -617,7 +617,7 @@ export default function JobDetailPage() {
               </div>
             ) : momoStatus === "failed" ? (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
-                <FaTimesCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+                <XCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-red-600 dark:text-red-400">Payment failed</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{momoMsg}</p>
@@ -632,7 +632,7 @@ export default function JobDetailPage() {
             ) : momoStatus === "pending" ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/10 border border-brand-500/30">
-                  <FaSpinner size={16} className="text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0" />
+                  <Loader2 size={16} className="text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">Waiting for customer…</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{momoMsg || "Customer will receive a USSD prompt on their phone."}</p>
@@ -707,7 +707,7 @@ export default function JobDetailPage() {
                   disabled={momoLoading || !momoPhone || (!momoAmount && balanceDue <= 0)}
                   className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {momoLoading ? <FaSpinner className="animate-spin" size={12} /> : <FaMobileAlt size={12} />}
+                  {momoLoading ? <Loader2 className="animate-spin" size={12} /> : <Smartphone size={12} />}
                   Send Payment Request
                 </button>
               </div>
@@ -719,13 +719,13 @@ export default function JobDetailPage() {
           {!isTechnician && (balanceDue > 0 || cardStatus === "pending" || cardStatus === "success") && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 space-y-4 print:hidden">
             <div className="flex items-center gap-2">
-              <FaCreditCard size={14} className="text-brand-600 dark:text-brand-400" />
+              <CreditCard size={14} className="text-brand-600 dark:text-brand-400" />
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Charge Card (Paystack)</p>
             </div>
 
             {cardStatus === "success" ? (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
-                <FaCheckCircle size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                <CheckCircle2 size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-green-600 dark:text-green-400">Payment confirmed</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg}</p>
@@ -739,7 +739,7 @@ export default function JobDetailPage() {
               </div>
             ) : cardStatus === "failed" ? (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
-                <FaTimesCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+                <XCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-red-600 dark:text-red-400">Payment failed</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg}</p>
@@ -754,7 +754,7 @@ export default function JobDetailPage() {
             ) : cardStatus === "pending" ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/10 border border-brand-500/30">
-                  <FaSpinner size={16} className="text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0" />
+                  <Loader2 size={16} className="text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">Waiting for customer…</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg || "The Paystack payment page is open in a new tab."}</p>
@@ -766,7 +766,7 @@ export default function JobDetailPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20"
                       >
-                        <FaLink size={10} /> Reopen payment page
+                        <Link2 size={10} /> Reopen payment page
                       </a>
                     )}
                   </div>
@@ -796,7 +796,7 @@ export default function JobDetailPage() {
                   disabled={cardLoading || (balanceDue <= 0 && !cardAmount)}
                   className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {cardLoading ? <FaSpinner className="animate-spin" size={12} /> : <FaCreditCard size={12} />}
+                  {cardLoading ? <Loader2 className="animate-spin" size={12} /> : <CreditCard size={12} />}
                   Charge Card
                 </button>
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FaSync, FaCalendarAlt } from "react-icons/fa";
+import { RefreshCw, CalendarDays } from "lucide-react";
 
 const PRESETS = [
   { label: "Today",         compute: (now) => { const f = new Date(now); return { from: f, to: new Date(f) }; } },
@@ -61,7 +61,7 @@ export default function DateRangeFilter({ from, to, onChange, onRefresh, refresh
         ))}
 
         <div className="flex items-center gap-2 ml-auto">
-          <FaCalendarAlt size={12} className="text-gray-400 hidden sm:block" aria-hidden="true" />
+          <CalendarDays size={12} className="text-gray-400 hidden sm:block" aria-hidden="true" />
           <label className="sr-only" htmlFor="reports-from">From date</label>
           <input
             id="reports-from"
@@ -86,7 +86,7 @@ export default function DateRangeFilter({ from, to, onChange, onRefresh, refresh
             aria-label="Refresh reports"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-medium hover:text-gray-900 dark:hover:text-white transition disabled:opacity-50"
           >
-            <FaSync size={11} className={refreshing ? "animate-spin" : ""} />
+            <RefreshCw size={11} className={refreshing ? "animate-spin" : ""} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>

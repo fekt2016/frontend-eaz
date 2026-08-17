@@ -1,13 +1,13 @@
 import Link from "next/link";
 import StarRule from "@/components/common/StarRule";
 import {
-  FaPalette, FaSearch, FaBullhorn, FaStar,
-  FaHashtag, FaEnvelope, FaMobileAlt, FaCheckCircle,
-} from "react-icons/fa";
+  Palette, Search, Megaphone, Star,
+  Hash, Mail, Smartphone, CheckCircle2,
+} from "lucide-react";
 
 const services = [
   {
-    icon: FaPalette,
+    icon: Palette,
     title: "Web Design",
     description: "Modern, responsive websites tailored to your brand and built to convert visitors into customers.",
     benefits: ["Mobile-first responsive design", "Fast loading & SEO ready", "Custom to your brand"],
@@ -15,7 +15,7 @@ const services = [
     accent: "#F5A623",
   },
   {
-    icon: FaSearch,
+    icon: Search,
     title: "SEO",
     description: "Rank higher on Google and attract customers who are already searching for what you offer.",
     benefits: ["Keyword research & strategy", "On-page optimisation", "Monthly ranking reports"],
@@ -23,7 +23,7 @@ const services = [
     accent: "#10b981",
   },
   {
-    icon: FaBullhorn,
+    icon: Megaphone,
     title: "Paid Advertising",
     description: "Google and Meta campaigns that put your brand in front of the right people at the right time.",
     benefits: ["Google & Facebook Ads", "Precise audience targeting", "ROI-focused optimisation"],
@@ -31,7 +31,7 @@ const services = [
     accent: "#3b82f6",
   },
   {
-    icon: FaStar,
+    icon: Star,
     title: "Branding",
     description: "Logo, identity, and brand strategy that makes your business instantly recognisable and trustworthy.",
     benefits: ["Logo & visual identity", "Brand voice & guidelines", "Competitor differentiation"],
@@ -39,7 +39,7 @@ const services = [
     accent: "#8b5cf6",
   },
   {
-    icon: FaHashtag,
+    icon: Hash,
     title: "Social Media",
     description: "Consistent, creative social media management that builds your audience and drives engagement.",
     benefits: ["Content creation & scheduling", "Community management", "Growth analytics"],
@@ -47,7 +47,7 @@ const services = [
     accent: "#ec4899",
   },
   {
-    icon: FaEnvelope,
+    icon: Mail,
     title: "Email Marketing",
     description: "Strategic campaigns that turn your subscriber list into a reliable revenue channel.",
     benefits: ["Automated email sequences", "List segmentation", "Open rate optimisation"],
@@ -55,7 +55,7 @@ const services = [
     accent: "#f59e0b",
   },
   {
-    icon: FaMobileAlt,
+    icon: Smartphone,
     title: "Phone Repair",
     description: "Fast, professional phone repair in Accra. All major brands, 30-day warranty, honest prices.",
     benefits: ["Screen, battery & port repair", "All major brands accepted", "Walk-ins welcome"],
@@ -101,7 +101,7 @@ export default function ServicesGrid() {
               <ul className="space-y-1.5 mb-5">
                 {s.benefits.map((b) => (
                   <li key={b} className="flex items-start gap-2 text-sm text-gray-600 dark:text-slate-300">
-                    <FaCheckCircle size={13} className="mt-0.5 flex-shrink-0" style={{ color: s.accent }} />
+                    <CheckCircle2 size={13} className="mt-0.5 flex-shrink-0" style={{ color: s.accent }} />
                     {b}
                   </li>
                 ))}

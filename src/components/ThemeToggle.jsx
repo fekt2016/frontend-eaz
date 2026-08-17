@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "@/context/ThemeContext";
-import { FaSun, FaMoon } from "react-icons/fa";
+import { Moon, Sun } from "lucide-react";
 
 export default function ThemeToggle({ className = "" }) {
   const { isDark, toggleTheme, mounted } = useTheme();
@@ -18,7 +18,7 @@ export default function ThemeToggle({ className = "" }) {
           : "bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200"
         } ${className}`}
     >
-      {dark ? <FaSun size={14} /> : <FaMoon size={14} />}
+{dark ? <Sun size={14} /> : <Moon size={14} />}
     </button>
   );
 }

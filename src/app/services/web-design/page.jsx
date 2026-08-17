@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaCheckCircle, FaWhatsapp, FaCreditCard } from "react-icons/fa";
+import { CheckCircle2, Zap, CreditCard } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import ServicePaymentModal from "@/components/ServicePaymentModal";
 
 const packages = [
@@ -160,7 +161,7 @@ export default function WebDesignPage() {
       {/* CAPACITY NOTICE */}
       <section className="py-5 px-4 bg-brand-50 dark:bg-brand-900/10 border-b border-brand-100 dark:border-brand-800/30">
         <div className="max-w-3xl mx-auto flex items-center justify-center gap-3 text-center flex-wrap">
-          <span className="text-brand-500 text-base">⚡</span>
+          <Zap size={16} className="text-brand-500 flex-shrink-0" />
           <p className="text-sm text-brand-700 dark:text-brand-400 font-medium">
             We&apos;re currently taking a limited number of projects to ensure quality.{" "}
             <Link href="/book-consultation" className="underline underline-offset-2 hover:no-underline">Book early to secure your slot.</Link>
@@ -199,7 +200,7 @@ export default function WebDesignPage() {
                 <ul className="space-y-2 mb-6 flex-1">
                   {pkg.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-xs text-gray-700 dark:text-slate-300">
-                      <FaCheckCircle className="text-emerald-500 mt-0.5 flex-shrink-0" size={11} />
+                      <CheckCircle2 className="text-emerald-500 mt-0.5 flex-shrink-0" size={11} />
                       {f}
                     </li>
                   ))}
@@ -220,7 +221,7 @@ export default function WebDesignPage() {
                         : "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400"
                     }`}
                   >
-                    <FaCreditCard size={11} /> Pay GH₵{pkg.deposit.toLocaleString()} Deposit
+                    <CreditCard size={11} /> Pay GH₵{pkg.deposit.toLocaleString()} Deposit
                   </button>
                   <Link
                     href="/book-consultation"

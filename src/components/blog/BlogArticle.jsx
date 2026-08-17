@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FaClock, FaArrowLeft, FaFacebook, FaTwitter, FaLinkedin, FaWhatsapp } from "react-icons/fa";
+import { Clock, ArrowLeft } from "lucide-react";
+import { FaFacebook, FaTwitter, FaLinkedin, FaWhatsapp } from "react-icons/fa";
 
 const CATEGORY_COLORS = {
   SEO:               "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
@@ -106,7 +107,7 @@ export default function BlogArticle({ slug }) {
       {/* BACK */}
       <div className="px-4 pt-28 pb-4 max-w-4xl mx-auto">
         <Link href="/blog" className="inline-flex items-center gap-2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">
-          <FaArrowLeft size={11} /> Back to Blog
+          <ArrowLeft size={11} /> Back to Blog
         </Link>
       </div>
 
@@ -118,7 +119,7 @@ export default function BlogArticle({ slug }) {
               {post.category}
             </span>
             <span className="text-gray-400 text-xs flex items-center gap-1">
-              <FaClock size={10} /> {post.readTime}
+              <Clock size={10} /> {post.readTime}
             </span>
           </div>
           <h1 className="font-display font-bold text-3xl md:text-4xl lg:text-5xl text-gray-900 dark:text-white leading-tight mb-4">
@@ -192,7 +193,7 @@ export default function BlogArticle({ slug }) {
                   className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition group">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mb-2 ${CATEGORY_COLORS[p.category] || "bg-gray-100 text-gray-600"}`}>{p.category}</span>
                   <h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-snug group-hover:text-brand-500 transition mb-2">{p.title}</h3>
-                  <span className="text-gray-400 dark:text-slate-500 text-xs flex items-center gap-1"><FaClock size={10} /> {p.readTime}</span>
+                  <span className="text-gray-400 dark:text-slate-500 text-xs flex items-center gap-1"><Clock size={10} /> {p.readTime}</span>
                 </Link>
               ))}
             </div>

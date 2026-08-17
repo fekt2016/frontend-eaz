@@ -5,15 +5,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FaPalette, FaSearch, FaBullhorn, FaStar, FaHashtag,
-  FaEnvelope, FaMobileAlt, FaChevronLeft, FaChevronRight,
-} from "react-icons/fa";
+  Palette, Search, Megaphone, Star, Hash,
+  Mail, Smartphone, ChevronLeft, ChevronRight,
+} from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import StarRule from "@/components/common/StarRule";
 
 const slides = [
   {
-    icon: FaPalette,
+    icon: Palette,
     service: "Web Design",
     headline: "Websites That Win Clients",
     description: "We design fast, modern websites that make your business look credible and convert visitors into customers.",
@@ -23,7 +23,7 @@ const slides = [
     bg: "#fffbf5",
   },
   {
-    icon: FaSearch,
+    icon: Search,
     service: "SEO",
     headline: "Get Found on Google",
     description: "Rank higher, attract the right traffic, and grow organic revenue — with SEO built specifically for Ghanaian businesses.",
@@ -33,7 +33,7 @@ const slides = [
     bg: "#f0fdf4",
   },
   {
-    icon: FaBullhorn,
+    icon: Megaphone,
     service: "Paid Advertising",
     headline: "Ads That Actually Convert",
     description: "Google and Meta campaigns targeted precisely to your audience — every cedi of your budget working hard.",
@@ -43,7 +43,7 @@ const slides = [
     bg: "#eff6ff",
   },
   {
-    icon: FaStar,
+    icon: Star,
     service: "Branding",
     headline: "A Brand Worth Remembering",
     description: "Logo, identity, and brand strategy that tells your story clearly and sets you apart from the competition.",
@@ -53,7 +53,7 @@ const slides = [
     bg: "#f5f3ff",
   },
   {
-    icon: FaHashtag,
+    icon: Hash,
     service: "Social Media",
     headline: "Grow Your Audience Daily",
     description: "Consistent, creative social media management that builds community, trust, and engagement around your brand.",
@@ -63,7 +63,7 @@ const slides = [
     bg: "#fdf2f8",
   },
   {
-    icon: FaEnvelope,
+    icon: Mail,
     service: "Email Marketing",
     headline: "Turn Subscribers Into Buyers",
     description: "Strategic email campaigns that nurture leads, re-engage customers, and drive repeat revenue on autopilot.",
@@ -73,7 +73,7 @@ const slides = [
     bg: "#fffbeb",
   },
   {
-    icon: FaMobileAlt,
+    icon: Smartphone,
     service: "Phone Repair",
     headline: "Your Phone Fixed Today",
     description: "Fast, reliable phone repair in Accra. All major brands, 30-day warranty, honest pricing. Walk-ins welcome.",
@@ -206,7 +206,7 @@ export default function HeroCarousel() {
                 className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur shadow-xl p-4 flex flex-col justify-center border border-gray-100 dark:border-slate-700"
               >
                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mb-2">
-                  <FaStar className="text-emerald-600 dark:text-emerald-400" size={16} />
+                  <Star className="text-emerald-600 dark:text-emerald-400" size={16} />
                 </div>
                 <p className="font-mono text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase">Success Rate</p>
                 <p className="font-mono text-lg font-bold text-gray-900 dark:text-white">99.9%</p>
@@ -224,7 +224,7 @@ export default function HeroCarousel() {
           aria-label="Previous slide"
           className="w-12 h-12 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur border border-gray-200 dark:border-slate-700 shadow-lg flex items-center justify-center text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:scale-110 transition pointer-events-auto"
         >
-          <FaChevronLeft size={16} />
+          <ChevronLeft size={16} />
         </button>
         <button
           type="button"
@@ -232,7 +232,7 @@ export default function HeroCarousel() {
           aria-label="Next slide"
           className="w-12 h-12 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur border border-gray-200 dark:border-slate-700 shadow-lg flex items-center justify-center text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:scale-110 transition pointer-events-auto"
         >
-          <FaChevronRight size={16} />
+          <ChevronRight size={16} />
         </button>
       </div>
 

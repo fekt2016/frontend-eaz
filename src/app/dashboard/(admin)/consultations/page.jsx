@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { FaSpinner, FaRedo, FaTrash, FaChevronDown, FaEnvelope, FaPhone, FaBuilding, FaCalendarAlt } from "react-icons/fa";
+import { Loader2, RotateCw, Trash2, ChevronDown, Mail, Phone, Building, CalendarDays, Target, MessageCircle, Inbox } from "lucide-react";
 
 const STATUS_CONFIG = {
   new:      { label: "New",      cls: "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800/40",     dot: "bg-brand-400" },
@@ -62,14 +62,14 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
             <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{item.name}</p>
             <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 truncate">{item.email}</p>
             {item.service && (
-              <p className="text-xs font-medium text-brand-600 dark:text-brand-400 mt-1">🎯 {item.service}</p>
+              <p className="text-xs font-medium text-brand-600 dark:text-brand-400 mt-1"><Target size={11} className="inline text-brand-600 dark:text-brand-400" /> {item.service}</p>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <StatusBadge status={item.status} />
           <span className="text-xs text-gray-400 dark:text-slate-500 whitespace-nowrap hidden sm:block">{fmtDate(item.createdAt)}</span>
-          <FaChevronDown size={12} className={`text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          <ChevronDown size={12} className={`text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
         </div>
       </div>
 
@@ -81,20 +81,20 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
             {/* Contact info */}
             <div className="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-slate-400">
               <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 hover:text-brand-500 transition">
-                <FaEnvelope size={11} /> {item.email}
+                <Mail size={11} /> {item.email}
               </a>
               {item.phone && (
                 <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 hover:text-brand-500 transition">
-                  <FaPhone size={11} /> {item.phone}
+                  <Phone size={11} /> {item.phone}
                 </a>
               )}
               {item.businessName && (
                 <span className="flex items-center gap-1.5">
-                  <FaBuilding size={11} /> {item.businessName}
+                  <Building size={11} /> {item.businessName}
                 </span>
               )}
               <span className="flex items-center gap-1.5">
-                <FaCalendarAlt size={11} /> {fmtDate(item.createdAt)}
+                <CalendarDays size={11} /> {fmtDate(item.createdAt)}
               </span>
             </div>
 
@@ -139,7 +139,7 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
                         : "border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-400 dark:hover:border-slate-500 bg-white dark:bg-slate-800"
                     }`}
                   >
-                    {updating && item.status !== key ? <FaSpinner className="animate-spin" size={10} /> : cfg.label}
+                    {updating && item.status !== key ? <Loader2 className="animate-spin" size={10} /> : cfg.label}
                   </button>
                 ))}
               </div>
@@ -148,7 +148,7 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
                   href={`mailto:${item.email}?subject=Re: ${encodeURIComponent(item.subject || "Your Consultation Request")}`}
                   className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-400 transition"
                 >
-                  <FaEnvelope size={10} /> Reply by Email
+                  <Mail size={10} /> Reply by Email
                 </a>
                 {item.phone && (
                   <a
@@ -157,14 +157,14 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition"
                   >
-                    💬 WhatsApp
+                    <MessageCircle size={10} /> WhatsApp
                   </a>
                 )}
                 <button
                   onClick={() => onDelete(item._id)}
                   className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
                 >
-                  <FaTrash size={10} /> Delete
+                  <Trash2 size={10} /> Delete
                 </button>
               </div>
             </div>
@@ -253,7 +253,7 @@ export default function AdminConsultationsPage() {
             disabled={loading}
             className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50"
           >
-            <FaRedo size={11} className={loading ? "animate-spin" : ""} /> Refresh
+            <RotateCw size={11} className={loading ? "animate-spin" : ""} /> Refresh
           </button>
         </div>
 
@@ -310,12 +310,12 @@ export default function AdminConsultationsPage() {
         {/* List */}
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <FaSpinner className="animate-spin text-2xl text-brand-500" />
+            <Loader2 className="animate-spin text-brand-500" size={24} />
             <span className="text-sm">Loading…</span>
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-24 text-gray-400 dark:text-slate-500">
-            <p className="text-4xl mb-4">📭</p>
+            <Inbox size={36} className="mb-4 mx-auto text-gray-400 dark:text-slate-500" />
             <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">No bookings yet</p>
             <p className="text-xs">Consultation requests will appear here once submitted.</p>
           </div>

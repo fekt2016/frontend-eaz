@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import ReviewForm from "@/components/ReviewForm";
-import { FaStar } from "react-icons/fa";
+import { Star } from "lucide-react";
 import Link from "next/link";
 
 function StarRating({ rating }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((s) => (
-        <FaStar key={s} size={13} className={s <= rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />
+        <Star key={s} size={13} fill="currentColor" className={s <= rating ? "text-brand-400" : "text-gray-200 dark:text-slate-700"} />
       ))}
     </div>
   );

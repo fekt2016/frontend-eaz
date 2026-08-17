@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FaCheckCircle, FaExclamationTriangle, FaSpinner } from "react-icons/fa";
+import { CheckCircle2, Loader2, TriangleAlert } from "lucide-react";
 import { formatGhs } from "@/lib/shop";
 import { useOrderByReference } from "@/hooks/queries/useOrders";
 
@@ -15,7 +15,7 @@ export default function OrderConfirmationPage({ params }) {
     return (
       <div className="min-h-screen bg-white dark:bg-ink px-4 pt-32 pb-24 flex justify-center">
         <div className="flex flex-col items-center pt-10 text-center">
-          <FaSpinner size={28} className="animate-spin text-brand-500 mb-4" />
+          <Loader2 size={28} className="animate-spin text-brand-500 mb-4" />
           <p className="text-sm text-gray-500 dark:text-slate-400">Confirming your order...</p>
         </div>
       </div>
@@ -24,9 +24,9 @@ export default function OrderConfirmationPage({ params }) {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-white dark:bg-ink px-4 pt-32 pb-24">
+<div className="min-h-screen bg-white dark:bg-ink px-4 pt-32 pb-24">
         <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
-          <FaExclamationTriangle size={28} className="text-brand-500 mb-3" />
+          <TriangleAlert size={28} className="text-brand-500 mb-3" />
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Order not found</p>
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">{error}</p>
           <Link
@@ -54,9 +54,9 @@ export default function OrderConfirmationPage({ params }) {
           }`}
         >
           {isPaid ? (
-            <FaCheckCircle size={40} className="mx-auto text-emerald-500 mb-4" />
+            <CheckCircle2 size={40} className="mx-auto text-emerald-500 mb-4" />
           ) : (
-            <FaSpinner size={40} className="mx-auto animate-spin text-brand-500 mb-4" />
+            <Loader2 size={40} className="mx-auto animate-spin text-brand-500 mb-4" />
           )}
           <h1 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-2">
             {isPaid ? "Payment Confirmed" : isPending ? "Confirming Payment..." : "Order Received"}

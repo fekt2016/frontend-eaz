@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaStar } from "react-icons/fa";
+import { Star } from "lucide-react";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeName, sanitizeMessage } from "@/lib/sanitize";
@@ -102,8 +102,9 @@ export default function ReviewForm({ onSuccess }) {
               onMouseLeave={() => setHovered(0)}
               className="focus:outline-none transition-transform hover:scale-110"
             >
-              <FaStar
+              <Star
                 size={28}
+                fill="currentColor"
                 className={`transition-colors ${
                   star <= (hovered || fields.rating)
                     ? "text-brand-400"

@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { FaTools, FaBars, FaCog } from "react-icons/fa";
+import { Menu, Settings, Wrench } from "lucide-react";
 import { posNav } from "../dashboardNav";
 import Sidebar from "../Sidebar";
 
@@ -65,7 +65,7 @@ export default function PosShell({ children }) {
           <div className="flex items-center gap-4 px-4 sm:px-6 py-3">
             <Link href="/dashboard/pos" className="flex items-center gap-2.5 flex-shrink-0">
               <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-                <FaTools size={13} className="text-gray-900 dark:text-white" />
+                <Wrench size={13} className="text-gray-900 dark:text-white" />
               </div>
               <div className="hidden sm:block">
                 <p className="font-bold text-gray-900 dark:text-white text-sm leading-none">EazWorld</p>
@@ -104,7 +104,7 @@ export default function PosShell({ children }) {
                 className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                 aria-label="Settings"
               >
-                <FaCog size={13} />
+                <Settings size={13} />
                 <span className="hidden sm:inline">Settings</span>
               </Link>
             </div>
@@ -136,7 +136,7 @@ export default function PosShell({ children }) {
         {/* Topbar (mobile) */}
         <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <button onClick={() => setSidebarOpen(true)} className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1">
-            <FaBars size={18} />
+            <Menu size={18} />
           </button>
           <span className="font-bold text-gray-900 dark:text-white text-sm">EazWorld</span>
           <div className="flex items-center gap-2">

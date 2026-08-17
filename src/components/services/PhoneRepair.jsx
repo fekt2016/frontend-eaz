@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FaMobileAlt, FaBatteryFull, FaTools, FaTint, FaMicrochip, FaLaptop, FaArrowUp, FaStethoscope, FaCheckCircle, FaChevronDown, FaChevronUp, FaMapMarkerAlt, FaClock, FaPhone, FaWhatsapp } from "react-icons/fa";
+import { Smartphone, BatteryFull, Wrench, Droplet, Cpu, Laptop, ArrowUp, Stethoscope, CheckCircle2, ChevronDown, ChevronUp, MapPin, Clock, Phone, Apple } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 
 const brands = [
-  { name: "iPhone",   initial: "🍎", bg: "bg-gray-900",   text: "text-white",          border: "border-gray-700" },
+  { name: "iPhone",   initial: Apple, bg: "bg-gray-900",   text: "text-white",          border: "border-gray-700" },
   { name: "Samsung",  initial: "S",  bg: "bg-blue-600",   text: "text-white",          border: "border-blue-500" },
   { name: "Infinix",  initial: "X",  bg: "bg-red-600",    text: "text-white",          border: "border-red-500" },
   { name: "Tecno",    initial: "T",  bg: "bg-cyan-600",   text: "text-white",          border: "border-cyan-500" },
@@ -31,14 +32,14 @@ const phoneGallery = [
 ];
 
 const repairs = [
-  { icon: FaMobileAlt, title: "Screen Repair", desc: "Cracked or dead display? We replace screens for all major brands.", time: "1–2 hrs", price: "GHS 150–400", warranty: "30 days" },
-  { icon: FaBatteryFull, title: "Battery Replacement", desc: "Battery draining fast? We replace it with a quality part.", time: "30 min", price: "GHS 80–200", warranty: "30 days" },
-  { icon: FaTools, title: "Charging Port", desc: "Not charging or loose connection? We repair or replace the port.", time: "1–2 hrs", price: "GHS 100–250", warranty: "30 days" },
-  { icon: FaTint, title: "Water Damage", desc: "Dropped in water? We disassemble, dry, and treat corrosion.", time: "24–48 hrs", price: "GHS 100–300", warranty: "No guarantee" },
-  { icon: FaMicrochip, title: "Board-Level Repair", desc: "Complex hardware faults and IC failures — we go deep.", time: "24–48 hrs", price: "GHS 200–800", warranty: "30 days" },
-  { icon: FaLaptop, title: "Software Issues", desc: "Boot loops, malware, factory reset — fixed quickly.", time: "1–2 hrs", price: "GHS 50–150", warranty: "N/A" },
-  { icon: FaArrowUp, title: "Hardware Upgrades", desc: "Storage expansion and hardware modifications for compatible devices.", time: "2–4 hrs", price: "GHS 150–500", warranty: "30 days" },
-  { icon: FaStethoscope, title: "Diagnostics", desc: "Not sure what&apos;s wrong? Free honest assessment.", time: "30 min", price: "GHS 30–50", warranty: "N/A" },
+  { icon: Smartphone, title: "Screen Repair", desc: "Cracked or dead display? We replace screens for all major brands.", time: "1–2 hrs", price: "GHS 150–400", warranty: "30 days" },
+  { icon: BatteryFull, title: "Battery Replacement", desc: "Battery draining fast? We replace it with a quality part.", time: "30 min", price: "GHS 80–200", warranty: "30 days" },
+  { icon: Wrench, title: "Charging Port", desc: "Not charging or loose connection? We repair or replace the port.", time: "1–2 hrs", price: "GHS 100–250", warranty: "30 days" },
+  { icon: Droplet, title: "Water Damage", desc: "Dropped in water? We disassemble, dry, and treat corrosion.", time: "24–48 hrs", price: "GHS 100–300", warranty: "No guarantee" },
+  { icon: Cpu, title: "Board-Level Repair", desc: "Complex hardware faults and IC failures — we go deep.", time: "24–48 hrs", price: "GHS 200–800", warranty: "30 days" },
+  { icon: Laptop, title: "Software Issues", desc: "Boot loops, malware, factory reset — fixed quickly.", time: "1–2 hrs", price: "GHS 50–150", warranty: "N/A" },
+  { icon: ArrowUp, title: "Hardware Upgrades", desc: "Storage expansion and hardware modifications for compatible devices.", time: "2–4 hrs", price: "GHS 150–500", warranty: "30 days" },
+  { icon: Stethoscope, title: "Diagnostics", desc: "Not sure what&apos;s wrong? Free honest assessment.", time: "30 min", price: "GHS 30–50", warranty: "N/A" },
 ];
 
 const steps = [
@@ -65,7 +66,7 @@ function FAQ({ items }) {
         <div key={i} className="bg-white dark:bg-slate-900">
           <button type="button" onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between px-6 py-4 text-left text-gray-900 dark:text-white font-medium text-sm hover:bg-paper dark:hover:bg-slate-800 transition">
             {item.q}
-            {open === i ? <FaChevronUp size={12} className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" /> : <FaChevronDown size={12} className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" />}
+            {open === i ? <ChevronUp size={12} className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" /> : <ChevronDown size={12} className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" />}
           </button>
           {open === i && <div className="px-6 pb-4 text-gray-500 dark:text-slate-400 text-sm leading-relaxed bg-white dark:bg-slate-900">{item.a}</div>}
         </div>
@@ -117,7 +118,9 @@ export default function PhoneRepair() {
             {brands.map((brand) => (
               <div key={brand.name} className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-md hover:-translate-y-0.5 transition duration-200">
                 <div className={`w-12 h-12 rounded-xl ${brand.bg} ${brand.border} border flex items-center justify-center`}>
-                  <span className={`font-display font-bold text-base ${brand.text}`}>{brand.initial}</span>
+{typeof brand.initial === "string"
+                    ? <span className={`font-display font-bold text-base ${brand.text}`}>{brand.initial}</span>
+                    : <brand.initial size={18} className={brand.text} />}
                 </div>
                 <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 text-center">{brand.name}</span>
               </div>
@@ -240,9 +243,9 @@ export default function PhoneRepair() {
           <div className="p-7 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Visit Our Office</h2>
             {[
-              { icon: FaMapMarkerAlt, label: "Address", value: "E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra" },
-              { icon: FaClock, label: "Hours", value: "Mon–Fri: 9AM–6PM · Sat: 10AM–4PM · Sun: Closed" },
-              { icon: FaPhone, label: "Phone", value: "+233 24 438 8190 / +233 23 522 2207", href: "tel:+233244388190" },
+              { icon: MapPin, label: "Address", value: "E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra" },
+              { icon: Clock, label: "Hours", value: "Mon–Fri: 9AM–6PM · Sat: 10AM–4PM · Sun: Closed" },
+              { icon: Phone, label: "Phone", value: "+233 24 438 8190 / +233 23 522 2207", href: "tel:+233244388190" },
             ].map(({ icon: Ic, label, value, href }) => (
               <div key={label} className="flex items-start gap-3 text-sm">
                 <Ic className="text-brand-500 mt-0.5 flex-shrink-0" />
@@ -261,7 +264,7 @@ export default function PhoneRepair() {
               </div>
             </a>
             <div className="flex items-center gap-2 text-xs text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg px-3 py-2 w-fit">
-              <FaCheckCircle size={11} /> Walk-ins welcome — no appointment needed
+              <CheckCircle2 size={11} /> Walk-ins welcome — no appointment needed
             </div>
             <Link href="/visit-us" className="block text-center py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 text-sm hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white transition">Get Directions →</Link>
           </div>

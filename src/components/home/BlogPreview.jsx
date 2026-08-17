@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FaClock } from "react-icons/fa";
+import { Clock } from "lucide-react";
 import StarRule from "@/components/common/StarRule";
 
 const CATEGORY_COLORS = {
@@ -72,7 +72,7 @@ export default function BlogPreview() {
                   {post.title}
                 </h3>
                 <p className="text-gray-400 dark:text-slate-500 text-xs flex items-center gap-1.5">
-                  <FaClock size={9} /> {post.readTime}
+                  <Clock size={9} /> {post.readTime}
                   {post.publishedAt && (
                     <> · {new Date(post.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>
                   )}
