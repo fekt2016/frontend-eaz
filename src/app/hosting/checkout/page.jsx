@@ -43,7 +43,7 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
 
     try {
       // Check if already ordered by this user
-      const ordersRes = await api.get("/domains/orders").catch(() => ({ data: [] }));
+      const ordersRes = await api.get("/domain/orders").catch(() => ({ data: [] }));
       const orders = ordersRes?.data?.data || ordersRes?.data || [];
       const existing = orders.find(
         (o) => o.domain?.toLowerCase() === cleaned && ["pending", "completed", "active"].includes(o.status)
@@ -56,7 +56,7 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
       }
 
       // Check availability via Namecheap
-      const res = await api.get(`/domains/search?domain=${encodeURIComponent(cleaned)}`);
+      const res = await api.get(`/domain/search?domain=${encodeURIComponent(cleaned)}`);
       const results = res.data?.results || res.data?.data?.results || [];
       const match = results.find((r) => r.domain === cleaned || r.domain?.startsWith(cleaned.split(".")[0]));
 
@@ -143,7 +143,7 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
       </div>
 
       {domainMode === "skip" && (
-        <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 p-4 text-xs text-gray-500 dark:text-slate-400 space-y-1">
+        <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 p-4 text-xs text-gray-500 dark:text-slate-400 space-y-1">
           <p className="font-medium text-gray-600 dark:text-slate-300">No domain? No problem.</p>
           <p>Your hosting account will be set up on a temporary URL so you can access cPanel straight away. You can connect your own domain at any time from your dashboard.</p>
         </div>
@@ -324,7 +324,7 @@ function HostingCheckoutPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">
       <div className="mx-auto max-w-4xl">
         <Link href="/hosting" className="mb-6 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           ← Back to Hosting

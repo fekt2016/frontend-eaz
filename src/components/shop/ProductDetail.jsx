@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaArrowLeft, FaMinus, FaPlus } from "react-icons/fa";
-import { formatGhs, stockBadge } from "@/lib/shop";
+import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useCart } from "@/context/CartContext";
 import { useProductBySlug } from "@/hooks/queries/useProducts";
 
@@ -29,7 +29,7 @@ export default function ProductDetail({ slug }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-32 pb-24">
+      <div className="min-h-screen bg-white dark:bg-ink px-4 pt-32 pb-24">
         <div className="max-w-6xl mx-auto">
           <div className="grid gap-10 lg:grid-cols-2">
             <div className="animate-pulse aspect-[4/3] rounded-2xl bg-gray-100 dark:bg-slate-800" />
@@ -48,8 +48,8 @@ export default function ProductDetail({ slug }) {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-32 pb-24 flex items-start justify-center">
-        <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-6 py-16 text-center max-w-md w-full">
+      <div className="min-h-screen bg-white dark:bg-ink px-4 pt-32 pb-24 flex items-start justify-center">
+        <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center max-w-md w-full">
           <p className="text-3xl mb-3">🔍</p>
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Product not found</p>
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">{error}</p>
@@ -65,12 +65,12 @@ export default function ProductDetail({ slug }) {
   }
 
   const badge = stockBadge(product.stock);
-  const images = product.images?.length ? product.images : ["https://placehold.co/800x600/1e1b4b/ffffff?text=Product"];
+  const images = (product.images?.length ? product.images : ["https://placehold.co/800x600/1e1b4b/ffffff.png?text=Product"]).map(placeholderToPng);
   const maxQty = Math.min(product.stock, 10);
   const inStock = product.stock > 0;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
+    <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
       <div className="max-w-6xl mx-auto">
         <Link
           href="/shop"
@@ -118,10 +118,10 @@ aria-label={`View image ${i + 1}`}
 
           {/* DETAILS */}
           <div>
-            <span className="inline-flex rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400 px-3 py-1 text-xs font-semibold">
+            <span className="inline-flex rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400 px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em]">
               {product.category}
             </span>
-            <h1 className="font-display font-black text-3xl md:text-4xl text-gray-900 dark:text-white mt-3 mb-3 leading-tight">
+            <h1 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mt-3 mb-3 leading-tight">
               {product.name}
             </h1>
 
@@ -129,19 +129,19 @@ aria-label={`View image ${i + 1}`}
               <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${badge.classes}`}>
                 {badge.label}
               </span>
-              {product.sku && <span className="text-xs text-gray-400 dark:text-slate-500">SKU: {product.sku}</span>}
+              {product.sku && <span className="font-mono text-xs text-gray-400 dark:text-slate-500">SKU: {product.sku}</span>}
             </div>
 
-            <p className="font-display font-bold text-3xl text-brand-500 mb-6">{formatGhs(product.price)}</p>
+            <p className="font-mono font-bold text-3xl text-brand-500 mb-6">{formatGhs(product.price)}</p>
 
             <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-8">{product.description}</p>
 
             {/* QTY + ADD TO CART */}
-            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-5">
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 p-5">
               <div className="flex flex-wrap items-center gap-4">
                 <div>
                   <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2">Quantity</p>
-                  <div className="flex items-center gap-3 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2">
+                  <div className="flex items-center gap-3 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-ink px-3 py-2">
                     <button
                       type="button"
                       disabled={qty <= 1}

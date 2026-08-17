@@ -44,7 +44,7 @@ export default function AdminPage() {
   const visibleSections = sections.filter((s) => !s.adminOnly || isAdmin);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-4xl">
         <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">Marketplace</h1>
         <p className="text-gray-500 text-sm mb-8">Manage your shop&apos;s products, inventory, and orders.</p>
@@ -53,7 +53,7 @@ export default function AdminPage() {
             <Link
               key={href}
               href={href}
-              className="rounded-2xl border border-gray-100 bg-gray-50 p-5 hover:border-gray-300 transition"
+              className="rounded-2xl border border-gray-100 bg-paper p-5 hover:border-gray-300 transition"
             >
               <div className="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center mb-4">
                 <Icon size={18} />

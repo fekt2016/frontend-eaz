@@ -19,7 +19,7 @@ export default function DashboardShell({ children, title = "Dashboard" }) {
   useEffect(() => { setOpen(false); }, [pathname]);
 
   return (
-    <div className="h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 flex">
+    <div className="h-screen overflow-hidden bg-paper dark:bg-gray-950 flex">
 
       {/* Mobile overlay */}
       {open && (

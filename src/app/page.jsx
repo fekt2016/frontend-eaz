@@ -6,6 +6,7 @@ import ServicesGrid from "@/components/home/ServicesGrid";
 import Testimonials from "@/components/home/Testimonials";
 import BlogPreview from "@/components/home/BlogPreview";
 import CtaSection from "@/components/home/CtaSection";
+import StarRule from "@/components/common/StarRule";
 import { SITE_URL } from "@/lib/seo";
 
 export const metadata = {
@@ -40,13 +41,16 @@ export default function Home() {
     <>
       <HeroCarousel />
 
+      {/* RECENT PRODUCTS — shop showcase, right after the hero slider */}
+      <RecentProducts />
+
       {/* STATS BAR */}
-      <section className="py-10 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-10 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {stats.map(({ value, label }) => (
             <div key={label}>
-              <p className="font-display font-black text-3xl text-brand-500">{value}</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
+              <p className="font-mono font-bold text-3xl text-brand-500">{value}</p>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-gray-400 dark:text-slate-500 mt-1">{label}</p>
             </div>
           ))}
         </div>
@@ -58,14 +62,15 @@ export default function Home() {
       <section className="py-20 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto">
           <div className="max-w-xl mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Why EazWorld</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Why EazWorld</p>
+            <StarRule className="mb-4" />
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white">
               A Digital Partner You Can Trust
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {whyUs.map(({ icon, title, desc }) => (
-              <div key={title} className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
+              <div key={title} className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-ink">
                 <span className="text-3xl mb-4 block">{icon}</span>
                 <p className="font-semibold text-gray-900 dark:text-white text-sm mb-2">{title}</p>
                 <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed">{desc}</p>
@@ -76,10 +81,11 @@ export default function Home() {
       </section>
 
       {/* FEATURED WORK — SAIISAI */}
-      <section className="py-24 px-4 bg-gray-50 dark:bg-slate-950">
+      <section className="py-24 px-4 bg-paper dark:bg-ink">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Featured Work</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Featured Work</p>
+            <StarRule className="mb-5" />
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-5 leading-tight">
               All Services Working Together: Saiisai
             </h2>
@@ -96,8 +102,8 @@ export default function Home() {
             <div className="flex flex-wrap gap-6 mb-8">
               {[["150+", "Sellers"], ["15k+", "Products"], ["4.7★", "Rating"], ["500+", "Daily Transactions"]].map(([val, label]) => (
                 <div key={label}>
-                  <p className="font-display font-bold text-2xl text-gray-900 dark:text-white">{val}</p>
-                  <p className="text-gray-400 dark:text-slate-500 text-xs">{label}</p>
+                  <p className="font-mono font-bold text-2xl text-gray-900 dark:text-white">{val}</p>
+                  <p className="font-mono text-[11px] uppercase tracking-widest text-gray-400 dark:text-slate-500">{label}</p>
                 </div>
               ))}
             </div>
@@ -123,7 +129,7 @@ export default function Home() {
                 <div key={m.label} className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-slate-800 last:border-0">
                   <div>
                     <p className="text-xs text-gray-400 dark:text-slate-500">{m.label}</p>
-                    <p className="font-display font-bold text-xl text-gray-900 dark:text-white">{m.value}</p>
+                    <p className="font-mono text-sm font-bold text-gray-900 dark:text-white">{m.value}</p>
                   </div>
                   <span className="text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-full">
                     {m.change}
@@ -135,9 +141,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* RECENT PRODUCTS — shop showcase, after the agency story & proof */}
-      <RecentProducts />
 
       <Testimonials />
       <BlogPreview />

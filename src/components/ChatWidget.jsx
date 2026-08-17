@@ -501,7 +501,7 @@ export default function ChatWidget() {
   return (
     <>
       {open && (
-        <div className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-96 max-h-[600px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-950">
+        <div className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-96 max-h-[600px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 overflow-hidden bg-paper dark:bg-ink">
 
           {/* Header */}
           <div className="bg-gray-900 dark:bg-slate-900 px-4 py-3.5 flex items-center justify-between flex-shrink-0">
@@ -629,7 +629,7 @@ export default function ChatWidget() {
               <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">The chat will be closed. You can always start a new one.</p>
               <div className="flex gap-2">
                 <button onClick={() => setConfirmEnd(false)}
-                  className="flex-1 text-sm py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition font-medium">
+                  className="flex-1 text-sm py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition font-medium">
                   Cancel
                 </button>
                 <button onClick={handleEndChat}
@@ -661,7 +661,7 @@ export default function ChatWidget() {
                 className="flex items-center gap-2 px-3 py-2.5">
                 <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)}
                   placeholder="Type a message…" disabled={typing}
-                  className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition disabled:opacity-50" />
+                  className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition disabled:opacity-50" />
                 <button type="submit" disabled={!input.trim() || typing}
                   className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
                   <FaPaperPlane size={13} />
@@ -686,7 +686,7 @@ export default function ChatWidget() {
               className="flex items-center gap-2 px-3 py-3 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex-shrink-0">
               <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)}
                 placeholder="Message the team…"
-                className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition" />
+                className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition" />
               <button type="submit" disabled={!input.trim()}
                 className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
                 <FaPaperPlane size={13} />
@@ -697,7 +697,7 @@ export default function ChatWidget() {
           {/* ── Pending: input locked ── */}
           {isPending && (
             <div className="flex items-center gap-2 px-3 py-3 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex-shrink-0">
-              <div className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-slate-500 cursor-not-allowed select-none">
+              <div className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-400 dark:text-slate-500 cursor-not-allowed select-none">
                 Waiting for agent to accept…
               </div>
               <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">

@@ -25,7 +25,7 @@ function CheckoutContentInner() {
   }
 
   return (
-    <div className="min-h-[60vh] bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-20">
+    <div className="min-h-[60vh] bg-paper dark:bg-ink px-4 pt-24 pb-20">
       <div className="max-w-2xl mx-auto">
         <Link href="/domains" className="text-gray-400 dark:text-slate-500 text-sm hover:text-gray-700 dark:hover:text-slate-300 transition mb-8 inline-block">
           ← Back to Domains

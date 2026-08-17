@@ -29,7 +29,7 @@ const statusConfig = {
 };
 
 export function StatusBadge({ status }) {
-  const cfg = statusConfig[status] || { label: status, cls: "bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-900 dark:text-slate-400", dot: "bg-gray-400" };
+  const cfg = statusConfig[status] || { label: status, cls: "bg-paper text-gray-600 border-gray-100 dark:bg-gray-900 dark:text-slate-400", dot: "bg-gray-400" };
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border capitalize ${cfg.cls}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
@@ -71,7 +71,7 @@ export function HostingCard({ order }) {
       </div>
 
       {order.domain && (
-        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-paper dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
           <FaGlobe size={12} className="text-gray-400 dark:text-slate-500" />
           <span className="text-xs text-gray-600 dark:text-slate-300 font-mono">{order.domain}</span>
         </div>

@@ -131,8 +131,8 @@ export default function PortfolioDetail({ slug }) {
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col items-center justify-center pt-20 text-center px-4">
-        <p className="text-7xl font-black text-gray-100 dark:text-slate-800 mb-4">404</p>
+      <div className="min-h-screen bg-paper dark:bg-ink flex flex-col items-center justify-center pt-20 text-center px-4">
+        <p className="text-7xl font-bold text-gray-100 dark:text-slate-800 mb-4">404</p>
         <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-2">Project not found</h1>
         <p className="text-gray-500 dark:text-slate-400 mb-6 max-w-sm">The project you&apos;re looking for doesn&apos;t exist or has been moved.</p>
         <Link href="/portfolio" className="px-5 py-2.5 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition">
@@ -147,7 +147,7 @@ export default function PortfolioDetail({ slug }) {
   const nextProject = currentIndex < PROJECTS.length - 1 ? PROJECTS[currentIndex + 1] : null;
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
 
       {/* READ PROGRESS BAR */}
       <div
@@ -223,7 +223,7 @@ export default function PortfolioDetail({ slug }) {
             <span className="px-2.5 py-0.5 rounded-full text-xs bg-white/20 text-white">{project.year}</span>
             <span className="px-2.5 py-0.5 rounded-full text-xs bg-white/20 text-white">{project.duration}</span>
           </div>
-          <h1 className="font-display font-black text-3xl md:text-5xl text-white mb-3 leading-tight max-w-3xl">
+          <h1 className="font-display font-bold text-3xl md:text-5xl text-white mb-3 leading-tight max-w-3xl">
             {project.title}
           </h1>
           <p className="text-white/70 text-sm mb-2">For {project.client}</p>
@@ -251,7 +251,7 @@ export default function PortfolioDetail({ slug }) {
       </section>
 
       {/* OVERVIEW BAND */}
-      <div className="bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <div className="bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-4 py-4 grid grid-cols-2 sm:grid-cols-5 divide-x divide-gray-200 dark:divide-slate-700">
           {[
             ["Client", project.client],
@@ -271,13 +271,13 @@ export default function PortfolioDetail({ slug }) {
       {/* IMPACT METRICS */}
       <section className="py-16 px-4 bg-white dark:bg-slate-900">
         <div className="max-w-6xl mx-auto text-center mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Project Impact</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Project Impact</p>
           <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">Measurable Results That Matter</h2>
         </div>
         <div className="max-w-3xl mx-auto grid grid-cols-3 gap-5">
           {(project.results || []).slice(0, 3).map((r, idx) => (
-            <div key={idx} className="text-center p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800">
-              <p className="font-display font-black text-3xl text-gray-900 dark:text-white mb-1">
+            <div key={idx} className="text-center p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800">
+              <p className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-1">
                 <CountUpNumber value={r.value} duration={2000} />
               </p>
               <p className="text-gray-500 dark:text-slate-400 text-sm">{r.label}</p>
@@ -295,21 +295,21 @@ export default function PortfolioDetail({ slug }) {
       </section>
 
       {/* STORY + SIDEBAR */}
-      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-[1fr_300px] gap-12 items-start">
 
           {/* Main content */}
           <div className="space-y-12">
             {/* Overview */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">01 — Overview</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">01 — Overview</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">About This Project</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{project.caseStudy?.overview}</p>
             </div>
 
             {/* Challenge */}
             <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">02 — The Challenge</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">02 — The Challenge</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">The Problem We Solved</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4">{project.caseStudy?.challenge}</p>
               <ul className="space-y-2">
@@ -324,7 +324,7 @@ export default function PortfolioDetail({ slug }) {
 
             {/* Solution */}
             <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">03 — Our Solution</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">03 — Our Solution</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">How We Approached It</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4">{project.caseStudy?.solution}</p>
               <ul className="space-y-2">
@@ -339,7 +339,7 @@ export default function PortfolioDetail({ slug }) {
 
             {/* Process timeline */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">04 — Our Process</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">04 — Our Process</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">Step by Step</h2>
               <div ref={timelineRef} className="space-y-4">
                 {(project.caseStudy?.process || []).slice(0, 4).map((step, i) => (
@@ -365,7 +365,7 @@ export default function PortfolioDetail({ slug }) {
 
             {/* Outcome */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">05 — The Outcome</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">05 — The Outcome</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">What We Achieved Together</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-5">{project.caseStudy?.outcome}</p>
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
@@ -440,7 +440,7 @@ export default function PortfolioDetail({ slug }) {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Project Gallery</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Project Gallery</p>
             <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">Behind the Screens</h2>
             <p className="text-gray-400 dark:text-slate-500 text-sm mt-2 max-w-md mx-auto">A closer look at how the experience comes together across key screens.</p>
           </div>
@@ -506,7 +506,7 @@ export default function PortfolioDetail({ slug }) {
       </AnimatePresence>
 
       {/* TESTIMONIAL */}
-      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-4xl text-brand-300 font-serif mb-4">&ldquo;</p>
           <blockquote className="font-display font-bold text-xl md:text-2xl text-gray-900 dark:text-white leading-relaxed mb-8">
@@ -533,12 +533,12 @@ export default function PortfolioDetail({ slug }) {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Technologies Used</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Technologies Used</p>
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Built With</h2>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             {(project.tags || []).map((tag) => (
-              <div key={tag} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-sm text-gray-700 dark:text-slate-300">
+              <div key={tag} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800 text-sm text-gray-700 dark:text-slate-300">
                 <span>{getTechIcon(tag)}</span>
                 {tag}
               </div>
@@ -549,10 +549,10 @@ export default function PortfolioDetail({ slug }) {
 
       {/* PREV / NEXT NAV */}
       {(prevProject || nextProject) && (
-        <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+        <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">More Work</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">More Work</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Continue Exploring</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-5">
@@ -595,7 +595,7 @@ export default function PortfolioDetail({ slug }) {
       {/* BOTTOM CTA */}
       <section className="py-20 px-4 bg-gray-900">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Let&apos;s Work Together</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Let&apos;s Work Together</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-white mb-4 leading-tight">
             Ready to Build<br />Something Like This?
           </h2>

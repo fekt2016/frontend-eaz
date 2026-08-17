@@ -13,7 +13,7 @@ export default function OrderConfirmationPage({ params }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-32 pb-24 flex justify-center">
+      <div className="min-h-screen bg-white dark:bg-ink px-4 pt-32 pb-24 flex justify-center">
         <div className="flex flex-col items-center pt-10 text-center">
           <FaSpinner size={28} className="animate-spin text-brand-500 mb-4" />
           <p className="text-sm text-gray-500 dark:text-slate-400">Confirming your order...</p>
@@ -24,8 +24,8 @@ export default function OrderConfirmationPage({ params }) {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-32 pb-24">
-        <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-6 py-16 text-center">
+      <div className="min-h-screen bg-white dark:bg-ink px-4 pt-32 pb-24">
+        <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
           <FaExclamationTriangle size={28} className="text-brand-500 mb-3" />
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Order not found</p>
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">{error}</p>
@@ -44,13 +44,13 @@ export default function OrderConfirmationPage({ params }) {
   const isPending = order.status === "pending";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-28 pb-24">
+    <div className="min-h-screen bg-white dark:bg-ink px-4 pt-28 pb-24">
       <div className="mx-auto max-w-2xl">
         <div
           className={`rounded-2xl border p-8 text-center ${
             isPaid
               ? "border-emerald-100 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/10"
-              : "border-gray-100 bg-gray-50 dark:border-slate-800 dark:bg-slate-900"
+              : "border-gray-100 bg-paper dark:border-slate-800 dark:bg-slate-900"
           }`}
         >
           {isPaid ? (
@@ -58,7 +58,7 @@ export default function OrderConfirmationPage({ params }) {
           ) : (
             <FaSpinner size={40} className="mx-auto animate-spin text-brand-500 mb-4" />
           )}
-          <h1 className="font-display font-black text-2xl md:text-3xl text-gray-900 dark:text-white mb-2">
+          <h1 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-2">
             {isPaid ? "Payment Confirmed" : isPending ? "Confirming Payment..." : "Order Received"}
           </h1>
           <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
@@ -68,7 +68,7 @@ export default function OrderConfirmationPage({ params }) {
                 ? "Paystack is confirming your payment — this usually takes a few seconds."
                 : `Your order is currently "${order.status}".`}
           </p>
-          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-1.5 text-xs text-gray-500 dark:text-slate-400">
+          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-ink px-4 py-1.5 text-xs text-gray-500 dark:text-slate-400">
             Order number <span className="font-bold text-gray-900 dark:text-white">{order.orderNumber}</span>
           </div>
         </div>

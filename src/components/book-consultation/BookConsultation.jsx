@@ -102,7 +102,7 @@ export default function BookConsultation() {
   /* ── SUCCESS STATE ─────────────────────────────────────────── */
   if (status === "success") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4 pt-16">
+      <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center px-4 pt-16">
         <div className="max-w-md w-full text-center p-10 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-5">
             <FaCheckCircle className="text-emerald-500 text-3xl" />
@@ -137,15 +137,15 @@ export default function BookConsultation() {
 
   /* ── MAIN PAGE ─────────────────────────────────────────────── */
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
 
       {/* HERO ─────────────────────────────────────────────────── */}
       <section className="pt-28 pb-16 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-500 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
+          <span className="inline-block font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
             Free · 30 Minutes · No Obligation
           </span>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
             Let&apos;s Talk About<br />Your Business
           </h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-8 max-w-lg mx-auto">
@@ -223,7 +223,7 @@ export default function BookConsultation() {
                       className={`flex flex-col items-center text-center p-3 rounded-xl border-2 transition text-xs font-medium gap-1 ${
                         fields.service === s.id
                           ? "border-brand-400 bg-brand-50 dark:bg-brand-900/20 text-gray-900 dark:text-white"
-                          : "border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500"
+                          : "border-gray-100 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500"
                       }`}
                     >
                       <span className="text-xl leading-none">{s.icon}</span>
@@ -281,11 +281,11 @@ export default function BookConsultation() {
 
             {/* What to expect */}
             <div className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4">What to Expect</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400 mb-4">What to Expect</p>
               <div className="space-y-4">
                 {steps.map(({ n, t, d }) => (
                   <div key={n} className="flex gap-3">
-                    <span className="font-display font-black text-gray-100 dark:text-slate-800 text-lg w-7 flex-shrink-0 leading-none mt-0.5">{n}</span>
+                    <span className="font-display font-bold text-gray-100 dark:text-slate-800 text-lg w-7 flex-shrink-0 leading-none mt-0.5">{n}</span>
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{t}</p>
                       <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5 leading-relaxed">{d}</p>

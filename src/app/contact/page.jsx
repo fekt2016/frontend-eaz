@@ -12,11 +12,11 @@ export const metadata = buildMetadata({
 
 export default function Contact() {
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Get in Touch</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">We&apos;d Love to Hear From You</h1>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Get in Touch</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">We&apos;d Love to Hear From You</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg">Send us a message and we&apos;ll get back to you within 24 hours.</p>
         </div>
       </section>
@@ -70,7 +70,7 @@ export default function Contact() {
 
             <div className="p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
               <p className="text-gray-500 dark:text-slate-400 text-sm mb-3">Phone repair? Just walk in.</p>
-              <Link href="/visit-us" className="block py-2.5 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+              <Link href="/visit-us" className="block py-2.5 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium hover:bg-paper dark:hover:bg-slate-800 transition">
                 Get Directions
               </Link>
             </div>

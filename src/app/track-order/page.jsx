@@ -43,17 +43,17 @@ export default function TrackOrderPage() {
   const badge = order ? STATUS_STYLES[order.status] || STATUS_STYLES.pending : null;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
+    <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
       <div className="mx-auto max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Order Tracking</p>
-        <h1 className="font-display font-black text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Track Your Order</h1>
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Order Tracking</p>
+        <h1 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Track Your Order</h1>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-10">
           Enter the order number from your confirmation and the phone number you checked out with.
         </p>
 
         <form
           onSubmit={handleTrack}
-          className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-6"
+          className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 p-6"
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -141,7 +141,7 @@ export default function TrackOrderPage() {
               </div>
 
               {order.customer?.address && (
-                <div className="mt-5 rounded-xl bg-gray-50 dark:bg-slate-950 p-4 text-sm">
+                <div className="mt-5 rounded-xl bg-paper dark:bg-ink p-4 text-sm">
                   <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Deliver To</p>
                   <p className="text-gray-700 dark:text-slate-300">{order.customer.name}</p>
                   <p className="text-gray-500 dark:text-slate-400">{order.customer.phone}</p>

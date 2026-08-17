@@ -32,3 +32,13 @@ export function useUpdateDomainOrderStatus() {
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.domains.all }),
   });
 }
+
+// Admin: re-attempt Namecheap registration for a paid order that failed to register.
+export function useRetryDomainRegistration() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) =>
+      api.post(`/domain/orders/${id}/retry-registration`).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.domains.all }),
+  });
+}

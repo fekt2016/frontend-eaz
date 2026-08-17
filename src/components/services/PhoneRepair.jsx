@@ -63,7 +63,7 @@ function FAQ({ items }) {
     <div className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden">
       {items.map((item, i) => (
         <div key={i} className="bg-white dark:bg-slate-900">
-          <button type="button" onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between px-6 py-4 text-left text-gray-900 dark:text-white font-medium text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+          <button type="button" onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between px-6 py-4 text-left text-gray-900 dark:text-white font-medium text-sm hover:bg-paper dark:hover:bg-slate-800 transition">
             {item.q}
             {open === i ? <FaChevronUp size={12} className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" /> : <FaChevronDown size={12} className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" />}
           </button>
@@ -76,14 +76,14 @@ function FAQ({ items }) {
 
 export default function PhoneRepair() {
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
 
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800 bg-cyan-50 dark:bg-cyan-900/10">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-600 mb-4">Phone Repair · Accra</p>
-            <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">Fast, Reliable Phone Repair in Accra</h1>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-400 mb-4">Phone Repair · Accra</p>
+            <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">Fast, Reliable Phone Repair in Accra</h1>
             <p className="text-gray-500 dark:text-slate-400 text-lg mb-6">iPhone, Samsung, Infinix, Tecno, Itel & more. Honest pricing. 30-day warranty. Walk-ins welcome.</p>
             <div className="flex flex-wrap gap-3">
               <Link href="/repair" className="px-6 py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">Book a Repair Online</Link>
@@ -111,13 +111,13 @@ export default function PhoneRepair() {
       {/* BRANDS WE REPAIR */}
       <section className="py-16 px-4 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-cyan-600 mb-3">Brands</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-400 mb-3">Brands</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-8">Brands We Repair</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {brands.map((brand) => (
               <div key={brand.name} className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-md hover:-translate-y-0.5 transition duration-200">
                 <div className={`w-12 h-12 rounded-xl ${brand.bg} ${brand.border} border flex items-center justify-center`}>
-                  <span className={`font-display font-black text-base ${brand.text}`}>{brand.initial}</span>
+                  <span className={`font-display font-bold text-base ${brand.text}`}>{brand.initial}</span>
                 </div>
                 <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 text-center">{brand.name}</span>
               </div>
@@ -130,12 +130,12 @@ export default function PhoneRepair() {
       {/* PHONE GALLERY */}
       <section className="py-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-cyan-600 mb-3">Parts & Repairs</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-400 mb-3">Parts & Repairs</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-2">What We Work With</h2>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">iPhone, Samsung, Infinix, Tecno, Itel and more — screens, batteries, logic boards, cameras and charging ports.</p>
 
           {/* iPhone row */}
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-3">iPhone</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400 mb-3">iPhone</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
             {phoneGallery.filter(img => img.label.startsWith("iPhone")).map((img, i) => (
               <div key={i} className={`relative overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 group ${i === 0 ? "sm:col-span-2 aspect-[16/9]" : "aspect-square"}`}>
@@ -147,7 +147,7 @@ export default function PhoneRepair() {
           </div>
 
           {/* General parts row */}
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-3">Parts & Tools</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400 mb-3">Parts & Tools</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {phoneGallery.filter(img => !img.label.startsWith("iPhone")).map((img, i) => (
               <div key={i} className={`relative overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 group ${i === 0 ? "sm:col-span-2 aspect-[16/9]" : "aspect-square"}`}>
@@ -163,7 +163,7 @@ export default function PhoneRepair() {
       {/* REPAIRS */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Services</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Services</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">What We Repair</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {repairs.map((r) => (
@@ -183,9 +183,9 @@ export default function PhoneRepair() {
       </section>
 
       {/* PRICING TABLE */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Pricing</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Pricing</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-3">Price Guide</h2>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Free diagnostic before any repair. You approve the quote first.</p>
           <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -211,7 +211,7 @@ export default function PhoneRepair() {
       {/* HOW IT WORKS */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Process</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Process</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map((s) => (
@@ -226,9 +226,9 @@ export default function PhoneRepair() {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">FAQ</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">FAQ</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-6">Common Questions</h2>
           <FAQ items={faqs} />
         </div>

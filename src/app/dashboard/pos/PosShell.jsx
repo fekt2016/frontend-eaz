@@ -22,7 +22,7 @@ const PAGE_TITLES = {
 };
 
 const Spinner = () => (
-  <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+  <div className="min-h-screen bg-paper dark:bg-gray-950 flex items-center justify-center">
     <div className="w-6 h-6 border-2 border-slate-700 border-t-brand-400 rounded-full animate-spin" />
   </div>
 );
@@ -60,7 +60,7 @@ export default function PosShell({ children }) {
   // Technicians get a horizontal top navigation bar instead of the left sidebar.
   if (user.role === "technician") {
     return (
-      <div className="h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 flex flex-col">
+      <div className="h-screen overflow-hidden bg-paper dark:bg-gray-950 flex flex-col">
         <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-4 px-4 sm:px-6 py-3">
             <Link href="/dashboard/pos" className="flex items-center gap-2.5 flex-shrink-0">
@@ -119,7 +119,7 @@ export default function PosShell({ children }) {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 flex">
+    <div className="h-screen overflow-hidden bg-paper dark:bg-gray-950 flex">
 
       {/* Mobile overlay */}
       {sidebarOpen && (

@@ -419,8 +419,8 @@ function PartsTab() {
                     <span className="text-xs font-mono text-gray-500 hidden sm:block">{p.barcode || "—"}</span>
                     <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{p.category}</span>
                     <span className={`text-sm font-semibold hidden sm:block ${lowStockFlag ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">GH₵{(p.costPrice / 100).toLocaleString()}</span>
-                    <span className="text-sm text-brand-600 dark:text-brand-400 font-medium hidden sm:block">GH₵{(p.sellingPrice / 100).toLocaleString()}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">{formatGhs(p.costPrice)}</span>
+                    <span className="text-sm text-brand-600 dark:text-brand-400 font-medium hidden sm:block">{formatGhs(p.sellingPrice)}</span>
                     <div className="flex items-center gap-2 ml-auto sm:ml-0">
                       <button onClick={() => setModal(p)} className="text-gray-500 hover:text-brand-400 transition"><FaEdit size={13} /></button>
                       <button onClick={() => handleDelete(p._id)} className="text-gray-500 hover:text-red-400 transition"><FaTrash size={12} /></button>

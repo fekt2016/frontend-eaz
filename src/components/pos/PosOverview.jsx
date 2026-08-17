@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatGhs } from "@/lib/shop";
 import {
   FaMoneyBillWave, FaWrench, FaUsers, FaExclamationTriangle,
   FaCheckCircle, FaSpinner, FaReceipt, FaBalanceScale, FaChartBar,
@@ -64,18 +65,18 @@ export default function PosOverview({ data, loading }) {
     <>
       {/* Key stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Stat label="Total Revenue"     value={`GH₵${((stats?.totalRevenue || 0) / 100).toLocaleString()}`}  color="text-green-600 dark:text-green-400"  icon={FaMoneyBillWave} sub={`${stats?.totalPayments || 0} payments`} />
-        <Stat label="Today's Revenue"   value={`GH₵${((stats?.todayRevenue  || 0) / 100).toLocaleString()}`} color="text-brand-600 dark:text-brand-400"  icon={FaChartBar}      sub="Payments today" />
+        <Stat label="Total Revenue"     value={formatGhs(stats?.totalRevenue || 0)}  color="text-green-600 dark:text-green-400"  icon={FaMoneyBillWave} sub={`${stats?.totalPayments || 0} payments`} />
+        <Stat label="Today's Revenue"   value={formatGhs(stats?.todayRevenue || 0)} color="text-brand-600 dark:text-brand-400"  icon={FaChartBar}      sub="Payments today" />
         <Stat label="Total Jobs"        value={stats?.totalJobs}        icon={FaWrench}    sub="All time" />
         <Stat label="New Today"         value={stats?.todayJobs}        icon={FaWrench}    sub="Jobs created today" color="text-blue-600 dark:text-blue-400" />
         <Stat label="In Progress"       value={stats?.pendingJobs}      icon={FaSpinner}   color="text-brand-600 dark:text-brand-400" sub="Active repairs" />
         <Stat label="Ready to Collect"  value={stats?.readyJobs}        icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="Awaiting pickup" />
         <Stat label="Customers"         value={stats?.totalCustomers}   icon={FaUsers}     sub="Registered" />
         <Stat label="Low Stock"         value={stats?.lowStockCount}    icon={FaExclamationTriangle} color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"} sub="Parts below threshold" />
-        <Stat label="Total Expenses"    value={`GH₵${((stats?.totalExpenses || 0) / 100).toLocaleString()}`} color="text-red-600 dark:text-red-400" icon={FaReceipt} sub="Running costs" />
+        <Stat label="Total Expenses"    value={formatGhs(stats?.totalExpenses || 0)} color="text-red-600 dark:text-red-400" icon={FaReceipt} sub="Running costs" />
         <Stat
           label="Net Profit"
-          value={`GH₵${((stats?.netProfit || 0) / 100).toLocaleString()}`}
+          value={formatGhs(stats?.netProfit || 0)}
           color={(stats?.netProfit || 0) >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}
           icon={FaBalanceScale}
           sub="Revenue minus expenses"
@@ -94,7 +95,7 @@ export default function PosOverview({ data, loading }) {
                 </p>
                 <div
                   className="w-full rounded-t-lg bg-brand-500/70 hover:bg-brand-500 transition"
-                  title={`GH₵${(day.total/100).toLocaleString()} · ${day.count} payment${day.count !== 1 ? "s" : ""}`}
+                  title={`${formatGhs(day.total)} · ${day.count} payment${day.count !== 1 ? "s" : ""}`}
                   style={{ height: `${Math.max(4, (day.total / maxDailyRevenue) * 100)}%` }}
                 />
                 <span className="text-gray-600 whitespace-nowrap" style={{ fontSize: "9px" }}>
@@ -121,7 +122,7 @@ export default function PosOverview({ data, loading }) {
                 <div key={e._id}>
                   <div className="flex justify-between text-xs mb-1">
                     <span className="text-gray-600 dark:text-gray-300 capitalize">{e._id}</span>
-                    <span className="text-gray-500 dark:text-gray-400">GH₵{(e.total/100).toLocaleString()} · {pct}%</span>
+                    <span className="text-gray-500 dark:text-gray-400">{formatGhs(e.total)} · {pct}%</span>
                   </div>
                   <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                     <div className="h-full rounded-full bg-red-400/60" style={{ width: `${pct}%` }} />
@@ -132,12 +133,12 @@ export default function PosOverview({ data, loading }) {
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 flex justify-between text-sm">
             <span className="text-gray-500 dark:text-gray-400">Total Expenses</span>
-            <span className="text-red-600 dark:text-red-400 font-semibold">GH₵{((stats?.totalExpenses || 0) / 100).toLocaleString()}</span>
+            <span className="text-red-600 dark:text-red-400 font-semibold">{formatGhs(stats?.totalExpenses || 0)}</span>
           </div>
           <div className="flex justify-between text-sm mt-1">
             <span className="text-gray-500 dark:text-gray-400">Net Profit</span>
             <span className={`font-bold ${(stats?.netProfit || 0) >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-              GH₵{((stats?.netProfit || 0) / 100).toLocaleString()}
+              {formatGhs(stats?.netProfit || 0)}
             </span>
           </div>
         </div>
@@ -159,7 +160,7 @@ export default function PosOverview({ data, loading }) {
                         {METHOD_ICONS[m._id] || "💳"} {m._id}
                         <span className="text-xs text-gray-500">({m.count})</span>
                       </span>
-                      <span className="text-gray-900 dark:text-white font-semibold">GH₵{(m.total/100).toLocaleString()}</span>
+                      <span className="text-gray-900 dark:text-white font-semibold">{formatGhs(m.total)}</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
                       <div className="h-1.5 rounded-full bg-brand-500 transition-all" style={{ width: `${pct}%` }} />
@@ -201,7 +202,7 @@ export default function PosOverview({ data, loading }) {
                     <span className="flex-1 text-sm text-gray-600 dark:text-gray-300 truncate">{p._id}</span>
                     <span className="text-xs text-gray-500">{p.timesUsed}×</span>
                     <span className={`text-xs font-medium w-12 text-right ${margin >= 40 ? "text-green-600 dark:text-green-400" : margin >= 20 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>{margin}%</span>
-                    <span className="text-sm text-brand-600 dark:text-brand-400 font-semibold w-24 text-right">GH₵{(p.revenue/100).toLocaleString()}</span>
+                    <span className="text-sm text-brand-600 dark:text-brand-400 font-semibold w-24 text-right">{formatGhs(p.revenue)}</span>
                   </div>
                 );
               })}
@@ -226,7 +227,7 @@ export default function PosOverview({ data, loading }) {
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
                         <span className={`text-xs font-semibold ${pct >= 50 ? "text-green-600 dark:text-green-400" : pct >= 25 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>{pct}%</span>
-                        <span className="text-sm font-bold text-green-600 dark:text-green-400 w-24 text-right">GH₵{(job.grossProfit/100).toLocaleString()}</span>
+                        <span className="text-sm font-bold text-green-600 dark:text-green-400 w-24 text-right">{formatGhs(job.grossProfit)}</span>
                       </div>
                     </div>
                     <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -292,7 +293,7 @@ export default function PosOverview({ data, loading }) {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">GH₵{(jobTotal/100).toLocaleString()}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatGhs(jobTotal)}</p>
                     <p className="text-xs text-gray-500">{new Date(job.createdAt).toLocaleDateString("en-GH")}</p>
                   </div>
                 </Link>

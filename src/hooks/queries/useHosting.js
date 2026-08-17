@@ -12,6 +12,16 @@ export function useHostingOrders(options = {}) {
   });
 }
 
+// Hosting plan catalogue (GET /hosting/plans) — for the staff create-account form.
+export function useHostingPlans(options = {}) {
+  return useQuery({
+    queryKey: qk.hosting.plans,
+    queryFn: () => api.get("/hosting/plans").then((r) => r.data?.data ?? r.data ?? {}),
+    staleTime: 5 * 60_000,
+    ...options,
+  });
+}
+
 // Admin business overview (GET /hosting/orders/admin-overview).
 export function useHostingAdminOverview(options = {}) {
   return useQuery({
@@ -65,4 +75,11 @@ export function useHostingLifecycle() {
 }
 export function useDeleteHostingOrder() {
   return useHostingMutation((id) => api.delete(`/hosting/orders/${id}`));
+}
+
+// Staff/admin: create a cPanel hosting account for a customer in-store
+// (cash → provisioned now; paystack → returns a payment link).
+export function useStaffCreateHostingAccount() {
+  return useHostingMutation((payload) =>
+    api.post("/hosting/orders/staff-create", payload).then((r) => r.data));
 }

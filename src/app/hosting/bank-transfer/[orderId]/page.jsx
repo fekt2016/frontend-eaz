@@ -31,7 +31,7 @@ export default function BankTransferPage() {
   const showNameservers = domain && !isTempDomain;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">
       <div className="mx-auto max-w-xl">
         <Link href="/hosting" className="mb-6 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           ← Back to Hosting

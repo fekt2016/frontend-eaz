@@ -58,7 +58,7 @@ export default function AdminOrdersPage() {
   const visible = filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-5xl">
         <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">Orders</h1>
         <p className="text-gray-500 text-sm mb-6">Review and manage all shop orders.</p>
@@ -87,11 +87,11 @@ export default function AdminOrdersPage() {
             <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
           </div>
         ) : visible.length === 0 ? (
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-8 text-center">
+          <div className="rounded-2xl border border-gray-100 bg-paper p-8 text-center">
             <p className="text-gray-400 text-sm">No orders here.</p>
           </div>
         ) : (
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 overflow-hidden">
+          <div className="rounded-2xl border border-gray-100 bg-paper overflow-hidden">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-200 dark:border-slate-800 bg-gray-0">

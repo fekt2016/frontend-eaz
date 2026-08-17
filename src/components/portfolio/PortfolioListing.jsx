@@ -25,14 +25,14 @@ export default function PortfolioListing() {
     usePortfolioFilter(PROJECTS);
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
 
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[1fr_auto] gap-10 items-start">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Our Work</p>
-            <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Our Work</p>
+            <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
               Projects That<br />Speak for Themselves.
             </h1>
             <p className="text-gray-500 dark:text-slate-400 text-lg mb-8 max-w-lg">
@@ -125,7 +125,7 @@ export default function PortfolioListing() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-1">All Projects</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-1">All Projects</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Complete Portfolio</h2>
             </div>
             <p className="sm:hidden text-xs text-gray-400 dark:text-slate-500">{resultCount} projects</p>

@@ -210,8 +210,8 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-28 pb-24">
-        <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-6 py-16 text-center">
+      <div className="min-h-screen bg-white dark:bg-ink px-4 pt-28 pb-24">
+        <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
           <p className="text-3xl mb-3">🛒</p>
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Your cart is empty</p>
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">Add a product to the cart before checking out.</p>
@@ -227,7 +227,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-28 pb-24">
+    <div className="min-h-screen bg-white dark:bg-ink px-4 pt-28 pb-24">
       <div className="mx-auto max-w-5xl">
         <Link
           href="/cart"
@@ -236,7 +236,7 @@ export default function CheckoutPage() {
           <FaArrowLeft size={10} /> Back to cart
         </Link>
 
-        <h1 className="font-display font-black text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Checkout</h1>
+        <h1 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Checkout</h1>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-10">
           One step — tell us where to deliver and pay securely with Paystack.
         </p>
@@ -248,7 +248,7 @@ export default function CheckoutPage() {
         <div className="grid gap-8 lg:grid-cols-[1fr,340px]">
           {/* LEFT: customer details + delivery zone */}
           <div className="space-y-6">
-            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-6">
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 p-6">
               <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-4">Delivery Details</h2>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -292,7 +292,7 @@ export default function CheckoutPage() {
                         className={`flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition ${
                           selected
                             ? "border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/10"
-                            : "border-gray-200 bg-white hover:border-gray-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700"
+                            : "border-gray-200 bg-white hover:border-gray-300 dark:border-slate-800 dark:bg-ink dark:hover:border-slate-700"
                         }`}
                       >
                         <input
@@ -346,7 +346,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-6">
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 p-6">
               <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-4">Delivery Zone</h2>
               {zones.length === 0 ? (
                 <p className="text-sm text-gray-400 dark:text-slate-500">
@@ -362,7 +362,7 @@ export default function CheckoutPage() {
                       className={`w-full rounded-xl border p-4 text-left transition ${
                         zoneId === zone._id
                           ? "border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/10"
-                          : "border-gray-100 bg-white hover:border-gray-200 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700"
+                          : "border-gray-100 bg-white hover:border-gray-200 dark:border-slate-800 dark:bg-ink dark:hover:border-slate-700"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -383,7 +383,7 @@ export default function CheckoutPage() {
 
           {/* RIGHT: order summary */}
           <div className="lg:sticky lg:top-24 h-fit">
-            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-6">
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 p-6">
               <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
               <ul className="divide-y divide-gray-100 dark:divide-slate-800 border-b border-gray-100 dark:border-slate-800 mb-4">
                 {items.map((item) => (
@@ -494,7 +494,7 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="flex-1 rounded-full border border-gray-200 dark:border-slate-700 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+                  className="flex-1 rounded-full border border-gray-200 dark:border-slate-700 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-paper dark:hover:bg-slate-800 transition"
                 >
                   Cancel
                 </button>

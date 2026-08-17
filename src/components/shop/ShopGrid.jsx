@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight, FaSearch } from "react-icons/fa";
-import { formatGhs, stockBadge } from "@/lib/shop";
+import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useShopProducts } from "@/hooks/queries/useProducts";
+import StarRule from "@/components/common/StarRule";
 
 const CATEGORIES = [
   "Phones",
@@ -46,9 +47,9 @@ export default function ShopGrid({ activeCategory = "" }) {
   const heading = activeCategory || "All Products";
 
   return (
-    <div className="bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 pt-16">
+    <div className="bg-white dark:bg-ink text-gray-900 dark:text-slate-100 pt-16">
       {/* STICKY FILTER BAR */}
-      <div className="sticky top-[64px] z-20 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-gray-100 dark:border-slate-800">
+      <div className="sticky top-[64px] z-20 bg-white/95 dark:bg-ink/95 backdrop-blur border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col lg:flex-row gap-3 items-start lg:items-center justify-between">
           <div className="flex gap-2 overflow-x-auto pb-1 flex-wrap">
             <Link
@@ -118,16 +119,17 @@ export default function ShopGrid({ activeCategory = "" }) {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-1">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-1">
                 {activeCategory ? heading : "Featured Products"}
               </p>
+              <StarRule className="mb-3" />
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">{heading}</h2>
             </div>
             <p className="sm:hidden text-xs text-gray-400 dark:text-slate-500">{pagination.total} products</p>
           </div>
 
           {error ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-6 py-16 text-center">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
               <p className="text-2xl mb-3">⚠️</p>
               <p className="font-semibold text-gray-900 dark:text-white mb-2">Something went wrong</p>
               <p className="text-gray-400 dark:text-slate-500 text-sm mb-5 max-w-sm">{error}</p>
@@ -153,7 +155,7 @@ export default function ShopGrid({ activeCategory = "" }) {
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-6 py-16 text-center">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
               <p className="text-2xl mb-3">🛍️</p>
               <p className="font-semibold text-gray-900 dark:text-white mb-2">No products found</p>
               <p className="text-gray-400 dark:text-slate-500 text-sm mb-5 max-w-sm">Try a different category or search term.</p>
@@ -204,23 +206,36 @@ export default function ShopGrid({ activeCategory = "" }) {
 
 function ProductCard({ product }) {
   const badge = stockBadge(product.stock);
-  const image = product.images?.[0] || "https://placehold.co/800x600/1e1b4b/ffffff?text=Product";
+  const images = product.images?.length
+    ? product.images
+    : ["https://placehold.co/800x600/1e1b4b/ffffff.png?text=Product"];
+  const primary = placeholderToPng(images[0]);
+  const secondary = images[1] ? placeholderToPng(images[1]) : null; // shown on hover when the product has a 2nd image
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-md hover:-translate-y-1 transition duration-300">
       <Link href={`/shop/${product.slug}`} className="relative block overflow-hidden aspect-[4/3]">
         <Image
-          src={image}
+          src={primary}
           alt={product.name}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className={`object-cover transition-all duration-500 group-hover:scale-105 ${secondary ? "group-hover:opacity-0" : ""}`}
         />
+        {secondary && (
+          <Image
+            src={secondary}
+            alt={`${product.name} — alternate view`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+          />
+        )}
         <span className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>
           {badge.label}
         </span>
       </Link>
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-500 mb-0.5">{product.category}</p>
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-400 mb-0.5">{product.category}</p>
         <h3 className="font-display font-bold text-base text-gray-900 dark:text-white group-hover:text-brand-500 transition mb-1 line-clamp-2">
           {product.name}
         </h3>

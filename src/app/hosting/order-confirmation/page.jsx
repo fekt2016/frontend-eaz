@@ -3,7 +3,7 @@ import { FaCheckCircle } from "react-icons/fa";
 
 export default function HostingOrderConfirmationPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-24 pb-24 flex items-center justify-center">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24 flex items-center justify-center">
       <div className="mx-auto max-w-md text-center">
         <FaCheckCircle className="text-emerald-500 text-5xl mx-auto mb-6" />
         <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-2">Order confirmed</h1>

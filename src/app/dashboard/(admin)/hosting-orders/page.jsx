@@ -81,7 +81,7 @@ function ProvisioningBadge({ order }) {
           ? "bg-blue-50 text-blue-800 ring-blue-100"
           : ps === "skipped"
             ? "bg-violet-50 text-violet-800 ring-violet-100"
-            : "bg-gray-50 text-gray-700 ring-gray-100";
+            : "bg-paper text-gray-700 ring-gray-100";
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ring-1 ${tone} capitalize max-w-[10rem]`} title={order.provisioningError || ""}>
       {String(ps).replace(/_/g, " ")}
@@ -221,7 +221,7 @@ export default function AdminHostingOrdersPage() {
   if (authLoading || user?.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
           <div>
@@ -238,6 +238,12 @@ export default function AdminHostingOrdersPage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2 mt-3">
+              <Link
+                href="/dashboard/hosting/new-account"
+                className="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-600 transition"
+              >
+                + Create account
+              </Link>
               <Link
                 href="/dashboard/users"
                 className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600 transition"
@@ -327,7 +333,7 @@ export default function AdminHostingOrdersPage() {
                   className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${
                     statusFilter === opt.value
                       ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white"
-                      : "bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"
+                      : "bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"
                   }`}
                 >
                   {opt.label}
@@ -356,7 +362,7 @@ export default function AdminHostingOrdersPage() {
             <div className="overflow-x-auto">
               <table className="min-w-[1000px] w-full text-sm">
                 <thead>
-                  <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                  <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                     <th className="px-4 py-3 whitespace-nowrap">Proof</th>
                     <th className="px-4 py-3 whitespace-nowrap">Customer</th>
                     <th className="px-4 py-3 whitespace-nowrap">Plan</th>
@@ -372,7 +378,7 @@ export default function AdminHostingOrdersPage() {
                   {orders.map((order) => {
                     const risky = order.status === "paid" && order.provisioningStatus === "failed";
                     return (
-                      <tr key={order._id} className={risky ? "bg-red-50/40 dark:bg-red-900/10" : "hover:bg-gray-50/80 dark:hover:bg-slate-800/50"}>
+                      <tr key={order._id} className={risky ? "bg-red-50/40 dark:bg-red-900/10" : "hover:bg-paper/80 dark:hover:bg-slate-800/50"}>
                         <td className="px-4 py-3 align-middle w-28">
                           {order.proofUploadUrl ? (
                             isLikelyPdf(order.proofUploadUrl) ? (

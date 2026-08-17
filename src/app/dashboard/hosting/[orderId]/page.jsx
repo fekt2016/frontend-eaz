@@ -156,7 +156,7 @@ export default function HostingOrderDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-gray-300 dark:border-slate-600 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
       </div>
     );
@@ -164,7 +164,7 @@ export default function HostingOrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24 text-center">
+      <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24 text-center">
         <p className="text-gray-400 dark:text-slate-500">Order not found.</p>
         <Link href="/dashboard" className="mt-4 inline-block text-sm text-brand-500 hover:underline">← Back to Dashboard</Link>
       </div>
@@ -185,7 +185,7 @@ export default function HostingOrderDetailPage() {
   const canRenew = order.status === "active" || (["cancelled", "suspended"].includes(order.status) && order.cpanelUsername);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-2xl">
         <Link href="/dashboard" className="mb-6 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           ← Back to Dashboard
@@ -198,7 +198,7 @@ export default function HostingOrderDetailPage() {
             </h1>
             <p className="text-gray-400 dark:text-slate-500 text-sm mt-1 capitalize">{order.billingCycle} plan</p>
           </div>
-          <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border capitalize ${statusColors[order.status] || "bg-gray-50 text-gray-600 border-gray-100"}`}>
+          <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border capitalize ${statusColors[order.status] || "bg-paper text-gray-600 border-gray-100"}`}>
             {order.status}
           </span>
         </div>

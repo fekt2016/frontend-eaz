@@ -78,7 +78,7 @@ export default function AdminOrderDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+      <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
         <div className="mx-auto max-w-3xl flex justify-center py-12">
           <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
         </div>
@@ -88,9 +88,9 @@ export default function AdminOrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+      <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-3xl">
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-8 text-center">
+        <div className="rounded-2xl border border-gray-100 bg-paper p-8 text-center">
           <p className="text-gray-400 text-sm">Order not found.</p>
             <Link href="/dashboard/commerce/orders" className="text-sm text-gray-500 hover:text-gray-900 mt-2 inline-block">
               ← Back to Orders
@@ -106,7 +106,7 @@ export default function AdminOrderDetailPage() {
   const history = order.trackingHistory || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between gap-4 mb-6">
           <div>
@@ -129,7 +129,7 @@ export default function AdminOrderDetailPage() {
           </span>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 mb-6">
+        <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-2">Customer</h2>
           <Row label="Name" value={order.customer?.name || "—"} />
           <Row label="Phone" value={order.customer?.phone || "—"} />
@@ -138,7 +138,7 @@ export default function AdminOrderDetailPage() {
           <Row label="Delivery Zone" value={zone?.name || "—"} />
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 mb-6">
+        <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Items</h2>
           <div className="space-y-3">
             {order.items?.map((item, i) => (
@@ -155,7 +155,7 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 mb-6">
+        <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <Row label="Subtotal" value={formatGhs(order.subtotal)} />
           <Row label="Delivery Fee" value={formatGhs(deliveryFee)} />
           <div className="flex justify-between gap-4 pt-2">
@@ -166,7 +166,7 @@ export default function AdminOrderDetailPage() {
           {order.paidAt && <Row label="Paid At" value={formatDate(order.paidAt)} />}
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 mb-6">
+        <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Update Status</h2>
           <div className="flex flex-wrap gap-2">
             {STATUSES.map((s) => (
@@ -186,7 +186,7 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 mb-6">
+        <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Add tracking update</h2>
           <form onSubmit={handleTrackingUpdate} className="space-y-3">
             <div className="grid sm:grid-cols-2 gap-3">
@@ -233,7 +233,7 @@ export default function AdminOrderDetailPage() {
           </form>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+        <div className="rounded-2xl border border-gray-100 bg-paper p-5">
           <h2 className="font-semibold text-gray-900 text-sm mb-4">Tracking history</h2>
           {history.length === 0 ? (
             <p className="text-sm text-gray-400">No tracking updates yet.</p>

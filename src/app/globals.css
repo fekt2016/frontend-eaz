@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #111827;
+  --background: #FBF6EC;
+  --foreground: #161209;
 }
 
 .dark {
-  --background: #020617;
+  --background: #161209;
   --foreground: #f1f5f9;
 }
 
@@ -31,7 +31,7 @@ body {
  * important so it wins over the layered `outline-none` utility.
  */
 :focus-visible {
-  outline: 2px solid #f59e0b !important; /* amber-500 — brand accent */
+  outline: 2px solid #F2A311 !important; /* brand-500 — kente gold */
   outline-offset: 2px !important;
   border-radius: 4px;
 }
@@ -41,3 +41,31 @@ body {
     text-wrap: balance;
   }
 }
+
+/*
+ * Signature "star rule" — a Ghana flag tricolour hairline led by a star.
+ * Used under section eyebrows as the single memorable brand gesture.
+ */
+.star-rule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.star-rule__star {
+  color: #F2A311;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+.star-rule__bar {
+  display: flex;
+  width: 3rem;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 9999px;
+}
+.star-rule__bar > span {
+  flex: 1;
+}
+.star-rule__red { background: #C0392B; }
+.star-rule__gold { background: #F2A311; }
+.star-rule__green { background: #0F7B4F; }

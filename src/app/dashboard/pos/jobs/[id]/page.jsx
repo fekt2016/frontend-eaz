@@ -4,10 +4,17 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { formatGhs } from "@/lib/shop";
+import { useMomoCharge } from "@/hooks/useMomoCharge";
+import { useCardCharge } from "@/hooks/useCardCharge";
+import { CustomerDeviceCard } from "./_components/CustomerDeviceCard";
+import { JobHeader } from "./_components/JobHeader";
+import { JobInvoice } from "./_components/JobInvoice";
+import { STATUS_COLORS } from "./_components/jobStatus";
 import { useAuth } from "@/context/AuthContext";
 import {
-  FaArrowLeft, FaExclamationTriangle, FaTrash, FaSearch, FaPlus,
-  FaPrint, FaCheck, FaSpinner, FaMobileAlt, FaCheckCircle, FaTimesCircle, FaWrench, FaLink, FaCreditCard,
+  FaTrash, FaSearch, FaPlus,
+  FaCheck, FaSpinner, FaMobileAlt, FaCheckCircle, FaTimesCircle, FaWrench, FaLink, FaCreditCard,
 } from "react-icons/fa";
 import { formatPhoneInput } from "@/lib/sanitize";
 import { printRepairReceipt } from "@/lib/printReceipt";
@@ -20,14 +27,6 @@ const selectCls = `${inputCls} cursor-pointer`;
 const labelCls  = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
 const STATUSES = ["received", "diagnosing", "repairing", "ready", "collected", "cancelled"];
-const STATUS_COLORS = {
-  received:   "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
-  diagnosing: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
-  repairing:  "bg-brand-500/15 text-brand-600 dark:text-brand-400 border-brand-500/30",
-  ready:      "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
-  collected:  "bg-gray-500/15 text-gray-500 dark:text-gray-400 border-gray-500/30",
-  cancelled:  "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
-};
 
 export default function JobDetailPage() {
   const { id } = useParams();
@@ -67,25 +66,11 @@ export default function JobDetailPage() {
   const [payRef,       setPayRef]       = useState("");
   const [payLoading,   setPayLoading]   = useState(false);
 
-  // MoMo charge
+  // Share-link copy feedback
   const [linkCopied,   setLinkCopied]   = useState(false);
-  const [momoPhone,    setMomoPhone]    = useState("");
-  const [momoProvider, setMomoProvider] = useState("mtn");
-  const [momoAmount,   setMomoAmount]   = useState("");
-  const [momoStatus,   setMomoStatus]   = useState(null); // null|'pending'|'success'|'failed'
-  const [momoRef,      setMomoRef]      = useState("");
-  const [momoMsg,      setMomoMsg]      = useState("");
-  const [momoLoading,  setMomoLoading]  = useState(false);
-  const [pollTimer,    setPollTimer]    = useState(null);
 
-  // Card charge
-  const [cardLoading,  setCardLoading]  = useState(false);
-  const [cardStatus,   setCardStatus]   = useState(null); // null|'pending'|'success'|'failed'
-  const [cardRef,      setCardRef]      = useState("");
-  const [cardUrl,      setCardUrl]      = useState("");
-  const [cardMsg,      setCardMsg]      = useState("");
-  const [cardAmount,   setCardAmount]   = useState("");
-  const [cardTimer,    setCardTimer]    = useState(null);
+  // MoMo + card charge state and polling live in dedicated hooks (wired up
+  // below, once balanceDue and fetchJob are in scope).
 
   const fetchJob = useCallback(async () => {
     try {
@@ -111,7 +96,6 @@ export default function JobDetailPage() {
       setEstimatedCompletion(j.estimatedCompletion ? new Date(j.estimatedCompletion).toISOString().slice(0, 16) : "");
       setWarrantyDays(String(j.warrantyDays || 0));
       setWarrantyNotes(j.warrantyNotes || "");
-      if (j.customer?.phone) setMomoPhone(j.customer.phone);
     } catch {
       setError("Failed to load job.");
     } finally {
@@ -142,6 +126,16 @@ export default function JobDetailPage() {
   const balanceDue     = Math.max(0, totalAmount - totalPaid);
   const grossProfit    = totalAmount - totalPartsCost;
   const marginPct      = totalAmount > 0 ? Math.round((grossProfit / totalAmount) * 100) : 0;
+
+  const {
+    momoPhone, setMomoPhone, momoProvider, setMomoProvider, momoAmount, setMomoAmount,
+    momoStatus, momoRef, momoMsg, momoLoading, initiateMomo, cancelMomo,
+  } = useMomoCharge({ jobId: id, balanceDue, onPaid: fetchJob, defaultPhone: job?.customer?.phone });
+
+  const {
+    cardAmount, setCardAmount, cardStatus, cardRef, cardUrl, cardMsg, cardLoading,
+    initiateCard, cancelCard,
+  } = useCardCharge({ jobId: id, balanceDue, onPaid: fetchJob });
 
   const quickStatus = async (newStatus) => {
     setStatus(newStatus);
@@ -213,129 +207,6 @@ export default function JobDetailPage() {
     (job?.payments || []).map(p => ({ ...p, amount: (p.amount || 0) / 100 }))
   );
 
-  // ── MoMo charge ─────────────────────────────────────────────────────────────
-  const initiateMomo = async () => {
-    const effectiveAmount = momoAmount || (balanceDue > 0 ? balanceDue : "");
-    if (!momoPhone.trim() || !effectiveAmount) return;
-    setMomoLoading(true);
-    setMomoStatus(null);
-    setMomoMsg("");
-    try {
-      const res = await api.post(`/pos/jobs/${id}/momo-charge`, {
-        phone:    momoPhone.trim(),
-        provider: momoProvider,
-        amount:   Math.round(Number(effectiveAmount) * 100), // cedis → pesewas
-      });
-      setMomoRef(res.reference);
-      setMomoStatus("pending");
-      setMomoMsg(res.message || "Prompt sent. Waiting for customer to approve…");
-      startPolling(res.reference);
-    } catch (err) {
-      setMomoStatus("failed");
-      setMomoMsg(err.message || "Failed to send payment request.");
-    } finally {
-      setMomoLoading(false);
-    }
-  };
-
-  const startPolling = (ref) => {
-    // Poll every 4 seconds for up to 3 minutes
-    let attempts = 0;
-    const max = 45;
-    const timer = setInterval(async () => {
-      attempts++;
-      try {
-        const res = await api.get(`/pos/jobs/${id}/momo-charge/${ref}`);
-        const { status, message } = res;
-        if (status === "success") {
-          clearInterval(timer);
-          setMomoStatus("success");
-          setMomoMsg(`Payment confirmed! GH₵${((res.amount || 0) / 100).toLocaleString()} received.`);
-          await fetchJob(); // reload payment history
-        } else if (status === "failed" || status === "abandoned") {
-          clearInterval(timer);
-          setMomoStatus("failed");
-          setMomoMsg(message || "Payment was not completed.");
-        } else if (attempts >= max) {
-          clearInterval(timer);
-          setMomoStatus("failed");
-          setMomoMsg("Timed out. Ask customer to try again.");
-        }
-      } catch { /* keep polling */ }
-    }, 4000);
-    setPollTimer(timer);
-  };
-
-  const cancelMomo = () => {
-    if (pollTimer) clearInterval(pollTimer);
-    setMomoStatus(null);
-    setMomoRef("");
-    setMomoMsg("");
-    setMomoAmount("");
-  };
-
-  // ── Card charge ────────────────────────────────────────────────────────────
-  const initiateCard = async () => {
-    const effectiveAmount = cardAmount || (balanceDue > 0 ? balanceDue : "");
-    if (!effectiveAmount) return;
-    setCardLoading(true);
-    setCardStatus(null);
-    setCardMsg("");
-    try {
-      const res = await api.post(`/pos/jobs/${id}/card-charge`, {
-        amount: Math.round(Number(effectiveAmount) * 100), // cedis → pesewas
-      });
-      setCardRef(res.reference);
-      setCardUrl(res.authorizationUrl);
-      setCardStatus("pending");
-      setCardMsg(res.message || "Payment link created. Open it for the customer…");
-      if (res.authorizationUrl) window.open(res.authorizationUrl, "_blank", "noopener");
-      startCardPolling(res.reference);
-    } catch (err) {
-      setCardStatus("failed");
-      setCardMsg(err.message || "Failed to create card charge.");
-    } finally {
-      setCardLoading(false);
-    }
-  };
-
-  const startCardPolling = (ref) => {
-    // Poll every 4 seconds for up to 5 minutes
-    let attempts = 0;
-    const max = 75;
-    const timer = setInterval(async () => {
-      attempts++;
-      try {
-        const res = await api.get(`/pos/jobs/${id}/card-charge/${ref}`);
-        const { status, message } = res;
-        if (status === "success") {
-          clearInterval(timer);
-          setCardStatus("success");
-          setCardMsg(`Payment confirmed! GH₵${((res.amount || 0) / 100).toLocaleString()} received.`);
-          await fetchJob(); // reload payment history
-        } else if (status === "failed" || status === "abandoned") {
-          clearInterval(timer);
-          setCardStatus("failed");
-          setCardMsg(message || "Payment was not completed.");
-        } else if (attempts >= max) {
-          clearInterval(timer);
-          setCardStatus("failed");
-          setCardMsg("Timed out. Ask customer to retry or open the link again.");
-        }
-      } catch { /* keep polling */ }
-    }, 4000);
-    setCardTimer(timer);
-  };
-
-  const cancelCard = () => {
-    if (cardTimer) clearInterval(cardTimer);
-    setCardStatus(null);
-    setCardRef("");
-    setCardUrl("");
-    setCardMsg("");
-    setCardAmount("");
-  };
-
   if (loading) return (
     <div className="flex items-center justify-center h-48">
       <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-brand-400 rounded-full animate-spin" />
@@ -351,45 +222,14 @@ export default function JobDetailPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-5 print:p-0 print:space-y-4">
       {/* Header */}
-      <div className="flex items-start justify-between print:hidden">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard/pos/jobs" className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
-            <FaArrowLeft size={12} />
-          </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white font-mono">{job.jobNumber}</h1>
-              {job.priority === "urgent" && (
-                <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full">
-                  <FaExclamationTriangle size={9} /> Urgent
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-gray-500">Created {new Date(job.createdAt).toLocaleDateString("en-GH", { dateStyle: "long" })}</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={handleCopyLink} className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-sm transition ${
-            linkCopied
-              ? "border-green-500/50 text-green-600 dark:text-green-400"
-              : "border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-700"
-          }`}>
-            {linkCopied ? <FaCheck size={11} /> : <FaLink size={11} />}
-            {linkCopied ? "Copied!" : "Track Link"}
-          </button>
-          <button onClick={handlePrint} className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-700 text-sm transition">
-            <FaPrint size={12} /> Print
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50"
-          >
-            {saving ? <FaSpinner className="animate-spin" size={12} /> : <FaCheck size={12} />}
-            Save
-          </button>
-        </div>
-      </div>
+      <JobHeader
+        job={job}
+        linkCopied={linkCopied}
+        saving={saving}
+        onCopyLink={handleCopyLink}
+        onPrint={handlePrint}
+        onSave={handleSave}
+      />
 
 
       <div className="grid lg:grid-cols-3 gap-5">
@@ -397,79 +237,7 @@ export default function JobDetailPage() {
         <div className="lg:col-span-2 space-y-5">
 
           {/* Customer + Device */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 print:border print:rounded-none">
-            <div className="grid sm:grid-cols-2 gap-5">
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Customer</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">{job.customer?.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{job.customer?.phone}</p>
-                {job.customer?.email && <p className="text-sm text-gray-500 dark:text-gray-400">{job.customer.email}</p>}
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Device</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">{[job.deviceBrand, job.deviceModel].filter(Boolean).join(" ") || "—"}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{job.deviceType}</p>
-                {job.imei  && <p className="text-xs text-gray-500 mt-1">IMEI: {job.imei}</p>}
-                {job.color && <p className="text-xs text-gray-500">Color: {job.color}</p>}
-              </div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Fault</p>
-              <p className="text-sm text-gray-600 dark:text-gray-300">{job.faultDescription}</p>
-              {job.dropoff && (
-                <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20">
-                  <div>
-                    <p className="text-xs font-semibold text-brand-600 dark:text-brand-400">
-                      {job.dropoff === "rider" ? "Rider pickup requested" : "Customer will bring device in"}
-                    </p>
-                    {job.dropoff === "rider" && job.pickupAddress && (
-                      <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{job.pickupAddress}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              {job.requiresDiagnosis && (
-                <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Diagnosis required</span>
-                  <span className="text-xs text-purple-300">· GH₵{((job.diagnosisFee || 0) / 100).toLocaleString()} charged upfront</span>
-                </div>
-              )}
-              {job.repairWork && (
-                <div className="mt-3">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Repair work</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{job.repairWork}</p>
-                </div>
-              )}
-              {job.estimatedCompletion && (
-                <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Est. completion:</span>
-                  <span className="text-xs text-blue-300">
-                    {new Date(job.estimatedCompletion).toLocaleString("en-GH", { dateStyle: "medium", timeStyle: "short" })}
-                  </span>
-                </div>
-              )}
-              {job.warrantyDays > 0 && (
-                <div className={`mt-3 flex items-center justify-between px-3 py-2 rounded-lg border text-xs ${
-                  job.warrantyStatus === "active"        ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400" :
-                  job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-600 dark:text-brand-400" :
-                  job.warrantyStatus === "expired"       ? "bg-gray-500/10 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400" :
-                  "bg-teal-500/10 border-teal-500/20 text-teal-400"
-                }`}>
-                  <span className="font-medium">
-                    🛡 Warranty: {job.warrantyDays} day{job.warrantyDays !== 1 ? "s" : ""}
-                    {job.warrantyNotes ? ` — ${job.warrantyNotes}` : ""}
-                  </span>
-                  {job.warrantyExpires && (
-                    <span>
-                      {job.warrantyStatus === "expired"
-                        ? "Expired"
-                        : `Exp. ${new Date(job.warrantyExpires).toLocaleDateString("en-GH")}`}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+          <CustomerDeviceCard job={job} />
 
           {/* Technician section */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 print:hidden">
@@ -636,7 +404,7 @@ export default function JobDetailPage() {
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">GH₵{((p.sellingPrice || 0) / 100).toLocaleString()}</p>
+                          <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">{formatGhs(p.sellingPrice || 0)}</p>
                           <p className="text-xs text-gray-500">Stock: {p.quantity}</p>
                         </div>
                       </button>
@@ -738,93 +506,22 @@ export default function JobDetailPage() {
           </div>
 
           {/* Invoice — teller view */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50 flex items-center justify-between">
-              <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Invoice</p>
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </span>
-            </div>
-
-            {/* Repair work description — what teller tells the customer */}
-            {(repairWork || job?.repairWork) && (
-              <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-brand-500/5">
-                <p className="text-xs text-brand-600 dark:text-brand-400 font-medium mb-1">Repair work</p>
-                <p className="text-sm text-gray-700 dark:text-gray-200">{repairWork || job?.repairWork}</p>
-              </div>
-            )}
-
-            {/* Parts breakdown */}
-            {selectedParts.length > 0 && (
-              <div className="px-5 py-3 border-b border-gray-200 dark:border-gray-800 space-y-1.5">
-                <p className="text-xs text-gray-500 font-medium mb-2">Parts</p>
-                {selectedParts.map(p => (
-                  <div key={p.id} className="flex justify-between text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">{p.name} × {p.quantity}</span>
-                    <span className="text-gray-900 dark:text-white">GH₵{((p.cost || 0) * p.quantity).toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="px-5 py-4 space-y-2.5">
-              {job?.requiresDiagnosis && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                    Diagnosis fee
-                    <span className="text-xs bg-purple-500/15 border border-purple-500/20 px-1.5 py-0.5 rounded-full">upfront</span>
-                  </span>
-                  <span className="text-gray-900 dark:text-white">GH₵{(Number(diagnosisFee) || 0).toLocaleString()}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Parts</span>
-                <span className="text-gray-900 dark:text-white">GH₵{totalParts.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Labour</span>
-                <span className="text-gray-900 dark:text-white">GH₵{(Number(laborCost) || 0).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-sm font-semibold border-t border-gray-200 dark:border-gray-800 pt-2.5">
-                <span className="text-gray-600 dark:text-gray-300">Total</span>
-                <span className="text-gray-900 dark:text-white">GH₵{totalAmount.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Paid</span>
-                <span className="text-green-600 dark:text-green-400">GH₵{totalPaid.toLocaleString()}</span>
-              </div>
-              <div className={`flex justify-between text-base font-bold border-t border-gray-200 dark:border-gray-800 pt-2.5 ${balanceDue > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
-                <span>Balance due</span>
-                <span>GH₵{balanceDue.toLocaleString()}</span>
-              </div>
-
-              {/* Profit margin — staff/superadmin only */}
-              {!isTechnician && totalAmount > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800 space-y-1.5">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Profit Breakdown</p>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Parts cost</span>
-                    <span className="text-gray-500 dark:text-gray-400">GH₵{totalPartsCost.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Revenue</span>
-                    <span className="text-gray-600 dark:text-gray-300">GH₵{totalAmount.toLocaleString()}</span>
-                  </div>
-                  <div className={`flex justify-between text-sm font-bold pt-1 ${grossProfit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                    <span>Gross Profit</span>
-                    <span>GH₵{grossProfit.toLocaleString()} ({marginPct}%)</span>
-                  </div>
-                  {/* Visual margin bar */}
-                  <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mt-1">
-                    <div
-                      className={`h-full rounded-full transition-all ${marginPct >= 50 ? "bg-green-500" : marginPct >= 25 ? "bg-brand-500" : "bg-red-500"}`}
-                      style={{ width: `${Math.min(100, Math.max(0, marginPct))}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <JobInvoice
+            status={status}
+            repairWork={repairWork}
+            job={job}
+            selectedParts={selectedParts}
+            diagnosisFee={diagnosisFee}
+            laborCost={laborCost}
+            totalParts={totalParts}
+            totalAmount={totalAmount}
+            totalPaid={totalPaid}
+            balanceDue={balanceDue}
+            isTechnician={isTechnician}
+            totalPartsCost={totalPartsCost}
+            grossProfit={grossProfit}
+            marginPct={marginPct}
+          />
 
           {/* Record payment — teller/admin only */}
           {balanceDue > 0 && !isTechnician && (
@@ -1118,7 +815,7 @@ export default function JobDetailPage() {
                       <p className="text-sm text-gray-900 dark:text-white capitalize">{p.method}</p>
                       <p className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString("en-GH")}</p>
                     </div>
-                    <p className="text-sm font-semibold text-green-600 dark:text-green-400">GH₵{((p.amount || 0) / 100).toLocaleString()}</p>
+                    <p className="text-sm font-semibold text-green-600 dark:text-green-400">{formatGhs(p.amount || 0)}</p>
                   </div>
                 ))}
               </div>

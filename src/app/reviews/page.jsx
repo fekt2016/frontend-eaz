@@ -39,13 +39,13 @@ export default function ReviewsPage() {
     : "5.0";
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
 
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Client Reviews</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">What Our Clients Say</h1>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Client Reviews</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">What Our Clients Say</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg">Real feedback from real customers. We&apos;re proud of every project we deliver.</p>
         </div>
       </section>
@@ -55,7 +55,7 @@ export default function ReviewsPage() {
         <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6 text-center">
           {[[avgRating, "Average Rating"], ["100%", "Client Satisfaction"], ["4+", "Years in Accra"]].map(([val, label]) => (
             <div key={label}>
-              <p className="font-display font-black text-3xl text-brand-500">{val}</p>
+              <p className="font-display font-bold text-3xl text-brand-500">{val}</p>
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
             </div>
           ))}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { FaGlobe, FaSearch, FaRedo, FaSpinner, FaExternalLinkAlt } from "react-icons/fa";
-import { useAdminDomainOrders, useUpdateDomainOrderStatus } from "@/hooks/queries/useDomains";
+import { useAdminDomainOrders, useUpdateDomainOrderStatus, useRetryDomainRegistration } from "@/hooks/queries/useDomains";
 
 const statusColors = {
   pending:   "bg-brand-50 text-brand-700 ring-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:ring-brand-900/30",
@@ -50,16 +50,26 @@ export default function AdminDomainOrdersPage() {
   const updateStatus = useUpdateDomainOrderStatus();
   const updating = updateStatus.isPending ? updateStatus.variables?.id : null;
 
+  const retryReg = useRetryDomainRegistration();
+  const retrying = retryReg.isPending ? retryReg.variables : null;
+
   if (authLoading || !isAdmin) return null;
 
   const handleStatusUpdate = (orderId, status) => {
     updateStatus.mutate({ id: orderId, status }, { onError: (err) => alert(err.message || "Update failed") });
   };
 
+  const handleRetryRegistration = (orderId) => {
+    retryReg.mutate(orderId, {
+      onSuccess: () => alert("Domain registered successfully."),
+      onError: (err) => alert(err.message || "Registration retry failed."),
+    });
+  };
+
   const totalRevenue = orders.filter(o => o.status === "completed").reduce((s, o) => s + (o.price || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}
@@ -107,12 +117,12 @@ export default function AdminDomainOrdersPage() {
             <div className="flex flex-wrap gap-2">
               {FILTERS.map((f) => (
                 <button key={f.value} type="button" onClick={() => setFilter(f.value)}
-                  className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${filter === f.value ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white" : "bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"}`}>
+                  className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${filter === f.value ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white" : "bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"}`}>
                   {f.label}
                 </button>
               ))}
               <button type="button" onClick={fetchOrders} disabled={loading}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
                 <FaRedo size={10} className={loading ? "animate-spin" : ""} /> Refresh
               </button>
             </div>
@@ -134,7 +144,7 @@ export default function AdminDomainOrdersPage() {
             <div className="overflow-x-auto">
               <table className="min-w-[700px] w-full text-sm">
                 <thead>
-                  <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                  <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                     <th className="px-4 py-3">Domain</th>
                     <th className="px-4 py-3">Customer</th>
                     <th className="px-4 py-3">Price</th>
@@ -146,7 +156,7 @@ export default function AdminDomainOrdersPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                   {orders.map((o) => (
-                    <tr key={o._id} className="hover:bg-gray-50/80 dark:hover:bg-slate-800/50">
+                    <tr key={o._id} className="hover:bg-paper/80 dark:hover:bg-slate-800/50">
                       <td className="px-4 py-3">
                         <span className="font-mono font-semibold text-gray-900 dark:text-white">{o.domain}</span>
                         {o.registrationError && (
@@ -160,7 +170,7 @@ export default function AdminDomainOrdersPage() {
                       <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">GH₵{o.price}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-slate-400">{o.years || 1}yr</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 capitalize ${statusColors[o.status] || "bg-gray-50 text-gray-600 ring-gray-100 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700"}`}>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 capitalize ${statusColors[o.status] || "bg-paper text-gray-600 ring-gray-100 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700"}`}>
                           {o.status}
                         </span>
                       </td>
@@ -172,6 +182,16 @@ export default function AdminDomainOrdersPage() {
                               disabled={updating === o._id}
                               className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
                               {updating === o._id ? "…" : "Mark done"}
+                            </button>
+                          )}
+                          {o.status === "completed" && o.registrationError && (
+                            <button type="button" onClick={() => handleRetryRegistration(o._id)}
+                              disabled={retrying === o._id}
+                              title="Re-attempt Namecheap registration for this paid order"
+                              className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 inline-flex items-center gap-1">
+                              {retrying === o._id
+                                ? <><FaSpinner className="animate-spin" size={9} /> Retrying…</>
+                                : <><FaRedo size={9} /> Retry registration</>}
                             </button>
                           )}
                           {o.paystackReference && (

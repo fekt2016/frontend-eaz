@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { formatGhs } from "@/lib/shop";
 import { FaSearch, FaPlus, FaArrowLeft } from "react-icons/fa";
 import Link from "next/link";
 import { sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
@@ -433,7 +434,7 @@ export default function NewJobPage() {
                       {p.sku && <p className="text-xs text-gray-500 truncate">{p.sku}</p>}
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">GH₵{((Number(p.sellingPrice) || 0) / 100).toLocaleString()}</p>
+                      <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">{formatGhs(Number(p.sellingPrice) || 0)}</p>
                       <p className={`text-xs ${Number(p.quantity) <= 0 ? "text-red-500" : "text-gray-500"}`}>Stock: {p.quantity}</p>
                     </div>
                   </button>

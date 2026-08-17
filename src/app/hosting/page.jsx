@@ -16,7 +16,7 @@ export default function Hosting() {
   const [billing, setBilling] = useState("monthly");
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-paper dark:bg-ink">
 
       {/* ── HERO ── */}
       <section className="relative overflow-hidden bg-gray-900 px-4 pt-32 pb-20 text-white">
@@ -25,7 +25,7 @@ export default function Hosting() {
           <span className="inline-block rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-brand-400 mb-6">
             Web Hosting Ghana
           </span>
-          <h1 className="font-display font-black text-4xl leading-tight md:text-6xl mb-6">
+          <h1 className="font-display font-bold text-4xl leading-tight md:text-6xl mb-6">
             Fast. Secure. Reliable.
             <br />
             <span className="text-brand-400">Hosting Built for Africa.</span>
@@ -57,7 +57,7 @@ export default function Hosting() {
       </section>
 
       {/* ── FEATURES BAR ── */}
-      <section className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-4 py-12">
+      <section className="border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 px-4 py-12">
         <div className="mx-auto max-w-6xl grid gap-5 sm:grid-cols-2 md:grid-cols-4">
           {HOSTING_FEATURES.map((f) => (
             <div key={f.title} className="flex items-start gap-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
@@ -77,7 +77,7 @@ export default function Hosting() {
 
           {/* Section header */}
           <div className="text-center mb-10">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Hosting Plans</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Hosting Plans</p>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-3">
               Choose Your Perfect Plan
             </h2>
@@ -146,10 +146,10 @@ export default function Hosting() {
       </section>
 
       {/* ── COMPARISON TABLE ── */}
-      <section id="compare" className="bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800 px-4 py-20">
+      <section id="compare" className="bg-paper dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800 px-4 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-10">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Compare Plans</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Compare Plans</p>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               Shared Hosting Side by Side
             </h2>
@@ -157,7 +157,7 @@ export default function Hosting() {
           <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
             <table className="min-w-[640px] w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800">
+                <tr className="border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800">
                   <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 dark:text-slate-500">Feature</th>
                   {SHARED_PLANS.map((p) => (
                     <th
@@ -186,7 +186,7 @@ export default function Hosting() {
                   { label: "cPanel", feat: "Managed with cPanel" },
                   { label: "24/7 Support", feat: "24/7 Support" },
                 ].map((row, i) => (
-                  <tr key={row.label} className={`border-t border-gray-50 dark:border-slate-800 ${i % 2 === 0 ? "" : "bg-gray-50/50 dark:bg-slate-800/30"}`}>
+                  <tr key={row.label} className={`border-t border-gray-50 dark:border-slate-800 ${i % 2 === 0 ? "" : "bg-paper/50 dark:bg-slate-800/30"}`}>
                     <td className="px-5 py-3 text-[0.82rem] font-medium text-gray-500 dark:text-slate-400">{row.label}</td>
                     {SHARED_PLANS.map((p) => {
                       if (row.key === "price") {
@@ -219,7 +219,7 @@ export default function Hosting() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">Why EazWorld</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Why EazWorld</p>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               Hosting You Can Actually Trust
             </h2>
@@ -303,7 +303,7 @@ function PlanCard({ plan, billing, planType }) {
 
       <div className="mb-4">
         <div className="flex items-end gap-1">
-          <span className="text-3xl font-black text-brand-500">{plan.symbol}{price}</span>
+          <span className="text-3xl font-bold text-brand-500">{plan.symbol}{price}</span>
           <span className="text-xs text-gray-400 dark:text-slate-500 mb-1">/{billing === "annual" ? "yr" : "mo"}</span>
         </div>
         {billing === "annual" && (

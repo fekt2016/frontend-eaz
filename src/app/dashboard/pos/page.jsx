@@ -58,7 +58,7 @@ function JobRow({ job }) {
 }
 
 const Spinner = () => (
-  <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+  <div className="min-h-screen bg-paper dark:bg-gray-950 flex items-center justify-center">
     <div className="w-6 h-6 border-2 border-slate-700 border-t-brand-400 rounded-full animate-spin" />
   </div>
 );

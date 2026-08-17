@@ -38,7 +38,7 @@ function PaymentSuccessContent() {
   const content = CONTENT[type] || CONTENT.default;
 
   return (
-    <div className="min-h-[60vh] bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4 pt-24">
+    <div className="min-h-[60vh] bg-paper dark:bg-ink flex items-center justify-center px-4 pt-24">
       <div className="max-w-md text-center">
         <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
           <FaCheckCircle className="text-emerald-500 text-4xl" />

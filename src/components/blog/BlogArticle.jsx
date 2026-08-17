@@ -91,7 +91,7 @@ export default function BlogArticle({ slug }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -102,7 +102,7 @@ export default function BlogArticle({ slug }) {
   const date = post.publishedAt || post.createdAt;
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       {/* BACK */}
       <div className="px-4 pt-28 pb-4 max-w-4xl mx-auto">
         <Link href="/blog" className="inline-flex items-center gap-2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">
@@ -121,7 +121,7 @@ export default function BlogArticle({ slug }) {
               <FaClock size={10} /> {post.readTime}
             </span>
           </div>
-          <h1 className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 dark:text-white leading-tight mb-4">
+          <h1 className="font-display font-bold text-3xl md:text-4xl lg:text-5xl text-gray-900 dark:text-white leading-tight mb-4">
             {post.title}
           </h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-6">{post.excerpt}</p>
@@ -183,7 +183,7 @@ export default function BlogArticle({ slug }) {
 
       {/* RELATED */}
       {related.length > 0 && (
-        <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+        <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
           <div className="max-w-6xl mx-auto">
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">More Articles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

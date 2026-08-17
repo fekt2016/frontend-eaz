@@ -54,7 +54,7 @@ export default function CustomerRepairsPage() {
           <div className="overflow-x-auto">
             <table className="min-w-[760px] w-full text-sm">
               <thead>
-                <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800/50 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                   <th className="px-5 py-3">Device</th>
                   <th className="px-5 py-3">Job #</th>
                   <th className="px-5 py-3">Fault</th>
@@ -74,7 +74,7 @@ export default function CustomerRepairsPage() {
                     <tr
                       key={j._id}
                       onClick={() => href && router.push(href)}
-                      className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/40 transition"
+                      className="cursor-pointer hover:bg-paper dark:hover:bg-slate-800/40 transition"
                     >
                       <td className="px-5 py-3.5">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">{device}</p>

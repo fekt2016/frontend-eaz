@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaClock } from "react-icons/fa";
+import StarRule from "@/components/common/StarRule";
 
 const CATEGORY_COLORS = {
   SEO:               "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
@@ -42,11 +43,12 @@ export default function BlogPreview() {
   if (!loading && posts.length === 0) return null;
 
   return (
-    <section className="py-24 px-4 bg-white dark:bg-slate-950">
+    <section className="py-24 px-4 bg-white dark:bg-ink">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">From the Blog</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">From the Blog</p>
+            <StarRule className="mb-4" />
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white">Latest Insights</h2>
           </div>
           <Link href="/blog" className="text-sm font-medium text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition hidden md:block">

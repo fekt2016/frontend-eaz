@@ -6,6 +6,7 @@ import { FaShoppingBag, FaSpinner } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
 import { useOrders, useMyOrders, useUpdateOrderStatus } from "@/hooks/queries/useOrders";
+import { formatGhs } from "@/lib/shop";
 
 const ORDER_STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
@@ -79,7 +80,7 @@ export default function CustomerOrdersPage() {
           <div className="overflow-x-auto">
             <table className="min-w-[720px] w-full text-sm">
               <thead>
-                <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                   <th className="px-4 py-3">{seesAll ? "Customer" : "Order"}</th>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Status</th>
@@ -90,7 +91,7 @@ export default function CustomerOrdersPage() {
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                 {orders.map((o) => (
-                  <tr key={o._id} className="hover:bg-gray-50/80 dark:hover:bg-slate-800/50">
+                  <tr key={o._id} className="hover:bg-paper/80 dark:hover:bg-slate-800/50">
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900 dark:text-white capitalize truncate max-w-[200px]">
                         {seesAll ? o.customer?.name || "—" : o.orderNumber}
@@ -162,5 +163,5 @@ export default function CustomerOrdersPage() {
 }
 
 function formatTotal(total) {
-  return `GH₵${((total || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+  return formatGhs(total);
 }

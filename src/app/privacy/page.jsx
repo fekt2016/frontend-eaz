@@ -132,7 +132,7 @@ const sections = [
 
 export default function Privacy() {
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-4 pt-28 pb-24">
         <div className="mb-10">
           <Link href="/" className="text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">← Back to Home</Link>

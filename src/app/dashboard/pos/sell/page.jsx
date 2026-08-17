@@ -14,6 +14,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { formatGhs } from "@/lib/shop";
 import { qk } from "@/lib/queryKeys";
 import { useCreateSale } from "@/hooks/queries/usePosSales";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
@@ -290,9 +291,9 @@ export default function SellPage() {
           <FaCheckCircle size={32} className="text-green-600 dark:text-green-400 mx-auto mb-2" />
           <p className="text-gray-900 dark:text-white font-bold text-lg">Sale Complete</p>
           <p className="text-gray-500 dark:text-gray-400 text-sm">{completedSale.saleNumber}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">GH₵{((completedSale.total || 0) / 100).toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{formatGhs(completedSale.total || 0)}</p>
           {completedSale.changeDue > 0 && (
-            <p className="text-green-600 dark:text-green-400 font-semibold mt-1">Change: GH₵{((completedSale.changeDue || 0) / 100).toFixed(2)}</p>
+            <p className="text-green-600 dark:text-green-400 font-semibold mt-1">Change: {formatGhs(completedSale.changeDue || 0)}</p>
           )}
         </div>
 
@@ -378,7 +379,7 @@ export default function SellPage() {
                   <p className="text-sm text-gray-900 dark:text-white font-medium">{p.name}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{p.category} · Stock: <span className={p.quantity <= p.lowStockThreshold ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}>{p.quantity}</span></p>
                 </div>
-                <p className="text-sm font-bold text-brand-600 dark:text-brand-400 ml-4">GH₵{(Number(p.sellingPrice) / 100).toLocaleString()}</p>
+                <p className="text-sm font-bold text-brand-600 dark:text-brand-400 ml-4">{formatGhs(Number(p.sellingPrice))}</p>
               </button>
             ))}
           </div>

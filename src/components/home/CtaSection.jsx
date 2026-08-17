@@ -1,4 +1,5 @@
 import Link from "next/link";
+import StarRule from "@/components/common/StarRule";
 
 export default function CtaSection() {
   return (
@@ -9,9 +10,10 @@ export default function CtaSection() {
       </div>
 
       <div className="relative max-w-3xl mx-auto text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">
           Let&apos;s Work Together
         </p>
+        <StarRule className="mb-5 justify-center" />
         <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-4">
           Ready to Grow Your Business?
         </h2>

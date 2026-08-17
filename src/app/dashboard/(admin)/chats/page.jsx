@@ -180,7 +180,7 @@ export default function AdminChatsPage() {
             : sessions;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}
@@ -525,7 +525,7 @@ export default function AdminChatsPage() {
                                 ? "bg-brand-500 text-white rounded-tr-sm"
                                 : isAdmin
                                   ? "bg-indigo-50 dark:bg-indigo-900/30 text-gray-800 dark:text-slate-200 border border-indigo-100 dark:border-indigo-800 rounded-tl-sm"
-                                  : "bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-100 dark:border-slate-700 rounded-tl-sm"
+                                  : "bg-paper dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-100 dark:border-slate-700 rounded-tl-sm"
                             }`}>
                               {!isAdmin && (
                                 <p className="text-[10px] font-semibold mb-1 opacity-60 uppercase tracking-wide">
@@ -543,7 +543,7 @@ export default function AdminChatsPage() {
 
                   {/* Resolved banner — shown when chat has been ended (by either side) */}
                   {active.resolved && (
-                    <div className="px-5 py-3 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex items-center gap-3">
+                    <div className="px-5 py-3 bg-paper dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex items-center gap-3">
                       <span className="w-2.5 h-2.5 rounded-full bg-gray-400 flex-shrink-0" />
                       <p className="text-sm text-gray-500 dark:text-slate-400 font-medium flex-1">
                         This conversation has ended
@@ -590,7 +590,7 @@ export default function AdminChatsPage() {
                               : "Reply to this user…"
                           }
                           disabled={sending || active.resolved}
-                          className="flex-1 text-sm px-3.5 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition disabled:opacity-50"
+                          className="flex-1 text-sm px-3.5 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition disabled:opacity-50"
                         />
                         <button
                           type="submit"

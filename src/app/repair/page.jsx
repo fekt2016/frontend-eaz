@@ -93,7 +93,7 @@ export default function BookRepairPage() {
   /* ── SUCCESS STATE ─────────────────────────────────────────── */
   if (status === "success" && result) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4 pt-16 pb-24">
+      <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center px-4 pt-16 pb-24">
         <div className="max-w-md w-full text-center p-10 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-5">
             <FaCheckCircle className="text-emerald-500 text-3xl" />
@@ -101,7 +101,7 @@ export default function BookRepairPage() {
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Repair Request Booked!</h1>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-5">Job number <span className="font-semibold text-gray-900 dark:text-white">{result.jobNumber}</span></p>
 
-          <div className="rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 p-4 mb-5 text-left">
+          <div className="rounded-xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-ink p-4 mb-5 text-left">
             <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2">Track your repair</p>
             <p className="text-xs text-gray-600 dark:text-slate-300 break-all mb-3">{typeof window !== "undefined" ? window.location.origin : ""}/track/{result.trackingToken}</p>
             <div className="flex gap-2">
@@ -150,7 +150,7 @@ export default function BookRepairPage() {
             </ul>
           </div>
 
-          <Link href="/" className="inline-block mt-5 px-6 py-3 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+          <Link href="/" className="inline-block mt-5 px-6 py-3 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-paper dark:hover:bg-slate-800 transition">
             Back to Home
           </Link>
         </div>
@@ -160,14 +160,14 @@ export default function BookRepairPage() {
 
   /* ── MAIN PAGE ─────────────────────────────────────────────── */
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       {/* HERO */}
       <section className="pt-28 pb-14 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-500 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
+          <span className="inline-block font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
             Phone Repair · Accra · 30-Day Warranty
           </span>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
             Book a Repair in 2 Minutes
           </h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-2 max-w-lg mx-auto">
@@ -264,7 +264,7 @@ export default function BookRepairPage() {
                     className={`text-left p-4 rounded-xl border-2 transition ${
                       fields.dropoff === "bring"
                         ? "border-brand-400 bg-brand-50 dark:bg-brand-900/20"
-                        : "border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-500"
+                        : "border-gray-100 dark:border-slate-700 bg-paper dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-500"
                     }`}
                   >
                     <FaStore className={`mb-2 ${fields.dropoff === "bring" ? "text-brand-500" : "text-gray-400"}`} />
@@ -277,7 +277,7 @@ export default function BookRepairPage() {
                     className={`text-left p-4 rounded-xl border-2 transition ${
                       fields.dropoff === "rider"
                         ? "border-brand-400 bg-brand-50 dark:bg-brand-900/20"
-                        : "border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-500"
+                        : "border-gray-100 dark:border-slate-700 bg-paper dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-500"
                     }`}
                   >
                     <FaMotorcycle className={`mb-2 ${fields.dropoff === "rider" ? "text-brand-500" : "text-gray-400"}`} />

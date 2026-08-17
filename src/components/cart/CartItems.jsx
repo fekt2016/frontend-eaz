@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FaMinus, FaPlus, FaTimes } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
-import { formatGhs } from "@/lib/shop";
+import { formatGhs, placeholderToPng } from "@/lib/shop";
 
 export default function CartItems() {
   const { items, removeItem, updateQty } = useCart();
@@ -39,7 +39,7 @@ export default function CartItems() {
             className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800"
           >
             <Image
-              src={item.image || "https://placehold.co/200x200/1e1b4b/ffffff?text=Product"}
+              src={placeholderToPng(item.image || "https://placehold.co/200x200/1e1b4b/ffffff.png?text=Product")}
               alt={item.name}
               fill
               sizes="80px"
@@ -49,7 +49,7 @@ export default function CartItems() {
         ) : (
           <div className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800">
             <Image
-              src={item.image || "https://placehold.co/200x200/1e1b4b/ffffff?text=Part"}
+              src={placeholderToPng(item.image || "https://placehold.co/200x200/1e1b4b/ffffff.png?text=Part")}
               alt={item.name}
               fill
               sizes="80px"

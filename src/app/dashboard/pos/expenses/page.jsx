@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { formatGhs } from "@/lib/shop";
 import {
   FaPlus, FaTrash, FaEdit, FaCheck, FaTimes, FaReceipt,
 } from "react-icons/fa";
@@ -180,7 +181,7 @@ export default function ExpensesPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
             <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Total Expenses</p>
-            <p className="text-2xl font-bold text-red-600 dark:text-red-400">GH₵{(totalAmt / 100).toLocaleString()}</p>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{formatGhs(totalAmt)}</p>
             <p className="text-xs text-gray-500 mt-0.5">{total} records</p>
           </div>
           {summary.slice(0, 3).map(s => {
@@ -188,7 +189,7 @@ export default function ExpensesPage() {
             return (
               <div key={s._id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
                 <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">{cat.label}</p>
-                <p className={`text-2xl font-bold ${cat.color}`}>GH₵{(s.total / 100).toLocaleString()}</p>
+                <p className={`text-2xl font-bold ${cat.color}`}>{formatGhs(s.total)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{s.count} record{s.count !== 1 ? "s" : ""}</p>
               </div>
             );
@@ -208,7 +209,7 @@ export default function ExpensesPage() {
                 <div key={s._id}>
                   <div className="flex justify-between text-xs mb-1">
                     <span className={`font-medium ${cat.color}`}>{cat.label}</span>
-                    <span className="text-gray-500 dark:text-gray-400">GH₵{(s.total / 100).toLocaleString()} · {pct}%</span>
+                    <span className="text-gray-500 dark:text-gray-400">{formatGhs(s.total)} · {pct}%</span>
                   </div>
                   <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full ${cat.bg}`} style={{ width: `${pct}%` }} />
@@ -311,7 +312,7 @@ export default function ExpensesPage() {
                         </div>
                       </div>
                       <p className="text-base font-bold text-red-600 dark:text-red-400 flex-shrink-0">
-                        GH₵{(exp.amount / 100).toLocaleString()}
+                        {formatGhs(exp.amount)}
                       </p>
                       {isSuperAdmin && (
                         <div className="flex gap-1.5 flex-shrink-0">

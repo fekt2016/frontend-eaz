@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 const Spinner = () => (
-  <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
+  <div className="min-h-screen bg-white dark:bg-ink flex items-center justify-center">
     <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 dark:border-slate-600 dark:border-t-brand-400 rounded-full animate-spin" />
   </div>
 );

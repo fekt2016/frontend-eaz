@@ -39,10 +39,10 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="font-display font-black text-2xl text-gray-900 dark:text-white">EazWorld</Link>
+          <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mt-6 mb-1">Set new password</h1>
           <p className="text-gray-400 dark:text-slate-500 text-sm">Choose a strong password for your account</p>
         </div>

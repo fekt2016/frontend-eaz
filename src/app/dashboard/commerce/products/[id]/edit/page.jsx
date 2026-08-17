@@ -35,7 +35,7 @@ export default function AdminEditProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-2xl">
         <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">Edit Product</h1>
         <p className="text-gray-500 text-sm mb-8">Update the product details below.</p>
@@ -45,11 +45,11 @@ export default function AdminEditProductPage() {
             <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
           </div>
         ) : !product ? (
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-8 text-center">
+          <div className="rounded-2xl border border-gray-100 bg-paper p-8 text-center">
             <p className="text-gray-400 text-sm">Product not found.</p>
           </div>
         ) : (
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
+          <div className="rounded-2xl border border-gray-100 bg-paper p-6">
             <ProductForm
               key={product._id}
               initial={product}

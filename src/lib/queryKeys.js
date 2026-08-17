@@ -40,6 +40,7 @@ export const qk = {
     mine: ["hosting", "mine"],
     adminOverview: ["hosting", "admin-overview"],
     adminSummary: ["hosting", "admin-summary"],
+    plans: ["hosting", "plans"],
     adminList: (params = {}) => ["hosting", "admin-list", params],
     detail: (id) => ["hosting", "detail", id],
   },

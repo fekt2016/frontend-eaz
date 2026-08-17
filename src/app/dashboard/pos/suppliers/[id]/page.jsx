@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { FaArrowLeft, FaTruck, FaBoxes, FaExclamationTriangle, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 import { useSupplier } from "@/hooks/queries/useSuppliers";
+import { formatGhs } from "@/lib/shop";
 
 export default function SupplierDetailPage() {
   const { id } = useParams();
@@ -139,8 +140,8 @@ export default function SupplierDetailPage() {
                       {isLow && <FaExclamationTriangle size={9} className="text-red-600 dark:text-red-400" />}
                       <span className={`text-sm font-semibold ${isLow ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">GH₵{(p.costPrice / 100).toLocaleString()}</span>
-                    <span className="text-xs text-brand-600 dark:text-brand-400 hidden sm:block">GH₵{(p.sellingPrice / 100).toLocaleString()}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{formatGhs(p.costPrice)}</span>
+                    <span className="text-xs text-brand-600 dark:text-brand-400 hidden sm:block">{formatGhs(p.sellingPrice)}</span>
                   </div>
                 );
               })}

@@ -125,7 +125,7 @@ export default function ReviewForm({ onSuccess }) {
             value={fields.name}
             onChange={set("name")}
             readOnly={!!user?.name}
-            className={`${inputCls} ${user?.name ? "bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-slate-400 cursor-default" : ""}`}
+            className={`${inputCls} ${user?.name ? "bg-paper dark:bg-slate-700 text-gray-500 dark:text-slate-400 cursor-default" : ""}`}
           />
           {user?.name && (
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-500 font-medium">

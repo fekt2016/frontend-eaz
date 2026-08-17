@@ -196,12 +196,12 @@ export default function ResourcesListing() {
   const filtered = resources.filter((r) => activeTab === "All" || r.type === activeTab);
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Free Resources</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Free Resources</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
             Free Guides, Templates & Tools
           </h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">
@@ -275,7 +275,7 @@ export default function ResourcesListing() {
       </section>
 
       {/* CTA STRIP */}
-      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-t border-gray-100 dark:border-slate-800">
+      <section className="py-16 px-4 bg-paper dark:bg-ink border-t border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto p-8 rounded-3xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Need More Than a Template?</h3>
@@ -285,7 +285,7 @@ export default function ResourcesListing() {
             <a href="/contact" className="px-5 py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm">
               Get a Free Quote
             </a>
-            <a href="/book-consultation" className="px-5 py-3 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition text-sm">
+            <a href="/book-consultation" className="px-5 py-3 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-paper dark:hover:bg-slate-800 transition text-sm">
               Book a Call
             </a>
           </div>

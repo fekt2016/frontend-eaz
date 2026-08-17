@@ -56,10 +56,10 @@ function RegisterPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="font-display font-black text-2xl text-gray-900 dark:text-white">EazWorld</Link>
+          <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mt-6 mb-1">Create your account</h1>
           <p className="text-gray-400 dark:text-slate-500 text-sm">Join thousands of businesses in Accra</p>
         </div>
@@ -88,7 +88,7 @@ function RegisterPageInner() {
               </div>
               {/* Password strength checklist */}
               {password.length > 0 && (
-                <div className="mt-2.5 space-y-1.5 bg-gray-50 dark:bg-slate-800/50 rounded-xl p-3">
+                <div className="mt-2.5 space-y-1.5 bg-paper dark:bg-slate-800/50 rounded-xl p-3">
                   {passwordRules.map(({ rule, met }) => (
                     <div key={rule} className="flex items-center gap-2">
                       {met

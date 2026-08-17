@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaStar } from "react-icons/fa";
+import StarRule from "@/components/common/StarRule";
 
 export default function Testimonials() {
   const [reviews, setReviews] = useState([]);
@@ -17,13 +18,14 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="py-24 px-4 bg-gray-50 dark:bg-slate-900">
+    <section className="py-24 px-4 bg-paper dark:bg-slate-900">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-14">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Reviews</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Reviews</p>
+            <StarRule className="mb-4" />
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               What Our Clients Say
             </h2>

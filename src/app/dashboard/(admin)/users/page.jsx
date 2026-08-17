@@ -154,7 +154,7 @@ function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
         <div className="px-6 pb-5 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+            className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition"
           >
             Cancel
           </button>
@@ -260,7 +260,7 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
         <div className="px-6 pb-5 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+            className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition"
           >
             Cancel
           </button>
@@ -330,7 +330,7 @@ function BlockModal({ user, onClose, onSaved }) {
         </div>
 
         <div className="px-6 pb-5 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition">
             Cancel
           </button>
           <button
@@ -462,7 +462,7 @@ function ChangePasswordModal({ user, onClose }) {
               </div>
 
               <div className="flex gap-3 pt-1">
-                <button onClick={onClose} className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                <button onClick={onClose} className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition">
                   Cancel
                 </button>
                 <button
@@ -527,7 +527,7 @@ export default function AdminUsersPage() {
   if (authLoading) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}
@@ -582,7 +582,7 @@ export default function AdminUsersPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[640px]">
                 <thead>
-                  <tr className="bg-gray-50 dark:bg-slate-800/60 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                  <tr className="bg-paper dark:bg-slate-800/60 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
                     <th className="px-5 py-3.5">User</th>
                     <th className="px-5 py-3.5">Phone</th>
                     <th className="px-5 py-3.5">Role</th>
@@ -593,7 +593,7 @@ export default function AdminUsersPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                   {filtered.map((u) => (
-                    <tr key={u._id} className={`hover:bg-gray-50 dark:hover:bg-slate-800/40 transition ${u.isBlocked ? "opacity-60" : ""}`}>
+                    <tr key={u._id} className={`hover:bg-paper dark:hover:bg-slate-800/40 transition ${u.isBlocked ? "opacity-60" : ""}`}>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0">
@@ -610,7 +610,7 @@ export default function AdminUsersPage() {
                         {(() => {
                           const RoleIcon = roleIcons[u.role] || FaUser;
                           return (
-                            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${roleStyles[u.role] || "bg-gray-50 text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
+                            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${roleStyles[u.role] || "bg-paper text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
                               <RoleIcon size={8} />
                               {u.role}
                             </span>

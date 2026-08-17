@@ -22,13 +22,13 @@ export const metadata = buildMetadata({
 
 export default function ServicesPage() {
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
 
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">What We Offer</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-5">Our Services</h1>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">What We Offer</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-5">Our Services</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-10">
             Six digital services and in-person phone repair — everything your business needs online, all from one trusted team in Accra.
           </p>
@@ -57,12 +57,12 @@ export default function ServicesPage() {
       <ServicesGrid />
 
       {/* SAIISAI FEATURED */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
 
           {/* Left: copy */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">All Services in Action</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">All Services in Action</p>
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-4">
               See What&apos;s Possible When All 7 Work Together
             </h2>
@@ -147,7 +147,7 @@ export default function ServicesPage() {
       {/* HELP SECTION */}
       <section className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Not Sure?</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Not Sure?</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-4">
             Not Sure Which Services You Need?
           </h2>

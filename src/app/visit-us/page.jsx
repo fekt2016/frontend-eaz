@@ -25,12 +25,12 @@ const testimonials = [
 
 export default function VisitUs() {
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Visit Us in Accra</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">Come See Us In Person</h1>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Visit Us in Accra</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">Come See Us In Person</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg">Phone repair, digital consultations, or just to say hello — we&apos;re in Accra and always happy to meet face to face.</p>
         </div>
       </section>
@@ -71,7 +71,7 @@ export default function VisitUs() {
             </a>
             <div className="flex flex-wrap gap-2 pt-2">
               <a href="https://maps.google.com/?q=Nima+Alwaheed+Highway+Nima+Accra+Ghana" target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-full bg-gray-900 dark:bg-white dark:text-gray-900 text-white text-xs font-medium hover:bg-gray-700 dark:hover:bg-gray-100 transition">Get Directions</a>
-              <a href="tel:+233244388190" className="px-4 py-2 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-xs font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition">Call Ahead</a>
+              <a href="tel:+233244388190" className="px-4 py-2 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-xs font-medium hover:bg-paper dark:hover:bg-slate-700 transition">Call Ahead</a>
             </div>
           </div>
 
@@ -87,9 +87,9 @@ export default function VisitUs() {
       </section>
 
       {/* AMENITIES */}
-      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Our Space</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Our Space</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-8">Comfortable & Professional</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {amenities.map((a) => (
@@ -117,9 +117,9 @@ export default function VisitUs() {
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Reviews</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Reviews</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-8">What Visitors Say</h2>
           <div className="grid md:grid-cols-2 gap-5">
             {testimonials.map((t) => (

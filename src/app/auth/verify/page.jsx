@@ -108,12 +108,12 @@ function VerifyPageInner() {
   const pinComplete = pin.every((d) => d !== "");
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
 
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="font-display font-black text-2xl text-gray-900 dark:text-white">EazWorld</Link>
+          <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <div className="mt-6 mb-4 flex justify-center">
             <span className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center">
               <FaEnvelope size={24} className="text-brand-500" />

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { formatPhoneInput } from "@/lib/sanitize";
-import { formatGhs, stockBadge } from "@/lib/shop";
+import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePublicParts } from "@/hooks/queries/usePublicParts";
 import { useCart } from "@/context/CartContext";
@@ -164,7 +164,7 @@ export default function TrackRepairPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-4 pt-28 pb-24">
+      <div className="min-h-screen bg-white dark:bg-ink flex items-center justify-center px-4 pt-28 pb-24">
         <FaSpinner size={20} className="animate-spin text-gray-400 dark:text-slate-500" />
       </div>
     );
@@ -172,10 +172,10 @@ export default function TrackRepairPage() {
 
   if (error || !job) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
+      <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
         <div className="mx-auto max-w-xl text-center">
           <FaWrench size={28} className="mx-auto mb-4 text-gray-300 dark:text-slate-700" />
-          <h1 className="font-display font-black text-2xl mb-2">Repair not found</h1>
+          <h1 className="font-display font-bold text-2xl mb-2">Repair not found</h1>
           <p className="text-sm text-gray-500 dark:text-slate-400 mb-8">
             {error || "We couldn't find a repair for that link. Check the link from your SMS or receipt."}
           </p>
@@ -190,10 +190,10 @@ export default function TrackRepairPage() {
   const jobBadge = JOB_STATUS[job.status] || JOB_STATUS.received;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
+    <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
       <div className="mx-auto max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Repair Tracking</p>
-        <h1 className="font-display font-black text-3xl md:text-4xl mb-2">Track Your Repair</h1>
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Repair Tracking</p>
+        <h1 className="font-display font-bold text-3xl md:text-4xl mb-2">Track Your Repair</h1>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-10">
           {job.customerName ? `Hi ${job.customerName}, here's the status of your device repair.` : "Here's the status of your device repair."}
         </p>
@@ -322,9 +322,9 @@ export default function TrackRepairPage() {
                   {catalogue.map((p) => {
                     const badge = stockBadge(p.quantity);
                     const outOfStock = p.quantity <= 0;
-                    const image = p.images?.[0] || "https://placehold.co/800x600/1e1b4b/ffffff?text=Part";
+                    const image = placeholderToPng(p.images?.[0] || "https://placehold.co/800x600/1e1b4b/ffffff.png?text=Part");
                     return (
-                      <div key={p._id} className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
+                      <div key={p._id} className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-ink">
                         <div className="relative aspect-[4/3]">
                           <Image
                             src={image}
@@ -371,7 +371,7 @@ export default function TrackRepairPage() {
             {/* Checkout */}
             <form onSubmit={submitOrder} className="mt-6 space-y-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
               {cart.length > 0 && (
-                <div className="rounded-xl bg-gray-50 dark:bg-slate-950 p-4 space-y-2">
+                <div className="rounded-xl bg-paper dark:bg-ink p-4 space-y-2">
                   {cart.map((i) => (
                     <div key={i.partId} className="flex items-center justify-between text-sm">
                       <span className="text-gray-700 dark:text-slate-300">{i.name} <span className="text-gray-400 dark:text-slate-500">× {i.quantity}</span></span>
@@ -390,7 +390,7 @@ export default function TrackRepairPage() {
                   )}
                   <div className="flex items-center justify-between text-base font-semibold pt-2 border-t border-gray-200 dark:border-slate-800">
                     <span>Total</span>
-                    <span className="text-brand-500">GH₵{(totalPesewas / 100).toFixed(2)}</span>
+                    <span className="text-brand-500">{formatGhs(totalPesewas)}</span>
                   </div>
                 </div>
               )}
@@ -446,7 +446,7 @@ export default function TrackRepairPage() {
                 className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 dark:bg-brand-500 py-3 text-sm font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-60"
               >
                 {placing ? <FaSpinner size={13} className="animate-spin" /> : <FaPhone size={12} />}
-                {placing ? "Opening Paystack…" : cart.length === 0 ? "Add a part to continue" : `Pay ${(totalPesewas / 100).toFixed(2)} now`}
+                {placing ? "Opening Paystack…" : cart.length === 0 ? "Add a part to continue" : `Pay ${formatGhs(totalPesewas)} now`}
               </button>
             </form>
           </div>
@@ -463,7 +463,7 @@ export default function TrackRepairPage() {
                 : "Settle the remaining balance for your repair (parts, diagnosis and labour)."}
             </p>
 
-            <div className="rounded-xl bg-gray-50 dark:bg-slate-950 p-4 mb-5 flex items-center justify-between">
+            <div className="rounded-xl bg-paper dark:bg-ink p-4 mb-5 flex items-center justify-between">
               <span className="text-sm text-gray-600 dark:text-slate-300">Outstanding balance</span>
               <span className="font-display font-bold text-lg text-brand-500">{formatGhs(job.balanceDuePesewas)}</span>
             </div>
@@ -516,7 +516,7 @@ export default function TrackRepairPage() {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>{badge.label}</span>
-                      <span className="font-semibold">GH₵{(o.totalPesewas / 100).toFixed(2)}</span>
+                      <span className="font-semibold">{formatGhs(o.totalPesewas)}</span>
                     </div>
                   </li>
                 );
@@ -542,7 +542,7 @@ export default function TrackRepairPage() {
 
         <div className="mt-10 text-center">
           <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">Questions about your repair? Call us on <span className="font-medium text-gray-600 dark:text-slate-300">024 438 8190</span></p>
-          <Link href="/" className="inline-block rounded-full border border-gray-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+          <Link href="/" className="inline-block rounded-full border border-gray-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-paper dark:hover:bg-slate-800 transition">
             Back to EazWorld
           </Link>
         </div>

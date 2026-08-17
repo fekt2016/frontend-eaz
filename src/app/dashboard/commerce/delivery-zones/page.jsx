@@ -134,12 +134,12 @@ export default function AdminDeliveryZonesPage() {
   if (authLoading || !isAllowed) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-4xl">
         <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">Delivery Zones</h1>
         <p className="text-gray-500 text-sm mb-8">Define delivery fees and estimated delivery times per zone.</p>
 
-        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 mb-8">
+        <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-8">
           <h2 className="font-semibold text-gray-900 text-sm mb-4">Add Zone</h2>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <input
@@ -180,13 +180,13 @@ export default function AdminDeliveryZonesPage() {
             <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
           </div>
         ) : zones.length === 0 ? (
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-8 text-center">
+          <div className="rounded-2xl border border-gray-100 bg-paper p-8 text-center">
             <p className="text-gray-400 text-sm">No delivery zones yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {zones.map((zone) => (
-              <div key={zone._id} className={`p-4 rounded-2xl border bg-gray-50 ${zone.isActive ? "border-gray-100" : "border-gray-200 opacity-70"}`}>
+              <div key={zone._id} className={`p-4 rounded-2xl border bg-paper ${zone.isActive ? "border-gray-100" : "border-gray-200 opacity-70"}`}>
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">

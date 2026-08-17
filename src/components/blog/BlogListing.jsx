@@ -96,13 +96,13 @@ export default function BlogListing() {
   }, [posts, activeCategory, search]);
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
 
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Insights & Guides</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">The EazWorld Blog</h1>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Insights & Guides</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">The EazWorld Blog</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg max-w-xl mx-auto">
             Practical guides, case studies, and insights on digital marketing, web design, and growing your business in Ghana.
           </p>
@@ -111,7 +111,7 @@ export default function BlogListing() {
 
       {/* FEATURED POST */}
       {!loading && featured && activeCategory === "All" && !search && (
-        <section className="py-12 px-4 bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800">
+        <section className="py-12 px-4 bg-paper dark:bg-ink border-b border-gray-100 dark:border-slate-800">
           <div className="max-w-6xl mx-auto">
             <div className="p-8 md:p-10 rounded-3xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 grid md:grid-cols-[1fr_auto] gap-8 items-start">
               <div>
@@ -202,7 +202,7 @@ export default function BlogListing() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 px-4 bg-gray-50 dark:bg-slate-950 border-t border-gray-100 dark:border-slate-800">
+      <section className="py-16 px-4 bg-paper dark:bg-ink border-t border-gray-100 dark:border-slate-800">
         <div className="max-w-2xl mx-auto text-center p-8 rounded-3xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <h3 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-2">Want to Apply This to Your Business?</h3>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Book a free 30-minute consultation — honest advice tailored to your goals.</p>

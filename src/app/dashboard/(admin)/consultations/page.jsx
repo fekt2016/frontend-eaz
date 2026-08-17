@@ -51,7 +51,7 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
     }`}>
       {/* Header row */}
       <div
-        className="flex items-start justify-between gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transition"
+        className="flex items-start justify-between gap-4 px-5 py-4 cursor-pointer hover:bg-paper dark:hover:bg-slate-800/50 transition"
         onClick={() => setExpanded((v) => !v)}
       >
         <div className="flex items-start gap-3 min-w-0">
@@ -100,7 +100,7 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
 
             {/* Message */}
             {item.message && (
-              <div className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4">
+              <div className="bg-paper dark:bg-slate-800 rounded-xl p-4">
                 <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 mb-1.5 uppercase tracking-wide">Message</p>
                 <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{item.message}</p>
               </div>
@@ -234,7 +234,7 @@ export default function AdminConsultationsPage() {
   const newCount = counts.new || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-4xl">
 
         {/* Header */}

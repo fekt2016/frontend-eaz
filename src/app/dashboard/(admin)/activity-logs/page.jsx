@@ -58,7 +58,7 @@ function DetailModal({ log, onClose }) {
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900">
           <div className="flex items-center gap-3">
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${ACTIVITY_ACTION_STYLES[log.action] || "bg-gray-50 text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${ACTIVITY_ACTION_STYLES[log.action] || "bg-paper text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
               {actionLabel(log.action)}
             </span>
             <span className="text-xs text-gray-400 dark:text-slate-500">{fmtDateTime(log.createdAt)}</span>
@@ -83,7 +83,7 @@ function DetailModal({ log, onClose }) {
               </p>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-900 dark:text-white">{actorLabel(log)}</span>
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${ACTIVITY_ROLE_STYLES[log.actorRole] || "bg-gray-50 text-gray-500 dark:bg-slate-800 dark:text-slate-400"}`}>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${ACTIVITY_ROLE_STYLES[log.actorRole] || "bg-paper text-gray-500 dark:bg-slate-800 dark:text-slate-400"}`}>
                   {roleLabel(log.actorRole)}
                 </span>
               </div>
@@ -106,7 +106,7 @@ function DetailModal({ log, onClose }) {
               <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left bg-gray-50 dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                    <tr className="text-left bg-paper dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                       <th className="px-4 py-2">Field</th>
                       <th className="px-4 py-2">Before</th>
                       <th className="px-4 py-2">After</th>
@@ -130,7 +130,7 @@ function DetailModal({ log, onClose }) {
           {metadata && (
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 mb-2">Metadata</p>
-              <div className="rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/60 p-3 space-y-1">
+              <div className="rounded-xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800/60 p-3 space-y-1">
                 {metadata.map(([k, v]) => (
                   <p key={k} className="text-xs">
                     <span className="font-semibold text-gray-500 dark:text-slate-400">{k}: </span>
@@ -249,7 +249,7 @@ export default function ActivityLogsPage() {
     roleFilter !== "all" || actorFilter !== "all" || statusFilter !== "all" || from || to;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}
@@ -369,12 +369,12 @@ export default function ActivityLogsPage() {
             <div className="flex items-center gap-2">
               {STATUS_OPTIONS.map((s) => (
                 <button key={s.value} type="button" onClick={() => setStatus(s.value)}
-                  className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${statusFilter === s.value ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white" : "bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"}`}>
+                  className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${statusFilter === s.value ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white" : "bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"}`}>
                   {s.label}
                 </button>
               ))}
               <button type="button" onClick={() => logQ.refetch()} disabled={logQ.isFetching}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
                 <FaRedo size={10} className={logQ.isFetching ? "animate-spin" : ""} /> Refresh
               </button>
             </div>
@@ -405,7 +405,7 @@ export default function ActivityLogsPage() {
               <div className="overflow-x-auto">
                 <table className="min-w-[860px] w-full text-sm">
                   <thead>
-                    <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                    <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                       <th className="px-4 py-3">Time</th>
                       <th className="px-4 py-3">Actor</th>
                       <th className="px-4 py-3">Action</th>
@@ -418,18 +418,18 @@ export default function ActivityLogsPage() {
                     {logs.map((log) => {
                       const summary = changesSummary(log.changes);
                       return (
-                        <tr key={log._id} onClick={() => setSelected(log)} className="hover:bg-gray-50/80 dark:hover:bg-slate-800/50 cursor-pointer align-top">
+                        <tr key={log._id} onClick={() => setSelected(log)} className="hover:bg-paper/80 dark:hover:bg-slate-800/50 cursor-pointer align-top">
                           <td className="px-4 py-3 text-xs text-gray-500 dark:text-slate-500 whitespace-nowrap">
                             <div className="font-medium text-gray-700 dark:text-slate-300">{fmtDateTime(log.createdAt)}</div>
                           </td>
                           <td className="px-4 py-3">
                             <span className="text-gray-900 dark:text-white font-medium truncate max-w-[160px] block">{actorLabel(log)}</span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium mt-1 ${ACTIVITY_ROLE_STYLES[log.actorRole] || "bg-gray-50 text-gray-500 dark:bg-slate-800 dark:text-slate-400"}`}>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium mt-1 ${ACTIVITY_ROLE_STYLES[log.actorRole] || "bg-paper text-gray-500 dark:bg-slate-800 dark:text-slate-400"}`}>
                               {roleLabel(log.actorRole)}
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${ACTIVITY_ACTION_STYLES[log.action] || "bg-gray-50 text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${ACTIVITY_ACTION_STYLES[log.action] || "bg-paper text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
                               {actionLabel(log.action)}
                             </span>
                           </td>

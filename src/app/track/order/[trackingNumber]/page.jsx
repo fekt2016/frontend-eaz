@@ -22,7 +22,7 @@ export default function OrderTrackingDetailPage() {
   const { data: tracking, isLoading: loading, error } = useOrderTracking(trackingNumber);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
+    <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
       <div className="mx-auto max-w-3xl">
         <Link
           href="/track-order"
@@ -31,8 +31,8 @@ export default function OrderTrackingDetailPage() {
           <FaArrowLeft size={11} /> Track another order
         </Link>
 
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mt-6 mb-2">Order Tracking</p>
-        <h1 className="font-display font-black text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Tracking Details</h1>
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mt-6 mb-2">Order Tracking</p>
+        <h1 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Tracking Details</h1>
 
         {loading && (
           <div className="mt-12 flex justify-center">
@@ -63,7 +63,7 @@ export default function OrderTrackingDetailPage() {
               </div>
 
               {tracking.latestEvent && (
-                <div className="mt-5 rounded-xl bg-gray-50 dark:bg-slate-950 p-4">
+                <div className="mt-5 rounded-xl bg-paper dark:bg-ink p-4">
                   <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Latest Update</p>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{tracking.latestEvent.status}</p>

@@ -94,13 +94,13 @@ const faqs = [
 
 export default function BrandingPage() {
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
 
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Branding & Identity</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Branding & Identity</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
             Look the Part.<br />Stand Out.
           </h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-8">
@@ -121,7 +121,7 @@ export default function BrandingPage() {
       {/* PACKAGES */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Packages</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Packages</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-3">Choose Your Package</h2>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-12">All prices are one-time. 50% deposit required to begin.</p>
 
@@ -135,7 +135,7 @@ export default function BrandingPage() {
                 )}
                 <div className="mb-5">
                   <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-1">{pkg.name}</h3>
-                  <p className="text-2xl font-black text-brand-500">{pkg.price}<span className="text-sm font-normal text-gray-400 dark:text-slate-500"> starting</span></p>
+                  <p className="text-2xl font-bold text-brand-500">{pkg.price}<span className="text-sm font-normal text-gray-400 dark:text-slate-500"> starting</span></p>
                   <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{pkg.priceRange}</p>
                 </div>
                 <p className="text-gray-500 dark:text-slate-400 text-xs leading-relaxed mb-5">{pkg.desc}</p>
@@ -169,11 +169,11 @@ export default function BrandingPage() {
       {/* ADD-ONS */}
       <section className="py-20 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Add-ons</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Add-ons</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">Optional Extras</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {addons.map((a) => (
-              <div key={a.name} className="p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
+              <div key={a.name} className="p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-ink">
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-semibold text-gray-900 dark:text-white text-sm">{a.name}</p>
                   <span className="text-brand-500 font-bold text-sm whitespace-nowrap ml-2">{a.price}</span>
@@ -188,7 +188,7 @@ export default function BrandingPage() {
       {/* FAQ */}
       <section className="py-20 px-4">
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">FAQ</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">FAQ</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-8">Common Questions</h2>
           <div className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden">
             {faqs.map((faq) => (

@@ -239,8 +239,8 @@ function MyDashboard({ user }) {
           ) : (
             <>
               <PosStatCard label="My Sales"      value={stats?.mySalesCount}                                     icon={FaShoppingBag} color="text-purple-600 dark:text-purple-400" sub="Products sold (all time)" />
-              <PosStatCard label="Sales Revenue" value={`GH₵${((stats?.mySalesRevenue || 0) / 100).toLocaleString()}`}   icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="From my sales" />
-              <PosStatCard label="Today's Sales" value={`GH₵${((stats?.myTodaySalesRevenue || 0) / 100).toLocaleString()}`} icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
+              <PosStatCard label="Sales Revenue" value={formatGhs(stats?.mySalesRevenue || 0)}   icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub="From my sales" />
+              <PosStatCard label="Today's Sales" value={formatGhs(stats?.myTodaySalesRevenue || 0)} icon={FaCheckCircle} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
               <PosStatCard label="Low Stock"     value={stats?.lowStockCount}                                    icon={FaBoxes}       color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-500"} sub="Parts below threshold" />
             </>
           )}
@@ -393,7 +393,7 @@ function MaintenanceCard() {
               value={maintMsg}
               onChange={(e) => setMaintMsg(e.target.value)}
               rows={2}
-              className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-brand-400 transition resize-none"
+              className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-brand-400 transition resize-none"
               placeholder="We're performing scheduled maintenance. We'll be back shortly!"
             />
           </div>
@@ -405,7 +405,7 @@ function MaintenanceCard() {
                 type="datetime-local"
                 value={maintStart}
                 onChange={(e) => setMaintStart(e.target.value)}
-                className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
+                className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
               />
             </div>
             <div>
@@ -414,7 +414,7 @@ function MaintenanceCard() {
                 type="datetime-local"
                 value={maintEnd}
                 onChange={(e) => setMaintEnd(e.target.value)}
-                className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
+                className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
               />
             </div>
           </div>
@@ -646,7 +646,7 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="bg-gray-50 dark:bg-slate-950 min-h-screen flex items-center justify-center px-4">
+        <div className="bg-paper dark:bg-ink min-h-screen flex items-center justify-center px-4">
           <div className="flex flex-col items-center gap-3 text-gray-500 dark:text-slate-400">
             <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
             <p className="text-sm">Loading dashboard…</p>

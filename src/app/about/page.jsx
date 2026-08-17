@@ -42,12 +42,12 @@ const approach = [
 
 export default function About() {
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       {/* HERO */}
       <section className="pt-28 pb-20 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-4">Our Story</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-gray-900 dark:text-white mb-5">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Our Story</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-5">
             Built in Accra, Built for Africa.
           </h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg leading-relaxed">
@@ -67,14 +67,14 @@ export default function About() {
       </section>
 
       {/* MISSION + VISION */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
           <div className="p-8 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Mission</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Mission</p>
             <p className="text-gray-700 dark:text-slate-300 leading-relaxed">To empower Ghanaian and African businesses with world-class digital solutions — making cutting-edge web design, marketing, and technology accessible and impactful.</p>
           </div>
           <div className="p-8 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">Vision</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Vision</p>
             <p className="text-gray-700 dark:text-slate-300 leading-relaxed">A thriving African digital ecosystem where innovation creates opportunity — where every local business can compete on a global stage.</p>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function About() {
       {/* VALUES */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">What We Stand For</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">What We Stand For</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">Our Core Values</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {values.map((v) => (
@@ -97,9 +97,9 @@ export default function About() {
       </section>
 
       {/* STATS */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">By the Numbers</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">By the Numbers</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">The Work Speaks</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
             {stats.map((s) => (
@@ -115,7 +115,7 @@ export default function About() {
       {/* TEAM */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">The Team</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">The Team</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">The People Behind the Work</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {team.map((m) => (
@@ -131,9 +131,9 @@ export default function About() {
       </section>
 
       {/* APPROACH */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800">
+      <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-3">How We Work</p>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">How We Work</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">Our Approach</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {approach.map((s) => (
@@ -156,7 +156,7 @@ export default function About() {
           <p className="text-gray-500 dark:text-slate-400 mb-8">Let&apos;s talk about your goals and how EazWorld can help.</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/contact" className="px-6 py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm">Start a Conversation</Link>
-            <Link href="/services" className="px-6 py-3 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition text-sm">Explore Services</Link>
+            <Link href="/services" className="px-6 py-3 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 font-medium hover:bg-paper dark:hover:bg-slate-800 transition text-sm">Explore Services</Link>
           </div>
         </div>
       </section>

@@ -132,7 +132,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
 
           {/* Logged-in greeting */}
           {!isGuest && (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-paper dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
               <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0">
                 {user.name?.charAt(0).toUpperCase()}
               </div>
@@ -181,7 +181,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
                   </button>
                 </div>
                 {password.length > 0 && (
-                  <div className="mt-2 space-y-1.5 bg-gray-50 dark:bg-slate-800/50 rounded-xl p-3">
+                  <div className="mt-2 space-y-1.5 bg-paper dark:bg-slate-800/50 rounded-xl p-3">
                     {passwordRules.map(({ rule, met }) => (
                       <div key={rule} className="flex items-center gap-2">
                         {met ? <FaCheck size={9} className="text-emerald-500 flex-shrink-0" /> : <FaTimes size={9} className="text-red-400 flex-shrink-0" />}

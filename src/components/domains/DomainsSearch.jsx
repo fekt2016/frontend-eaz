@@ -96,11 +96,11 @@ function DomainsContentInner() {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white min-h-screen">
+    <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white min-h-screen">
       <div className="max-w-3xl mx-auto px-4 pt-28 pb-24">
         <Link href="/" className="text-gray-400 dark:text-slate-500 text-sm hover:text-gray-700 dark:hover:text-slate-300 transition mb-8 inline-block">← Home</Link>
 
-        <h1 className="font-display font-black text-4xl text-gray-900 dark:text-white mb-2">Domain Search</h1>
+        <h1 className="font-display font-bold text-4xl text-gray-900 dark:text-white mb-2">Domain Search</h1>
         <p className="text-gray-500 dark:text-slate-400 mb-10">Find and register the perfect domain for your business.</p>
 
         <form onSubmit={handleSearch} className="flex gap-2 mb-10">
@@ -153,7 +153,7 @@ function DomainsContentInner() {
 export default function DomainsSearch() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-gray-300 dark:border-slate-600 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
       </div>
     }>
