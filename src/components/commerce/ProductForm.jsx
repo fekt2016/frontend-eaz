@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Plus, Trash2, Upload, X } from "lucide-react";
+import { api } from "@/lib/api";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700";
+
+const btnGhostClass =
+  "inline-flex items-center gap-1.5 rounded-full border border-gray-300 dark:border-slate-600 px-3.5 py-2 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:border-gray-900 dark:hover:border-slate-400 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-50";
 
 function Field({ label, children }) {
   return (
@@ -15,6 +20,106 @@ function Field({ label, children }) {
     </label>
   );
 }
+
+// Cloudinary upload via the shared /api/v1/uploads route (same pattern as the
+// POS job photos / hosting proof uploads elsewhere in the admin).
+function UploadButton({ accept = "image/*", onUploaded, label = "Upload" }) {
+  const inputRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setBusy(true);
+    setError("");
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await api.upload("/uploads", fd);
+      const url = res?.data?.url;
+      if (!url) throw new Error("Upload did not return a URL");
+      onUploaded(url);
+    } catch (err) {
+      setError(err.message || "Upload failed. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="shrink-0">
+      <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={handleFile} />
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => inputRef.current?.click()}
+        className={`${btnGhostClass} ${busy ? "cursor-wait" : ""}`}
+      >
+        {busy ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+        {busy ? "Uploading…" : label}
+      </button>
+      {error && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{error}</p>}
+    </div>
+  );
+}
+
+// A list of URLs that can be grown via Cloudinary upload and/or a manual URL.
+function StringListEditor({ values, onChange, accept, uploadLabel, placeholder }) {
+  const [draft, setDraft] = useState("");
+
+  const addUrl = () => {
+    const url = draft.trim();
+    if (!url) return;
+    onChange([...values, url]);
+    setDraft("");
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <UploadButton accept={accept} onUploaded={(url) => onChange([...values, url])} label={uploadLabel} />
+        <input
+          className={`${inputClass} flex-1 min-w-40`}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addUrl();
+            }
+          }}
+          placeholder={placeholder}
+        />
+        <button type="button" onClick={addUrl} className={btnGhostClass}>
+          <Plus size={12} /> Add URL
+        </button>
+      </div>
+      {values.length > 0 && (
+        <ul className="space-y-1.5">
+          {values.map((url, i) => (
+            <li key={url + i} className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
+              <span className="flex-1 truncate text-xs text-gray-600 dark:text-slate-300" title={url}>{url}</span>
+              <button
+                type="button"
+                onClick={() => onChange(values.filter((_, j) => j !== i))}
+                aria-label="Remove URL"
+                className="text-gray-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition"
+              >
+                <X size={12} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// { color: "Black" } → [{ key: "color", value: "Black" }] for the form editors.
+const attributesToRows = (attributes) =>
+  Object.entries(attributes || {}).map(([key, value]) => ({ key, value }));
 
 export default function ProductForm({ initial, submitLabel, submitting, onSubmit }) {
   const [name, setName] = useState(initial?.name || "");
@@ -28,6 +133,16 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   const [description, setDescription] = useState(initial?.description || "");
   const [images, setImages] = useState((initial?.images || []).join("\n"));
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [variants, setVariants] = useState(() =>
+    (Array.isArray(initial?.variants) ? initial.variants : []).map((v) => ({
+      sku: v.sku || "",
+      attributes: attributesToRows(v.attributes),
+      stock: v.stock ?? "",
+      images: Array.isArray(v.images) ? v.images : [],
+    }))
+  );
+  const [galleryImages, setGalleryImages] = useState(initial?.gallery?.images || []);
+  const [galleryVideos, setGalleryVideos] = useState(initial?.gallery?.videos || []);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -41,7 +156,46 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setDescription(initial.description || "");
     setImages((initial.images || []).join("\n"));
     setIsActive(initial.isActive ?? true);
+    setVariants(
+      (Array.isArray(initial.variants) ? initial.variants : []).map((v) => ({
+        sku: v.sku || "",
+        attributes: attributesToRows(v.attributes),
+        stock: v.stock ?? "",
+        images: Array.isArray(v.images) ? v.images : [],
+      }))
+    );
+    setGalleryImages(initial.gallery?.images || []);
+    setGalleryVideos(initial.gallery?.videos || []);
   }, [initial]);
+
+  const updateVariant = (vi, key, value) =>
+    setVariants((prev) => prev.map((v, i) => (i === vi ? { ...v, [key]: value } : v)));
+
+  const addVariant = () =>
+    setVariants((prev) => [...prev, { sku: "", attributes: [{ key: "color", value: "" }], stock: "", images: [] }]);
+
+  const removeVariant = (vi) => setVariants((prev) => prev.filter((_, i) => i !== vi));
+
+  const addAttribute = (vi) =>
+    setVariants((prev) =>
+      prev.map((v, i) => (i === vi ? { ...v, attributes: [...v.attributes, { key: "", value: "" }] } : v))
+    );
+
+  const updateAttribute = (vi, ai, key, value) =>
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === vi
+          ? { ...v, attributes: v.attributes.map((a, j) => (j === ai ? { ...a, [key]: value } : a)) }
+          : v
+      )
+    );
+
+  const removeAttribute = (vi, ai) =>
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === vi ? { ...v, attributes: v.attributes.filter((_, j) => j !== ai) } : v
+      )
+    );
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -65,6 +219,25 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         .split("\n")
         .map((s) => s.trim())
         .filter(Boolean),
+      // Structured variants — { sku, attributes (object), stock, images }.
+      // Variants without a SKU are dropped; attributes without both a key and
+      // value are dropped. Sending [] clears variants (non-variant product).
+      variants: variants
+        .map((v) => ({
+          sku: v.sku.trim(),
+          attributes: Object.fromEntries(
+            v.attributes
+              .filter((a) => a.key.trim() && a.value.trim())
+              .map((a) => [a.key.trim(), a.value.trim()])
+          ),
+          stock: v.stock === "" || v.stock == null ? 0 : parseInt(v.stock, 10) || 0,
+          images: v.images.filter(Boolean),
+        }))
+        .filter((v) => v.sku),
+      gallery: {
+        images: galleryImages.filter(Boolean),
+        videos: galleryVideos.filter(Boolean),
+      },
       isActive,
     });
   };
@@ -147,6 +320,140 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
           placeholder="https://...jpg"
         />
       </Field>
+
+      {/* Variants */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+            Variants
+          </span>
+          <span className="text-xs text-gray-400 dark:text-slate-500">Optional — each has its own SKU, attributes, and stock</span>
+        </div>
+
+        {variants.length === 0 && (
+          <p className="rounded-xl border border-dashed border-gray-300 dark:border-slate-600 px-4 py-3 text-xs text-gray-400 dark:text-slate-500">
+            No variants — the product is sold as a single SKU using the stock above.
+          </p>
+        )}
+
+        {variants.map((v, vi) => (
+          <div key={vi} className="space-y-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+                Variant {vi + 1}
+              </p>
+              <button
+                type="button"
+                onClick={() => removeVariant(vi)}
+                aria-label="Remove variant"
+                className="text-gray-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition"
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="SKU">
+                <input
+                  className={inputClass}
+                  value={v.sku}
+                  onChange={(e) => updateVariant(vi, "sku", e.target.value)}
+                  placeholder="e.g. EZW-SPG-001-BLK"
+                />
+              </Field>
+              <Field label="Stock">
+                <input
+                  type="number"
+                  min="0"
+                  className={inputClass}
+                  value={v.stock}
+                  onChange={(e) => updateVariant(vi, "stock", e.target.value)}
+                  placeholder="0"
+                />
+              </Field>
+            </div>
+
+            <div>
+              <p className="mb-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+                Attributes
+              </p>
+              <div className="space-y-2">
+                {v.attributes.map((a, ai) => (
+                  <div key={ai} className="flex items-center gap-2">
+                    <input
+                      className={`${inputClass} flex-1`}
+                      value={a.key}
+                      onChange={(e) => updateAttribute(vi, ai, "key", e.target.value)}
+                      placeholder="Key (e.g. color)"
+                    />
+                    <input
+                      className={`${inputClass} flex-1`}
+                      value={a.value}
+                      onChange={(e) => updateAttribute(vi, ai, "value", e.target.value)}
+                      placeholder="Value (e.g. Black)"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeAttribute(vi, ai)}
+                      aria-label="Remove attribute"
+                      className="text-gray-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition shrink-0"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={() => addAttribute(vi)} className={`${btnGhostClass} mt-2`}>
+                <Plus size={12} /> Add attribute
+              </button>
+            </div>
+
+            <div>
+              <p className="mb-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+                Images (optional)
+              </p>
+              <StringListEditor
+                values={v.images}
+                onChange={(urls) => updateVariant(vi, "images", urls)}
+                accept="image/*"
+                uploadLabel="Upload image"
+                placeholder="https://res.cloudinary.com/..."
+              />
+            </div>
+          </div>
+        ))}
+
+        <button type="button" onClick={addVariant} className={btnGhostClass}>
+          <Plus size={12} /> Add variant
+        </button>
+      </div>
+
+      {/* Gallery */}
+      <div className="space-y-4">
+        <span className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+          Gallery
+        </span>
+
+        <Field label="Gallery Images">
+          <StringListEditor
+            values={galleryImages}
+            onChange={setGalleryImages}
+            accept="image/*"
+            uploadLabel="Upload image"
+            placeholder="https://res.cloudinary.com/..."
+          />
+        </Field>
+
+        <Field label="Gallery Videos">
+          <StringListEditor
+            values={galleryVideos}
+            onChange={setGalleryVideos}
+            accept="video/*"
+            uploadLabel="Upload video"
+            placeholder="https://res.cloudinary.com/...mp4"
+          />
+        </Field>
+      </div>
 
       <label className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
         <input
