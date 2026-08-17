@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { FaArrowLeft, FaLock, FaTrash, FaPlus, FaTimes } from "react-icons/fa";
+import { ArrowLeft, Lock, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
@@ -167,7 +167,11 @@ export default function CheckoutPage() {
     try {
       const address = addressLine(customer);
       const res = await api.post("/orders", {
-        items: items.map((i) => ({ slug: i.slug, qty: i.qty })),
+        items: items.map((i) => ({
+          slug: i.slug,
+          qty: i.qty,
+          ...(i.variant && { variant: i.variant }),
+        })),
         ...(zoneId && { deliveryZoneId: zoneId }),
         customer: {
           name: customer.name.trim(),
@@ -212,7 +216,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-white dark:bg-slate-950 px-4 pt-28 pb-24">
         <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-6 py-16 text-center">
-          <p className="text-3xl mb-3">🛒</p>
+          <p className="text-3xl mb-3"><ShoppingCart size={30} className="inline text-gray-400 dark:text-slate-500" /></p>
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Your cart is empty</p>
           <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">Add a product to the cart before checking out.</p>
           <Link
@@ -233,7 +237,7 @@ export default function CheckoutPage() {
           href="/cart"
           className="mb-8 inline-flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition"
         >
-          <FaArrowLeft size={10} /> Back to cart
+          <ArrowLeft size={10} /> Back to cart
         </Link>
 
         <h1 className="font-display font-black text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Checkout</h1>
@@ -321,7 +325,7 @@ export default function CheckoutPage() {
                             aria-label="Delete this address"
                             className="mt-0.5 p-1.5 text-gray-400 hover:text-red-500 transition"
                           >
-                            <FaTrash size={12} />
+                            <Trash2 size={12} />
                           </button>
                         )}
                       </label>
@@ -341,7 +345,7 @@ export default function CheckoutPage() {
                   onClick={openModal}
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 dark:border-slate-600 px-4 py-3 text-sm font-semibold text-gray-500 dark:text-slate-400 hover:border-brand-400 hover:text-brand-500 dark:hover:border-brand-500 dark:hover:text-brand-400 transition"
                 >
-                  <FaPlus size={12} /> {addressLine(customer) ? "Change address" : "Add delivery address"}
+                  <Plus size={12} /> {addressLine(customer) ? "Change address" : "Add delivery address"}
                 </button>
               </div>
             </div>
@@ -387,9 +391,16 @@ export default function CheckoutPage() {
               <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
               <ul className="divide-y divide-gray-100 dark:divide-slate-800 border-b border-gray-100 dark:border-slate-800 mb-4">
                 {items.map((item) => (
-                  <li key={item.slug} className="flex justify-between gap-3 py-3 text-sm">
+                  <li key={item.lineId} className="flex justify-between gap-3 py-3 text-sm">
                     <span className="text-gray-700 dark:text-slate-300">
-                      {item.name} <span className="text-gray-400 dark:text-slate-500">× {item.qty}</span>
+                      {item.name}{" "}
+                      {item.variant?.attributes &&
+                        Object.values(item.variant.attributes).length > 0 && (
+                          <span className="text-gray-400 dark:text-slate-500">
+                            ({Object.values(item.variant.attributes).join(" ")})
+                          </span>
+                        )}{" "}
+                      <span className="text-gray-400 dark:text-slate-500">× {item.qty}</span>
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">{formatGhs(item.price * item.qty)}</span>
                   </li>
@@ -418,7 +429,7 @@ export default function CheckoutPage() {
                 {loading ? "Processing..." : `Pay ${formatGhs(total)} Securely`}
               </button>
               <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-gray-400 dark:text-slate-500">
-                <FaLock size={10} /> Secured by Paystack — card &amp; mobile money
+                <Lock size={10} /> Secured by Paystack — card &amp; mobile money
               </p>
             </div>
           </div>
@@ -438,7 +449,7 @@ export default function CheckoutPage() {
                 aria-label="Close"
                 className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
-                <FaTimes size={14} />
+                <X size={14} />
               </button>
             </div>
 

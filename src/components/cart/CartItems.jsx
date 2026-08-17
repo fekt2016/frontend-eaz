@@ -2,19 +2,24 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { FaMinus, FaPlus, FaTimes } from "react-icons/fa";
+import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { formatGhs } from "@/lib/shop";
 
 export default function CartItems() {
   const { items, removeItem, updateQty } = useCart();
 
-  const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
+  const variantLabel = (item) =>
+  item.variant?.attributes
+    ? Object.values(item.variant.attributes).join(" ")
+    : "";
+
+const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
 
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-        <p className="text-3xl mb-3">🛒</p>
+        <p className="text-3xl mb-3"><ShoppingCart size={30} className="inline text-gray-400 dark:text-slate-500" /></p>
         <p className="font-semibold text-gray-900 dark:text-white mb-1">Your cart is empty</p>
         <p className="text-gray-400 dark:text-slate-500 text-sm mb-6 max-w-xs">
           Browse the shop and add a product to get started.
@@ -58,7 +63,7 @@ export default function CartItems() {
           </div>
         );
         return (
-        <li key={item.slug} className="flex gap-4 py-4">
+        <li key={item.lineId} className="flex gap-4 py-4">
           {thumb}
           <div className="flex flex-1 flex-col">
             <div className="flex items-start justify-between gap-2">
@@ -74,14 +79,17 @@ export default function CartItems() {
                 ) : (
                 <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">{item.name}</p>
                 )}
+                {variantLabel(item) && (
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{variantLabel(item)}</p>
+                )}
               </div>
               <button
                 type="button"
-                onClick={() => removeItem(item.slug)}
+                onClick={() => removeItem(item.lineId)}
                 className="text-gray-300 dark:text-slate-600 hover:text-gray-700 dark:hover:text-white transition"
                 aria-label={`Remove ${item.name}`}
               >
-                <FaTimes size={13} />
+                <X size={13} />
               </button>
             </div>
             <div className="mt-auto flex items-center justify-between pt-2">
@@ -89,21 +97,21 @@ export default function CartItems() {
                 <button
                   type="button"
                   disabled={item.qty <= 1}
-                  onClick={() => updateQty(item.slug, item.qty - 1)}
+                  onClick={() => updateQty(item.lineId, item.qty - 1)}
                   className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
                   aria-label="Decrease quantity"
                 >
-                  <FaMinus size={9} />
+                  <Minus size={9} />
                 </button>
                 <span className="w-5 text-center text-xs font-semibold text-gray-900 dark:text-white">{item.qty}</span>
                 <button
                   type="button"
                   disabled={item.qty >= item.stock}
-                  onClick={() => updateQty(item.slug, item.qty + 1)}
+                  onClick={() => updateQty(item.lineId, item.qty + 1)}
                   className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
                   aria-label="Increase quantity"
                 >
-                  <FaPlus size={9} />
+                  <Plus size={9} />
                 </button>
               </div>
               <p className="text-sm font-bold text-gray-900 dark:text-white">{formatGhs(item.price * item.qty)}</p>
