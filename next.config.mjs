@@ -1,14 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "res.cloudinary.com" },
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "placehold.co" },
-      { protocol: "https", hostname: "picsum.photos" },
-      { protocol: "https", hostname: "api.microlink.io" },
-      { protocol: "https", hostname: "logo.clearbit.com" },
-    ],
+    // Product images come from many external supplier hosts (cdn.shopify.com,
+    // apple.com, samsung.com, amazon, belkin, jbl, …). Rather than maintain a
+    // brittle allowlist that crashes the shop whenever a new host appears, allow
+    // any HTTPS image host. next/image still serves optimized images from the
+    // same origin (/_next/image), so the browser CSP `img-src 'self'` covers them.
+    // Applies in dev and production. http:// is intentionally excluded.
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
   async headers() {
     const isProd = process.env.NODE_ENV === "production";
