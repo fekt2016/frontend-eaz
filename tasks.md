@@ -85,6 +85,19 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T36 · Suppliers: add WhatsApp and WeChat contact fields**
+  - **Issue:** Suppliers will be sourced from China (WeChat/1688/AliExpress vendors + freight
+    forwarders) — messaging happens via **WhatsApp** and **WeChat**, not just phone/email.
+    Add dedicated contact fields so staff can open a chat directly (e.g. `wa.me` links,
+    WeChat ID display/copy).
+  - **Location:** `src/app/dashboard/pos/suppliers/page.jsx` (add + inline-edit forms,
+    rows), `src/app/dashboard/pos/suppliers/[id]/page.jsx` (contact card)
+  - **Fix:** Add `whatsapp` (phone number → link `https://wa.me/<digits>`) and `wechat`
+    (WeChat ID → display with copy button) fields to the supplier add/edit forms, list rows,
+    and the detail contact card. Keep phone separate from WhatsApp (a China number could be
+    both).
+  - **Backend part:** `backend-eaz/tasks.md` → T36.
+
 - [ ] **T35 · Variant form: add a price input for each variant**
   - **Issue:** The variant editor in `ProductForm` has SKU, attributes, stock, and images —
     but **no price input**. Every variant therefore shares the product's base price, which
