@@ -85,6 +85,18 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T19 · Change "Customer will bring device in" → "Device received" once diagnosing starts**
+  - **Issue:** On the repair job detail page, the customer/device card shows
+    "Customer will bring device in" (or "Rider pickup requested") based on `job.dropoff`.
+    Once the teller clicks **Start Diagnosing** (status `received` → `diagnosing`) **or**
+    **Skip to Repairing** (status `received` → `repairing`), the device has been handed over
+    and the label should read **"Device received"** instead.
+  - **Location:** `src/app/dashboard/pos/jobs/[id]/_components/CustomerDeviceCard.jsx` (line 32)
+  - **Fix:** Derive the label from `job.status` — show "Device received" when the job has left
+    the `received` stage (whether via **Start Diagnosing** or **Skip to Repairing**), otherwise
+    keep the existing dropoff-based copy.
+  - **Backend note:** none required (frontend-only display change); see `backend-eaz/tasks.md` → T19.
+
 - [x] **T16 · Homepage / shop crash on external product images** ✅ done 2026-08-18
   - **Symptom:** homepage showed "Something went wrong" (error boundary); the "Recent
     Products" section appeared to be missing.
