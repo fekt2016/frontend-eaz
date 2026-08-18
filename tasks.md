@@ -85,6 +85,19 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T21 · Hide ALL hosting/domain content for technicians**
+  - **Issue:** Technicians should see **nothing** related to hosting or domains anywhere in the
+    dashboard. Currently the sidebar shows `baseNav` (Overview, Shop Orders, My Repairs,
+    **Hosting**, **Domains**) to every logged-in user, and technicians may still surface
+    hosting/domain links, badges, or widgets.
+  - **Location:** `src/app/dashboard/dashboardNav.js` (`baseNav`),
+    `src/app/dashboard/Sidebar.jsx`, `src/app/dashboard/page.jsx` (MyDashboard),
+    any other page/card that renders hosting/domain for technicians
+  - **Fix:** Role-gate **every** hosting/domain UI element so `technician` never sees them —
+    sidebar links, dashboard widgets/cards, badges, and any "Hosting"/"Domains" reference.
+    Confirm whether `staff` keeps them. Backend must also refuse technicians on those routes
+    (see `backend-eaz/tasks.md` → T21).
+
 - [ ] **T19 · Change "Customer will bring device in" → "Device received" once diagnosing starts**
   - **Issue:** On the repair job detail page, the customer/device card shows
     "Customer will bring device in" (or "Rider pickup requested") based on `job.dropoff`.
@@ -96,6 +109,18 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     the `received` stage (whether via **Start Diagnosing** or **Skip to Repairing**), otherwise
     keep the existing dropoff-based copy.
   - **Backend note:** none required (frontend-only display change); see `backend-eaz/tasks.md` → T19.
+
+- [ ] **T20 · Hide the repair/technician form once the job is done or cancelled**
+  - **Issue:** On the repair job detail page, the "Technician Update" form (repair work, labour
+    charge, diagnosis fee, estimated completion, diagnosis, status, internal notes, warranty) and
+    the "Parts" section remain editable after the job is finished or cancelled. They should be
+    hidden (or made read-only) when the job is `ready`/`collected` (work done) or `cancelled`.
+  - **Location:** `src/app/dashboard/pos/jobs/[id]/page.jsx` (Technician Update card ~lines 243–357,
+    Parts card ~lines 359+)
+  - **Fix:** Render the Technician Update + Parts sections only for active statuses
+    (`received`, `diagnosing`, `repairing`); for `ready`/`collected`/`cancelled` show a
+    read-only summary instead. Confirm the teller-side payment/close controls still work.
+  - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T20.
 
 - [x] **T16 · Homepage / shop crash on external product images** ✅ done 2026-08-18
   - **Symptom:** homepage showed "Something went wrong" (error boundary); the "Recent
