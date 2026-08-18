@@ -85,6 +85,19 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T22 · Integrate "My Repairs" and "My Jobs" into one page**
+  - **Issue:** Two separate pages show repair jobs: `/dashboard/repairs` ("My Repairs" —
+    customer-facing, matched by phone, read-only) and `/dashboard/pos` ("My Jobs" — technician
+    repair dashboard with stats + active/completed tabs). They overlap and should be merged
+    into one integrated repair page.
+  - **Location:** `src/app/dashboard/repairs/page.jsx`, `src/app/dashboard/pos/page.jsx`,
+    `src/app/dashboard/dashboardNav.js` (nav entries "My Repairs" / "My Jobs")
+  - **Fix:** Merge into a single destination (e.g. keep `/dashboard/repairs` and redirect
+    `/dashboard/pos` → it for the repair view, or vice-versa); unify the data hook
+    (`useMyRepairs` vs `useJobs`), status labels, and navigation so technicians/owners see one
+    consolidated jobs list. Confirm which fields/actions each role needs and preserve
+    role-gating.
+
 - [ ] **T21 · Hide ALL hosting/domain content for technicians**
   - **Issue:** Technicians should see **nothing** related to hosting or domains anywhere in the
     dashboard. Currently the sidebar shows `baseNav` (Overview, Shop Orders, My Repairs,
