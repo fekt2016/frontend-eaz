@@ -85,6 +85,20 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T37 · Sell page: show item images in search results and cart/summary**
+  - **Issue:** On `/dashboard/pos/sell`, searching for a product/part shows a text-only list
+    (name, category, stock, price) and the cart rows are text-only too. The item's **image**
+    should appear in the search results dropdown **and** in the cart/summary (right column)
+    so cashiers can visually confirm they're scanning the right item.
+  - **Location:** `src/app/dashboard/pos/sell/page.jsx` (search results ~lines 368–386,
+    cart rows ~lines 408–441; `addToCart` cart item shape ~lines 111–121)
+  - **Fix:** Store `image: part.images?.[0] || part.image || null` in each cart item; render a
+    thumbnail (e.g. 40×40 rounded, `object-cover`, gray placeholder when no image) in the
+    search results and cart rows. Add an image placeholder for items without photos.
+  - **Note:** Part search already returns `images`; product search currently omits them —
+    backend must add `images` to the product select (see `backend-eaz/tasks.md` → T37).
+  - **Depends on T33 (part image input) for parts to actually have photos.**
+
 - [ ] **T36 · Suppliers: add WhatsApp and WeChat contact fields**
   - **Issue:** Suppliers will be sourced from China (WeChat/1688/AliExpress vendors + freight
     forwarders) — messaging happens via **WhatsApp** and **WeChat**, not just phone/email.
