@@ -85,6 +85,19 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T35 · Variant form: add a price input for each variant**
+  - **Issue:** The variant editor in `ProductForm` has SKU, attributes, stock, and images —
+    but **no price input**. Every variant therefore shares the product's base price, which
+    doesn't work for size/color/storage pricing differences. Add a per-variant **price**
+    field and send it to the API.
+  - **Location:** `src/components/commerce/ProductForm.jsx` (variant block ~lines 339–424 —
+    add a `price` field next to SKU/stock; `addVariant`/`updateVariant`/payload at
+    ~lines 174–235; `variants.map` in handleSubmit)
+  - **Fix:** Add `price` (GH₵) to each variant row (default to the product price), convert to
+    pesewas (`Math.round(Number(v.price) * 100)`), and include it in the submitted
+    `variants[]` payload. Display the variant price on product detail and order lines.
+  - **Backend part:** `backend-eaz/tasks.md` → T35.
+
 - [ ] **T34 · Product form: main images should be uploadable locally, not just URL**
   - **Issue:** In the product add/edit form, the main **Image URLs (one per line)** field is a
     textarea that only accepts URLs. Staff should be able to **upload images from their local
