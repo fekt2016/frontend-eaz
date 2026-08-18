@@ -1,4 +1,4 @@
-# EazWorld Frontend — Issue & Fix Tracker
+ed# EazWorld Frontend — Issue & Fix Tracker
 
 > This is the **frontend-eaz** half of the issue tracker. Backend items live in
 > **`backend-eaz/tasks.md`**. Cross-app tasks are listed in their primary repo and
@@ -84,6 +84,164 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 ---
 
 ## Ad-hoc fixes (found during work, outside the original audit)
+
+- [ ] **T34 · Product form: main images should be uploadable locally, not just URL**
+  - **Issue:** In the product add/edit form, the main **Image URLs (one per line)** field is a
+    textarea that only accepts URLs. Staff should be able to **upload images from their local
+    device** (Cloudinary) for the main product image, not just paste URLs. (Variants + gallery
+    already have `StringListEditor` upload buttons; the main images field does not.)
+  - **Location:** `src/components/commerce/ProductForm.jsx` (line ~315 — the "Image URLs" textarea
+    → replace with a `StringListEditor`/`UploadButton` + URL input, same pattern as variants/gallery)
+  - **Fix:** Reuse the existing `StringListEditor` (which already has the Cloudinary
+    `UploadButton`) for the main `images` list so staff can upload locally and/or add a URL.
+  - **Backend note:** upload endpoint (`POST /api/v1/uploads`) already exists and is used by the
+    form; no backend change expected (see `backend-eaz/tasks.md` → T34).
+
+- [ ] **T33 · Inventory part form has no image input**
+  - **Issue:** The inventory part add/edit form (PartModal) has no field to upload/attach an
+    **image** for a repair part. Parts should support a photo (shown in inventory, sell search,
+    job parts, receipts) like shop products already do (`product.images`).
+  - **Location:** `src/app/dashboard/commerce/inventory/page.jsx` (`PartModal` payload,
+    ~lines 20–80), part list rendering
+  - **Fix:** Add an image upload input to the part form (single image via the existing
+    Cloudinary upload endpoint — see `backend-eaz/tasks.md` → T33), store it on the `Part`
+    model, display it in inventory rows/search results.
+  - **Backend part:** `backend-eaz/tasks.md` → T33.
+
+- [ ] **T32 · Reports page: staff see only their own report; admin sees all staff + per-staff activity**
+  - **Issue:** The POS Reports page (`/dashboard/pos/reports`) shows **shop-wide** analytics to
+    every role (only technicians are blocked). Requirements:
+    - **staff** → should see **only their own** report (their jobs, their POS sales, their
+      repair payments, their activity) — not the whole shop's numbers.
+    - **admin / superadmin** → should see **all staff reports** and be able to drill into
+      **each staff member's activity** (jobs created/assigned, sales rung up, payments, logs).
+  - **Location:** `src/app/dashboard/pos/reports/page.jsx` (`useReportsAnalytics`),
+    `src/hooks/queries/useReports.js`; add a staff picker (role filter / per-staff tab) for admin.
+  - **Fix:** Pass a `staffId`/`assignedTo`/`cashier` filter to the analytics endpoint; staff's
+    request is scoped to `req.user._id` server-side (never trust a client id). Admin gets a
+    staff selector + per-staff activity breakdown. Add a "My Report" view for staff.
+  - **Backend part:** `backend-eaz/tasks.md` → T32.
+
+- [ ] **T31 · Sell page must sell products (accessories) as well as parts**
+  - **Issue:** The POS Sell page is expected to sell **both** repair parts **and** shop
+    products/accessories, found via **search**, **inventory**, and **product lookup** — not
+    parts only. Confirm the full flow works for products end-to-end.
+  - **Location:** `src/app/dashboard/pos/sell/page.jsx` (`handleScanOrSearch` already queries
+    `/pos/inventory?...includeProducts=true`; `addToCart` keys products via `_kind: 'product'`
+    → `productId`; `completeSale` sends `productId`)
+  - **Fix:** Verify products (accessories) appear in scan/search/inventory results, add to the
+    cart correctly, complete the sale without error, and print a correct receipt. If products
+    don't surface (or the 500 from **T30** also hits products), fix and add tests.
+  - **Backend part:** `backend-eaz/tasks.md` → T31. Relates to T30 (the 500 on Complete Sale).
+
+- [ ] **T30 · POS Sell page: "Complete Sale" returns Request failed (500) when selling parts**
+  - **Symptom:** On the Sell page (`/dashboard/pos/sell`), clicking **Complete Sale** with
+    parts in the cart fails with **"Request failed (500)"** — no friendly error, no sale recorded.
+    The failure happens with **all payment options** (Cash, MoMo, Card).
+  - **Location:** `frontend-eaz/src/app/dashboard/pos/sell/page.jsx` (`completeSale`, ~line 251)
+    → `backend-eaz/controllers/pos/salesController.js` (`createSale`)
+  - **Fix (investigate):**
+    - Reproduce and capture the actual backend error (check server logs / `errorHandler` output;
+      the 500 hides the real cause).
+    - Check `createSale` for crashes when selling **parts** — e.g. `Sale.create` array response
+      handling (`data: sale` returns an array), missing `saleNumber`/schema pre-save hooks,
+      stock `$inc`/transaction abort issues, or a `part` validation error.
+    - Ensure the frontend surfaces a readable error instead of the raw 500.
+  - **Backend part:** `backend-eaz/tasks.md` → T30.
+
+- [ ] **T29 · Role-based landing pages after login**
+  - **Issue:** After login, admin/superadmin are redirected **away** from the overview:
+    `login/page.jsx` sends `technician`/`admin` → `/dashboard/pos` and `superadmin`/`staff` →
+    `/dashboard/pos/sell`. Landing pages should be role-specific:
+  - **Fix:**
+    - **admin / superadmin** → land on the **Overview** page (`/dashboard`) first.
+    - **staff** → land on the **Sell** page (`/dashboard/pos/sell`) first.
+    - **technician** → `/dashboard/pos` (jobs) — unchanged.
+    - **customer** → `/` (homepage) — unchanged.
+    - Apply the same redirects after email verification (`/auth/verify`) and 2FA
+      (`/auth/verify-2fa`).
+  - **Location:** `src/app/auth/login/page.jsx` (lines ~45–47), `src/app/auth/verify/page.jsx`,
+    `src/app/auth/verify-2fa/page.jsx` (post-verify redirects)
+  - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T29.
+
+- [ ] **T28 · Admin orders page: link to detail page; move all edit/update there**
+  - **Issue:** For admin/superadmin, the orders list page (`/dashboard/orders`) has an inline
+    "Update status" dropdown + button on every row. All order editing/updating should happen on
+    the **order detail page** (`/dashboard/orders/[id]`), and the list should be read-only with
+    a clear link to each order's detail page.
+  - **Also requested:** Convert the **card-based** order lists to **tables** — the POS orders
+    page (`/dashboard/pos/orders`) renders shop/part orders as cards, and the orders list should
+    use a table layout like the other admin lists.
+  - **Location:** `src/app/dashboard/orders/page.jsx`,
+    `src/app/dashboard/orders/[id]/page.jsx`,
+    `src/app/dashboard/pos/orders/page.jsx` (card → table)
+  - **Fix:** Remove the inline status dropdown/update controls from the list; keep a "View /
+    Manage" link per row to the detail page. Ensure the detail page (admin view) holds all
+    edit/update actions (status, tracking update, notes). Rebuild the POS orders page as a
+    table. Consider whether the same applies to `/dashboard/commerce/orders` (marketplace
+    orders list).
+  - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T28.
+
+- [ ] **T27 · Add a product review form to the customer order detail page**
+  - **Issue:** The customer order detail page (`/dashboard/orders/[id]`) shows the order items
+    but has **no way to review** the products that were ordered. Customers should be able to
+    submit a rating + comment per product from this page.
+  - **Location:** `src/app/dashboard/orders/[id]/page.jsx` (Items section)
+  - **Fix:** Add a review form per order item (rating + comment), posting to the existing
+    `POST /api/v1/products/:productId/reviews` (authenticated; one review per user per product).
+    Pre-fill/disable if the user already reviewed (via `GET …/reviews/mine`); show the review
+    confirmation/inline state. Only show for delivered/fulfilled items.
+  - **Backend part:** endpoints already exist (`productRoutes.js`); see `backend-eaz/tasks.md` → T27.
+
+- [ ] **T26 · Domain page should show the list of registered domains**
+  - **Issue:** The Domains page (`/dashboard/domains`) currently renders **domain orders**
+    (`useDomainOrders` → `DomainCard`). It should instead show the list of **registered
+    domains** — the actual names the user owns, with their registration/expiry status —
+    not just order records.
+  - **Location:** `src/app/dashboard/domains/page.jsx`,
+    `src/components/dashboard/customer/CustomerCards.jsx` (`DomainCard`),
+    `src/hooks/queries/useDomains.js`
+  - **Fix:** Back this page with a registered-domains source (either a new
+    `GET /api/v1/domains`/`my domains` endpoint returning the owned/registered domains, or
+    derive it from orders and display registered domain names + status/expiry). Show each
+    registered domain (name, registrar status, expiry, renewal CTA) instead of order cards.
+  - **Backend part:** `backend-eaz/tasks.md` → T26.
+
+- [ ] **T25 · Hosting page should only show hosting-account related content**
+  - **Issue:** The Hosting page (`/dashboard/hosting`) currently mixes content that isn't
+    strictly about the user's hosting account(s). It should only show things related to the
+    hosting account itself — no unrelated promotions, cross-sell, domain-only orders, or
+    generic links.
+  - **Location:** `src/app/dashboard/hosting/page.jsx`,
+    `src/components/dashboard/customer/CustomerCards.jsx` (`HostingCard`),
+    `src/app/dashboard/hosting/[orderId]/page.jsx`
+  - **Fix:** Audit the hosting list + detail page and strip anything not directly about the
+    hosting account (plan, status, cPanel login, renewal, domain attached to the account).
+    Keep the "+ New Order" CTA only if it belongs; move unrelated content elsewhere.
+  - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T25.
+
+- [ ] **T24 · Merge "Marketplace" and "Inventory" into one page**
+  - **Issue:** The Marketplace page (`/dashboard/commerce`) is a thin landing page of cards
+    linking to Inventory, Delivery Zones, and Orders — with **Inventory** the primary/only
+    landing card for most staff. It should be merged so Marketplace and Inventory are one
+    integrated page.
+  - **Location:** `src/app/dashboard/commerce/page.jsx`,
+    `src/app/dashboard/commerce/inventory/page.jsx`,
+    `src/app/dashboard/dashboardNav.js` (`marketplaceNav`)
+  - **Fix:** Merge Marketplace + Inventory into a single page (e.g. make `/dashboard/commerce`
+    render inventory directly, keep Orders/Delivery Zones as links or tabs). Unify nav so only
+    one "Marketplace"/"Inventory" entry appears; remove the duplicate sidebar links. Preserve
+    role-gating and the low-stock badge wiring.
+
+- [ ] **T23 · Remove "New Job" button from the Overview dashboard**
+  - **Issue:** The Overview page (`/dashboard`) has a **New Job** button (top-right, both in
+    `MyDashboard` and `FullDashboard`). It should not be there — creating a repair job belongs
+    in the POS/Jobs area, not on the overview.
+  - **Location:** `src/app/dashboard/page.jsx` (lines ~216 and ~278: `href="/dashboard/pos/jobs/new"`),
+    plus the "Create first job →" empty-state link (~line 150)
+  - **Fix:** Remove the Overview "New Job" buttons and the empty-state create link; the action
+    stays available from the POS Jobs page. Confirm no other dashboard widget duplicates it.
+  - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T23.
 
 - [ ] **T22 · Integrate "My Repairs" and "My Jobs" into one page**
   - **Issue:** Two separate pages show repair jobs: `/dashboard/repairs` ("My Repairs" —
