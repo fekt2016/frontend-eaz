@@ -5,6 +5,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "next.config.js", "*.js"],
+  "include": ["src/**/*", "next.config.mjs", "*.js"],
   "exclude": ["node_modules"]
 }
