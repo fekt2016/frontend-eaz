@@ -85,6 +85,45 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T50 · `resetPassword` / `verifyPin` don't check `isBlocked`**
+  - **Issue:** Backend — a blocked user with a valid reset link or verification PIN can obtain
+    a fresh token because `resetPassword`/`verifyPin` don't gate on `isBlocked` (unlike
+    `login`). Impact limited (protect rejects on next request).
+  - **Location:** backend — `controllers/authController.js`.
+  - **Fix:** Backend change only. No frontend work.
+
+- [ ] **T49 · `verifyPin` / `twoFactorPin` stored and compared in plaintext**
+  - **Issue:** Backend — 6-digit PINs stored unhashed on `User` and compared with plain `!==`.
+  - **Location:** backend — `models/User.js`, `controllers/authController.js`.
+  - **Fix:** Backend change only (hash or constant-time compare). No frontend work.
+
+- [ ] **T48 · `api.js` drops the `requiresVerification` flag from error responses**
+  - **Issue:** Login 403 for an unverified account sends `requiresVerification: true` + `email`
+    in the body, but `lib/api.js` only copies `error`/`errors`/`status` onto the thrown Error.
+    `AuthContext.login` therefore depends on brittle message matching
+    (`err.message.toLowerCase().includes('verify')`).
+  - **Location:** `src/lib/api.js` (error construction ~lines 20–26),
+    `src/context/AuthContext.jsx` (login ~lines 32–40), `src/app/auth/login/page.jsx`
+    (uses `err.requiresVerification` ~line 50).
+  - **Fix:** In `api.js`, spread the rest of `data` onto the Error (`Object.assign(err, data)`)
+    so `requiresVerification`/`email` survive; in `AuthContext.login`, check
+    `err.requiresVerification` instead of message text, and forward `err.email` to the verify
+    redirect.
+  - **Backend:** none needed (see `backend-eaz/tasks.md` → T48).
+
+- [ ] **T47 · `updateProfile` missing phone-uniqueness pre-check**
+  - **Issue:** Backend — setting an in-use phone via the profile settings form returns an
+    unhandled 500 (duplicate-key) instead of a friendly 409.
+  - **Location:** backend — `controllers/authController.js` (`updateProfile` ~line 497).
+  - **Fix:** Backend change only. No frontend work (error already surfaces in the form).
+
+- [ ] **T46 · `/api/v1/auth/verify` rate limit is dead code — PIN endpoints unthrottled**
+  - **Issue:** Backend — the strict 10/15min limiter is mounted on `/api/v1/auth/verify`, which
+    matches nothing; the real `/verify-pin`, `/resend-pin`, `/2fa/verify` routes only get the
+    global 150/15min limit, so 6-digit PINs are brute-forceable.
+  - **Location:** backend — `app.js` (~line 158), `routes/authRoutes.js`.
+  - **Fix:** Backend change only (mount limits on the real paths). No frontend work.
+
 - [ ] **T45 · `expenseController`: unescaped supplier regex + no activity logs**
   - **Issue:** `getSuppliers` uses `{ $regex: q }` with no `escapeRegex`; expense/supplier
     mutations aren't activity-logged. Backend-only (see `backend-eaz/tasks.md` → T45).
