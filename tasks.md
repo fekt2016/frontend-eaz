@@ -85,6 +85,30 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T52 · Dashboard admin gates exclude superadmin**
+  - **Issue:** Multiple admin pages gate on `user?.role === "admin"` / `!== "admin"`; a superadmin
+    (site owner) is redirected away or the admin data never loads: hosting-orders (redirects),
+    domain-orders (redirects + query disabled), consultations, blog, chats, users (no auto-fetch),
+    emails, hosting order detail.
+  - **Location:** `src/app/dashboard/(admin)/hosting-orders/page.jsx:107`;
+    `domain-orders/page.jsx:35,38,41,57`; `consultations/page.jsx:187,207,231`;
+    `blog/page.jsx:126,140,186`; `chats/page.jsx:58,63`; `users/page.jsx:511`;
+    `emails/page.jsx:71`; `src/app/dashboard/hosting/[orderId]/page.jsx:176`.
+  - **Fix:** Use `["admin", "superadmin"].includes(user?.role)` everywhere admin views are gated
+    (ideally a small shared helper in `lib/`). `middleware.js` and `DashboardShell` already handle
+    superadmin correctly.
+  - **Backend parity:** `backend-eaz/tasks.md` → T52.
+
+- [ ] **T51 · Backend hosting/domain order routes downgrade superadmin to regular user**
+  - **Issue:** Backend — `protect`-only hosting/domain order routes re-check
+    `req.user.role === 'admin'` in the controller, so a superadmin sees only their own orders and
+    gets 403 on other users' orders, invoices, cPanel SSO, service status, and cPanel password
+    resets (the same views these admin dashboards render).
+  - **Location:** backend — `controllers/hostingOrderController.js`,
+    `controllers/domainController.js`.
+  - **Fix:** Backend change only (route-level `restrictTo('admin')` or superadmin-aware checks).
+  - **Backend detail:** `backend-eaz/tasks.md` → T51.
+
 - [ ] **T50 · `resetPassword` / `verifyPin` don't check `isBlocked`**
   - **Issue:** Backend — a blocked user with a valid reset link or verification PIN can obtain
     a fresh token because `resetPassword`/`verifyPin` don't gate on `isBlocked` (unlike
