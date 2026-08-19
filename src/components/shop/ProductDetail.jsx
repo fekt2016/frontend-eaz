@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Play, Plus, Search } from "lucide-react";
 import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useCart } from "@/context/CartContext";
 import { useProductBySlug } from "@/hooks/queries/useProducts";
 import ProductReviews from "./ProductReviews";
+import ProductImage, { PRODUCT_PLACEHOLDER } from "./ProductImage";
 
-const FALLBACK_IMAGE = "https://placehold.co/800x600/1e1b4b/ffffff?text=Product";
+const FALLBACK_IMAGE = PRODUCT_PLACEHOLDER;
 
 export default function ProductDetail({ slug }) {
   const { data: product, isLoading: loading, error: queryError } = useProductBySlug(slug);
@@ -126,8 +126,8 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               ) : (
-                <Image
-                  src={activeMedia?.src || FALLBACK_IMAGE}
+                <ProductImage
+                  src={activeMedia?.src}
                   alt={product.name}
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -172,7 +172,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                         <Play size={16} className="text-white" />
                       </span>
                     ) : (
-                      <Image
+                      <ProductImage
                         src={m.src}
                         alt={`${product.name} ${i + 1}`}
                         fill

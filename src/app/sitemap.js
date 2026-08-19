@@ -67,7 +67,7 @@ export default async function sitemap() {
   const products = await getAllProducts();
   const productEntries = products.map((product) => ({
     url: `${SITE_URL}/shop/${product.slug}`,
-    lastModified: product.updatedAt || product.createdAt,
+    lastModified: product.updatedAt || product.createdAt || new Date(),
     changeFrequency: "weekly",
     priority: 0.6,
   }));
