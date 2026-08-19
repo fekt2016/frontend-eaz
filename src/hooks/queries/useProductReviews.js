@@ -31,6 +31,19 @@ export function useMyProductReview(productId, options = {}) {
   });
 }
 
+// Whether the logged-in user may submit a new review for this product —
+// requires a verified (paid/delivered) purchase and no existing review.
+// Only meaningful for logged-in users — gate with `enabled` from the caller.
+export function useReviewEligibility(productId, options = {}) {
+  return useQuery({
+    queryKey: qk.productReviews.eligibility(productId),
+    queryFn: () => api.get(`/products/${productId}/reviews/eligibility`).then((r) => r.data),
+    enabled: !!productId,
+    retry: false,
+    ...options,
+  });
+}
+
 // After any review mutation the product detail (rating summary) and the
 // product-review caches must refresh together.
 function useProductReviewMutation(mutationFn, productId) {
@@ -40,6 +53,7 @@ function useProductReviewMutation(mutationFn, productId) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.productReviews.list(productId) });
       qc.invalidateQueries({ queryKey: qk.productReviews.mine(productId) });
+      qc.invalidateQueries({ queryKey: qk.productReviews.eligibility(productId) });
       qc.invalidateQueries({ queryKey: qk.productReviews.all });
       qc.invalidateQueries({ queryKey: qk.products.detail });
     },

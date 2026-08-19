@@ -62,6 +62,7 @@ export const qk = {
     all: ["product-reviews"],
     list: (productId) => ["product-reviews", "list", productId],
     mine: (productId) => ["product-reviews", "mine", productId],
+    eligibility: (productId) => ["product-reviews", "eligibility", productId],
   },
   emails: {
     all: ["emails"],

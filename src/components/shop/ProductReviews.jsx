@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import {
   useProductReviews,
   useMyProductReview,
+  useReviewEligibility,
   useSubmitProductReview,
   useUpdateProductReview,
 } from "@/hooks/queries/useProductReviews";
@@ -169,12 +170,20 @@ export default function ProductReviews({ product }) {
   const myReviewQ = useMyProductReview(productId, {
     enabled: !!productId && !authLoading && !!user,
   });
+  // Only needed once we know the user has no existing review yet — avoids a
+  // redundant purchase-verification query when they're just going to see
+  // their own review anyway.
+  const eligibilityQ = useReviewEligibility(productId, {
+    enabled: !!productId && !authLoading && !!user && !myReviewQ.isLoading && !myReviewQ.data,
+  });
 
   const reviews = reviewsQ.data?.data ?? [];
   const total = reviewsQ.data?.total ?? 0;
   const summary = product?.ratingSummary || { average: null, count: 0 };
 
   const myReview = myReviewQ.data ?? null;
+  const checkingEligibility = !myReview && (myReviewQ.isLoading || eligibilityQ.isLoading);
+  const canReview = eligibilityQ.data?.canReview ?? true;
 
   if (!productId) return null;
 
@@ -299,15 +308,43 @@ export default function ProductReviews({ product }) {
                   Edit Review
                 </button>
               </div>
-            ) : (
+            ) : editing ? (
               <div>
                 <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-4">
-                  {editing ? "Edit Your Review" : "Write a Review"}
+                  Edit Your Review
                 </h3>
                 <ReviewForm
                   productId={productId}
-                  initial={editing ? myReview : null}
-                  mode={editing ? "edit" : "create"}
+                  initial={myReview}
+                  mode="edit"
+                  onDone={() => setEditing(false)}
+                />
+              </div>
+            ) : checkingEligibility ? (
+              <div className="flex items-center justify-center py-10 text-gray-400">
+                <Loader2 size={18} className="animate-spin text-brand-500" />
+              </div>
+            ) : !canReview ? (
+              <div className="text-center py-6">
+                <Star size={24} className="mx-auto mb-3 text-gray-300 dark:text-slate-600" />
+                <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
+                  Verified purchasers only
+                </p>
+                <p className="text-gray-500 dark:text-slate-400 text-xs">
+                  Reviews are limited to customers who&apos;ve bought this
+                  product — once your order is paid and on its way, you&apos;ll
+                  be able to leave a review here.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-4">
+                  Write a Review
+                </h3>
+                <ReviewForm
+                  productId={productId}
+                  initial={null}
+                  mode="create"
                   onDone={() => setEditing(false)}
                 />
               </div>
