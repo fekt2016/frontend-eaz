@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
+import ProductImage from "@/components/shop/ProductImage";
 import {
   Plus, Search, Pen, Trash2, TriangleAlert, Barcode, PackageOpen,
   Wrench,
@@ -533,11 +533,7 @@ function ProductsTab() {
               const badge = stockBadge(product.stock);
               return (
                 <div key={product._id} className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-100/30 dark:hover:bg-gray-800/30 transition ${!product.isActive ? "opacity-70" : ""}`}>
-                  {product.images?.[0] ? (
-                    <Image src={product.images[0]} alt={product.name} width={40} height={40} className="h-10 w-10 rounded-xl object-cover bg-gray-100" />
-                  ) : (
-                    <div className="h-10 w-10 rounded-xl bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
-                  )}
+                  <ProductImage src={product.images?.[0]} alt={product.name} width={40} height={40} className="h-10 w-10 rounded-xl object-cover bg-gray-100" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{product.name}</p>

@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
   User, Lock, ShieldCheck, CheckCircle2,
-  XCircle, Eye, EyeSlash, Loader2, Moon, Sun,
+  XCircle, Eye, EyeOff, Loader2, Moon, Sun,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { sanitizeName, sanitizePhone } from "@/lib/sanitize";
@@ -145,7 +145,7 @@ function PasswordSection() {
               placeholder="Enter current password" className={`${inputCls} pr-11`} required />
             <button type="button" onClick={() => setShowCurrent(v => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition">
-              {showCurrent ? <EyeSlash size={15} /> : <Eye size={15} />}
+              {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
         </div>
@@ -156,7 +156,7 @@ function PasswordSection() {
               placeholder="Min 8 characters" className={`${inputCls} pr-11`} required />
             <button type="button" onClick={() => setShowNew(v => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition">
-              {showNew ? <EyeSlash size={15} /> : <Eye size={15} />}
+              {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
           {newPass && (

@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
+import ProductImage from "@/components/shop/ProductImage";
 
 // Shop showcase on the homepage — a quick look at the newest items, placed after
 // the agency story & proof.
@@ -78,12 +78,11 @@ export default function RecentProducts() {
 
 function RecentCard({ product }) {
   const badge = stockBadge(product.stock);
-  const image = product.images?.[0] || "https://placehold.co/800x600/1e1b4b/ffffff?text=Product";
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-md hover:-translate-y-1 transition duration-300">
       <Link href={`/shop/${product.slug}`} className="relative block overflow-hidden aspect-[4/3]">
-        <Image
-          src={image}
+        <ProductImage
+          src={product.images?.[0]}
           alt={product.name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"

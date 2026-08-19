@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { Plus, Pen, Trash2, RotateCw, Loader2, Eye, EyeSlash, Star, X, Check, PenLine } from "lucide-react";
+import { Plus, Pen, Trash2, RotateCw, Loader2, Eye, EyeOff, Star, X, Check, PenLine } from "lucide-react";
 
 const CATEGORIES = ["SEO", "Web Design", "Case Study", "Social Media", "Branding", "Phone Repair", "Paid Advertising", "Email Marketing", "General"];
 
@@ -262,7 +262,7 @@ export default function AdminBlogPage() {
                     title={post.published ? "Unpublish" : "Publish"}
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition ${post.published ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
                   >
-                    {post.published ? <Eye size={13} /> : <EyeSlash size={13} />}
+                    {post.published ? <Eye size={13} /> : <EyeOff size={13} />}
                   </button>
                   <button
                     onClick={() => handleToggle(post, "featured")}

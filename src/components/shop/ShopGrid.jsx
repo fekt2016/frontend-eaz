@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, ChevronLeft, ChevronRight, Search, ShoppingBag } from "lucide-react";
 import { formatGhs, stockBadge } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useShopProducts } from "@/hooks/queries/useProducts";
+import ProductImage from "@/components/shop/ProductImage";
 
 const CATEGORIES = [
   "Phones",
@@ -204,12 +204,11 @@ export default function ShopGrid({ activeCategory = "" }) {
 
 function ProductCard({ product }) {
   const badge = stockBadge(product.stock);
-  const image = product.images?.[0] || "https://placehold.co/800x600/1e1b4b/ffffff?text=Product";
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-md hover:-translate-y-1 transition duration-300">
       <Link href={`/shop/${product.slug}`} className="relative block overflow-hidden aspect-[4/3]">
-        <Image
-          src={image}
+        <ProductImage
+          src={product.images?.[0]}
           alt={product.name}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

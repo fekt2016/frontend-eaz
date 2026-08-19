@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
   Loader2, RotateCw, Pen, Ban, CheckCircle2,
-  X, Search, ShieldCheck, User, Key, Eye, EyeSlash,
+  X, Search, ShieldCheck, User, Key, Eye, EyeOff,
   Plus, UserCog, Wrench,
 } from "lucide-react";
 
@@ -127,7 +127,7 @@ function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
               >
-                {showPassword ? <EyeSlash size={13} /> : <Eye size={13} />}
+                {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
               </button>
             </div>
             <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Share this with the user — they can change it later from their settings.</p>
@@ -435,7 +435,7 @@ function ChangePasswordModal({ user, onClose }) {
                     onClick={() => setShowNew((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
                   >
-                    {showNew ? <EyeSlash size={13} /> : <Eye size={13} />}
+                    {showNew ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
               </div>
@@ -456,7 +456,7 @@ function ChangePasswordModal({ user, onClose }) {
                     onClick={() => setShowConfirm((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
                   >
-                    {showConfirm ? <EyeSlash size={13} /> : <Eye size={13} />}
+                    {showConfirm ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
               </div>

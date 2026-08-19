@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { formatGhs } from "@/lib/shop";
+import ProductImage from "@/components/shop/ProductImage";
 
 export default function CartItems() {
   const { items, removeItem, updateQty } = useCart();
@@ -43,8 +43,8 @@ const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
             href={itemHref}
             className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800"
           >
-            <Image
-              src={item.image || "https://placehold.co/200x200/1e1b4b/ffffff?text=Product"}
+            <ProductImage
+              src={item.image}
               alt={item.name}
               fill
               sizes="80px"
@@ -53,8 +53,8 @@ const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
           </Link>
         ) : (
           <div className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800">
-            <Image
-              src={item.image || "https://placehold.co/200x200/1e1b4b/ffffff?text=Part"}
+            <ProductImage
+              src={item.image}
               alt={item.name}
               fill
               sizes="80px"
