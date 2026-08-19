@@ -85,6 +85,37 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T57 · POS `updateJob` accepts money fields from technicians (bill understatement)**
+  - **Issue:** Backend — `PATCH /pos/jobs/:id` is open to all POS roles incl. `technician`, and
+    `jobController.updateJob` applies `laborCost`, `depositPaid`, `diagnosisFee`, and client-priced
+    custom parts straight from the body. Inventory parts are price-anchored to `Part.sellingPrice`,
+    but a technician can zero `laborCost`, add free custom parts, or claim a `depositPaid`.
+  - **Location:** backend — `controllers/pos/jobController.js` (`updateJob` lines 327-334, 341-367);
+    `routes/posRoutes.js:62`.
+  - **Fix:** Backend change only — role-guard the money fields (staff/admin for `depositPaid` +
+    client-priced custom parts) and add a test. No frontend work.
+  - **Backend detail:** `backend-eaz/tasks.md` → T57.
+
+- [ ] **T56 · POS job detail page missing `waiting_for_parts` status**
+  - **Issue:** `src/app/dashboard/pos/jobs/[id]/page.jsx:29` — `STATUSES` omits `waiting_for_parts`,
+    a real backend status set by the online part-order webhook. A job in that state shows an
+    unmapped `<select>` value and has no quick-action button, so staff can't advance it with one tap.
+  - **Location:** `src/app/dashboard/pos/jobs/[id]/page.jsx` — `STATUSES` (line 29), `<select>`
+    (306-307), quick-status buttons (468-501).
+  - **Fix:** Frontend change only — add `waiting_for_parts` to `STATUSES` and a quick-action case
+    (`waiting_for_parts → repairing`).
+  - **Backend detail:** n/a — backend already supports the status end-to-end.
+
+- [ ] **T55 · Credentials/PINs generated with non-crypto `Math.random()`**
+  - **Issue:** Backend — 6-digit verification/2FA PINs (`authController.js:11` generatePin, 4 call
+    sites) and cPanel/CyberPanel account passwords (`whm.js`, `cyberpanel.js`) are generated with
+    `Math.random`, a PRNG not a CSPRNG; compounds the PIN brute-force risk in T46.
+  - **Location:** backend — `controllers/authController.js:11`, `services/whm.js:22-31`,
+    `services/cyberpanel.js:22-28`.
+  - **Fix:** Backend change only — `crypto.randomInt` for the PIN, `crypto.randomBytes`/`randomInt`
+    for passwords; add a PIN range/format test. No frontend work.
+  - **Backend detail:** `backend-eaz/tasks.md` → T55.
+
 - [ ] **T54 · Hosting order domain fee is client-trusted — Namecheap lookup never matches**
   - **Issue:** Backend — `hostingOrderController.createOrder` indexes `getPricing()` with a
     dot-less TLD (`"com"`) while the price map keys are dot-prefixed (`".com"`), so the
