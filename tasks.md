@@ -85,6 +85,16 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T54 · Hosting order domain fee is client-trusted — Namecheap lookup never matches**
+  - **Issue:** Backend — `hostingOrderController.createOrder` indexes `getPricing()` with a
+    dot-less TLD (`"com"`) while the price map keys are dot-prefixed (`".com"`), so the
+    server-side price always misses and the client-supplied `domainRegistrationFee` (capped
+    GH₵0–500) is trusted. A buyer can zero it out (free domain on a hosting order).
+  - **Location:** backend — `controllers/hostingOrderController.js` (`createOrder` ~lines 84-104).
+  - **Fix:** Backend change only — use `extractTLD(domain_s)` for the lookup and drop the
+    redundant USD→GHS re-conversion. No frontend work (checkout already shows the server price).
+  - **Backend detail:** `backend-eaz/tasks.md` → T54.
+
 - [ ] **T53 · POS `updateJob` allows backward / terminal-to-live status transitions**
   - **Issue:** Backend — `jobController.updateJob` sets `job.status` with no transition
     validation (unlike `orderController.canTransition`), so a repair job can move backwards
