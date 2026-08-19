@@ -85,6 +85,113 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T45 · `expenseController`: unescaped supplier regex + no activity logs**
+  - **Issue:** `getSuppliers` uses `{ $regex: q }` with no `escapeRegex`; expense/supplier
+    mutations aren't activity-logged. Backend-only (see `backend-eaz/tasks.md` → T45).
+  - **Location:** backend — `controllers/pos/expenseController.js`.
+  - **Fix:** Backend change only. No frontend work.
+
+- [ ] **T44 · Hosting/domain/service amounts stored as major-GHS floats**
+  - **Issue:** Hosting/domain/service orders store money as **major GHS floats** (e.g.
+    `GH₵{order.amount}`), not integer pesewas. This is a deviation from the money rule and
+    is why several of these admin pages render raw `GH₵{...}` instead of `formatGhs`.
+  - **Location:** `src/app/dashboard/(admin)/domain-orders/page.jsx` (~lines 96, 171),
+    `src/app/dashboard/(admin)/hosting-orders/page.jsx` (~line 422),
+    `src/app/dashboard/hosting/[orderId]/page.jsx` (~line 212),
+    `src/app/dashboard/hosting/new-account/page.jsx` (~line 150),
+    `src/components/dashboard/customer/CustomerCards.jsx` (~lines 67, 118),
+    `src/components/CheckoutForm.jsx` (~lines 104, 111),
+    `src/components/ServicePaymentModal.jsx` (~lines 123, 127, 252),
+    `src/app/services/web-design/page.jsx` (~lines 211, 224),
+    `src/app/hosting/page.jsx` (~line 194), `src/components/domains/DomainsSearch.jsx` (~line 20).
+  - **Fix (decision needed):** Either migrate these flows to integer pesewas end-to-end
+    (backend + webhook + these displays switch to `formatGhs`) or explicitly document the
+    float-GHS exception. Backend part: `backend-eaz/tasks.md` → T44.
+
+- [ ] **T43 · Money display bypasses the single `formatGhs` formatter**
+  - **Issue:** The convention is to render money with `formatGhs(pesewas)` from `lib/shop.js`.
+    These pages hand-roll `GH₵{...toFixed(2)}` / `GH₵{...toLocaleString()}` raw templates:
+  - **Location:**
+    - `src/app/dashboard/pos/sell/page.jsx` (~lines 416, 435, 462, 481, 536, 565)
+    - `src/app/dashboard/pos/jobs/new/page.jsx` (~lines 456, 463, 469)
+    - `src/app/dashboard/pos/jobs/[id]/page.jsx` (~lines 426, 435, 540, 546, 552)
+    - `src/app/dashboard/pos/jobs/[id]/_components/JobInvoice.jsx` (~lines 38–89)
+    - `src/components/pos/PosOverview.jsx` (~lines 69, 70, 77, 95)
+    - `src/app/dashboard/page.jsx` (~lines 242–243)
+    - `src/app/track/[token]/page.jsx` (~lines 378, 383)
+    - `src/components/pos/Receipt.jsx` (~lines 100–108)
+  - **Fix:** Replace with `formatGhs(value)` where `value` is integer pesewas (POS/shop). For
+    the float-GHS hosting/domain/service pages, either convert to pesewas or keep raw — see
+    T44 for that decision. Track both together.
+
+- [ ] **T42 · `BlogArticle` renders markdown via `dangerouslySetInnerHTML` — stored-XSS risk**
+  - **Issue:** Blog post content is markdown→HTML-converted with regex and injected via
+    `dangerouslySetInnerHTML` (lines 39, 52, 62) with **no escaping**. A post body containing
+    HTML/JS (admin-authored or compromised) executes for every reader.
+  - **Location:** `src/components/blog/BlogArticle.jsx` (`renderContent` lines 20–67;
+    the three `dangerouslySetInnerHTML` usages).
+  - **Fix:** Escape HTML entities **before** the markdown regexes (so `**bold**` still works
+    but `<script>`/`onclick`/`javascript:` become inert), or render via a safe markdown
+    library. Also add a test for a malicious post body.
+  - **Backend defense-in-depth:** sanitize post `content` on write — see `backend-eaz/tasks.md`
+    → T42.
+
+- [ ] **T41 · Public track page part-order cart mixes float-GHS and pesewas**
+  - **Issue:** On `/track/[token]`, `addToCart` stores `unitPriceGhs: Math.round(Number(part.sellingPrice)) / 100`
+    (float GHS) and computes `totalPesewas = partsSubtotalGhs * 100 + shippingPesewas`
+    (float × 100), while `addPartToShopCart` (line 105) stores integer pesewas
+    (`price: Math.round(Number(part.sellingPrice))`). Two cart paths, two money conventions —
+    float-rounding risk; display also uses raw `GH₵{...}` (see T43).
+  - **Location:** `src/app/track/[token]/page.jsx` (`addToCart` ~line 120, totals ~lines
+    124–126, display ~lines 378/383).
+  - **Fix:** Keep the part-order cart in **integer pesewas** like `addPartToShopCart`:
+    `unitPricePesewas: Math.round(Number(part.sellingPrice))`, subtotal in pesewas, add
+    shipping pesewas directly, and display with `formatGhs`. (Backend re-prices from the
+    `Part` model — items carry only `partId`+`quantity` — so this is safe.)
+  - **Backend:** none needed (see `backend-eaz/tasks.md` → T41).
+
+- [ ] **T40 · `authController.logout` calls `jwt.decode` without importing `jsonwebtoken`**
+  - **Issue:** Backend bug — `jwt.decode(token)` at `controllers/authController.js` ~line 283
+    is a ReferenceError (`jsonwebtoken` never imported). Swallowed by try/catch, so logout
+    succeeds but the logout activity entry never records who logged out.
+  - **Location:** backend — `controllers/authController.js` (imports lines 1–6; logout
+    ~lines 276–303).
+  - **Fix:** Backend change only (add `require('jsonwebtoken')`). No frontend work.
+
+- [ ] **T39 · Product detail page: add Description and Reviews tabs**
+  - **Issue:** On `/shop/[slug]` the product description is rendered as a plain paragraph
+    under the price (~line 211) and `ProductReviews` is stacked full-width below the
+    product grid (~line 323) — a long "small page" you have to scroll. The page should
+    instead have **tabs** — e.g. **Description** and **Reviews** — so shoppers can switch
+    between the detailed description/specs and the review list without scrolling.
+  - **Location:** `src/components/shop/ProductDetail.jsx` (description <p> ~line 211,
+    specs block ~249–270, `ProductReviews` mount ~line 323),
+    `src/components/shop/ProductReviews.jsx` (review summary + list; could host the tab
+    switch or a new sibling component)
+  - **Fix:** Add a tab bar below the product header (e.g. `Description` | `Reviews`), state
+    `activeTab`, render the full description + `product.specs` table under Description and
+    the `<ProductReviews>` (rating summary + list + review form) under Reviews. Keep the
+    Reviews tab count in the label (`Reviews (n)`). Scroll to top of the tab content on
+    switch. Tabs work without a page reload; initial tab = Description.
+  - **Backend:** none needed (see `backend-eaz/tasks.md` → T39).
+
+- [ ] **T38 · Cart overlay: fit all content within the viewport**
+  - **Issue:** The cart overlay that opens when clicking **Add to Cart** on a product detail
+    page (`/shop/[slug]`) is a right-side drawer whose contents should fit **within one
+    viewport**. On shorter screens the drawer is `w-full max-w-md` with `top-0 bottom-0` and
+    its items area scrolls, but the header + scrollable items + subtotal/buttons footer can
+    still feel like a separate "small page" that doesn't fit — all cart content (header,
+    items, subtotal, Checkout + Continue Shopping buttons) must be visible inside the
+    viewport with no vertical scroll of the page behind.
+  - **Location:** `src/components/cart/CartDrawer.jsx` (drawer container ~line 42, header
+    ~46–62, scrollable items area ~64–66, footer ~68–89), `src/components/cart/CartItems.jsx`
+  - **Fix:** Keep the drawer as a flex column that fits the viewport height: `max-h-[100dvh]`,
+    compact header padding, `flex-1 min-h-0 overflow-y-auto` on the items area, and a footer
+    that never pushes content off-screen. Ensure `h-full`/`dvh` (not content-driven height)
+    so on small screens the footer buttons are always reachable. Verify at ~667px and ~800px
+    tall viewports.
+  - **Backend:** none needed (see `backend-eaz/tasks.md` → T38).
+
 - [ ] **T37 · Sell page: show item images in search results and cart/summary**
   - **Issue:** On `/dashboard/pos/sell`, searching for a product/part shows a text-only list
     (name, category, stock, price) and the cart rows are text-only too. The item's **image**
