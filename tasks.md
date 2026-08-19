@@ -85,6 +85,17 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T53 · POS `updateJob` allows backward / terminal-to-live status transitions**
+  - **Issue:** Backend — `jobController.updateJob` sets `job.status` with no transition
+    validation (unlike `orderController.canTransition`), so a repair job can move backwards
+    (`collected`→`received`) or out of a terminal state (`cancelled`→`repairing`); `completedAt`/
+    `warrantyExpires` are never cleared on backward moves.
+  - **Location:** backend — `controllers/pos/jobController.js` (`updateJob`), `models/RepairJob.js`.
+  - **Fix:** Backend change only — forward-only `STATUS_RANK` guard mirroring
+    `orderController.canTransition`, `cancelled` terminal, clear `completedAt`/`warrantyExpires`
+    on backward moves. No frontend work beyond the existing T18 cancel-guard UI.
+  - **Backend detail:** `backend-eaz/tasks.md` → T53.
+
 - [ ] **T52 · Dashboard admin gates exclude superadmin**
   - **Issue:** Multiple admin pages gate on `user?.role === "admin"` / `!== "admin"`; a superadmin
     (site owner) is redirected away or the admin data never loads: hosting-orders (redirects),
