@@ -85,6 +85,46 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T61 · 2FA PIN email logged as `other` — not filterable in EmailLog**
+  - **Issue:** Backend — `utils/email.js` `sendTwoFactorPin` sends `type: 'other'` (line 284), so
+    2FA code emails land in `EmailLog` under `other` and can't be filtered.
+  - **Location:** backend — `utils/email.js:281-284`; frontend — `src/app/dashboard/(admin)/emails/page.jsx`
+    `TYPE_LABELS` (15-26) + `typeColors` (39+).
+  - **Fix:** Backend change `type` to `'two_factor'`; **frontend part** — add
+    `two_factor: "2FA Pin"` to `TYPE_LABELS` and a `typeColors` entry on the emails page so the
+    filter shows the new type.
+  - **Backend detail:** `backend-eaz/tasks.md` → T61.
+
+- [ ] **T60 · Hosting `createOrder` returns 500 instead of 400 for unknown plan/tier**
+  - **Issue:** Backend — `getPlanPrice` **throws** on unknown `planType`/`tier`
+    (`config/hostingPlans.js:330-336`) and `createOrder` doesn't catch it, so a bad plan hits
+    the 500 error handler instead of the intended 400. The `planTotal == null` check only covers
+    the `cloud/enterprise` custom tier.
+  - **Location:** backend — `config/hostingPlans.js` (`getPlanPrice` 328-336),
+    `controllers/hostingOrderController.js:77`.
+  - **Fix:** Backend change only — return `{ total: null }` for unknown type/tier so the existing
+    400 path fires; add a test. No frontend work.
+  - **Backend detail:** `backend-eaz/tasks.md` → T60.
+
+- [ ] **T59 · Service orders: free-form status + unclamped pagination**
+  - **Issue:** Backend — `updateServiceOrder` persists any `status` string via `findByIdAndUpdate`
+    (no validators), and `getServiceOrders` doesn't clamp `page`/`limit`.
+  - **Location:** backend — `controllers/serviceOrderController.js` (`getServiceOrders` 133-146,
+    `updateServiceOrder` 151-163).
+  - **Fix:** Backend change only — validate status (enum + forward-only) and clamp page/limit.
+    No frontend work.
+  - **Backend detail:** `backend-eaz/tasks.md` → T59.
+
+- [ ] **T58 · POS part/repair order status allows backward moves**
+  - **Issue:** Backend — `updatePartOrder`/`updateRepairOrder` validate the status enum but allow
+    `paid → pending`/`paid → cancelled`; cancelling a paid part order leaves the linked job at
+    `waiting_for_parts` with no re-evaluation.
+  - **Location:** backend — `controllers/pos/inventoryController.js` (`updatePartOrder` 308-332),
+    `controllers/pos/jobController.js` (`updateRepairOrder` 802-826).
+  - **Fix:** Backend change only — forbid leaving `paid` backwards (mirror `canTransition`) and
+    reset the linked job off `waiting_for_parts` when a paid part order is cancelled. No frontend work.
+  - **Backend detail:** `backend-eaz/tasks.md` → T58.
+
 - [ ] **T57 · POS `updateJob` accepts money fields from technicians (bill understatement)**
   - **Issue:** Backend — `PATCH /pos/jobs/:id` is open to all POS roles incl. `technician`, and
     `jobController.updateJob` applies `laborCost`, `depositPaid`, `diagnosisFee`, and client-priced
