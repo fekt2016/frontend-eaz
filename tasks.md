@@ -920,7 +920,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Verified:** 1/1 new test passes; `next lint` 0 warnings/errors; full suite
     `npm test` 24 files / 109 tests pass; `npm run build` compiles successfully, exit 0.
 
-- [ ] **T22 · Integrate "My Repairs" and "My Jobs" into one page**
+- [x] **T22 · Integrate "My Repairs" and "My Jobs" into one page** ✅ done 2026-08-21
   - **Issue:** Two separate pages show repair jobs: `/dashboard/repairs` ("My Repairs" —
     customer-facing, matched by phone, read-only) and `/dashboard/pos` ("My Jobs" — technician
     repair dashboard with stats + active/completed tabs). They overlap and should be merged
@@ -932,6 +932,35 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     (`useMyRepairs` vs `useJobs`), status labels, and navigation so technicians/owners see one
     consolidated jobs list. Confirm which fields/actions each role needs and preserve
     role-gating.
+  - **Design decision (not the fix note's literal suggestion):** went the *other* direction
+    from "keep `/dashboard/repairs`, redirect `/dashboard/pos` → it." `/dashboard/pos` turned
+    out to be technicians' purpose-built landing page (`posNav`'s "My Jobs" entry) rendered
+    inside `PosShell` — a completely different, mobile-first shell (horizontal top nav, no
+    sidebar) from the standard `DashboardShell`/`Sidebar` that `/dashboard/repairs` uses.
+    Redirecting `/dashboard/pos` away would have pulled every technician out of their
+    dedicated UI on every login (`landingPathForRole` from T29 sends them there directly).
+    Also found `posNav` splits staff from technicians: staff/admin/superadmin's real
+    destination is a *different* page, `/dashboard/pos/jobs` ("Jobs" — a full filterable
+    list), not `/dashboard/pos` at all. So `/dashboard/repairs` now redirects each role to
+    *its own* existing, better-suited page instead: technicians → `/dashboard/pos`,
+    staff/admin/superadmin → `/dashboard/pos/jobs`. Customers keep this page unchanged — it
+    was already their only repairs view. No hook unification needed: each audience already
+    uses its own correctly-scoped hook/endpoint (customer: `useMyRepairs`/`/track/mine`
+    matched by phone/email; staff: `useJobs`/`/pos/jobs`), the redirect just stops staff ever
+    reaching the read-only, assignment-unscoped duplicate this page used to show them.
+  - **Location correction:** `dashboardNav.js`'s "My Repairs" entry needed no change — it
+    still makes sense as a click target for every role now that it correctly routes onward.
+  - **Shipped:**
+    - `src/app/dashboard/repairs/page.jsx` — added the role-based redirect (`useEffect`,
+      gated on `authLoading`); `useMyRepairs` now passes `enabled: false` for
+      technician/staff-like roles so the fetch never fires for a role that's about to be
+      redirected away; simplified the row-link logic (dropped the now-dead `isStaff` branch
+      pointing at `/dashboard/pos/jobs/:id`, since only customers ever reach the table now).
+    - `src/app/dashboard/repairs/page.test.jsx` (new, 5 tests): technician → `/dashboard/pos`;
+      staff/admin/superadmin → `/dashboard/pos/jobs` (3 separate role checks); customer is
+      never redirected and still sees their own repairs table.
+  - **Verified:** 5/5 new tests pass; `next lint` 0 warnings/errors; full suite `npm test`
+    25 files / 114 tests pass; `npm run build` compiles successfully, exit 0.
 
 - [ ] **T21 · Hide ALL hosting/domain content for technicians**
   - **Issue:** Technicians should see **nothing** related to hosting or domains anywhere in the
