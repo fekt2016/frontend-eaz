@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { isAdminRole } from "@/lib/roles";
 import {
   Trash2,
   Search,
@@ -104,7 +105,7 @@ export default function AdminHostingOrdersPage() {
   const [cpanelBusy, setCpanelBusy] = useState(null);
 
   useEffect(() => {
-    if (!authLoading && user?.role !== "admin") router.replace("/dashboard");
+    if (!authLoading && !isAdminRole(user?.role)) router.replace("/dashboard");
   }, [user, authLoading, router]);
 
   useEffect(() => {
@@ -137,12 +138,12 @@ export default function AdminHostingOrdersPage() {
   }, [statusFilter, debouncedSearch]);
 
   useEffect(() => {
-    if (authLoading || user?.role !== "admin") return;
+    if (authLoading || !isAdminRole(user?.role)) return;
     fetchSummary();
   }, [authLoading, user?.role, fetchSummary]);
 
   useEffect(() => {
-    if (authLoading || user?.role !== "admin") return;
+    if (authLoading || !isAdminRole(user?.role)) return;
     fetchOrders();
   }, [authLoading, user?.role, fetchOrders]);
 
@@ -218,7 +219,7 @@ export default function AdminHostingOrdersPage() {
     return a;
   }, [summary]);
 
-  if (authLoading || user?.role !== "admin") return null;
+  if (authLoading || !isAdminRole(user?.role)) return null;
 
   return (
     <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">

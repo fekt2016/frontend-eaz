@@ -14,15 +14,6 @@ const ALLOWED = ["superadmin", "admin", "staff"];
 const SHOP_STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 const PART_STATUSES = ["pending", "paid", "cancelled"];
 
-const STATUS_COLORS = {
-  pending:    "bg-brand-500/15 text-brand-600 dark:text-brand-400",
-  paid:       "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  processing: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
-  shipped:    "bg-purple-500/15 text-purple-600 dark:text-purple-400",
-  delivered:  "bg-green-500/15 text-green-600 dark:text-green-400",
-  cancelled:  "bg-red-500/15 text-red-600 dark:text-red-400",
-};
-
 function formatDate(value) {
   if (!value) return "—";
   return new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -30,14 +21,6 @@ function formatDate(value) {
 
 const selectCls =
   "text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:outline-none focus:border-brand-400 capitalize disabled:opacity-50";
-
-function StatusBadge({ status }) {
-  return (
-    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize ${STATUS_COLORS[status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-      {status}
-    </span>
-  );
-}
 
 export default function PosOrdersPage() {
   const { user, loading: authLoading } = useAuth();
@@ -113,30 +96,39 @@ export default function PosOrdersPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
         </div>
       ) : tab === "shop" ? (
         shopOrders.length === 0 ? (
           <EmptyState label="No shop orders yet." />
         ) : (
-          <div className="space-y-3">
-            {shopOrders.map(order => (
-              <div key={order._id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{order.orderNumber}</p>
-                      <StatusBadge status={order.status} />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {order.customer?.name || "—"} · {order.customer?.phone || "—"}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {formatDate(order.createdAt)} · {order.items?.reduce((n, i) => n + (i.qty || 0), 0) || 0} item(s)
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0 space-y-2">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatGhs(order.total)}</p>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Order</Th>
+                <Th>Customer</Th>
+                <Th>Date</Th>
+                <Th>Items</Th>
+                <Th className="text-right">Total</Th>
+                <Th className="text-right">Status</Th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {shopOrders.map(order => (
+                <tr key={order._id}>
+                  <Td className="font-semibold text-gray-900 dark:text-white">{order.orderNumber}</Td>
+                  <Td>
+                    {order.customer?.name || "—"}
+                    <span className="block text-xs text-gray-400 dark:text-gray-500">{order.customer?.phone || "—"}</span>
+                  </Td>
+                  <Td className="text-gray-500 dark:text-gray-400">{formatDate(order.createdAt)}</Td>
+                  <Td className="text-gray-500 dark:text-gray-400">
+                    {order.items?.reduce((n, i) => n + (i.qty || 0), 0) || 0}
+                  </Td>
+                  <Td className="text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                    {formatGhs(order.total)}
+                  </Td>
+                  <Td className="text-right">
                     <div className="flex items-center gap-2 justify-end">
                       {savingId === order._id && <Loader2 className="animate-spin text-gray-400" size={11} />}
                       <select
@@ -148,54 +140,62 @@ export default function PosOrdersPage() {
                         {SHOP_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         )
       ) : partOrders.length === 0 ? (
         <EmptyState label="No repair part orders yet." />
       ) : (
-        <div className="space-y-3">
-          {partOrders.map(order => (
-            <div key={order._id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                      {order.orderType === "repair"
-                        ? (order.items || []).map(i => `${i.partName} ×${i.quantity}`).join(", ")
-                        : order.partName}
-                    </p>
-                    <StatusBadge status={order.status} />
-                    {order.orderType === "repair" && (
-                      <span className="text-[10px] font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400 bg-brand-500/10 rounded-full px-2 py-0.5">
-                        Multi-part
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {order.customerName || "—"} · {order.customerPhone || "—"}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {order.job?.jobNumber ? (
-                      <Link href={`/dashboard/pos/jobs/${order.job._id}`} className="text-brand-600 dark:text-brand-400 hover:underline">
-                        {order.job.jobNumber}
-                      </Link>
-                    ) : "—"}
-                    {" · "}{formatDate(order.createdAt)}
-                    {order.orderType === "repair"
-                      ? (order.shippingFeePesewas > 0 ? " · incl. shipping" : "")
-                      : ` · Qty ${order.quantity}`}
-                  </p>
-                </div>
-                <div className="text-right shrink-0 space-y-2">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {order.orderType === "repair"
-                      ? formatGhs(order.totalPesewas)
-                      : formatGhs(order.amountGhs)}
-                  </p>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Part(s)</Th>
+              <Th>Customer</Th>
+              <Th>Job</Th>
+              <Th>Date</Th>
+              <Th className="text-right">Total</Th>
+              <Th className="text-right">Status</Th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            {partOrders.map(order => (
+              <tr key={order._id}>
+                <Td className="font-semibold text-gray-900 dark:text-white max-w-[220px] truncate">
+                  {order.orderType === "repair"
+                    ? (order.items || []).map(i => `${i.partName} ×${i.quantity}`).join(", ")
+                    : order.partName}
+                  {order.orderType === "repair" && (
+                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400 bg-brand-500/10 rounded-full px-2 py-0.5">
+                      Multi-part
+                    </span>
+                  )}
+                </Td>
+                <Td>
+                  {order.customerName || "—"}
+                  <span className="block text-xs text-gray-400 dark:text-gray-500">{order.customerPhone || "—"}</span>
+                </Td>
+                <Td>
+                  {order.job?.jobNumber ? (
+                    <Link href={`/dashboard/pos/jobs/${order.job._id}`} className="text-brand-600 dark:text-brand-400 hover:underline">
+                      {order.job.jobNumber}
+                    </Link>
+                  ) : "—"}
+                </Td>
+                <Td className="text-gray-500 dark:text-gray-400">
+                  {formatDate(order.createdAt)}
+                  {order.orderType === "repair"
+                    ? (order.shippingFeePesewas > 0 ? <span className="block text-xs">incl. shipping</span> : null)
+                    : <span className="block text-xs">Qty {order.quantity}</span>}
+                </Td>
+                <Td className="text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                  {order.orderType === "repair"
+                    ? formatGhs(order.totalPesewas)
+                    : formatGhs(order.amountPesewas)}
+                </Td>
+                <Td className="text-right">
                   <div className="flex items-center gap-2 justify-end">
                     {savingId === order._id && <Loader2 className="animate-spin text-gray-400" size={11} />}
                     <select
@@ -207,11 +207,11 @@ export default function PosOrdersPage() {
                       {PART_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
       )}
     </div>
   );
@@ -223,4 +223,26 @@ function EmptyState({ label }) {
       <p className="text-gray-400 text-sm">{label}</p>
     </div>
   );
+}
+
+function Table({ children }) {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">{children}</table>
+      </div>
+    </div>
+  );
+}
+
+function Th({ children, className = "" }) {
+  return (
+    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 ${className}`}>
+      {children}
+    </th>
+  );
+}
+
+function Td({ children, className = "" }) {
+  return <td className={`px-4 py-3 ${className}`}>{children}</td>;
 }

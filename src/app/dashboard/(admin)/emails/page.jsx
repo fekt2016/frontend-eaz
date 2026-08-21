@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEmailLogs } from "@/hooks/queries/useEmails";
+import { isAdminRole } from "@/lib/roles";
 import {
   Mail, Search, RotateCw, Loader2,
   CheckCircle2, XCircle, Filter,
@@ -22,6 +23,7 @@ const TYPE_LABELS = {
   hosting_credentials: "Hosting Credentials",
   renewal_reminder:    "Renewal Reminder",
   expired_notice:      "Expired Notice",
+  two_factor:          "2FA Pin",
   other:               "Other",
 };
 
@@ -46,6 +48,7 @@ const typeColors = {
   hosting_credentials: "bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
   renewal_reminder:    "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
   expired_notice:      "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  two_factor:          "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
   other:               "bg-paper text-gray-600 dark:bg-slate-800 dark:text-slate-400",
 };
 
@@ -68,7 +71,7 @@ export default function AdminEmailLogsPage() {
   const [typeFilter, setType]   = useState("all");
   const [statusFilter, setStatus] = useState("all");
 
-  const isAdmin = user?.role === "admin";
+  const isAdmin = isAdminRole(user?.role);
 
   useEffect(() => {
     if (!authLoading && !isAdmin) router.replace("/dashboard");

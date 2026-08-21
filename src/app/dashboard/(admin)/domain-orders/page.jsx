@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { FaRedo, FaSpinner } from "react-icons/fa";
 import { Globe, Search, RotateCw, Loader2, ExternalLink } from "lucide-react";
 import { useAdminDomainOrders, useUpdateDomainOrderStatus, useRetryDomainRegistration } from "@/hooks/queries/useDomains";
+import { isAdminRole } from "@/lib/roles";
 
 const statusColors = {
   pending:   "bg-brand-50 text-brand-700 ring-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:ring-brand-900/30",
@@ -32,7 +33,7 @@ export default function AdminDomainOrdersPage() {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
-  const isAdmin = user?.role === "admin";
+  const isAdmin = isAdminRole(user?.role);
 
   useEffect(() => {
     if (!authLoading && !isAdmin) router.replace("/dashboard");

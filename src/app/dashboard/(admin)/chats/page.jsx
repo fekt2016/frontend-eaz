@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import { isAdminRole } from "@/lib/roles";
 import {
   Loader2, RotateCw, CheckCircle2, Trash2,
   Mail, MessagesSquare, Send, UserShield, Bell,
@@ -55,12 +56,12 @@ export default function AdminChatsPage() {
 
   // Initial load
   useEffect(() => {
-    if (!authLoading && user?.role === "admin") refreshSessions(false);
+    if (!authLoading && isAdminRole(user?.role)) refreshSessions(false);
   }, [authLoading, user?.role, refreshSessions]);
 
   // Auto-refresh sessions list every 8 s so new pending requests appear automatically
   useEffect(() => {
-    if (authLoading || user?.role !== "admin") return;
+    if (authLoading || !isAdminRole(user?.role)) return;
     const id = setInterval(() => refreshSessions(true), 8000);
     return () => clearInterval(id);
   }, [authLoading, user?.role, refreshSessions]);

@@ -26,6 +26,8 @@ const statusConfig = {
   cancelled: { label: "Cancelled", cls: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",                        dot: "bg-red-400" },
   failed:    { label: "Failed",    cls: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",                        dot: "bg-red-400" },
   completed: { label: "Active",    cls: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-900/30", dot: "bg-emerald-500" },
+  expired:        { label: "Expired",        cls: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",             dot: "bg-red-400" },
+  "expiring-soon": { label: "Expiring soon", cls: "bg-brand-50 text-brand-700 border-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-900/30", dot: "bg-brand-400" },
 };
 
 export function StatusBadge({ status }) {
@@ -120,6 +122,48 @@ export function DomainCard({ order }) {
         </div>
         <StatusBadge status={order.status} />
       </div>
+    </div>
+  );
+}
+
+// A registered domain (T26) — distinct from DomainCard, which shows an order
+// record. `domain` here is a `User.domains[]` entry: { domain, years,
+// registeredAt, expiresAt, status }.
+export function RegisteredDomainCard({ domain }) {
+  const expiresAt = domain.expiresAt ? new Date(domain.expiresAt) : null;
+  const daysLeft = expiresAt ? Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  const isExpired = daysLeft !== null && daysLeft <= 0;
+  const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 7;
+  const displayStatus = isExpired ? "expired" : isExpiringSoon ? "expiring-soon" : "active";
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <Globe size={16} className="text-blue-500" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white font-mono truncate">{domain.domain}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">
+              {expiresAt
+                ? isExpired
+                  ? `Expired ${fmtDate(expiresAt)}`
+                  : `Expires ${fmtDate(expiresAt)}${isExpiringSoon ? ` — ${daysLeft} day${daysLeft === 1 ? "" : "s"} left` : ""}`
+                : "Expiry unknown"}
+            </p>
+          </div>
+        </div>
+        <StatusBadge status={displayStatus} />
+      </div>
+      {(isExpired || isExpiringSoon) && (
+        <Link
+          href="/domains"
+          className="mt-3 inline-block text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
+        >
+          Renew
+        </Link>
+      )}
     </div>
   );
 }

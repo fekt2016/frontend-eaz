@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Plus, Pen, Trash2, RotateCw, Loader2, Eye, EyeOff, Star, X, Check, PenLine } from "lucide-react";
+import { isAdminRole } from "@/lib/roles";
 
 const CATEGORIES = ["SEO", "Web Design", "Case Study", "Social Media", "Branding", "Phone Repair", "Paid Advertising", "Email Marketing", "General"];
 
@@ -123,7 +124,7 @@ export default function AdminBlogPage() {
   const [saving, setSaving]       = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user?.role !== "admin") router.replace("/dashboard");
+    if (!authLoading && !isAdminRole(user?.role)) router.replace("/dashboard");
   }, [user, authLoading, router]);
 
   const fetchPosts = useCallback(async () => {
@@ -137,7 +138,7 @@ export default function AdminBlogPage() {
   }, []);
 
   useEffect(() => {
-    if (!authLoading && user?.role === "admin") fetchPosts();
+    if (!authLoading && isAdminRole(user?.role)) fetchPosts();
   }, [authLoading, user?.role, fetchPosts]);
 
   const handleSave = async (fields) => {
@@ -183,7 +184,7 @@ export default function AdminBlogPage() {
     setShowForm(true);
   };
 
-  if (authLoading || user?.role !== "admin") return null;
+  if (authLoading || !isAdminRole(user?.role)) return null;
 
   const published = posts.filter((p) => p.published).length;
   const drafts    = posts.filter((p) => !p.published).length;

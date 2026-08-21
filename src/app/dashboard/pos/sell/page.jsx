@@ -17,6 +17,8 @@ import { api } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { qk } from "@/lib/queryKeys";
 import { useCreateSale } from "@/hooks/queries/usePosSales";
+import { useInventorySearch } from "@/hooks/queries/useInventory";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { Receipt } from "@/components/pos/Receipt";
 import {
@@ -232,21 +234,22 @@ export default function SellPage() {
     }
   }, [qc]);
 
-  // ── Search as user types (debounced) ─────────────────────────────────────────
+  // ── Search as user types (debounced via the shared hooks) ───────────────────
+  const debouncedScanInput = useDebounce(scanInput, 200);
+  const typeSearch = useInventorySearch(debouncedScanInput, {
+    includeProducts: true,
+    enabled: debouncedScanInput.trim().length >= 2,
+  });
+
+  // Clear results immediately when the input drops below the search threshold
+  // (don't wait for the debounce) — same UX as before the migration.
   useEffect(() => {
-    if (!scanInput.trim() || scanInput.length < 2) { setResults([]); return; }
-    const t = setTimeout(async () => {
-      try {
-        const res = await qc.fetchQuery({
-          queryKey: qk.inventory.search(scanInput.trim()),
-          queryFn: () => api.get(`/pos/inventory?q=${encodeURIComponent(scanInput)}&includeProducts=true&limit=8`),
-          staleTime: 10_000,
-        });
-        setResults(res.data);
-      } catch { /* silent */ }
-    }, 200);
-    return () => clearTimeout(t);
-  }, [scanInput, qc]);
+    if (!scanInput.trim() || scanInput.length < 2) setResults([]);
+  }, [scanInput]);
+
+  useEffect(() => {
+    if (debouncedScanInput.trim().length >= 2) setResults(typeSearch.data ?? []);
+  }, [debouncedScanInput, typeSearch.data]);
 
   const completeSale = async () => {
     if (!amountPaid || paid < total) {

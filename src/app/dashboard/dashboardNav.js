@@ -1,7 +1,7 @@
 // Single source of truth for the shared app sidebar. Every page that uses a
 // sidenav (dashboard, commerce, POS) renders the same sections, role-gated.
 import {
-  Barcode, BarChart3, Boxes, CalendarDays, FileText, Gauge, Globe,
+  Barcode, BarChart3, CalendarDays, FileText, Gauge, Globe,
   History, Mail, MessagesSquare, Receipt, Server, ShieldCheck,
   ShoppingBag, Star, Store, Truck, Users, Wrench,
 } from "lucide-react";
@@ -28,10 +28,10 @@ export const adminNav = [
   { href: "/dashboard/activity-logs", icon: History, label: "Activity Log" },
 ];
 
-// Admin/superadmin only — sits below the Repair Shop POS section.
+// Admin/superadmin/staff — sits below the Repair Shop POS section. T24:
+// Marketplace and Inventory merged into one page/one nav entry.
 export const marketplaceNav = [
   { href: "/dashboard/commerce", icon: Store, label: "Marketplace" },
-  { href: "/dashboard/commerce/inventory", icon: Boxes, label: "Inventory" },
 ];
 
 // roles: if undefined, visible to all POS roles.

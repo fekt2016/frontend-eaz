@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { formatGhs } from "@/lib/shop";
-import { useOrders, useUpdateOrderStatus } from "@/hooks/queries/useOrders";
+import { useOrders } from "@/hooks/queries/useOrders";
 
 const statusColors = {
   pending: "bg-brand-50 text-brand-700",
@@ -42,18 +42,8 @@ export default function AdminOrdersPage() {
     {},
     { enabled: !authLoading && isAllowed },
   );
-  const updateStatus = useUpdateOrderStatus();
-  // While a row's update is in flight, mark that specific order id.
-  const updating = updateStatus.isPending ? updateStatus.variables?.id : null;
 
   if (authLoading || !isAllowed) return null;
-
-  const handleStatus = (order, status) => {
-    updateStatus.mutate(
-      { id: order._id, status },
-      { onError: (err) => alert(err.message || "Update failed") },
-    );
-  };
 
   const visible = filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
@@ -100,7 +90,7 @@ export default function AdminOrdersPage() {
                   <th className="px-4 py-3 font-semibold">Date</th>
                   <th className="px-4 py-3 font-semibold">Total</th>
                   <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-4 py-3 font-semibold text-right">Update</th>
+                  <th className="px-4 py-3 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -133,19 +123,13 @@ export default function AdminOrdersPage() {
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={order.status}
-                        disabled={updating === order._id}
-                        onChange={(e) => handleStatus(order, e.target.value)}
-                        className="text-xs font-semibold px-2 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 capitalize cursor-pointer disabled:opacity-50"
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/dashboard/commerce/orders/${order._id}`}
+                        className="text-xs font-semibold px-2.5 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-gray-400 transition"
                       >
-                        {STATUSES.filter((s) => s !== "all").map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
+                        Manage
+                      </Link>
                     </td>
                   </tr>
                 ))}

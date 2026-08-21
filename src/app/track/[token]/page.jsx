@@ -267,13 +267,13 @@ export default function TrackRepairPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white">{part.name}</p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{part.quantity} × {formatGhs(part.priceGhs)}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{part.quantity} × {formatGhs(part.pricePesewas)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-display font-bold text-lg text-brand-500">{formatGhs(part.priceGhs * part.quantity)}</p>
-                      {canOrder && part.priceGhs > 0 && (
+                      <p className="font-display font-bold text-lg text-brand-500">{formatGhs(part.pricePesewas * part.quantity)}</p>
+                      {canOrder && part.pricePesewas > 0 && (
                         <button
-                          onClick={() => addToCart({ _id: part.id, name: part.name, sku: "", sellingPrice: part.priceGhs, quantity: 99 })}
+                          onClick={() => addToCart({ _id: part.id, name: part.name, sku: "", sellingPrice: part.pricePesewas, quantity: 99 })}
                           className="mt-2 rounded-full bg-gray-900 dark:bg-brand-500 px-4 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
                         >
                           Add to order
@@ -531,7 +531,7 @@ export default function TrackRepairPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>{badge.label}</span>
-                      <span className="font-semibold">{formatGhs(o.amountGhs)}</span>
+                      <span className="font-semibold">{formatGhs(o.amountPesewas)}</span>
                     </div>
                   </li>
                 );

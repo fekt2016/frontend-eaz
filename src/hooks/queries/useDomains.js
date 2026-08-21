@@ -12,6 +12,18 @@ export function useDomainOrders(options = {}) {
   });
 }
 
+// The caller's actually-registered domains (GET /domain/my), not order
+// records — name, registration/expiry status. Distinct from useDomainOrders,
+// which the dashboard overview's recent-activity widget still uses.
+export function useMyRegisteredDomains(options = {}) {
+  return useQuery({
+    queryKey: qk.domains.registered,
+    queryFn: () => api.get("/domain/my").then((r) => r.data ?? []),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
 // Admin domain orders with an optional status filter (search is client-side).
 export function useAdminDomainOrders(status = "all", options = {}) {
   const suffix = status && status !== "all" ? `?status=${status}` : "";

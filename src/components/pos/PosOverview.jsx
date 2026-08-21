@@ -66,15 +66,15 @@ export default function PosOverview({ data, loading }) {
     <>
       {/* Key stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-<Stat label="Total Revenue"     value={`GH₵${((stats?.totalRevenue || 0) / 100).toLocaleString()}`}  color="text-green-600 dark:text-green-400"  icon={Banknote} sub={`${stats?.totalPayments || 0} payments`} />
-        <Stat label="Today's Revenue"   value={`GH₵${((stats?.todayRevenue  || 0) / 100).toLocaleString()}`} color="text-brand-600 dark:text-brand-400"  icon={ChartColumn}      sub="Payments today" />
+<Stat label="Total Revenue"     value={formatGhs(stats?.totalRevenue || 0)}  color="text-green-600 dark:text-green-400"  icon={Banknote} sub={`${stats?.totalPayments || 0} payments`} />
+        <Stat label="Today's Revenue"   value={formatGhs(stats?.todayRevenue || 0)} color="text-brand-600 dark:text-brand-400"  icon={ChartColumn}      sub="Payments today" />
         <Stat label="Total Jobs"        value={stats?.totalJobs}        icon={Wrench}    sub="All time" />
         <Stat label="New Today"         value={stats?.todayJobs}        icon={Wrench}    sub="Jobs created today" color="text-blue-600 dark:text-blue-400" />
         <Stat label="In Progress"       value={stats?.pendingJobs}      icon={Loader2}   color="text-brand-600 dark:text-brand-400" sub="Active repairs" />
         <Stat label="Ready to Collect"  value={stats?.readyJobs}        icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub="Awaiting pickup" />
         <Stat label="Customers"         value={stats?.totalCustomers}   icon={Users}     sub="Registered" />
         <Stat label="Low Stock"         value={stats?.lowStockCount}    icon={TriangleAlert} color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"} sub="Parts below threshold" />
-        <Stat label="Total Expenses"    value={`GH₵${((stats?.totalExpenses || 0) / 100).toLocaleString()}`} color="text-red-600 dark:text-red-400" icon={Receipt} sub="Running costs" />
+        <Stat label="Total Expenses"    value={formatGhs(stats?.totalExpenses || 0)} color="text-red-600 dark:text-red-400" icon={Receipt} sub="Running costs" />
         <Stat
           label="Net Profit"
           value={formatGhs(stats?.netProfit || 0)}

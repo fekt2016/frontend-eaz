@@ -103,7 +103,7 @@ export default function Sidebar({ open, onClose }) {
                 {...item}
                 active={isActive(item.href)}
                 onClick={onClose}
-                badge={item.href === "/dashboard/commerce/inventory" && lowStockCount > 0 ? (
+                badge={item.href === "/dashboard/commerce" && lowStockCount > 0 ? (
                   <span className="ml-auto text-xs bg-red-500 text-white font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                     {lowStockCount}
                   </span>

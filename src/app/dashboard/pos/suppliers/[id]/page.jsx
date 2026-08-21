@@ -97,7 +97,7 @@ export default function SupplierDetailPage() {
             <p className="text-sm font-semibold text-red-600 dark:text-red-400">{lowStockParts.length} part{lowStockParts.length !== 1 ? "s" : ""} need reordering</p>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               {lowStockParts.map(p => (
-                <Link key={p._id} href="/dashboard/commerce/inventory" className="text-xs px-2.5 py-1 rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/30 transition">
+                <Link key={p._id} href="/dashboard/commerce" className="text-xs px-2.5 py-1 rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/30 transition">
                   {p.name} · {p.quantity} left
                 </Link>
               ))}
@@ -112,7 +112,7 @@ export default function SupplierDetailPage() {
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <Boxes size={13} className="text-brand-600 dark:text-brand-400" /> Linked Parts
           </h2>
-          <Link href="/dashboard/commerce/inventory" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">Manage inventory →</Link>
+          <Link href="/dashboard/commerce" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">Manage inventory →</Link>
         </div>
 
         {parts.length === 0 ? (
