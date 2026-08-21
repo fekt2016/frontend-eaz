@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import {
   Server, Globe, Clock, ChevronRight, CircleUser,
-  Wrench, CheckCircle2, TriangleAlert, Plus, Boxes, ShoppingBag,
+  Wrench, CheckCircle2, TriangleAlert, Boxes, ShoppingBag,
   Loader2,
 } from "lucide-react";
 import {
@@ -36,7 +36,7 @@ function fmtShortDate(value) {
 
 // Recent shop orders + online repair-part orders — so staff see commerce
 // activity, not just repair jobs, on their dashboard.
-function RecentOrdersList({ shopOrders, partOrders, loading }) {
+export function RecentOrdersList({ shopOrders, partOrders, loading }) {
   const isEmpty = !loading && shopOrders.length === 0 && partOrders.length === 0;
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
@@ -135,7 +135,7 @@ function PosStatCard({ label, value, icon: Icon, color = "text-brand-600 dark:te
 }
 
 // Shared recent-jobs list — each row links to the job so it can be updated.
-function RecentJobsList({ jobs, loading }) {
+export function RecentJobsList({ jobs, loading }) {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
@@ -147,7 +147,7 @@ function RecentJobsList({ jobs, loading }) {
           {[...Array(3)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
         </div>
       ) : !jobs || jobs.length === 0 ? (
-        <div className="p-8 text-center text-gray-500 text-sm">No jobs yet. <Link href="/dashboard/pos/jobs/new" className="text-brand-600 dark:text-brand-400 hover:underline">Create first job →</Link></div>
+        <div className="p-8 text-center text-gray-500 text-sm">No jobs yet.</div>
       ) : (
         <div className="divide-y divide-gray-200 dark:divide-gray-800">
           {jobs.map(job => (
@@ -204,20 +204,12 @@ function MyDashboard({ user }) {
   return (
     <div className="space-y-7">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">My Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {isTech ? "Jobs assigned to you" : "Your jobs & sales"} ·{" "}
-            {new Date().toLocaleDateString("en-GH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </p>
-        </div>
-        <Link
-          href="/dashboard/pos/jobs/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
-        >
-          <Plus size={11} /> New Job
-        </Link>
+      <div>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">My Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-0.5">
+          {isTech ? "Jobs assigned to you" : "Your jobs & sales"} ·{" "}
+          {new Date().toLocaleDateString("en-GH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+        </p>
       </div>
 
       {/* Stats grid */}
@@ -239,8 +231,8 @@ function MyDashboard({ user }) {
           ) : (
             <>
 <PosStatCard label="My Sales"      value={stats?.mySalesCount}                                     icon={ShoppingBag} color="text-purple-600 dark:text-purple-400" sub="Products sold (all time)" />
-              <PosStatCard label="Sales Revenue" value={`GH₵${((stats?.mySalesRevenue || 0) / 100).toLocaleString()}`}   icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub="From my sales" />
-              <PosStatCard label="Today's Sales" value={`GH₵${((stats?.myTodaySalesRevenue || 0) / 100).toLocaleString()}`} icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
+              <PosStatCard label="Sales Revenue" value={formatGhs(stats?.mySalesRevenue || 0)}   icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub="From my sales" />
+              <PosStatCard label="Today's Sales" value={formatGhs(stats?.myTodaySalesRevenue || 0)} icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
               <PosStatCard label="Low Stock"     value={stats?.lowStockCount}                                    icon={Boxes}       color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-500"} sub="Parts below threshold" />
             </>
           )}
@@ -267,19 +259,11 @@ function FullDashboard() {
   return (
     <div className="space-y-7">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {new Date().toLocaleDateString("en-GH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </p>
-        </div>
-        <Link
-          href="/dashboard/pos/jobs/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
-        >
-          <Plus size={11} /> New Job
-        </Link>
+      <div>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-0.5">
+          {new Date().toLocaleDateString("en-GH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+        </p>
       </div>
 
       {/* Full shop-wide overview — same blocks as the Reports page */}

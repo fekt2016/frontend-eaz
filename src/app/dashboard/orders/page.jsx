@@ -1,18 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, Loader2 } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
-import { useOrders, useMyOrders, useUpdateOrderStatus } from "@/hooks/queries/useOrders";
+import { useOrders, useMyOrders } from "@/hooks/queries/useOrders";
 import { formatGhs } from "@/lib/shop";
-
-const ORDER_STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
 export default function CustomerOrdersPage() {
   const { user } = useAuth();
-  const [drafts, setDrafts] = useState({});
 
   // Admin/staff see all orders; customers see only their own. Both hooks are
   // declared unconditionally (rules of hooks) but only the relevant one runs.
@@ -21,22 +17,6 @@ export default function CustomerOrdersPage() {
   const myOrdersQ = useMyOrders({ enabled: !!user && !seesAll });
   const orders = seesAll ? (allOrdersQ.data ?? []) : (myOrdersQ.data ?? []);
   const loading = seesAll ? allOrdersQ.isLoading : myOrdersQ.isLoading;
-
-  const updateStatus = useUpdateOrderStatus();
-  // Mark the row whose status change is in flight.
-  const updating = updateStatus.isPending ? updateStatus.variables?.id : null;
-
-  const setDraft = (id, status) => setDrafts((d) => ({ ...d, [id]: status }));
-
-  const handleStatusUpdate = (id) => {
-    const status = drafts[id];
-    if (!status) return;
-    // The mutation invalidates ["orders"], so the list refetches automatically.
-    updateStatus.mutate(
-      { id, status },
-      { onError: (err) => alert(err.message || "Update failed") },
-    );
-  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-20">
@@ -85,7 +65,6 @@ export default function CustomerOrdersPage() {
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Total</th>
-                  {seesAll && <th className="px-4 py-3 text-right">Update status</th>}
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -120,35 +99,12 @@ export default function CustomerOrdersPage() {
                     <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                       {formatTotal(o.total)}
                     </td>
-                    {seesAll && (
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <select
-                            value={drafts[o._id] ?? o.status}
-                            onChange={(e) => setDraft(o._id, e.target.value)}
-                            className="text-xs font-medium px-2 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-400/40"
-                          >
-                            {ORDER_STATUSES.map((s) => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            onClick={() => handleStatusUpdate(o._id)}
-                            disabled={updating === o._id || (drafts[o._id] ?? o.status) === o.status}
-                            className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-50"
-                          >
-                            {updating === o._id ? <Loader2 className="animate-spin" size={10} /> : "Update"}
-                          </button>
-                        </div>
-                      </td>
-                    )}
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <Link
                         href={`/dashboard/orders/${o._id}`}
                         className="text-xs font-semibold px-2.5 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition"
                       >
-                        View
+                        {seesAll ? "Manage" : "View"}
                       </Link>
                     </td>
                   </tr>

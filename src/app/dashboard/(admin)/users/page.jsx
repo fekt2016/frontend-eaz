@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import { isAdminRole } from "@/lib/roles";
 import {
   Loader2, RotateCw, Pen, Ban, CheckCircle2,
   X, Search, ShieldCheck, User, Key, Eye, EyeOff,
@@ -508,7 +509,7 @@ export default function AdminUsersPage() {
   }, []);
 
   useEffect(() => {
-    if (!authLoading && me?.role === "admin") fetchUsers();
+    if (!authLoading && isAdminRole(me?.role)) fetchUsers();
   }, [authLoading, me?.role, fetchUsers]);
 
   const handleSaved = (updated) => {

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
+import { landingPathForRole } from "@/lib/roles";
 
 const schema = z.object({
   email: z.string().min(1),
@@ -41,14 +42,11 @@ function LoginPageInner() {
         router.push(`/auth/verify-2fa?email=${encodeURIComponent(cleanIdentifier)}`);
         return;
       }
-      const role = res?.data?.user?.role;
-      if (role === "technician" || role === "admin") router.push("/dashboard/pos");
-      else if (["superadmin", "staff"].includes(role)) router.push("/dashboard/pos/sell");
-      else router.push("/"); // customers land on the homepage, not the dashboard
+      router.push(landingPathForRole(res?.data?.user?.role));
     } catch (err) {
       // If account not verified, redirect to verify page
       if (err.requiresVerification) {
-        router.push(`/auth/verify?email=${encodeURIComponent(cleanIdentifier)}`);
+        router.push(`/auth/verify?email=${encodeURIComponent(err.email || cleanIdentifier)}`);
         return;
       }
       setError(err.message || "Invalid email or password.");

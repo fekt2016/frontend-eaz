@@ -23,21 +23,11 @@ export function AuthProvider({ children }) {
   useEffect(() => { fetchMe(); }, [fetchMe]);
 
   const login = async (email, password) => {
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      // 2FA required — don't set user yet
-      if (res.data?.requiresTwoFactor) return res;
-      setUser(res.data?.user || null);
-      return res;
-    } catch (err) {
-      // Attach requiresVerification flag so login page can redirect
-      if (err.message?.toLowerCase().includes('verify')) {
-        const error = new Error(err.message);
-        error.requiresVerification = true;
-        throw error;
-      }
-      throw err;
-    }
+    const res = await api.post("/auth/login", { email, password });
+    // 2FA required — don't set user yet
+    if (res.data?.requiresTwoFactor) return res;
+    setUser(res.data?.user || null);
+    return res;
   };
 
   const register = async (name, email, phone, password) => {

@@ -1,4 +1,4 @@
-import { STATUS_COLORS } from "./jobStatus";
+import { STATUS_COLORS, statusLabel } from "./jobStatus";
 
 /**
  * Invoice card: repair-work summary, parts breakdown, totals, and a
@@ -16,7 +16,7 @@ export function JobInvoice({
       <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50 flex items-center justify-between">
         <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Invoice</p>
         <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {statusLabel(status)}
         </span>
       </div>
 

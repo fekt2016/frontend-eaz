@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Loader2, RotateCw, Trash2, ChevronDown, Mail, Phone, Building, CalendarDays, Target, MessageCircle, Inbox } from "lucide-react";
+import { isAdminRole } from "@/lib/roles";
 
 const STATUS_CONFIG = {
   new:      { label: "New",      cls: "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800/40",     dot: "bg-brand-400" },
@@ -184,7 +185,7 @@ export default function AdminConsultationsPage() {
   const [typeFilter, setTypeFilter] = useState("consultation");
 
   useEffect(() => {
-    if (!authLoading && user?.role !== "admin") router.replace("/dashboard");
+    if (!authLoading && !isAdminRole(user?.role)) router.replace("/dashboard");
   }, [user, authLoading, router]);
 
   const fetchData = useCallback(async () => {
@@ -204,7 +205,7 @@ export default function AdminConsultationsPage() {
   }, [filter, typeFilter]);
 
   useEffect(() => {
-    if (!authLoading && user?.role === "admin") fetchData();
+    if (!authLoading && isAdminRole(user?.role)) fetchData();
   }, [authLoading, user?.role, fetchData]);
 
   const handleStatusChange = async (id, update) => {
@@ -228,7 +229,7 @@ export default function AdminConsultationsPage() {
     } catch {}
   };
 
-  if (authLoading || user?.role !== "admin") return null;
+  if (authLoading || !isAdminRole(user?.role)) return null;
 
   const counts = items.reduce((acc, c) => { acc[c.status] = (acc[c.status] || 0) + 1; return acc; }, {});
   const newCount = counts.new || 0;

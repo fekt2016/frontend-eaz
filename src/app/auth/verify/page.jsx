@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import { landingPathForRole } from "@/lib/roles";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { Mail, RotateCw } from "lucide-react";
 
@@ -76,7 +77,7 @@ function VerifyPageInner() {
       if (res.data?.user) {
         setUser(res.data.user);
       }
-      router.push("/dashboard");
+      router.push(landingPathForRole(res.data?.user?.role));
     } catch (err) {
       setError(err.message || "Invalid or expired code. Please try again.");
       // Clear PIN on error

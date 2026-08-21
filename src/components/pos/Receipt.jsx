@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { formatGhs } from "@/lib/shop";
 
 /**
  * Receipt component — renders a thermal-printer-compatible receipt.
@@ -19,7 +20,10 @@ export function Receipt({ sale, shopName = "EazWorld Repair Shop", shopPhone = "
 
   if (!sale) return null;
 
-  // Sale money fields are integer pesewas; the receipt shows cedis.
+  // Sale money fields are integer pesewas. The totals section below uses the
+  // shared formatGhs formatter; the item table omits the "GH₵" prefix per row
+  // (the column header already carries it — the table is print-width constrained)
+  // so it keeps this narrower cedis-only helper instead.
   const c = (n) => ((Number(n) || 0) / 100).toFixed(2);
 
   const date = new Date(sale.createdAt).toLocaleString("en-GH", {
@@ -97,15 +101,15 @@ export function Receipt({ sale, shopName = "EazWorld Repair Shop", shopPhone = "
         {/* Totals */}
         <div className="text-[10px] space-y-0.5">
           {sale.discount > 0 && (
-            <Row label="Subtotal" value={`GH₵${c(sale.subtotal)}`} />
+            <Row label="Subtotal" value={formatGhs(sale.subtotal)} />
           )}
           {sale.discount > 0 && (
-            <Row label="Discount" value={`-GH₵${c(sale.discount)}`} />
+            <Row label="Discount" value={`-${formatGhs(sale.discount)}`} />
           )}
-          <Row label="TOTAL" value={`GH₵${c(sale.total)}`} bold />
-          <Row label={`Paid (${sale.paymentMethod.toUpperCase()})`} value={`GH₵${c(sale.amountPaid)}`} />
+          <Row label="TOTAL" value={formatGhs(sale.total)} bold />
+          <Row label={`Paid (${sale.paymentMethod.toUpperCase()})`} value={formatGhs(sale.amountPaid)} />
           {sale.changeDue > 0 && (
-            <Row label="Change" value={`GH₵${c(sale.changeDue)}`} />
+            <Row label="Change" value={formatGhs(sale.changeDue)} />
           )}
         </div>
 

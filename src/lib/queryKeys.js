@@ -13,7 +13,7 @@ export const qk = {
   inventory: {
     all: ["inventory"],
     list: (params = {}) => ["inventory", "list", params],
-    search: (term) => ["inventory", "search", term],
+    search: (term, params = {}) => ["inventory", "search", term, params],
   },
   // Public repair-parts catalogue (the /track parts search — no auth).
   parts: {
@@ -53,6 +53,7 @@ export const qk = {
   domains: {
     all: ["domains"],
     mine: ["domains", "mine"],
+    registered: ["domains", "registered"],
     list: (params = {}) => ["domains", "list", params],
   },
   reviews: {

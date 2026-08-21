@@ -29,32 +29,109 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## P1 — Important
 
-- [ ] **T4 · Add frontend test coverage**
+- [x] **T4 · Add frontend test coverage** ✅ done 2026-08-20
   - **Issue:** Only 3 frontend test files (31 tests) vs. a large app — UI/hook regressions
     can slip through. Backend is well covered (112 tests).
   - **Impact:** MEDIUM (regression risk).
   - **Location:** `frontend-eaz` (vitest)
   - **Fix:** Add tests for checkout, dashboard recent-orders wiring, order tracking page,
     repair parts search, and auth context.
+  - **Shipped:**
+    - `src/context/AuthContext.test.jsx` — 9 tests: fetch-me on mount, login success/2FA/
+      verification-required/other-error, logout-clears-user-even-on-API-failure, register,
+      useAuth-outside-provider guard.
+    - `src/components/CheckoutForm.test.jsx` — 5 tests: required-field validation, sanitized
+      submit + Paystack redirect, registration-period price multiplier, API failure, missing
+      `authorizationUrl` fallback.
+    - `src/app/dashboard/page.jsx` — exported `RecentOrdersList` (was module-local) so it's
+      directly testable; `src/app/dashboard/RecentOrdersList.test.jsx` — 6 tests: loading
+      skeleton, empty state, shop-order rendering, part-order rendering, missing-partName/job
+      fallback, combined list.
+    - `src/hooks/queries/usePublicParts.test.jsx` — 7 tests: query-string construction (q,
+      category, both, "all" sentinel, whitespace trim), empty-data fallback, `enabled: false`.
+    - `src/app/track/[token]/page.test.jsx` — 6 tests: loading spinner, not-found error state,
+      job number/device/fault/status-badge rendering, all-status label mapping, `?paid=1`
+      banner, unrecognized-status fallback badge.
+  - **Verified:** full frontend suite — 9 files / 67 tests pass (up from 4 files / 31 tests);
+    `npm run lint` clean; `npm run build` succeeds.
   - **Source:** AUDIT.md §28, §29 P1
 
 ---
 
 ## P2 — Improvements
 
-- [ ] **T7 · Consolidate data-fetching + drop unused axios**
+- [x] **T7 · Consolidate data-fetching + drop unused axios** ✅ done 2026-08-20
   - **Issue:** Two patterns coexist (react-query hooks vs. raw `useEffect`+`api.js`);
     `axios` is a dependency on both apps but effectively unused on the client.
   - **Location:** `src/hooks`, various pages, both `package.json`
   - **Fix:** Standardize new/edited code on react-query; migrate the manual part-search
     debounce to the shared `useInventorySearch`; remove the unused axios dep.
+  - **Shipped:**
+    - `src/hooks/queries/useInventory.js` — `useInventorySearch` now accepts
+      `includeProducts`/`retail`/`limit` and folds them into the query key (so a
+      parts-only caller and a products-included caller never collide in cache);
+      `src/lib/queryKeys.js` — `qk.inventory.search(term, params)` updated to match.
+    - `src/app/dashboard/pos/jobs/new/page.jsx` — replaced the hand-rolled
+      `useEffect` + `setTimeout` part-search debounce with `useDebounce` +
+      `useInventorySearch` (same pattern already used by the job-detail page).
+    - `src/app/dashboard/pos/sell/page.jsx` — replaced the "search as you type"
+      manual debounce effect with `useDebounce` + `useInventorySearch({ includeProducts:
+      true })`; left the imperative Enter/barcode-scan lookup (`qc.fetchQuery` for
+      `/pos/scan/:code` + its inventory fallback) as-is — that's a one-shot action on
+      a keypress, not a duplicate of the reactive-typing pattern, and it already goes
+      through react-query's cache rather than a bespoke fetch.
+    - `package.json` — removed the unused `axios` dependency (frontend has zero
+      imports of it; `lib/api.js`'s fetch wrapper is the only HTTP client) and ran
+      `npm uninstall axios` to update the lockfile.
+    - **Not touched:** `backend-eaz/package.json`'s `axios` — confirmed it's actively
+      used by `services/whm.js`, `services/cyberpanel.js`, `services/namecheap.js`;
+      removing it there would break those integrations.
+    - `src/app/dashboard/commerce/inventory/page.jsx` intentionally left on its own
+      `useEffect`+`api.js` fetch — it's a paginated list/filter admin page, not a
+      typeahead search, so it isn't an instance of the duplicated debounce pattern
+      this task targets.
+  - **Verified:** full frontend suite — 9 files / 67 tests pass; `npm run lint` clean;
+    `npm run build` succeeds. Not verified in a live browser — this host has no working
+    headless/real browser (Playwright dropped macOS 12 support, see T3a); only the
+    internal data-fetching logic changed, JSX/rendering was untouched.
   - **Source:** AUDIT.md §20, §27 (#1, #3)
 
-- [ ] **T9 · Remove dead `/dashboard/pos/inventory` route dir**
+- [x] **T8 · Update to the renamed `unitPricePesewas`/`amountPesewas` POS field names** ✅ done 2026-08-20
+  - **Issue:** Originally filed as backend-only (`backend-eaz/tasks.md` → T8: rename
+    `PartOrder`/`RepairOrder`'s misleadingly-named `unitPriceGhs`/`amountGhs` fields —
+    already pesewas post money-migration — to `unitPricePesewas`/`amountPesewas`). Turned
+    out **not** to be backend-only: those field names are part of the API response
+    contract for two frontend pages, so the rename would have silently broken them
+    (`formatGhs(undefined)` → `GH₵0.00`) if left unchanged.
+  - **Location:** `src/app/track/[token]/page.jsx` (public repair-tracking page — parts
+    list + part-order history), `src/app/dashboard/pos/orders/page.jsx` (staff POS
+    orders list)
+  - **Fix:** Read the new field names from the API responses.
+  - **Shipped:**
+    - `src/app/track/[token]/page.jsx` — `part.priceGhs` → `part.pricePesewas` (parts
+      list price + the value passed into `addToCart`'s `sellingPrice`), `o.amountGhs` →
+      `o.amountPesewas` (part-order history row).
+    - `src/app/dashboard/pos/orders/page.jsx` — `order.amountGhs` → `order.amountPesewas`
+      (staff orders list amount column).
+    - **Not touched (deliberately):** `track/[token]/page.jsx` also has a *local*,
+      client-only cart-state field that happens to share the old name
+      (`cart[].unitPriceGhs`, `partsSubtotalGhs` — derived as `part.sellingPrice / 100`
+      for display, never sent to or read from the backend). It's a naming coincidence,
+      not the same field, and isn't part of this API-contract fix — flagged in
+      `backend-eaz/tasks.md` → T8 as a residual quirk if a future cleanup wants it.
+  - **Verified:** `npm run lint` on both files clean; `npm run build` succeeds
+    (`/track/[token]` and `/dashboard/pos/orders` both compile). Not verified in a live
+    browser — see T7's note on this host's browser limitation.
+  - **Source:** `backend-eaz/tasks.md` T8 (AUDIT.md §27 (#4))
+
+- [x] **T9 · Remove dead `/dashboard/pos/inventory` route dir** ✅ already resolved — confirmed 2026-08-20
   - **Issue:** Directory exists with no `page.jsx` (inventory lives under
     `/dashboard/commerce/inventory`).
   - **Location:** `src/app/dashboard/pos/inventory/`
   - **Fix:** Delete the empty directory.
+  - **Verified:** `src/app/dashboard/pos/inventory/` does not exist on disk, and no file
+    in the codebase references `dashboard/pos/inventory` — already gone before this task
+    was picked up (removed at some earlier, undated point). No code change made.
   - **Source:** AUDIT.md §3 note, §27 (#5)
 
 - [ ] **T17 · Registration form: allow email OR phone**
@@ -85,7 +162,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
-- [ ] **T61 · 2FA PIN email logged as `other` — not filterable in EmailLog**
+- [x] **T61 · 2FA PIN email logged as `other` — not filterable in EmailLog** ✅ done 2026-08-20
   - **Issue:** Backend — `utils/email.js` `sendTwoFactorPin` sends `type: 'other'` (line 284), so
     2FA code emails land in `EmailLog` under `other` and can't be filtered.
   - **Location:** backend — `utils/email.js:281-284`; frontend — `src/app/dashboard/(admin)/emails/page.jsx`
@@ -94,8 +171,13 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `two_factor: "2FA Pin"` to `TYPE_LABELS` and a `typeColors` entry on the emails page so the
     filter shows the new type.
   - **Backend detail:** `backend-eaz/tasks.md` → T61.
+  - **Shipped:** `src/app/dashboard/(admin)/emails/page.jsx` — added
+    `two_factor: "2FA Pin"` to `TYPE_LABELS` (the filter dropdown is generated from this
+    object, so no separate dropdown change needed) and an amber entry to `typeColors`
+    (unused color in the existing palette). `npm run lint` clean on the file; `next build`
+    succeeds.
 
-- [ ] **T60 · Hosting `createOrder` returns 500 instead of 400 for unknown plan/tier**
+- [x] **T60 · Hosting `createOrder` returns 500 instead of 400 for unknown plan/tier** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T60 for the full Shipped/Verified notes
   - **Issue:** Backend — `getPlanPrice` **throws** on unknown `planType`/`tier`
     (`config/hostingPlans.js:330-336`) and `createOrder` doesn't catch it, so a bad plan hits
     the 500 error handler instead of the intended 400. The `planTotal == null` check only covers
@@ -106,7 +188,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     400 path fires; add a test. No frontend work.
   - **Backend detail:** `backend-eaz/tasks.md` → T60.
 
-- [ ] **T59 · Service orders: free-form status + unclamped pagination**
+- [x] **T59 · Service orders: free-form status + unclamped pagination** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T59 for the full Shipped/Verified notes
   - **Issue:** Backend — `updateServiceOrder` persists any `status` string via `findByIdAndUpdate`
     (no validators), and `getServiceOrders` doesn't clamp `page`/`limit`.
   - **Location:** backend — `controllers/serviceOrderController.js` (`getServiceOrders` 133-146,
@@ -115,7 +197,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     No frontend work.
   - **Backend detail:** `backend-eaz/tasks.md` → T59.
 
-- [ ] **T58 · POS part/repair order status allows backward moves**
+- [x] **T58 · POS part/repair order status allows backward moves** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T58 for the full Shipped/Verified notes
   - **Issue:** Backend — `updatePartOrder`/`updateRepairOrder` validate the status enum but allow
     `paid → pending`/`paid → cancelled`; cancelling a paid part order leaves the linked job at
     `waiting_for_parts` with no re-evaluation.
@@ -125,7 +207,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     reset the linked job off `waiting_for_parts` when a paid part order is cancelled. No frontend work.
   - **Backend detail:** `backend-eaz/tasks.md` → T58.
 
-- [ ] **T57 · POS `updateJob` accepts money fields from technicians (bill understatement)**
+- [x] **T57 · POS `updateJob` accepts money fields from technicians (bill understatement)** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T57 for the full Shipped/Verified notes
   - **Issue:** Backend — `PATCH /pos/jobs/:id` is open to all POS roles incl. `technician`, and
     `jobController.updateJob` applies `laborCost`, `depositPaid`, `diagnosisFee`, and client-priced
     custom parts straight from the body. Inventory parts are price-anchored to `Part.sellingPrice`,
@@ -136,7 +218,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     client-priced custom parts) and add a test. No frontend work.
   - **Backend detail:** `backend-eaz/tasks.md` → T57.
 
-- [ ] **T56 · POS job detail page missing `waiting_for_parts` status**
+- [x] **T56 · POS job detail page missing `waiting_for_parts` status** ✅ done 2026-08-20
   - **Issue:** `src/app/dashboard/pos/jobs/[id]/page.jsx:29` — `STATUSES` omits `waiting_for_parts`,
     a real backend status set by the online part-order webhook. A job in that state shows an
     unmapped `<select>` value and has no quick-action button, so staff can't advance it with one tap.
@@ -145,8 +227,34 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Fix:** Frontend change only — add `waiting_for_parts` to `STATUSES` and a quick-action case
     (`waiting_for_parts → repairing`).
   - **Backend detail:** n/a — backend already supports the status end-to-end.
+  - **Shipped:**
+    - `STATUSES` — added `waiting_for_parts` between `diagnosing` and `repairing`, matching
+      the backend's own enum order (`RepairJob.status`).
+    - Quick-action buttons — new `status === "waiting_for_parts"` block: "Parts arrived →
+      Start Repairing" (`quickStatus("repairing")`), same pattern as the other status
+      blocks. Also added `waiting_for_parts` to the cancel-eligible array (it's an active,
+      non-terminal status — matches the backend's own `ACTIVE_JOB_STATUSES` treating it as
+      equally active/cancellable as `received`/`diagnosing`/`repairing`/`ready`).
+    - `_components/jobStatus.js` — added a `waiting_for_parts` entry to `STATUS_COLORS`
+      (amber, distinct from the six existing colors on this page) and a new
+      `STATUS_LABELS`/`statusLabel()` export, since the existing
+      `s.charAt(0).toUpperCase() + s.slice(1)` capitalize logic (and the `<p className="capitalize">`
+      CSS approach) both render snake_case badly (`Waiting_for_parts`). `statusLabel()` maps
+      `waiting_for_parts` → `"Waiting for Parts"`, matching the copy already used on the
+      public `track/[token]` page for the same status, and falls back to the old
+      capitalize-first-letter behavior for every other (single-word) status.
+    - `page.jsx`'s `<select>` options and status banner, and `JobInvoice.jsx`'s status
+      badge, all switched to `statusLabel()` — the badge/label fix wasn't explicitly in
+      the task's location list (JobInvoice.jsx has the identical capitalize pattern) but
+      was cheap and directly served the task's own goal (no unmapped/ugly status
+      display), so included it.
+    - No test added — this repo's frontend test suite doesn't yet cover the authenticated
+      POS job-detail page (T4's coverage was checkout/dashboard-recent-orders/track/
+      parts-search/auth-context), and the task's own fix note didn't ask for one.
+  - **Verified:** `npm run lint` clean on all 3 touched files; `next build` succeeds; full
+    vitest suite (9 files / 67 tests) still passes.
 
-- [ ] **T55 · Credentials/PINs generated with non-crypto `Math.random()`**
+- [x] **T55 · Credentials/PINs generated with non-crypto `Math.random()`** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T55 for the full Shipped/Verified notes
   - **Issue:** Backend — 6-digit verification/2FA PINs (`authController.js:11` generatePin, 4 call
     sites) and cPanel/CyberPanel account passwords (`whm.js`, `cyberpanel.js`) are generated with
     `Math.random`, a PRNG not a CSPRNG; compounds the PIN brute-force risk in T46.
@@ -156,7 +264,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     for passwords; add a PIN range/format test. No frontend work.
   - **Backend detail:** `backend-eaz/tasks.md` → T55.
 
-- [ ] **T54 · Hosting order domain fee is client-trusted — Namecheap lookup never matches**
+- [x] **T54 · Hosting order domain fee is client-trusted — Namecheap lookup never matches** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T54 for the full Shipped/Verified notes
   - **Issue:** Backend — `hostingOrderController.createOrder` indexes `getPricing()` with a
     dot-less TLD (`"com"`) while the price map keys are dot-prefixed (`".com"`), so the
     server-side price always misses and the client-supplied `domainRegistrationFee` (capped
@@ -166,7 +274,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     redundant USD→GHS re-conversion. No frontend work (checkout already shows the server price).
   - **Backend detail:** `backend-eaz/tasks.md` → T54.
 
-- [ ] **T53 · POS `updateJob` allows backward / terminal-to-live status transitions**
+- [x] **T53 · POS `updateJob` allows backward / terminal-to-live status transitions** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T53 for the full Shipped/Verified notes
   - **Issue:** Backend — `jobController.updateJob` sets `job.status` with no transition
     validation (unlike `orderController.canTransition`), so a repair job can move backwards
     (`collected`→`received`) or out of a terminal state (`cancelled`→`repairing`); `completedAt`/
@@ -177,7 +285,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     on backward moves. No frontend work beyond the existing T18 cancel-guard UI.
   - **Backend detail:** `backend-eaz/tasks.md` → T53.
 
-- [ ] **T52 · Dashboard admin gates exclude superadmin**
+- [x] **T52 · Dashboard admin gates exclude superadmin** ✅ done 2026-08-21
   - **Issue:** Multiple admin pages gate on `user?.role === "admin"` / `!== "admin"`; a superadmin
     (site owner) is redirected away or the admin data never loads: hosting-orders (redirects),
     domain-orders (redirects + query disabled), consultations, blog, chats, users (no auto-fetch),
@@ -190,8 +298,33 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     (ideally a small shared helper in `lib/`). `middleware.js` and `DashboardShell` already handle
     superadmin correctly.
   - **Backend parity:** `backend-eaz/tasks.md` → T52.
+  - **Shipped:**
+    - `src/lib/roles.js` (new) — `ADMIN_ROLES = ["admin", "superadmin"]` + `isAdminRole(role)`,
+      per the fix note's "ideally a small shared helper" (15 call sites across 8 files
+      justified it, unlike the backend's 8 one-off sites in T51).
+    - Swapped all 15 gate sites to `isAdminRole(user?.role)` /
+      `!isAdminRole(user?.role)`: `hosting-orders/page.jsx` (4 — redirect guard + 2 fetch
+      guards + render guard, line numbers shifted to 108/141/146/222 since the audit was
+      written), `domain-orders/page.jsx` (1, the derived `isAdmin` var reused at the other
+      3 audit-listed lines), `consultations/page.jsx` (3), `blog/page.jsx` (3),
+      `chats/page.jsx` (2), `users/page.jsx` (1 — the fetch guard; the page itself had no
+      redirect guard to begin with), `emails/page.jsx` (1), `hosting/[orderId]/page.jsx` (1).
+    - **Deliberately left alone:** `chats/page.jsx`'s `msg.role === "admin"` (~line 500) —
+      that's labeling a chat message's author, not a page gate, out of scope.
+      `activity-logs/page.jsx:201` was already correct
+      (`user?.role === "admin" || user?.role === "superadmin"`), confirming the audit's
+      claim that some pages already handle this right.
+    - `src/lib/roles.test.js` (new, 2 tests): admin/superadmin both pass; staff/technician/
+      user/undefined all fail.
+  - **Verified:** `npm test` 10 files / 69 tests pass (2 new); `npm run lint` (`next lint`)
+    clean, 0 warnings/errors; `npm run build` compiles successfully, exit 0 (the
+    `ECONNREFUSED`/`fetch failed` noise mid-build is pre-existing — unrelated pages doing
+    server-side data fetching at static-generation time against a backend that isn't
+    running in this environment; the 8 touched pages are all `"use client"` and fetch
+    their admin data from a `useEffect` after mount, so they hit no such fetch during the
+    build's static-generation step regardless of their `○`/`ƒ` marker).
 
-- [ ] **T51 · Backend hosting/domain order routes downgrade superadmin to regular user**
+- [x] **T51 · Backend hosting/domain order routes downgrade superadmin to regular user** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T51 for the full Shipped/Verified notes
   - **Issue:** Backend — `protect`-only hosting/domain order routes re-check
     `req.user.role === 'admin'` in the controller, so a superadmin sees only their own orders and
     gets 403 on other users' orders, invoices, cPanel SSO, service status, and cPanel password
@@ -201,19 +334,19 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Fix:** Backend change only (route-level `restrictTo('admin')` or superadmin-aware checks).
   - **Backend detail:** `backend-eaz/tasks.md` → T51.
 
-- [ ] **T50 · `resetPassword` / `verifyPin` don't check `isBlocked`**
+- [x] **T50 · `resetPassword` / `verifyPin` don't check `isBlocked`** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T50 for the full Shipped/Verified notes
   - **Issue:** Backend — a blocked user with a valid reset link or verification PIN can obtain
     a fresh token because `resetPassword`/`verifyPin` don't gate on `isBlocked` (unlike
     `login`). Impact limited (protect rejects on next request).
   - **Location:** backend — `controllers/authController.js`.
   - **Fix:** Backend change only. No frontend work.
 
-- [ ] **T49 · `verifyPin` / `twoFactorPin` stored and compared in plaintext**
+- [x] **T49 · `verifyPin` / `twoFactorPin` stored and compared in plaintext** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T49 for the full Shipped/Verified notes
   - **Issue:** Backend — 6-digit PINs stored unhashed on `User` and compared with plain `!==`.
   - **Location:** backend — `models/User.js`, `controllers/authController.js`.
   - **Fix:** Backend change only (hash or constant-time compare). No frontend work.
 
-- [ ] **T48 · `api.js` drops the `requiresVerification` flag from error responses**
+- [x] **T48 · `api.js` drops the `requiresVerification` flag from error responses** ✅ done 2026-08-21
   - **Issue:** Login 403 for an unverified account sends `requiresVerification: true` + `email`
     in the body, but `lib/api.js` only copies `error`/`errors`/`status` onto the thrown Error.
     `AuthContext.login` therefore depends on brittle message matching
@@ -226,21 +359,45 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `err.requiresVerification` instead of message text, and forward `err.email` to the verify
     redirect.
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T48).
+  - **Shipped:**
+    - `src/lib/api.js` — on a non-ok response, forwards every other JSON body field
+      (e.g. `requiresVerification`, `email`, `success`) onto the thrown `Error`, skipping
+      only `error`/`message`/`stack` so they can't clobber the Error's own fields
+      (avoided a destructure-and-omit here since `next lint`'s `no-unused-vars` doesn't
+      allow the `_prefix` escape hatch the backend's ESLint config does — used an
+      explicit skip-set + `for...of` instead).
+    - `src/context/AuthContext.jsx` (`login`) — dropped the message-text-matching
+      workaround (`err.message.toLowerCase().includes('verify')`) entirely; `api.js` now
+      attaches the real flag, so `login` just lets the error propagate unchanged.
+    - `src/app/auth/login/page.jsx` — verify-redirect now prefers the backend's
+      `err.email` over the client-typed `cleanIdentifier`, falling back to it if absent.
+    - `src/lib/api.test.js` (new, 4 tests): message + status on a plain error; extra
+      fields (`requiresVerification`, `email`) forwarded; a stray `data.message`/
+      `data.stack` does NOT clobber the real `Error.message`/`.stack`; validation
+      `errors` array still attached.
+    - `src/context/AuthContext.test.jsx` — rewrote the two `login` error tests: the old
+      "attaches requiresVerification when the message mentions verify" test asserted the
+      now-removed string-matching behavior; replaced with a test asserting `login`
+      rethrows `api.js`'s error (mocked) unchanged, including `requiresVerification`/
+      `email`. The "rethrows unrelated errors" test needed no behavior change.
+  - **Verified:** `src/lib/api.test.js` + `src/context/AuthContext.test.jsx` 13/13 pass;
+    `next lint` 0 warnings/errors; full suite `npm test` 11 files / 73 tests pass;
+    `npm run build` compiles successfully, exit 0.
 
-- [ ] **T47 · `updateProfile` missing phone-uniqueness pre-check**
+- [x] **T47 · `updateProfile` missing phone-uniqueness pre-check** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T47 for the full Shipped/Verified notes
   - **Issue:** Backend — setting an in-use phone via the profile settings form returns an
     unhandled 500 (duplicate-key) instead of a friendly 409.
   - **Location:** backend — `controllers/authController.js` (`updateProfile` ~line 497).
   - **Fix:** Backend change only. No frontend work (error already surfaces in the form).
 
-- [ ] **T46 · `/api/v1/auth/verify` rate limit is dead code — PIN endpoints unthrottled**
+- [x] **T46 · `/api/v1/auth/verify` rate limit is dead code — PIN endpoints unthrottled** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T46 for the full Shipped/Verified notes
   - **Issue:** Backend — the strict 10/15min limiter is mounted on `/api/v1/auth/verify`, which
     matches nothing; the real `/verify-pin`, `/resend-pin`, `/2fa/verify` routes only get the
     global 150/15min limit, so 6-digit PINs are brute-forceable.
   - **Location:** backend — `app.js` (~line 158), `routes/authRoutes.js`.
   - **Fix:** Backend change only (mount limits on the real paths). No frontend work.
 
-- [ ] **T45 · `expenseController`: unescaped supplier regex + no activity logs**
+- [x] **T45 · `expenseController`: unescaped supplier regex + no activity logs** ✅ done 2026-08-21 — backend-only, see `backend-eaz/tasks.md` → T45 for the full Shipped/Verified notes
   - **Issue:** `getSuppliers` uses `{ $regex: q }` with no `escapeRegex`; expense/supplier
     mutations aren't activity-logged. Backend-only (see `backend-eaz/tasks.md` → T45).
   - **Location:** backend — `controllers/pos/expenseController.js`.
@@ -278,6 +435,55 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Fix:** Replace with `formatGhs(value)` where `value` is integer pesewas (POS/shop). For
     the float-GHS hosting/domain/service pages, either convert to pesewas or keep raw — see
     T44 for that decision. Track both together.
+  - **Status: POS/shop portion partially shipped 2026-08-21 — the fix note's premise
+    ("value is integer pesewas") turned out to be false for most of the listed locations.
+    User asked to verify before touching anything; audit below, then scoped to the safe
+    subset.**
+  - **Audit of all 8 locations (confirmed before any fix, per user's request):**
+    - **Genuine bugs — shipped:** `PosOverview.jsx:69,70,77` (`stats.totalRevenue`/
+      `todayRevenue`/`totalExpenses` hand-rolled `/100`+`toLocaleString()`, while
+      `stats.netProfit` right below correctly used `formatGhs` on the same object);
+      `dashboard/page.jsx:242,243` (same pattern; `o.total` elsewhere in the file
+      correctly used `formatGhs`); `Receipt.jsx:100,103,105,106,108` (a local `c(n)`
+      helper duplicated `formatGhs`'s own `/100`+`toFixed(2)` logic).
+    - **NOT bugs — left alone:** `sell/page.jsx`, `jobs/new/page.jsx`,
+      `jobs/[id]/page.jsx`, and `JobInvoice.jsx` all deliberately convert
+      pesewas→cedis the moment an item enters cart/form state (e.g.
+      `jobs/[id]/page.jsx` has explicit `// pesewas → cedis` comments; `JobInvoice.jsx`
+      has a file-header doc-comment saying exactly this), then convert back to
+      pesewas only at the API-submission boundary. The flagged `toFixed(2)`/
+      `toLocaleString()` lines are correct today *because* of this — wrapping them in
+      `formatGhs` as-is would silently divide every number by 100 twice (a 100x-too-small
+      display bug). Fixing this properly means refactoring 4 files' state to hold
+      pesewas throughout, a materially bigger change than a display-formatter swap;
+      user declined that scope for now, keeping T43 as a display fix only.
+    - **Judgment call — left alone:** `PosOverview.jsx:95` is a compact "1.2k"-style
+      chart-bar-label abbreviation for large pesewas totals — a different formatting
+      job than `formatGhs`'s always-full-precision output, not an omission.
+    - **Out of scope — belongs to T41:** `track/[token]/page.jsx:378,383`
+      (`unitPriceGhs`/`partsSubtotalGhs`) is T41's documented float-GHS-cart issue, whose
+      own fix note explicitly says the real fix is a cart-unit refactor there, not a
+      display swap here. Every *other* money display in that file (11 other call sites)
+      already correctly uses `formatGhs` — confirmed no bug there.
+  - **Shipped:**
+    - `src/components/pos/PosOverview.jsx` — 3 stat tiles switched to `formatGhs`.
+    - `src/app/dashboard/page.jsx` — 2 stat tiles switched to `formatGhs`.
+    - `src/components/pos/Receipt.jsx` — totals section (`Subtotal`/`Discount`/`TOTAL`/
+      `Paid`/`Change`) switched to `formatGhs`; kept the local `c(n)` helper narrowly for
+      the item-table cells, which intentionally omit the "GH₵" prefix per row (the
+      column header already carries it, and the receipt is print-width constrained) —
+      not the same bug, so not folded into the formatGhs swap.
+    - `src/components/pos/PosOverview.test.jsx` (new, 1 test) and
+      `src/components/pos/Receipt.test.jsx` (new, 4 tests): assert the fixed tiles/rows
+      render via `formatGhs`'s exact output, and that the Receipt item-table cell stays
+      prefix-free (no double "GH₵").
+  - **Remaining (not this pass):** items 4–7 above (cedis-state refactor across
+    `sell/page.jsx`, `jobs/new/page.jsx`, `jobs/[id]/page.jsx`, `JobInvoice.jsx`) would
+    need their own task if the codebase later wants full pesewas-throughout consistency;
+    `track/[token]/page.jsx:378,383` is T41's to fix, not T43's.
+  - **Verified:** `PosOverview.test.jsx` + `Receipt.test.jsx` 5/5 pass; `next lint` 0
+    warnings/errors; full suite `npm test` 13 files / 78 tests pass; `npm run build`
+    compiles successfully, exit 0.
 
 - [ ] **T42 · `BlogArticle` renders markdown via `dangerouslySetInnerHTML` — stored-XSS risk**
   - **Issue:** Blog post content is markdown→HTML-converted with regex and injected via
@@ -305,13 +511,15 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `Part` model — items carry only `partId`+`quantity` — so this is safe.)
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T41).
 
-- [ ] **T40 · `authController.logout` calls `jwt.decode` without importing `jsonwebtoken`**
+- [x] **T40 · `authController.logout` calls `jwt.decode` without importing `jsonwebtoken`** ✅ done 2026-08-20
   - **Issue:** Backend bug — `jwt.decode(token)` at `controllers/authController.js` ~line 283
     is a ReferenceError (`jsonwebtoken` never imported). Swallowed by try/catch, so logout
     succeeds but the logout activity entry never records who logged out.
   - **Location:** backend — `controllers/authController.js` (imports lines 1–6; logout
     ~lines 276–303).
   - **Fix:** Backend change only (add `require('jsonwebtoken')`). No frontend work.
+  - **Shipped:** see `backend-eaz/tasks.md` → T40 — fixed backend-only, out of queue order,
+    surfaced by the new ESLint tooling (T10).
 
 - [ ] **T39 · Product detail page: add Description and Reviews tabs**
   - **Issue:** On `/shop/[slug]` the product description is rendered as a plain paragraph
@@ -451,7 +659,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     - Ensure the frontend surfaces a readable error instead of the raw 500.
   - **Backend part:** `backend-eaz/tasks.md` → T30.
 
-- [ ] **T29 · Role-based landing pages after login**
+- [x] **T29 · Role-based landing pages after login** ✅ done 2026-08-21
   - **Issue:** After login, admin/superadmin are redirected **away** from the overview:
     `login/page.jsx` sends `technician`/`admin` → `/dashboard/pos` and `superadmin`/`staff` →
     `/dashboard/pos/sell`. Landing pages should be role-specific:
@@ -465,8 +673,24 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Location:** `src/app/auth/login/page.jsx` (lines ~45–47), `src/app/auth/verify/page.jsx`,
     `src/app/auth/verify-2fa/page.jsx` (post-verify redirects)
   - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T29.
+  - **Shipped:**
+    - `src/lib/roles.js` — new `landingPathForRole(role)`: admin/superadmin → `/dashboard`,
+      staff → `/dashboard/pos/sell`, technician → `/dashboard/pos` (unchanged), else → `/`
+      (unchanged). Alongside T52's `isAdminRole` in the same file.
+    - `src/app/auth/login/page.jsx` — replaced the wrong grouping
+      (`technician`/`admin` → `/dashboard/pos`, `superadmin`/`staff` → `/dashboard/pos/sell`)
+      with `router.push(landingPathForRole(...))`.
+    - `src/app/auth/verify/page.jsx` and `src/app/auth/verify-2fa/page.jsx` — both
+      previously did an unconditional `router.push("/dashboard")` with **no role branching
+      at all**; now use the same `landingPathForRole(...)` call.
+    - `src/lib/roles.test.js` — 4 new tests for `landingPathForRole`.
+    - `src/app/auth/login/page.test.jsx` (new, 5 tests) — mocks `next/navigation` and
+      `AuthContext`, submits the real form, and asserts the exact `router.push` target for
+      admin, superadmin, staff, technician (unchanged), and customer (unchanged).
+  - **Verified:** 11/11 new tests pass; `next lint` 0 warnings/errors; full suite `npm test`
+    14 files / 87 tests pass; `npm run build` compiles successfully, exit 0.
 
-- [ ] **T28 · Admin orders page: link to detail page; move all edit/update there**
+- [x] **T28 · Admin orders page: link to detail page; move all edit/update there** ✅ done 2026-08-21
   - **Issue:** For admin/superadmin, the orders list page (`/dashboard/orders`) has an inline
     "Update status" dropdown + button on every row. All order editing/updating should happen on
     the **order detail page** (`/dashboard/orders/[id]`), and the list should be read-only with
@@ -483,8 +707,41 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     table. Consider whether the same applies to `/dashboard/commerce/orders` (marketplace
     orders list).
   - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T28.
+  - **Shipped:**
+    - `src/app/dashboard/orders/page.jsx` — removed the inline status
+      `<select>` + "Update" button column and its supporting state
+      (`drafts`, `useUpdateOrderStatus`); the list is now read-only, linking
+      to `/dashboard/orders/[id]` (which already had a full "Add tracking
+      update" form gated behind `seesAll` — no detail-page work needed). The
+      link label reads "Manage" for admin/staff, "View" for customers.
+    - `src/app/dashboard/commerce/orders/page.jsx` — same treatment: removed
+      the inline status `<select>` column (was updating on every `onChange`
+      with no confirmation); its detail page
+      (`/dashboard/commerce/orders/[id]`) already had *more* edit surface
+      than the other one (a status-button row **and** a full tracking-update
+      form), so nothing needed to move there either. Addressed the fix
+      note's explicit "consider whether the same applies" — it does, same
+      duplicated-editing problem.
+    - `src/app/dashboard/pos/orders/page.jsx` — rebuilt from stacked cards to
+      a table (shared `Table`/`Th`/`Td` helpers) for both the Shop Orders and
+      Part Orders tabs. **Left the inline status `<select>` in place here** —
+      unlike the other two lists, there is no `/dashboard/pos/orders/[id]`
+      detail page to move editing to, and the fix note's ask for this page
+      was specifically "rebuild as a table," not "remove inline editing."
+      Removed the now-dead `StatusBadge`/`STATUS_COLORS` (the select's
+      current value already shows status; a card-era decoration with no
+      surviving purpose).
+    - Tests (new, 6 total): `orders/page.test.jsx` (2) — no `combobox` for
+      either role, "Manage" vs "View" link label and target; `commerce/
+      orders/page.test.jsx` (1) — no `combobox`, links to detail;
+      `pos/orders/page.test.jsx` (3) — renders as a real `<table>`, inline
+      status update still fires the mutation with the right args, tab switch
+      renders the Part Orders table too.
+  - **Verified:** 6/6 new tests pass; `next lint` 0 warnings/errors; full
+    suite `npm test` 17 files / 93 tests pass; `npm run build` compiles
+    successfully, exit 0.
 
-- [ ] **T27 · Add a product review form to the customer order detail page**
+- [x] **T27 · Add a product review form to the customer order detail page** ✅ done 2026-08-21
   - **Issue:** The customer order detail page (`/dashboard/orders/[id]`) shows the order items
     but has **no way to review** the products that were ordered. Customers should be able to
     submit a rating + comment per product from this page.
@@ -494,8 +751,31 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     Pre-fill/disable if the user already reviewed (via `GET …/reviews/mine`); show the review
     confirmation/inline state. Only show for delivered/fulfilled items.
   - **Backend part:** endpoints already exist (`productRoutes.js`); see `backend-eaz/tasks.md` → T27.
+  - **Shipped:**
+    - `src/app/dashboard/orders/[id]/page.jsx` — new `OrderItemReview` component,
+      one per order line item. Fetches `GET /products/:id/reviews/eligibility` once;
+      renders nothing (`canReview: false` and no existing review), a rating+comment
+      form (`canReview: true` → `POST .../reviews`), or the existing review with an
+      "Edit review" toggle (`alreadyReviewed: true` → fetches `GET .../reviews/mine`,
+      edits via `PATCH .../reviews/mine`). `productId` resolves to `item.product ||
+      item.part` (order items can reference either, per the backend's own dual
+      product/part review lookup).
+    - Gated two ways, matching the fix note plus one correction: **only on the
+      customer's own view** (`!seesAll` — an admin/staff viewing someone else's order
+      must never trigger a review submission attributed to their own account), and
+      only when `order.status` is `paid` or `delivered` — this matches the backend's
+      actual `hasVerifiedPurchase` rule (`status: { $in: ['paid','delivered'] }`)
+      exactly, rather than the fix note's looser "delivered/fulfilled" wording, so the
+      frontend gate never disagrees with the backend's own eligibility check.
+    - `src/app/dashboard/orders/[id]/page.test.jsx` (new, 5 tests): shows the form for
+      a verified unreviewed purchase; submits and shows the confirmation message with
+      the right payload; shows an existing review + Edit toggle without a form;
+      shows nothing at all on the admin/staff view (and never calls the eligibility
+      endpoint there); shows nothing for a pending (unverified) order.
+  - **Verified:** 5/5 new tests pass; `next lint` 0 warnings/errors; full suite
+    `npm test` 18 files / 98 tests pass; `npm run build` compiles successfully, exit 0.
 
-- [ ] **T26 · Domain page should show the list of registered domains**
+- [x] **T26 · Domain page should show the list of registered domains** ✅ done 2026-08-21
   - **Issue:** The Domains page (`/dashboard/domains`) currently renders **domain orders**
     (`useDomainOrders` → `DomainCard`). It should instead show the list of **registered
     domains** — the actual names the user owns, with their registration/expiry status —
@@ -508,8 +788,34 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     derive it from orders and display registered domain names + status/expiry). Show each
     registered domain (name, registrar status, expiry, renewal CTA) instead of order cards.
   - **Backend part:** `backend-eaz/tasks.md` → T26.
+  - **Shipped:**
+    - `src/hooks/queries/useDomains.js` — new `useMyRegisteredDomains` (`GET
+      /domain/my`), kept separate from `useDomainOrders`, which
+      `dashboard/page.jsx`'s overview widget still legitimately needs for its
+      recent-activity feed — out of this task's scope.
+    - `src/components/dashboard/customer/CustomerCards.jsx` — new
+      `RegisteredDomainCard` (kept **separate** from the existing `DomainCard`,
+      which stays exactly as-is since the overview widget still passes it
+      order-shaped data — repurposing `DomainCard` in place would have broken
+      that unrelated consumer). Computes active/expiring-soon/expired from
+      `expiresAt` client-side (mirroring the hosting order detail page's own
+      7-day-threshold convention) rather than trusting the stored `status`
+      field, which the backend never updates after initial registration.
+      Added two new `statusConfig` entries (`expired`, `expiring-soon`) to the
+      shared `StatusBadge`. Shows a "Renew" CTA (linking to `/domains`, the
+      public search/registration page — there's no dedicated renewal flow to
+      link to; not building one here) only when expiring soon or expired.
+    - `src/app/dashboard/domains/page.jsx` — swapped `useDomainOrders` →
+      `useMyRegisteredDomains` and `DomainCard` → `RegisteredDomainCard`.
+    - Tests (new, 5 total): `RegisteredDomainCard.test.jsx` (3) — Active/no CTA
+      for a far-future expiry, Expiring-soon + CTA within 7 days, Expired +
+      CTA for a past date; `domains/page.test.jsx` (2) — renders registered
+      domains from the hook, empty state when none.
+  - **Verified:** 5/5 new tests pass; `next lint` 0 warnings/errors; full suite
+    `npm test` 20 files / 103 tests pass; `npm run build` compiles
+    successfully, exit 0.
 
-- [ ] **T25 · Hosting page should only show hosting-account related content**
+- [x] **T25 · Hosting page should only show hosting-account related content** ✅ already resolved (audited 2026-08-21)
   - **Issue:** The Hosting page (`/dashboard/hosting`) currently mixes content that isn't
     strictly about the user's hosting account(s). It should only show things related to the
     hosting account itself — no unrelated promotions, cross-sell, domain-only orders, or
@@ -521,8 +827,31 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     hosting account (plan, status, cPanel login, renewal, domain attached to the account).
     Keep the "+ New Order" CTA only if it belongs; move unrelated content elsewhere.
   - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T25.
+  - **Already resolved:** full line-by-line audit of all 3 files (an earlier pass had
+    spot-checked and explicitly declined to call it either way — this pass read both
+    files in full and cross-referenced the underlying data flow before concluding).
+    - `hosting/page.jsx` — list page, `useHostingOrders` hits the dedicated `/hosting/
+      orders` endpoint only, no mixing with domain orders; no promotional content.
+    - `HostingCard` — plan/tier, status, attached domain, cPanel username, view/manage
+      links. Nothing extraneous.
+    - `hosting/[orderId]/page.jsx` — order details, cPanel login/password reset,
+      renewal + expiry warnings, invoice download, bank-transfer proof upload, admin
+      delete. The nameserver-instructions block is for the domain *attached to this
+      hosting account* (bring-your-own-domain setup, `HostingOrder.domainMode`) — the
+      fix note's own whitelist explicitly keeps "domain attached to the account," so
+      this isn't a stray domain order leaking in.
+    - Specifically checked whether a hosting order's bundled domain registration
+      (`domainMode: 'new'`) could count as a "domain-only order" per the issue's
+      wording — it doesn't; that's domain data intrinsic to *this* hosting purchase.
+    - A third file exists in this route tree not in the task's location list,
+      `hosting/new-account/page.jsx` — checked it too: a staff-only provisioning tool,
+      unrelated to this customer-facing concern.
+    - Every element present matches the fix note's own explicit keep-list (plan,
+      status, cPanel login, renewal, domain attached to the account); nothing matching
+      "unrelated promotions, cross-sell, domain-only orders, or generic links" was found
+      anywhere in scope.
 
-- [ ] **T24 · Merge "Marketplace" and "Inventory" into one page**
+- [x] **T24 · Merge "Marketplace" and "Inventory" into one page** ✅ done 2026-08-21
   - **Issue:** The Marketplace page (`/dashboard/commerce`) is a thin landing page of cards
     linking to Inventory, Delivery Zones, and Orders — with **Inventory** the primary/only
     landing card for most staff. It should be merged so Marketplace and Inventory are one
@@ -534,8 +863,41 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     render inventory directly, keep Orders/Delivery Zones as links or tabs). Unify nav so only
     one "Marketplace"/"Inventory" entry appears; remove the duplicate sidebar links. Preserve
     role-gating and the low-stock badge wiring.
+  - **Shipped:**
+    - `src/app/dashboard/commerce/page.jsx` — the old thin 3-card landing page replaced with
+      the full former Inventory page content (Parts/Products tabs, `PartModal`, barcode
+      scanner wiring, low-stock banner — moved verbatim). Delivery Zones (admin-only,
+      matching the old card's own `isAdmin` gate — **not** staff, unlike the page's own
+      overall `admin/superadmin/staff` gate) and Orders now render as header links instead
+      of separate landing-card destinations.
+    - `src/app/dashboard/commerce/inventory/page.jsx` — turned into a redirect shim to
+      `/dashboard/commerce`, mirroring the **already-existing**
+      `/dashboard/commerce/products → /dashboard/commerce/inventory` shim found in the same
+      directory (evidence this exact "fold a page into a tab, leave a redirect" pattern was
+      already established here from an earlier merge).
+    - Updated the 4 other internal links that pointed at the old `/dashboard/commerce/
+      inventory` path so they go straight to `/dashboard/commerce` (avoiding an unnecessary
+      double-redirect hop): `commerce/products/page.jsx` (the pre-existing shim itself),
+      `commerce/products/new/page.jsx`, `commerce/products/[id]/edit/page.jsx` (post-save
+      redirects), and `pos/suppliers/[id]/page.jsx` (2 "manage inventory" links).
+    - `dashboardNav.js` — `marketplaceNav` collapsed from 2 entries to 1
+      (`/dashboard/commerce`, label "Marketplace"); removed the now-unused `Boxes` icon
+      import.
+    - `Sidebar.jsx` — the low-stock badge condition
+      (`item.href === "/dashboard/commerce/inventory"`) updated to
+      `item.href === "/dashboard/commerce"`, preserving the exact same badge behavior on
+      the single merged nav entry.
+    - Tests (new, 5 total): `commerce/page.test.jsx` (3) — renders inventory content
+      directly with an Orders link; shows Delivery Zones for admin; hides it for staff
+      (the admin-only gate specifically, not the page's broader staff-inclusive gate);
+      `commerce/inventory/page.test.jsx` (1) — redirects to `/dashboard/commerce`;
+      `dashboardNav.test.js` (1) — `marketplaceNav` has exactly one entry.
+  - **Verified:** 5/5 new tests pass; `next lint` 0 warnings/errors; full suite `npm test`
+    23 files / 108 tests pass; `npm run build` compiles successfully, exit 0 — confirmed
+    `/dashboard/commerce/inventory`'s build size shrank to 1.31 kB, matching the existing
+    `/dashboard/commerce/products` shim's size exactly.
 
-- [ ] **T23 · Remove "New Job" button from the Overview dashboard**
+- [x] **T23 · Remove "New Job" button from the Overview dashboard** ✅ done 2026-08-21
   - **Issue:** The Overview page (`/dashboard`) has a **New Job** button (top-right, both in
     `MyDashboard` and `FullDashboard`). It should not be there — creating a repair job belongs
     in the POS/Jobs area, not on the overview.
@@ -544,6 +906,19 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Fix:** Remove the Overview "New Job" buttons and the empty-state create link; the action
     stays available from the POS Jobs page. Confirm no other dashboard widget duplicates it.
   - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T23.
+  - **Shipped:** `src/app/dashboard/page.jsx` — removed the "New Job" button from both
+    `MyDashboard`'s and `FullDashboard`'s headers (dropped the now-single-child
+    `flex justify-between` wrapper along with it), and the "Create first job →" link
+    from `RecentJobsList`'s empty state. Removed the now-unused `Plus` icon import.
+    Confirmed no other duplicate: grepped the whole file and `src/components/dashboard/`
+    for `jobs/new`/"New Job" — the only remaining references are on `PosShell` and the
+    POS Jobs page itself, exactly where the action is meant to stay. Exported
+    `RecentJobsList` (matching the existing `RecentOrdersList` export-for-testing
+    precedent in the same file).
+    `src/app/dashboard/RecentJobsList.test.jsx` (new, 1 test): empty state shows "No
+    jobs yet." with no "Create first job" link/text anywhere.
+  - **Verified:** 1/1 new test passes; `next lint` 0 warnings/errors; full suite
+    `npm test` 24 files / 109 tests pass; `npm run build` compiles successfully, exit 0.
 
 - [ ] **T22 · Integrate "My Repairs" and "My Jobs" into one page**
   - **Issue:** Two separate pages show repair jobs: `/dashboard/repairs` ("My Repairs" —

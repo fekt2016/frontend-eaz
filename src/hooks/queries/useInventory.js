@@ -6,16 +6,23 @@ import { qk } from "@/lib/queryKeys";
 // Staff POS inventory search (GET /pos/inventory?q=...). Debounce the term in
 // the component and pass it here; the query is disabled until there's a term so
 // we never fetch the whole inventory or fire on every keystroke.
+// `includeProducts`/`retail` widen the search to shop products (e.g. the Sell
+// page selling both parts and accessories); they're folded into the query key
+// so a parts-only caller (repair jobs) never shares a cache entry with a
+// products-included caller (Sell) for the same search term.
 export function useInventorySearch(term, options = {}) {
+  const { includeProducts, retail, limit = 8, ...queryOptions } = options;
   const q = (term || "").trim();
+  const qs = new URLSearchParams({ q, limit: String(limit) });
+  if (includeProducts) qs.set("includeProducts", "true");
+  if (retail) qs.set("retail", "true");
   return useQuery({
-    queryKey: qk.inventory.search(q),
-    queryFn: () =>
-      api.get(`/pos/inventory?q=${encodeURIComponent(q)}&limit=8`).then((r) => r.data ?? []),
+    queryKey: qk.inventory.search(q, { includeProducts: !!includeProducts, retail: !!retail, limit }),
+    queryFn: () => api.get(`/pos/inventory?${qs}`).then((r) => r.data ?? []),
     enabled: q.length >= 1,
     staleTime: 10_000, // stock changes — keep fresh
     placeholderData: keepPreviousData, // smooth results while typing
-    ...options,
+    ...queryOptions,
   });
 }
 

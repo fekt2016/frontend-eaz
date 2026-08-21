@@ -10,7 +10,7 @@ import { useCardCharge } from "@/hooks/useCardCharge";
 import { CustomerDeviceCard } from "./_components/CustomerDeviceCard";
 import { JobHeader } from "./_components/JobHeader";
 import { JobInvoice } from "./_components/JobInvoice";
-import { STATUS_COLORS } from "./_components/jobStatus";
+import { STATUS_COLORS, statusLabel } from "./_components/jobStatus";
 import { useAuth } from "@/context/AuthContext";
 import {
   Trash2, Search, Plus,
@@ -26,7 +26,7 @@ const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 
 const selectCls = `${inputCls} cursor-pointer`;
 const labelCls  = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
-const STATUSES = ["received", "diagnosing", "repairing", "ready", "collected", "cancelled"];
+const STATUSES = ["received", "diagnosing", "waiting_for_parts", "repairing", "ready", "collected", "cancelled"];
 
 export default function JobDetailPage() {
   const { id } = useParams();
@@ -304,7 +304,7 @@ export default function JobDetailPage() {
               <div>
                 <label className={labelCls}>Status</label>
                 <select value={status} onChange={e => setStatus(e.target.value)} className={selectCls}>
-                  {STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                  {STATUSES.map(s => <option key={s} value={s}>{statusLabel(s)}</option>)}
                 </select>
               </div>
 
@@ -462,7 +462,7 @@ export default function JobDetailPage() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden print:hidden">
             <div className={`p-4 text-center border-b ${STATUS_COLORS[status] || "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300"}`}>
               <p className="text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">Status</p>
-              <p className="text-lg font-bold capitalize">{status}</p>
+              <p className="text-lg font-bold">{statusLabel(status)}</p>
             </div>
             {/* Next-step action buttons */}
             {status === "received" && (
@@ -482,6 +482,13 @@ export default function JobDetailPage() {
                 </button>
               </div>
             )}
+            {status === "waiting_for_parts" && (
+              <div className="p-3">
+                <button onClick={() => quickStatus("repairing")} className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition">
+                  Parts arrived → Start Repairing
+                </button>
+              </div>
+            )}
             {status === "repairing" && (
               <div className="p-3">
                 <button onClick={() => quickStatus("ready")} className="w-full py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition">
@@ -496,7 +503,7 @@ export default function JobDetailPage() {
                 </button>
               </div>
             )}
-            {["received","diagnosing","repairing","ready"].includes(status) && (
+            {["received","diagnosing","waiting_for_parts","repairing","ready"].includes(status) && (
               <div className="px-3 pb-3">
                 <button onClick={() => quickStatus("cancelled")} className="w-full py-1.5 rounded-xl border border-red-500/30 text-red-600 dark:text-red-400 text-xs hover:bg-red-500/10 transition">
                   Cancel Job

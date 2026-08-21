@@ -28,7 +28,7 @@ export default function AdminEditProductPage() {
     updateProduct.mutate(
       { id, data },
       {
-        onSuccess: () => router.push("/dashboard/commerce/inventory"),
+        onSuccess: () => router.push("/dashboard/commerce"),
         onError: (err) => alert(err.message || "Failed to update product"),
       },
     );

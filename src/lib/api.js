@@ -23,6 +23,13 @@ async function request(path, options = {}) {
     // Attach field-level errors (Zod / Mongoose validation) so forms can highlight fields
     if (Array.isArray(data?.errors)) err.errors = data.errors;
     err.status = res.status;
+    // Forward any other response fields (e.g. requiresVerification, email) so
+    // callers can branch on the real flag instead of matching error text.
+    // (error/message/stack are skipped — they'd clobber the Error's own fields.)
+    const SKIP_FIELDS = new Set(['error', 'message', 'stack']);
+    for (const [key, value] of Object.entries(data || {})) {
+      if (!SKIP_FIELDS.has(key)) err[key] = value;
+    }
     throw err;
   }
 

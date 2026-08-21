@@ -20,7 +20,7 @@ export default function AdminNewProductPage() {
 
   const handleSubmit = (data) => {
     createProduct.mutate(data, {
-      onSuccess: () => router.push("/dashboard/commerce/inventory"),
+      onSuccess: () => router.push("/dashboard/commerce"),
       onError: (err) => alert(err.message || "Failed to create product"),
     });
   };

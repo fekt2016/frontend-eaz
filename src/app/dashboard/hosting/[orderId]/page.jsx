@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Download, Upload, CheckCircle2, ExternalLink, Trash2, RotateCw, Key } from "lucide-react";
 import { api } from "@/lib/api";
+import { isAdminRole } from "@/lib/roles";
 import { useAuth } from "@/context/AuthContext";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
@@ -173,7 +174,7 @@ export default function HostingOrderDetailPage() {
 
   const isBankTransfer = order.paymentMethod === "bank_transfer";
   const canUploadProof = isBankTransfer && order.status === "pending" && !order.proofUploadUrl;
-  const isAdmin = user?.role === "admin";
+  const isAdmin = isAdminRole(user?.role);
   const isTempDomain = !order.domain || (order.domain.endsWith(".eazworld.com") && order.domain.split(".").length === 3);
   const showNameservers = order.domain && !isTempDomain;
 

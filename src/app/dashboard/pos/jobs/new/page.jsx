@@ -7,6 +7,8 @@ import { formatGhs } from "@/lib/shop";
 import { Search, Plus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useInventorySearch } from "@/hooks/queries/useInventory";
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const selectCls = `${inputCls} cursor-pointer`;
@@ -43,8 +45,11 @@ export default function NewJobPage() {
 
   // Parts & payment
   const [partQuery,     setPartQuery]     = useState("");
-  const [partResults,   setPartResults]   = useState([]);
   const [showPartDrop,  setShowPartDrop]  = useState(false);
+  // Debounced inventory search via the shared React Query hook (real /pos/inventory API).
+  const debouncedPartQuery = useDebounce(partQuery, 250);
+  const partSearch = useInventorySearch(debouncedPartQuery, { enabled: debouncedPartQuery.trim().length >= 2 });
+  const partResults = debouncedPartQuery.trim().length >= 2 ? (partSearch.data ?? []) : [];
   const [selectedParts, setSelectedParts] = useState([]);
   const [payAmount,     setPayAmount]     = useState("");
   const [payMethod,     setPayMethod]     = useState("cash");
@@ -76,19 +81,6 @@ export default function NewJobPage() {
     api.get("/pos/technicians").then(r => setStaff(r.data || [])).catch(() => {});
   }, []);
 
-  // Live part inventory search
-  useEffect(() => {
-    if (partQuery.trim().length < 2) { setPartResults([]); setShowPartDrop(false); return; }
-    const t = setTimeout(async () => {
-      try {
-        const res = await api.get(`/pos/inventory?q=${encodeURIComponent(partQuery.trim())}&limit=8`);
-        setPartResults(res.data || []);
-        setShowPartDrop(true);
-      } catch { setPartResults([]); }
-    }, 250);
-    return () => clearTimeout(t);
-  }, [partQuery]);
-
   // Close the part dropdown on outside click
   useEffect(() => {
     const handler = (e) => { if (partRef.current && !partRef.current.contains(e.target)) setShowPartDrop(false); };
@@ -102,7 +94,7 @@ export default function NewJobPage() {
       if (exists) return prev.map(p => p.id === part._id ? { ...p, quantity: (p.quantity || 1) + 1 } : p);
       return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: (Number(part.sellingPrice) || 0) / 100 }];
     });
-    setPartQuery(""); setPartResults([]); setShowPartDrop(false);
+    setPartQuery(""); setShowPartDrop(false);
   };
 
   const removePart = (id) => setSelectedParts(prev => prev.filter(p => p.id !== id));

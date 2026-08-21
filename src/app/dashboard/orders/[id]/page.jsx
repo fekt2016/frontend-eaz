@@ -3,13 +3,148 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, PackageOpen, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, PackageOpen, Send, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import { sanitizeText } from "@/lib/sanitize";
 import { formatGhs } from "@/lib/shop";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
 
 const ORDER_STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
+// Reviews are only meaningful once a purchase is verified — mirrors the
+// backend's own hasVerifiedPurchase gate (Order.status in paid|delivered),
+// not a stricter "delivered only" guess.
+const REVIEWABLE_ORDER_STATUSES = ["paid", "delivered"];
+
+/**
+ * Review form/display for a single order line item. Fetches eligibility
+ * once; renders nothing if the purchase isn't verified for this item
+ * (`canReview` false and no existing review). Handles both first-time
+ * submission (POST) and editing an existing review (PATCH .../reviews/mine).
+ */
+function OrderItemReview({ productId }) {
+  const [status, setStatus] = useState("loading"); // loading | hidden | can-review | reviewed
+  const [review, setReview] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [justSubmitted, setJustSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!productId) { setStatus("hidden"); return; }
+    let cancelled = false;
+    api.get(`/products/${productId}/reviews/eligibility`)
+      .then((res) => {
+        if (cancelled) return;
+        const { canReview, alreadyReviewed } = res.data || {};
+        if (alreadyReviewed) {
+          return api.get(`/products/${productId}/reviews/mine`).then((r) => {
+            if (cancelled) return;
+            setReview(r.data);
+            setRating(r.data?.rating || 5);
+            setComment(r.data?.comment || "");
+            setStatus("reviewed");
+          });
+        }
+        setStatus(canReview ? "can-review" : "hidden");
+      })
+      .catch(() => { if (!cancelled) setStatus("hidden"); });
+    return () => { cancelled = true; };
+  }, [productId]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setFormError("");
+    setSubmitting(true);
+    try {
+      const cleanComment = sanitizeText(comment, 2000);
+      if (review) {
+        const res = await api.patch(`/products/${productId}/reviews/mine`, { rating, comment: cleanComment });
+        setReview(res.data);
+        setEditing(false);
+      } else {
+        const res = await api.post(`/products/${productId}/reviews`, { rating, comment: cleanComment });
+        setReview(res.data);
+        setStatus("reviewed");
+        setJustSubmitted(true);
+      }
+    } catch (err) {
+      setFormError(err.message || "Could not submit review.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (status === "loading" || status === "hidden") return null;
+
+  if (status === "reviewed" && !editing) {
+    return (
+      <div className="mt-2 text-xs">
+        <div className="flex items-center gap-0.5" aria-label={`Your rating: ${review.rating} out of 5`}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Star key={n} size={12} className={n <= review.rating ? "fill-amber-400 text-amber-400" : "text-gray-300 dark:text-slate-600"} />
+          ))}
+        </div>
+        {review.comment && <p className="text-gray-500 dark:text-slate-400 mt-1">{review.comment}</p>}
+        {justSubmitted && <p className="text-green-600 dark:text-green-400 mt-1">Thanks for your review!</p>}
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="text-brand-600 dark:text-brand-400 hover:underline mt-1"
+        >
+          Edit review
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="mt-2 space-y-2">
+      <div className="flex items-center gap-0.5" role="radiogroup" aria-label="Rating">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            role="radio"
+            aria-checked={n === rating}
+            aria-label={`${n} star${n === 1 ? "" : "s"}`}
+            onClick={() => setRating(n)}
+          >
+            <Star size={16} className={n <= rating ? "fill-amber-400 text-amber-400" : "text-gray-300 dark:text-slate-600"} />
+          </button>
+        ))}
+      </div>
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        rows={2}
+        placeholder="Share your experience with this product (min 10 characters)"
+        className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40 resize-none"
+      />
+      {formError && <p className="text-xs text-red-500">{formError}</p>}
+      <div className="flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={submitting || comment.trim().length < 10}
+          className="text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-50"
+        >
+          {submitting ? "Saving…" : review ? "Save changes" : "Submit review"}
+        </button>
+        {review && (
+          <button
+            type="button"
+            onClick={() => { setEditing(false); setRating(review.rating); setComment(review.comment || ""); setFormError(""); }}
+            className="text-xs text-gray-500 dark:text-slate-400 hover:underline"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
 
 export default function CustomerOrderDetailPage() {
   const { id } = useParams();
@@ -205,12 +340,19 @@ export default function CustomerOrderDetailPage() {
         <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Items</h2>
         <ul className="divide-y divide-gray-100 dark:divide-slate-800">
           {order.items?.map((item, i) => (
-            <li key={item._id || i} className="flex items-center justify-between gap-4 py-3 text-sm">
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500">Qty {item.qty} × {formatGhs(item.price)}</p>
+            <li key={item._id || i} className="py-3 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">Qty {item.qty} × {formatGhs(item.price)}</p>
+                </div>
+                <p className="font-semibold text-gray-900 dark:text-white shrink-0">{formatGhs(item.price * item.qty)}</p>
               </div>
-              <p className="font-semibold text-gray-900 dark:text-white shrink-0">{formatGhs(item.price * item.qty)}</p>
+              {/* Reviews are the customer's own action on their own order —
+                  never shown on the admin/staff view of someone else's order. */}
+              {!seesAll && REVIEWABLE_ORDER_STATUSES.includes(order.status) && (
+                <OrderItemReview productId={item.product || item.part} />
+              )}
             </li>
           ))}
         </ul>

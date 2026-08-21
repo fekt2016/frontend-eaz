@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { Globe } from "lucide-react";
-import { DomainCard } from "@/components/dashboard/customer/CustomerCards";
-import { useDomainOrders } from "@/hooks/queries/useDomains";
+import { RegisteredDomainCard } from "@/components/dashboard/customer/CustomerCards";
+import { useMyRegisteredDomains } from "@/hooks/queries/useDomains";
 
 export default function CustomerDomainsPage() {
-  const { data: domains = [], isLoading: loading } = useDomainOrders();
+  const { data: domains = [], isLoading: loading } = useMyRegisteredDomains();
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-20">
@@ -34,7 +34,7 @@ export default function CustomerDomainsPage() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
-          {domains.map((o) => <DomainCard key={o._id} order={o} />)}
+          {domains.map((d) => <RegisteredDomainCard key={d._id || d.domain} domain={d} />)}
         </div>
       )}
     </div>

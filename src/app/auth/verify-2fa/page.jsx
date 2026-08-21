@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import { landingPathForRole } from "@/lib/roles";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { ShieldCheck } from "lucide-react";
 
@@ -46,7 +47,7 @@ function Verify2FAInner() {
     try {
       const res = await api.post("/auth/2fa/verify", { email, pin: code });
       if (res.data?.user) setUser(res.data.user);
-      router.push("/dashboard");
+      router.push(landingPathForRole(res.data?.user?.role));
     } catch (err) {
       setError(err.message || "Invalid or expired code.");
       setPin(["", "", "", "", "", ""]);
