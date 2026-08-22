@@ -962,7 +962,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Verified:** 5/5 new tests pass; `next lint` 0 warnings/errors; full suite `npm test`
     25 files / 114 tests pass; `npm run build` compiles successfully, exit 0.
 
-- [ ] **T21 · Hide ALL hosting/domain content for technicians**
+- [x] **T21 · Hide ALL hosting/domain content for technicians**
   - **Issue:** Technicians should see **nothing** related to hosting or domains anywhere in the
     dashboard. Currently the sidebar shows `baseNav` (Overview, Shop Orders, My Repairs,
     **Hosting**, **Domains**) to every logged-in user, and technicians may still surface
@@ -970,10 +970,18 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Location:** `src/app/dashboard/dashboardNav.js` (`baseNav`),
     `src/app/dashboard/Sidebar.jsx`, `src/app/dashboard/page.jsx` (MyDashboard),
     any other page/card that renders hosting/domain for technicians
-  - **Fix:** Role-gate **every** hosting/domain UI element so `technician` never sees them —
-    sidebar links, dashboard widgets/cards, badges, and any "Hosting"/"Domains" reference.
-    Confirm whether `staff` keeps them. Backend must also refuse technicians on those routes
-    (see `backend-eaz/tasks.md` → T21).
+  - **Fix:** `baseNav`'s Hosting/Domains entries gained `hideRoles: ["technician"]`
+    (`dashboardNav.js`); `Sidebar.jsx` filters `baseNav` through it before rendering
+    (same pattern already used for `posNav`'s per-item `roles`). `staff` keeps both links —
+    only `technician` is excluded, matching the backend's `denyRoles('technician')` scope.
+    Audited `page.jsx`: `DashboardContent` routes `staff`/`technician` to `MyDashboard`, never
+    to `CustomerOverview` (which owns the Hosting/Domains stat cards + recent-orders widgets),
+    and `MyDashboard` itself has no hosting/domain reference — no other change needed there.
+    Grepped the rest of `dashboard/` for "Hosting"/"Domains" strings — no other nav/card
+    surfaces them. `/dashboard/hosting` and `/dashboard/domains` pages have no client-side
+    role guard, consistent with every other role-restricted page in this app (e.g.
+    `/dashboard/users`) — they rely on the hidden nav link + the backend 403
+    (`backend-eaz/tasks.md` → T21) which now denies technician on those endpoints.
 
 - [ ] **T19 · Change "Customer will bring device in" → "Device received" once diagnosing starts**
   - **Issue:** On the repair job detail page, the customer/device card shows
