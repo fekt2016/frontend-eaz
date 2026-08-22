@@ -160,6 +160,27 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ---
 
+## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
+
+- [x] **T12 · In-app notifications / alert center** — filed backend-only in `backend-eaz/tasks.md`,
+  turned out to need frontend work too (see that entry for the full scope/decisions/bug-fix note).
+  - **What shipped here:** `hooks/queries/useNotifications.js` (list/unread-count/mark-read/
+    mark-all-read, matching the app's existing react-query hook conventions); `NotificationBell`
+    (bell + unread badge + recent-notifications dropdown) wired into both `DashboardShell`'s and
+    `PosShell`'s topbars — `/dashboard/commerce` already reuses `DashboardShell` via its own
+    `layout.jsx`, so it needed no separate change; a `/dashboard/notifications` page (all/unread
+    filter, pagination, mark-all-read), following the existing pager pattern from
+    `pos/expenses/page.jsx`.
+  - **Unread-badge polling:** `refetchInterval: 30_000` — matches the app's global 30s
+    `staleTime` default (`lib/queryClient.js`); auto-pauses while the tab is backgrounded
+    (react-query default).
+  - **Tests:** `useNotifications.test.jsx` (7 tests: unread-count shape/default, list query-string
+    building, mark-read/mark-all-read mutations). Full `vitest run`: 27 files / 126 tests passed.
+    Lint clean; `next build` succeeded (`/dashboard/notifications` compiles).
+  - **Backend:** `backend-eaz/tasks.md` → T12.
+
+---
+
 ## Ad-hoc fixes (found during work, outside the original audit)
 
 - [x] **T61 · 2FA PIN email logged as `other` — not filterable in EmailLog** ✅ done 2026-08-20
