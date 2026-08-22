@@ -995,16 +995,23 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     keep the existing dropoff-based copy.
   - **Backend note:** none required (frontend-only display change); see `backend-eaz/tasks.md` → T19.
 
-- [ ] **T20 · Hide the repair/technician form once the job is done or cancelled**
+- [x] **T20 · Hide the repair/technician form once the job is done or cancelled**
   - **Issue:** On the repair job detail page, the "Technician Update" form (repair work, labour
     charge, diagnosis fee, estimated completion, diagnosis, status, internal notes, warranty) and
     the "Parts" section remain editable after the job is finished or cancelled. They should be
     hidden (or made read-only) when the job is `ready`/`collected` (work done) or `cancelled`.
   - **Location:** `src/app/dashboard/pos/jobs/[id]/page.jsx` (Technician Update card ~lines 243–357,
     Parts card ~lines 359+)
-  - **Fix:** Render the Technician Update + Parts sections only for active statuses
-    (`received`, `diagnosing`, `repairing`); for `ready`/`collected`/`cancelled` show a
-    read-only summary instead. Confirm the teller-side payment/close controls still work.
+  - **Fix:** Added `isEditable = !["ready","collected","cancelled"].includes(status)`. Deviated
+    from the fix note's literal active-list (`received`/`diagnosing`/`repairing`) by also keeping
+    `waiting_for_parts` editable — it's a mid-repair status too, and locking the form during it
+    would strand a technician who needs to log notes/parts while parts are in transit; only the
+    three "job is over" statuses go read-only, matching the task title. Both the Technician
+    Update card and the Parts card now render a read-only summary (plain text, no inputs, no
+    search/add/remove) when `!isEditable`; the warranty-expiry banner is shared between both
+    branches. The status-progression buttons, payment/close controls, and MoMo/card panels were
+    untouched — they already had their own status/`isTechnician` gates — verified them still
+    render correctly for each status.
   - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T20.
 
 - [x] **T16 · Homepage / shop crash on external product images** ✅ done 2026-08-18

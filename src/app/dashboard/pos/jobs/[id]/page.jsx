@@ -127,6 +127,10 @@ export default function JobDetailPage() {
   const grossProfit    = totalAmount - totalPartsCost;
   const marginPct      = totalAmount > 0 ? Math.round((grossProfit / totalAmount) * 100) : 0;
 
+  // T20: once the job is done or cancelled, the Technician Update + Parts
+  // forms go read-only — the work is over, editing them shouldn't change history.
+  const isEditable = !["ready", "collected", "cancelled"].includes(status);
+
   const {
     momoPhone, setMomoPhone, momoProvider, setMomoProvider, momoAmount, setMomoAmount,
     momoStatus, momoRef, momoMsg, momoLoading, initiateMomo, cancelMomo,
@@ -245,6 +249,7 @@ export default function JobDetailPage() {
               <Wrench size={11} className="text-brand-600 dark:text-brand-400" />
               <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">Technician Update</p>
             </div>
+            {isEditable ? (
             <div className="p-5 space-y-4">
               {/* Repair work — key field for teller */}
               <div>
@@ -354,10 +359,84 @@ export default function JobDetailPage() {
                 )}
               </div>
             </div>
+            ) : (
+            <div className="p-5 space-y-4 text-sm">
+              <div>
+                <p className={labelCls}>Work performed</p>
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{repairWork || "—"}</p>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <p className={labelCls}>Labour charge</p>
+                  <p className="text-gray-900 dark:text-white">{formatGhs(Math.round((Number(laborCost) || 0) * 100))}</p>
+                </div>
+                {job?.requiresDiagnosis && (
+                  <div>
+                    <p className={labelCls}>Diagnosis fee</p>
+                    <p className="text-gray-900 dark:text-white">{formatGhs(Math.round((Number(diagnosisFee) || 0) * 100))}</p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className={labelCls}>Diagnosis / findings</p>
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{diagnosis || "—"}</p>
+              </div>
+
+              <div>
+                <p className={labelCls}>Internal notes</p>
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{notes || "—"}</p>
+              </div>
+
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-800 space-y-3">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Warranty</p>
+                <p className="text-gray-900 dark:text-white">
+                  {Number(warrantyDays) > 0
+                    ? `${warrantyDays} days${warrantyNotes ? ` — ${warrantyNotes}` : ""}`
+                    : "No warranty"}
+                </p>
+                {job?.warrantyExpires && (
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs ${
+                    job.warrantyStatus === "active"        ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400" :
+                    job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-600 dark:text-brand-400" :
+                    "bg-gray-500/10 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400"
+                  }`}>
+                    <span className="font-medium">Warranty expires:</span>
+                    <span>{new Date(job.warrantyExpires).toLocaleDateString("en-GH", { dateStyle: "long" })}</span>
+                    {job.warrantyStatus === "expiring_soon" && <span className="ml-auto font-semibold">Expiring soon!</span>}
+                    {job.warrantyStatus === "expired"       && <span className="ml-auto font-semibold">Expired</span>}
+                  </div>
+                )}
+              </div>
+            </div>
+            )}
           </div>
 
-          {/* Parts — hidden until the teller searches */}
-          {!showParts && selectedParts.length === 0 ? (
+          {/* Parts — hidden until the teller searches (read-only summary once done/cancelled) */}
+          {!isEditable ? (
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Parts</p>
+            </div>
+            <div className="p-5 space-y-2">
+              {selectedParts.length === 0 ? (
+                <p className="text-sm text-gray-600">No parts used.</p>
+              ) : (
+                selectedParts.map(p => (
+                  <div key={p.id} className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-800 last:border-0 text-sm">
+                    <p className="text-gray-900 dark:text-white">
+                      {p.name}{p.sku ? ` (${p.sku})` : ""} × {p.quantity}
+                    </p>
+                    <p className="font-semibold text-brand-600 dark:text-brand-400">
+                      GH₵{((p.cost || 0) * p.quantity).toLocaleString()}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          ) : !showParts && selectedParts.length === 0 ? (
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5">
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Parts</p>
