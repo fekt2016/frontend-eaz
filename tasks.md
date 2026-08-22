@@ -983,16 +983,21 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `/dashboard/users`) — they rely on the hidden nav link + the backend 403
     (`backend-eaz/tasks.md` → T21) which now denies technician on those endpoints.
 
-- [ ] **T19 · Change "Customer will bring device in" → "Device received" once diagnosing starts**
+- [x] **T19 · Change "Customer will bring device in" → "Device received" once diagnosing starts**
   - **Issue:** On the repair job detail page, the customer/device card shows
     "Customer will bring device in" (or "Rider pickup requested") based on `job.dropoff`.
     Once the teller clicks **Start Diagnosing** (status `received` → `diagnosing`) **or**
     **Skip to Repairing** (status `received` → `repairing`), the device has been handed over
     and the label should read **"Device received"** instead.
   - **Location:** `src/app/dashboard/pos/jobs/[id]/_components/CustomerDeviceCard.jsx` (line 32)
-  - **Fix:** Derive the label from `job.status` — show "Device received" when the job has left
-    the `received` stage (whether via **Start Diagnosing** or **Skip to Repairing**), otherwise
-    keep the existing dropoff-based copy.
+  - **Fix:** Label now derived from `job.status !== "received"` instead of always showing the
+    dropoff copy — reads "Device received" for every status past `received` (`diagnosing`,
+    `waiting_for_parts`, `repairing`, `ready`, `collected`, `cancelled`), otherwise keeps the
+    existing dropoff-based copy (`job.dropoff === "rider"` vs the default). `pickupAddress`
+    display was left untouched (out of scope — task only asked to change the label).
+    Added `CustomerDeviceCard.test.jsx` (5 tests: pre-arrival customer/rider copy, the two
+    named transitions, and the later statuses). `npx vitest run` on the new file: 5/5 passed;
+    lint clean.
   - **Backend note:** none required (frontend-only display change); see `backend-eaz/tasks.md` → T19.
 
 - [x] **T20 · Hide the repair/technician form once the job is done or cancelled**
