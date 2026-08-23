@@ -29,7 +29,9 @@ export function CustomerDeviceCard({ job }) {
           <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20">
             <div>
               <p className="text-xs font-semibold text-brand-600 dark:text-brand-400">
-                {job.dropoff === "rider" ? "Rider pickup requested" : "Customer will bring device in"}
+                {job.status !== "received"
+                  ? "Device received"
+                  : job.dropoff === "rider" ? "Rider pickup requested" : "Customer will bring device in"}
               </p>
               {job.dropoff === "rider" && job.pickupAddress && (
                 <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{job.pickupAddress}</p>

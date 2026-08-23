@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "@/components/dashboard/NotificationBell";
 import { Menu, Settings, Wrench } from "lucide-react";
 import { posNav } from "../dashboardNav";
 import Sidebar from "../Sidebar";
@@ -94,6 +95,7 @@ export default function PosShell({ children }) {
             </nav>
 
             <div className="flex items-center gap-3 flex-shrink-0">
+              <NotificationBell />
               <ThemeToggle />
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-semibold text-gray-900 dark:text-white truncate max-w-[120px]">{user.name}</p>
@@ -140,6 +142,7 @@ export default function PosShell({ children }) {
           </button>
           <span className="font-bold text-gray-900 dark:text-white text-sm">EazWorld</span>
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <ThemeToggle />
             <div className="w-7 h-7 rounded-full bg-brand-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs">
               {user.name?.charAt(0).toUpperCase()}
@@ -151,6 +154,7 @@ export default function PosShell({ children }) {
         <header className="hidden lg:flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-30">
           <h1 className="text-base font-bold text-gray-900 dark:text-white">{pageTitle}</h1>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <ThemeToggle />
             <div className="text-right hidden xl:block">
               <p className="text-xs font-semibold text-gray-900 dark:text-white truncate max-w-[140px]">{user.name}</p>

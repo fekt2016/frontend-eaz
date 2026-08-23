@@ -6,13 +6,14 @@ import {
   ShoppingBag, Star, Store, Truck, Users, Wrench,
 } from "lucide-react";
 
-// Shown to every logged-in dashboard user.
+// Shown to every logged-in dashboard user except where `hideRoles` excludes them.
+// T21: technicians get zero hosting/domain access, so Hosting/Domains are hidden for them.
 export const baseNav = [
   { href: "/dashboard", icon: Gauge, label: "Overview" },
   { href: "/dashboard/orders", icon: ShoppingBag, label: "Shop Orders" },
   { href: "/dashboard/repairs", icon: Wrench, label: "My Repairs" },
-  { href: "/dashboard/hosting", icon: Server, label: "Hosting" },
-  { href: "/dashboard/domains", icon: Globe, label: "Domains" },
+  { href: "/dashboard/hosting", icon: Server, label: "Hosting", hideRoles: ["technician"] },
+  { href: "/dashboard/domains", icon: Globe, label: "Domains", hideRoles: ["technician"] },
 ];
 
 // Admin/superadmin only.

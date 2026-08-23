@@ -37,6 +37,7 @@ export default function Sidebar({ open, onClose }) {
   const canSeeStock = ["superadmin", "admin", "staff"].includes(user?.role);
 
   const visiblePosNav = posNav.filter(n => !n.roles || n.roles.includes(user?.role));
+  const visibleBaseNav = baseNav.filter(n => !n.hideRoles || !n.hideRoles.includes(user?.role));
 
   // Low-stock badge count (React Query — shared cache with the inventory page).
   const lowStockQ = useInventory({ lowStock: true, limit: 1 }, { enabled: canSeeStock });
@@ -76,7 +77,7 @@ export default function Sidebar({ open, onClose }) {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Overview</p>
-        {baseNav.map((item) => (
+        {visibleBaseNav.map((item) => (
           <SidebarLink key={item.href} {...item} active={isActive(item.href)} onClick={onClose} />
         ))}
 
