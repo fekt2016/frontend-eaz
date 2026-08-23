@@ -698,17 +698,28 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     renders per search result including a photo-less product (shared placeholder, no
     crash), and the clicked result's image carries into the cart row.
 
-- [ ] **T36 · Suppliers: add WhatsApp and WeChat contact fields**
+- [x] **T36 · Suppliers: add WhatsApp and WeChat contact fields** — ✅ done 2026-08-23 (both
+  halves; backend half added `whatsapp`/`wechat` to `Supplier`, see `backend-eaz/tasks.md` →
+  T36)
   - **Issue:** Suppliers will be sourced from China (WeChat/1688/AliExpress vendors + freight
     forwarders) — messaging happens via **WhatsApp** and **WeChat**, not just phone/email.
     Add dedicated contact fields so staff can open a chat directly (e.g. `wa.me` links,
     WeChat ID display/copy).
   - **Location:** `src/app/dashboard/pos/suppliers/page.jsx` (add + inline-edit forms,
     rows), `src/app/dashboard/pos/suppliers/[id]/page.jsx` (contact card)
-  - **Fix:** Add `whatsapp` (phone number → link `https://wa.me/<digits>`) and `wechat`
-    (WeChat ID → display with copy button) fields to the supplier add/edit forms, list rows,
-    and the detail contact card. Keep phone separate from WhatsApp (a China number could be
-    both).
+  - **Fix:** Added `whatsapp` and `wechat` fields to the add form, inline-edit form, and list
+    rows in `suppliers/page.jsx` — `whatsapp` renders as an `https://wa.me/<digits>` link
+    (`FaWhatsapp`, `react-icons/fa` — matches the icon already used for WhatsApp elsewhere in
+    the app), `wechat` as a plain labeled badge (`FaWeixin`) since WeChat has no universal deep
+    link scheme. Detail page (`[id]/page.jsx`) contact card gained the same `wa.me` link plus a
+    click-to-copy WeChat ID button (`navigator.clipboard.writeText`, 2s "copied" checkmark —
+    same pattern as the existing tracking-link copy button on the job detail page). Kept phone
+    fully separate from WhatsApp per the fix note (a China number could be both, but they're
+    independent fields).
+  - **Tests:** `suppliers/page.test.jsx` (2 tests: row renders `wa.me` link + WeChat text, add
+    form submits both fields) and `[id]/page.test.jsx` (2 tests: detail `wa.me` link, WeChat
+    copy-to-clipboard) — both new. Full suite: 35 files/163 tests pass, lint clean, `next
+    build` succeeds.
   - **Backend part:** `backend-eaz/tasks.md` → T36.
 
 - [ ] **T35 · Variant form: add a price input for each variant**
