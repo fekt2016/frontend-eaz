@@ -674,19 +674,29 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     tall viewports.
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T38).
 
-- [ ] **T37 · Sell page: show item images in search results and cart/summary**
+- [x] **T37 · Sell page: show item images in search results and cart/summary** — ✅ done
+  2026-08-23 (both halves; backend half added `images` to the product select, see
+  `backend-eaz/tasks.md` → T37)
   - **Issue:** On `/dashboard/pos/sell`, searching for a product/part shows a text-only list
     (name, category, stock, price) and the cart rows are text-only too. The item's **image**
     should appear in the search results dropdown **and** in the cart/summary (right column)
     so cashiers can visually confirm they're scanning the right item.
   - **Location:** `src/app/dashboard/pos/sell/page.jsx` (search results ~lines 368–386,
     cart rows ~lines 408–441; `addToCart` cart item shape ~lines 111–121)
-  - **Fix:** Store `image: part.images?.[0] || part.image || null` in each cart item; render a
-    thumbnail (e.g. 40×40 rounded, `object-cover`, gray placeholder when no image) in the
-    search results and cart rows. Add an image placeholder for items without photos.
-  - **Note:** Part search already returns `images`; product search currently omits them —
-    backend must add `images` to the product select (see `backend-eaz/tasks.md` → T37).
-  - **Depends on T33 (part image input) for parts to actually have photos.**
+  - **Fix:** Store `image: part.images?.[0] || null` in each cart item; render a shared
+    `ProductImage` thumbnail (40×40, rounded, `object-cover`, gray placeholder background)
+    in both the search results dropdown and cart rows.
+  - **Deviated from the fix note's literal `part.images?.[0] || part.image || null`:**
+    dropped the `|| part.image` fallback. Neither `Part` (`models/Part.js`) nor `Product`
+    (`models/Product.js`) has ever had a singular `image` field — only `images` (array) —
+    confirmed by grepping both schemas. There's no legacy data it could recover; it would be
+    dead defensive code for a field that can't exist, which `CLAUDE.md` says not to add.
+  - **Note:** Part search already returned `images`; product search omitted them — fixed on
+    the backend (see `backend-eaz/tasks.md` → T37).
+  - **Depends on T33 (part image input) for parts to actually have photos — done.**
+  - **Tests:** `src/app/dashboard/pos/sell/page.test.jsx` (new, 2 tests) — a thumbnail
+    renders per search result including a photo-less product (shared placeholder, no
+    crash), and the clicked result's image carries into the cart row.
 
 - [ ] **T36 · Suppliers: add WhatsApp and WeChat contact fields**
   - **Issue:** Suppliers will be sourced from China (WeChat/1688/AliExpress vendors + freight
