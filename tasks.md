@@ -162,23 +162,6 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
 
-- [x] **T12 · In-app notifications / alert center** — filed backend-only in `backend-eaz/tasks.md`,
-  turned out to need frontend work too (see that entry for the full scope/decisions/bug-fix note).
-  - **What shipped here:** `hooks/queries/useNotifications.js` (list/unread-count/mark-read/
-    mark-all-read, matching the app's existing react-query hook conventions); `NotificationBell`
-    (bell + unread badge + recent-notifications dropdown) wired into both `DashboardShell`'s and
-    `PosShell`'s topbars — `/dashboard/commerce` already reuses `DashboardShell` via its own
-    `layout.jsx`, so it needed no separate change; a `/dashboard/notifications` page (all/unread
-    filter, pagination, mark-all-read), following the existing pager pattern from
-    `pos/expenses/page.jsx`.
-  - **Unread-badge polling:** `refetchInterval: 30_000` — matches the app's global 30s
-    `staleTime` default (`lib/queryClient.js`); auto-pauses while the tab is backgrounded
-    (react-query default).
-  - **Tests:** `useNotifications.test.jsx` (7 tests: unread-count shape/default, list query-string
-    building, mark-read/mark-all-read mutations). Full `vitest run`: 27 files / 126 tests passed.
-    Lint clean; `next build` succeeded (`/dashboard/notifications` compiles).
-  - **Backend:** `backend-eaz/tasks.md` → T12.
-
 ---
 
 ## Ad-hoc fixes (found during work, outside the original audit)
@@ -982,63 +965,6 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
       never redirected and still sees their own repairs table.
   - **Verified:** 5/5 new tests pass; `next lint` 0 warnings/errors; full suite `npm test`
     25 files / 114 tests pass; `npm run build` compiles successfully, exit 0.
-
-- [x] **T21 · Hide ALL hosting/domain content for technicians**
-  - **Issue:** Technicians should see **nothing** related to hosting or domains anywhere in the
-    dashboard. Currently the sidebar shows `baseNav` (Overview, Shop Orders, My Repairs,
-    **Hosting**, **Domains**) to every logged-in user, and technicians may still surface
-    hosting/domain links, badges, or widgets.
-  - **Location:** `src/app/dashboard/dashboardNav.js` (`baseNav`),
-    `src/app/dashboard/Sidebar.jsx`, `src/app/dashboard/page.jsx` (MyDashboard),
-    any other page/card that renders hosting/domain for technicians
-  - **Fix:** `baseNav`'s Hosting/Domains entries gained `hideRoles: ["technician"]`
-    (`dashboardNav.js`); `Sidebar.jsx` filters `baseNav` through it before rendering
-    (same pattern already used for `posNav`'s per-item `roles`). `staff` keeps both links —
-    only `technician` is excluded, matching the backend's `denyRoles('technician')` scope.
-    Audited `page.jsx`: `DashboardContent` routes `staff`/`technician` to `MyDashboard`, never
-    to `CustomerOverview` (which owns the Hosting/Domains stat cards + recent-orders widgets),
-    and `MyDashboard` itself has no hosting/domain reference — no other change needed there.
-    Grepped the rest of `dashboard/` for "Hosting"/"Domains" strings — no other nav/card
-    surfaces them. `/dashboard/hosting` and `/dashboard/domains` pages have no client-side
-    role guard, consistent with every other role-restricted page in this app (e.g.
-    `/dashboard/users`) — they rely on the hidden nav link + the backend 403
-    (`backend-eaz/tasks.md` → T21) which now denies technician on those endpoints.
-
-- [x] **T19 · Change "Customer will bring device in" → "Device received" once diagnosing starts**
-  - **Issue:** On the repair job detail page, the customer/device card shows
-    "Customer will bring device in" (or "Rider pickup requested") based on `job.dropoff`.
-    Once the teller clicks **Start Diagnosing** (status `received` → `diagnosing`) **or**
-    **Skip to Repairing** (status `received` → `repairing`), the device has been handed over
-    and the label should read **"Device received"** instead.
-  - **Location:** `src/app/dashboard/pos/jobs/[id]/_components/CustomerDeviceCard.jsx` (line 32)
-  - **Fix:** Label now derived from `job.status !== "received"` instead of always showing the
-    dropoff copy — reads "Device received" for every status past `received` (`diagnosing`,
-    `waiting_for_parts`, `repairing`, `ready`, `collected`, `cancelled`), otherwise keeps the
-    existing dropoff-based copy (`job.dropoff === "rider"` vs the default). `pickupAddress`
-    display was left untouched (out of scope — task only asked to change the label).
-    Added `CustomerDeviceCard.test.jsx` (5 tests: pre-arrival customer/rider copy, the two
-    named transitions, and the later statuses). `npx vitest run` on the new file: 5/5 passed;
-    lint clean.
-  - **Backend note:** none required (frontend-only display change); see `backend-eaz/tasks.md` → T19.
-
-- [x] **T20 · Hide the repair/technician form once the job is done or cancelled**
-  - **Issue:** On the repair job detail page, the "Technician Update" form (repair work, labour
-    charge, diagnosis fee, estimated completion, diagnosis, status, internal notes, warranty) and
-    the "Parts" section remain editable after the job is finished or cancelled. They should be
-    hidden (or made read-only) when the job is `ready`/`collected` (work done) or `cancelled`.
-  - **Location:** `src/app/dashboard/pos/jobs/[id]/page.jsx` (Technician Update card ~lines 243–357,
-    Parts card ~lines 359+)
-  - **Fix:** Added `isEditable = !["ready","collected","cancelled"].includes(status)`. Deviated
-    from the fix note's literal active-list (`received`/`diagnosing`/`repairing`) by also keeping
-    `waiting_for_parts` editable — it's a mid-repair status too, and locking the form during it
-    would strand a technician who needs to log notes/parts while parts are in transit; only the
-    three "job is over" statuses go read-only, matching the task title. Both the Technician
-    Update card and the Parts card now render a read-only summary (plain text, no inputs, no
-    search/add/remove) when `!isEditable`; the warranty-expiry banner is shared between both
-    branches. The status-progression buttons, payment/close controls, and MoMo/card panels were
-    untouched — they already had their own status/`isTechnician` gates — verified them still
-    render correctly for each status.
-  - **Backend note:** none required (frontend-only); see `backend-eaz/tasks.md` → T20.
 
 - [x] **T16 · Homepage / shop crash on external product images** ✅ done 2026-08-18
   - **Symptom:** homepage showed "Something went wrong" (error boundary); the "Recent
