@@ -726,7 +726,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Backend note:** upload endpoint (`POST /api/v1/uploads`) already exists and is used by the
     form; no backend change expected (see `backend-eaz/tasks.md` → T34).
 
-- [ ] **T33 · Inventory part form has no image input**
+- [x] **T33 · Inventory part form has no image input** — ✅ done 2026-08-23
   - **Issue:** The inventory part add/edit form (PartModal) has no field to upload/attach an
     **image** for a repair part. Parts should support a photo (shown in inventory, sell search,
     job parts, receipts) like shop products already do (`product.images`).
@@ -736,6 +736,28 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     Cloudinary upload endpoint — see `backend-eaz/tasks.md` → T33), store it on the `Part`
     model, display it in inventory rows/search results.
   - **Backend part:** `backend-eaz/tasks.md` → T33.
+  - **Shipped:**
+    - **`PartModal`** lives at `src/app/dashboard/commerce/page.jsx` now, not the
+      `inventory/` path in the fix note — T24 moved it there; `inventory/page.jsx` is
+      just T24's redirect shim. Added a `images` state (array, matching the backend's
+      `Part.images` field) and a Photo field: shows an `UploadButton` when empty, or a
+      56×56 thumbnail + Remove control once a URL exists. `images` included in both
+      create and update payloads.
+    - **`src/components/common/UploadButton.jsx`** — new. Extracted verbatim out of
+      `ProductForm.jsx`, where it already existed for gallery/variant image uploads
+      (`POST /api/v1/uploads`) but was private to that file — reused here instead of
+      duplicated, per the fix note's own "existing Cloudinary upload endpoint."
+      `ProductForm.jsx` now imports it; no behavior change there.
+    - Parts table row gained a 36×36 `ProductImage` thumbnail (`p.images?.[0]`),
+      matching the existing product row's exact pattern one tab over — same component,
+      same graceful placeholder-on-missing/broken-image fallback (T16).
+    - `UploadButton.test.jsx` (3, isolated: uploads and calls back with the URL,
+      surfaces an error without calling back, no-op on a dismissed file picker) +
+      3 new tests in `commerce/page.test.jsx` (upload swaps in a thumbnail + Remove and
+      the save payload includes it, Remove reverts to the Upload button, an existing
+      part's photo renders in the table row).
+  - **Verified:** full suite 32 files/157 tests pass (up from 31/151); `npm run lint` 0
+    errors; `next build` succeeds.
 
 - [ ] **T32 · Reports page: staff see only their own report; admin sees all staff + per-staff activity**
   - **Issue:** The POS Reports page (`/dashboard/pos/reports`) shows **shop-wide** analytics to

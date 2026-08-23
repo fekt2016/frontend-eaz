@@ -6,9 +6,10 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
 import ProductImage from "@/components/shop/ProductImage";
+import UploadButton from "@/components/common/UploadButton";
 import {
   Plus, Search, Pen, Trash2, TriangleAlert, Barcode, PackageOpen,
-  Wrench, Truck, ClipboardList,
+  Wrench, Truck, ClipboardList, X,
 } from "lucide-react";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
@@ -35,6 +36,7 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
   const [supplierId, setSupplierId]= useState(part?.supplier?._id || part?.supplier || "");
   const [compat,     setCompat]    = useState(part?.compatibleWith?.join(", ") || "");
   const [notes,      setNotes]     = useState(part?.notes      || "");
+  const [images,     setImages]    = useState(part?.images     || []);
   const [saving,     setSaving]    = useState(false);
   const [error,      setError]     = useState("");
 
@@ -67,6 +69,7 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
         supplier: supplierId || undefined,
         compatibleWith: compat ? compat.split(",").map(s => s.trim()).filter(Boolean) : [],
         notes: notes || undefined,
+        images,
       };
       if (editing) {
         await api.patch(`/pos/inventory/${part._id}`, payload);
@@ -106,6 +109,25 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
               placeholder="Scan part barcode…"
               className={`${inputCls} ${!barcode && !editing ? "border-brand-500/50 focus:border-brand-500" : ""}`}
             />
+          </div>
+
+          {/* Photo — single image, same Cloudinary upload route as products (T33) */}
+          <div>
+            <label className={labelCls}>Photo</label>
+            {images[0] ? (
+              <div className="flex items-center gap-3">
+                <ProductImage src={images[0]} alt={name || "Part photo"} width={56} height={56} className="h-14 w-14 rounded-xl object-cover bg-gray-100 flex-shrink-0" />
+                <button
+                  type="button"
+                  onClick={() => setImages([])}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300 hover:border-red-400 hover:text-red-500 transition"
+                >
+                  <X size={11} /> Remove
+                </button>
+              </div>
+            ) : (
+              <UploadButton onUploaded={(url) => setImages([url])} label="Upload photo" />
+            )}
           </div>
 
           <div>
@@ -406,16 +428,19 @@ function PartsTab() {
                 const lowStockFlag = p.quantity <= p.lowStockThreshold;
                 return (
                   <div key={p._id} className="flex sm:grid sm:grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 items-center px-5 py-3.5 hover:bg-gray-100/30 dark:hover:bg-gray-800/30 transition">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
-                        {lowStockFlag && <TriangleAlert size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
-                        {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400 flex-shrink-0">Retail</span>}
+                    <div className="min-w-0 flex items-center gap-3">
+                      <ProductImage src={p.images?.[0]} alt={p.name} width={36} height={36} className="h-9 w-9 rounded-xl object-cover bg-gray-100 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
+                          {lowStockFlag && <TriangleAlert size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
+                          {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400 flex-shrink-0">Retail</span>}
+                        </div>
+                        {p.sku && <p className="text-xs text-gray-500">SKU: {p.sku}</p>}
+                        {p.compatibleWith?.length > 0 && (
+                          <p className="text-xs text-gray-600 truncate">{p.compatibleWith.slice(0, 3).join(", ")}</p>
+                        )}
                       </div>
-                      {p.sku && <p className="text-xs text-gray-500">SKU: {p.sku}</p>}
-                      {p.compatibleWith?.length > 0 && (
-                        <p className="text-xs text-gray-600 truncate">{p.compatibleWith.slice(0, 3).join(", ")}</p>
-                      )}
                     </div>
                     <span className="text-xs font-mono text-gray-500 hidden sm:block">{p.barcode || "—"}</span>
                     <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{p.category}</span>
