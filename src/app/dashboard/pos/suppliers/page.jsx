@@ -4,12 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Plus, Truck, Search, Check, X, Pen, Trash2, ChevronRight } from "lucide-react";
+import { FaWhatsapp, FaWeixin } from "react-icons/fa";
 import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier } from "@/hooks/queries/useSuppliers";
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
 const labelCls = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
 
-const EMPTY_FORM = { name: "", contactPerson: "", phone: "", email: "", address: "", notes: "" };
+const EMPTY_FORM = { name: "", contactPerson: "", phone: "", whatsapp: "", wechat: "", email: "", address: "", notes: "" };
 
 export default function SuppliersPage() {
   const { user } = useAuth();
@@ -49,7 +50,8 @@ export default function SuppliersPage() {
     setEditId(s._id);
     setEditForm({
       name: s.name || "", contactPerson: s.contactPerson || "",
-      phone: s.phone || "", email: s.email || "",
+      phone: s.phone || "", whatsapp: s.whatsapp || "", wechat: s.wechat || "",
+      email: s.email || "",
       address: s.address || "", notes: s.notes || "",
     });
   };
@@ -114,6 +116,14 @@ export default function SuppliersPage() {
               <div>
                 <label className={labelCls}>Email</label>
                 <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className={inputCls} placeholder="supplier@example.com" />
+              </div>
+              <div>
+                <label className={labelCls}>WhatsApp</label>
+                <input value={form.whatsapp} onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))} className={inputCls} placeholder="+86 138 0013 8000" />
+              </div>
+              <div>
+                <label className={labelCls}>WeChat ID</label>
+                <input value={form.wechat} onChange={e => setForm(f => ({ ...f, wechat: e.target.value }))} className={inputCls} placeholder="e.g. sz_parts_2024" />
               </div>
               <div className="sm:col-span-2">
                 <label className={labelCls}>Address</label>
@@ -186,6 +196,14 @@ export default function SuppliersPage() {
                         <label className={labelCls}>Email</label>
                         <input value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} className={inputCls} />
                       </div>
+                      <div>
+                        <label className={labelCls}>WhatsApp</label>
+                        <input value={editForm.whatsapp} onChange={e => setEditForm(f => ({ ...f, whatsapp: e.target.value }))} className={inputCls} placeholder="+86 138 0013 8000" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>WeChat ID</label>
+                        <input value={editForm.wechat} onChange={e => setEditForm(f => ({ ...f, wechat: e.target.value }))} className={inputCls} />
+                      </div>
                       <div className="sm:col-span-2">
                         <label className={labelCls}>Notes</label>
                         <input value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} className={inputCls} />
@@ -217,6 +235,16 @@ export default function SuppliersPage() {
                         {s.contactPerson && <span>{s.contactPerson}</span>}
                         {s.phone  && <a href={`tel:${s.phone}`}  className="hover:text-brand-400 transition">{s.phone}</a>}
                         {s.email  && <a href={`mailto:${s.email}`} className="hover:text-brand-400 transition">{s.email}</a>}
+                        {s.whatsapp && (
+                          <a href={`https://wa.me/${s.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-emerald-400 transition">
+                            <FaWhatsapp className="text-emerald-500" size={11} /> {s.whatsapp}
+                          </a>
+                        )}
+                        {s.wechat && (
+                          <span className="flex items-center gap-1">
+                            <FaWeixin className="text-green-500" size={11} /> {s.wechat}
+                          </span>
+                        )}
                       </div>
                       {s.notes && <p className="text-xs text-gray-600 truncate mt-0.5">{s.notes}</p>}
                     </div>
