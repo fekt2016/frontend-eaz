@@ -44,9 +44,13 @@ function LoginPageInner() {
       }
       router.push(landingPathForRole(res?.data?.user?.role));
     } catch (err) {
-      // If account not verified, redirect to verify page
+      // If account not verified, redirect to verify page — a phone-only account
+      // has no `err.email` (T17), so fall back to whichever identifier was
+      // actually typed and pick the matching query param.
       if (err.requiresVerification) {
-        router.push(`/auth/verify?email=${encodeURIComponent(err.email || cleanIdentifier)}`);
+        const value = err.email || cleanIdentifier;
+        const param = /\S+@\S+\.\S+/.test(value) ? "email" : "phone";
+        router.push(`/auth/verify?${param}=${encodeURIComponent(value)}`);
         return;
       }
       setError(err.message || "Invalid email or password.");

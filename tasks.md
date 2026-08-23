@@ -134,7 +134,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     was picked up (removed at some earlier, undated point). No code change made.
   - **Source:** AUDIT.md §3 note, §27 (#5)
 
-- [ ] **T17 · Registration form: allow email OR phone**
+- [x] **T17 · Registration form: allow email OR phone** — ✅ done 2026-08-23
   - **Issue:** The register form marks `email` as required, but users should be able to
     register using **either** an email **or** a phone number. (Backend schema/controller
     changes live in `backend-eaz/tasks.md` → T17.)
@@ -143,6 +143,38 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     one identifier on the client. Adjust the redirect on registration to send verification
     to whichever identifier was chosen. Match the backend validation.
   - **Backend part:** `backend-eaz/tasks.md` → T17.
+  - **Shipped:**
+    - **`src/app/auth/register/page.jsx`** — dropped the email input's hard `required`
+      attribute (a phone-only submit must not be native-HTML5-blocked); validation now
+      requires name + password + (email OR phone), matching the backend's rule exactly.
+      The post-register redirect to `/auth/verify` now picks `?email=` or `?phone=` based
+      on whichever identifier was actually submitted, instead of always assuming email
+      (the original code even had a latent bug here — it read the raw `email` state, not
+      the sanitized `cleanEmail`, for the redirect).
+    - **`src/app/auth/verify/page.jsx`** — turned out to need real changes too, not just
+      "receive whichever param the redirect sends": the whole page was hardcoded to
+      `email` — the query param name, the header copy ("Check your email"), the fallback
+      identifier input, and both the `verify-pin`/`resend-pin` request bodies. Now reads
+      `email` or `phone` from the query string, and when neither is present (direct
+      navigation) shows one generic "Email or phone number" input; on submit, the typed/
+      pre-filled value is sent as `{ email }` or `{ phone }` based on a simple
+      `/\S+@\S+\.\S+/` shape check (mirrors the backend's own detection in `verifyPin`/
+      `resendPin`). Header, icon, and button copy ("Check your email/phone", "Verify
+      Email/Phone →") switch on which param arrived.
+    - **`src/app/auth/login/page.jsx`** — found and fixed the same gap on the "please
+      verify your account" redirect from a failed login: it always built `?email=...`
+      even when the account backend returned no `email` (a phone-only account) and fell
+      back to whatever the user typed to log in, which could be a phone number labeled as
+      `email`. Now picks the matching param name by the same shape check. Small,
+      necessary for a phone-only account to ever reach a correctly-labeled verify page
+      via this path — not a separate task, this is the same T17 redirect concern.
+    - `src/app/auth/register/page.test.jsx` (4 tests) + `src/app/auth/verify/page.test.jsx`
+      (4 tests) — email-only and phone-only registration redirect targets, neither-given
+      rejected without calling the API, verify page pre-filled by each query param vs.
+      typed-in fallback (detected by shape), and resend showing the phone-specific
+      success message. `login/page.test.jsx`'s existing 5 tests unaffected.
+  - **Verified:** full suite 30 files/146 tests pass (up from 28/138); `npm run lint` 0
+    errors; `next build` succeeds.
 
 - [ ] **T18 · Hide "Cancel Job" button once job is ready + add confirmation modal**
   - **Issue:** On the repair job detail page, the "Cancel Job" button is shown for statuses

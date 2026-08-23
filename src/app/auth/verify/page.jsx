@@ -7,15 +7,23 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { landingPathForRole } from "@/lib/roles";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
-import { Mail, RotateCw } from "lucide-react";
+import { Mail, Phone, RotateCw } from "lucide-react";
+
+// T17: registration accepts email OR phone, so verification must too — a
+// phone-only signup has no email to submit here. A single identifier field
+// is sent as `email` or `phone` based on this shape check (mirrors the
+// backend's own email-vs-phone lookup in verifyPin/resendPin).
+const looksLikeEmail = (value) => /\S+@\S+\.\S+/.test(value);
 
 function VerifyPageInner() {
   const { setUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailFromQuery = searchParams.get("email") || "";
+  const phoneFromQuery = searchParams.get("phone") || "";
+  const prefilled = emailFromQuery || phoneFromQuery;
 
-  const [email, setEmail] = useState(emailFromQuery);
+  const [identifier, setIdentifier] = useState(emailFromQuery || phoneFromQuery);
   const [pin, setPin] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -68,11 +76,12 @@ function VerifyPageInner() {
     setError("");
     const code = pin.join("");
     if (code.length !== 6) { setError("Please enter the complete 6-digit code."); return; }
-    if (!email) { setError("Email is required."); return; }
+    if (!identifier) { setError("Email or phone number is required."); return; }
 
     setLoading(true);
     try {
-      const res = await api.post("/auth/verify-pin", { email, pin: code });
+      const body = looksLikeEmail(identifier) ? { email: identifier } : { phone: identifier };
+      const res = await api.post("/auth/verify-pin", { ...body, pin: code });
       // Backend logs the user in and returns token + user
       if (res.data?.user) {
         setUser(res.data.user);
@@ -89,13 +98,14 @@ function VerifyPageInner() {
   };
 
   const handleResend = async () => {
-    if (!email) { setError("Please enter your email address."); return; }
+    if (!identifier) { setError("Please enter your email or phone number."); return; }
     setResendLoading(true);
     setError("");
     setSuccess("");
     try {
-      await api.post("/auth/resend-pin", { email });
-      setSuccess("A new code has been sent to your email.");
+      const body = looksLikeEmail(identifier) ? { email: identifier } : { phone: identifier };
+      await api.post("/auth/resend-pin", body);
+      setSuccess(looksLikeEmail(identifier) ? "A new code has been sent to your email." : "A new code has been sent to your phone.");
       setResendCooldown(60); // 60 second cooldown
       setPin(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
@@ -117,28 +127,30 @@ function VerifyPageInner() {
           <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <div className="mt-6 mb-4 flex justify-center">
             <span className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center">
-              <Mail size={24} className="text-brand-500" />
+              {phoneFromQuery ? <Phone size={24} className="text-brand-500" /> : <Mail size={24} className="text-brand-500" />}
             </span>
           </div>
-          <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Check your email</h1>
+          <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">
+            {phoneFromQuery ? "Check your phone" : "Check your email"}
+          </h1>
           <p className="text-gray-400 dark:text-slate-500 text-sm">
             We sent a 6-digit code to{" "}
-            {email ? <strong className="text-gray-700 dark:text-slate-300">{email}</strong> : "your email address"}
+            {prefilled ? <strong className="text-gray-700 dark:text-slate-300">{prefilled}</strong> : "your email or phone number"}
           </p>
         </div>
 
         <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <form onSubmit={handleSubmit} className="space-y-6">
 
-            {/* Email field (if not pre-filled) */}
-            {!emailFromQuery && (
+            {/* Identifier field (if not pre-filled) */}
+            {!prefilled && (
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email address</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email or phone number</label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="you@example.com or 0XX XXX XXXX"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800"
                   required
                 />
@@ -176,7 +188,7 @@ function VerifyPageInner() {
               type="submit"
               disabled={loading || !pinComplete}
               className="w-full py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-sm disabled:opacity-50">
-              {loading ? "Verifying…" : "Verify Email →"}
+              {loading ? "Verifying…" : phoneFromQuery ? "Verify Phone →" : "Verify Email →"}
             </button>
 
             {/* Resend */}
