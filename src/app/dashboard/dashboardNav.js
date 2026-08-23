@@ -2,7 +2,7 @@
 // sidenav (dashboard, commerce, POS) renders the same sections, role-gated.
 import {
   Barcode, BarChart3, CalendarDays, FileText, Gauge, Globe,
-  History, Mail, MessagesSquare, Receipt, Server, ShieldCheck,
+  History, Mail, MessagesSquare, Receipt, Server, Settings, ShieldCheck,
   ShoppingBag, Star, Store, Truck, Users, Wrench,
 } from "lucide-react";
 
@@ -27,6 +27,7 @@ export const adminNav = [
   { href: "/dashboard/users", icon: Users, label: "Users" },
   { href: "/dashboard/emails", icon: Mail, label: "Email Logs" },
   { href: "/dashboard/activity-logs", icon: History, label: "Activity Log" },
+  { href: "/dashboard/business-settings", icon: Settings, label: "Business Settings" },
 ];
 
 // Admin/superadmin/staff — sits below the Repair Shop POS section. T24:
