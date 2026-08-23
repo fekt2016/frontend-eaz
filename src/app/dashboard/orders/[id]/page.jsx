@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, PackageOpen, Send, Star } from "lucide-react";
+import { ArrowLeft, ArrowRight, PackageOpen, Send, Star, RotateCcw, RefreshCw, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { sanitizeText } from "@/lib/sanitize";
@@ -15,6 +15,8 @@ const ORDER_STATUSES = ["pending", "paid", "processing", "shipped", "delivered",
 // backend's own hasVerifiedPurchase gate (Order.status in paid|delivered),
 // not a stricter "delivered only" guess.
 const REVIEWABLE_ORDER_STATUSES = ["paid", "delivered"];
+// T15 — mirrors the backend's REFUND_ELIGIBLE_STATUSES exactly (orderController.js).
+const REFUND_ELIGIBLE_STATUSES = ["paid", "processing", "shipped"];
 
 /**
  * Review form/display for a single order line item. Fetches eligibility
@@ -146,6 +148,139 @@ function OrderItemReview({ productId }) {
   );
 }
 
+/**
+ * Refund action + status — admin only (staff excluded, unlike the rest of
+ * this page's order-management controls; refunds move real money and are
+ * irreversible). Backend: POST /orders/:id/refund, POST /orders/:id/refund/sync.
+ */
+function RefundSection({ order, onUpdate }) {
+  const [confirming, setConfirming] = useState(false);
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const refund = order.refund || { status: "none" };
+
+  const submitRefund = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.post(`/orders/${order._id}/refund`, { reason: sanitizeText(reason, 500) });
+      onUpdate(res.data);
+      setConfirming(false);
+      setReason("");
+    } catch (err) {
+      setError(err.message || "Refund failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkStatus = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.post(`/orders/${order._id}/refund/sync`);
+      onUpdate(res.data);
+    } catch (err) {
+      setError(err.message || "Failed to check refund status.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Nothing to show: never refunded, and the order isn't in a refundable state.
+  if (refund.status === "none" && !REFUND_ELIGIBLE_STATUSES.includes(order.status)) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 mb-6">
+      <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Refund</h2>
+
+      {refund.status === "none" && (
+        confirming ? (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600 dark:text-slate-300">
+              Refund the full order total ({formatGhs(order.total)}) via Paystack? This cancels the order and cannot be undone.
+            </p>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={2}
+              placeholder="Reason (optional, shown in the audit log)"
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40 resize-none"
+            />
+            {error && <p className="text-xs text-red-500">{error}</p>}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={submitRefund}
+                disabled={loading}
+                className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-full bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50"
+              >
+                {loading ? <Loader2 size={10} className="animate-spin" /> : <RotateCcw size={10} />}
+                {loading ? "Processing…" : "Confirm refund"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setConfirming(false); setError(""); }}
+                className="text-xs text-gray-500 dark:text-slate-400 hover:underline"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-full border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+          >
+            <RotateCcw size={10} /> Refund this order
+          </button>
+        )
+      )}
+
+      {refund.status === "processing" && (
+        <div className="space-y-2">
+          <p className="text-sm text-brand-600 dark:text-brand-400 font-medium">
+            Refund in progress — {formatGhs(refund.amount || 0)}
+          </p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">
+            Requested {fmtDate(refund.requestedAt)}. Paystack refunds can take several days to settle.
+          </p>
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          <button
+            type="button"
+            onClick={checkStatus}
+            disabled={loading}
+            className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:border-brand-400 transition disabled:opacity-50"
+          >
+            {loading ? <Loader2 size={10} className="animate-spin" /> : <RefreshCw size={10} />}
+            Check status now
+          </button>
+        </div>
+      )}
+
+      {refund.status === "completed" && (
+        <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+          Refunded {formatGhs(refund.amount || 0)} on {fmtDate(refund.completedAt)}.
+        </p>
+      )}
+
+      {refund.status === "failed" && (
+        <div className="space-y-1.5">
+          <p className="text-sm text-red-600 dark:text-red-400 font-medium">Refund failed.</p>
+          <Link href="/dashboard/activity-logs" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">
+            View details in the Activity Log
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CustomerOrderDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -159,6 +294,7 @@ export default function CustomerOrderDetailPage() {
   const [saving, setSaving] = useState(false);
 
   const seesAll = ["admin", "superadmin", "staff"].includes(user?.role);
+  const isAdmin = ["admin", "superadmin"].includes(user?.role); // refunds: admin only, staff excluded
 
   const load = () => {
     api
@@ -326,6 +462,8 @@ export default function CustomerOrderDetailPage() {
           </Link>
         )}
       </div>
+
+      {isAdmin && <RefundSection order={order} onUpdate={setOrder} />}
 
       {zone && (
         <div className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
