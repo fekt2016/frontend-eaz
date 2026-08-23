@@ -176,7 +176,8 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Verified:** full suite 30 files/146 tests pass (up from 28/138); `npm run lint` 0
     errors; `next build` succeeds.
 
-- [ ] **T18 · Hide "Cancel Job" button once job is ready + add confirmation modal**
+- [x] **T18 · Hide "Cancel Job" button once job is ready + add confirmation modal** — ✅
+  done 2026-08-23
   - **Issue:** On the repair job detail page, the "Cancel Job" button is shown for statuses
     `received`, `diagnosing`, `repairing`, **and `ready`** — but once a job is `ready` for
     collection it should no longer be cancellable, so the button should hide at that stage.
@@ -189,6 +190,26 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     (i.e. only show cancel for `received`/`diagnosing`/`repairing`); replace the immediate
     `quickStatus("cancelled")` call with a confirmation modal, then cancel on confirm.
   - **Backend parity:** `backend-eaz/tasks.md` → T18.
+  - **Shipped:**
+    - The button's status list (line ~592 by the time this landed, the file had grown
+      since the fix note was written) had `waiting_for_parts` in it already, which the fix
+      note's literal `received`/`diagnosing`/`repairing` list didn't mention — kept it
+      rather than removing it: the backend's `canTransitionJobStatus` guard (T53) already
+      allows `cancelled` from any live status except `ready`, including
+      `waiting_for_parts`, so dropping it here would have hidden a capability the backend
+      still permits. Only `ready` was removed, matching backend parity exactly rather
+      than the fix note's narrower literal list.
+    - New `showCancelConfirm` state; the button now opens a modal instead of calling
+      `quickStatus("cancelled")` directly. Modal styling mirrors the existing block/
+      unblock-user confirm modal in `src/app/dashboard/(admin)/users/page.jsx` (this
+      app's only prior confirm-modal precedent — no shared component existed to reuse).
+      "Keep Job" closes without effect; "Cancel Job" (confirm) closes the modal and then
+      fires the same `quickStatus("cancelled")` call as before.
+    - `page.test.jsx` (new, 5 tests): button shown for a live non-ready status, hidden for
+      `ready`, clicking opens the modal without patching yet, "Keep Job" closes without
+      patching, confirming patches `{ status: "cancelled" }`.
+  - **Verified:** full suite 31 files/151 tests pass (up from 30/146); `npm run lint` 0
+    errors; `next build` succeeds.
 
 ---
 
