@@ -106,6 +106,18 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     Full `vitest run`: 28 files / 138 tests passed. Lint clean; `next build` succeeded.
   - **Backend:** `backend-eaz/tasks.md` → T15.
 
+- [ ] **T45 · Pre-order support for products** — storefront side of the pre-order feature; the
+  model/order/payment design lives in `backend-eaz/tasks.md` → T45. Currently the shop blocks
+  add-to-cart / checkout on zero stock, so items that are out of stock or not yet available in
+  Ghana can't be ordered at all.
+  - **What this needs here:** product card + detail page show a "Pre-order" badge and
+    expected-availability copy (from the backend `preorder.availableFrom`/`note` fields)
+    instead of "Out of stock"; the add-to-cart button becomes "Pre-order" for those items;
+    the cart/checkout surfaces that a line item is a pre-order.
+  - **Open questions (resolve with backend before building):** upfront payment vs. deposit
+    changes the checkout copy/flow; how a pre-order line renders in order history / track-order.
+  - **Backend:** `backend-eaz/tasks.md` → T45.
+
 ---
 
 ## Ad-hoc fixes (found during work, outside the original audit)
