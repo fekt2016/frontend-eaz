@@ -179,6 +179,33 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     Lint clean; `next build` succeeded (`/dashboard/notifications` compiles).
   - **Backend:** `backend-eaz/tasks.md` → T12.
 
+- [x] **T14 · General business settings** — filed backend-only in `backend-eaz/tasks.md`,
+  turned out to need frontend work too (see that entry for the full scope/decisions/bug-fix note).
+  The backend (T6, done earlier) already supported editing `Settings.business` via
+  `PATCH /api/v1/settings`; there was simply no admin UI for it anywhere in the app —
+  `/dashboard/settings` is the personal account page shared by every role, not a
+  business-settings editor.
+  - **What shipped here:** new admin-only `/dashboard/business-settings` page — Shop Profile
+    (name/phone/WhatsApp/email/location/hours/consultation path), Services & Pricing
+    (add/edit/remove rows, saved as a whole-list replace matching the backend's contract),
+    and Tax / VAT (the 4 new T14 fields, display-only — no order/checkout math reads them).
+    Reuses the existing `useSettings`/`useUpdateSettings` hooks unchanged. New `adminNav`
+    sidebar entry; the page sits under the `(admin)` route group so it inherits that group's
+    existing admin/superadmin role gate for free.
+  - **Bug found + fixed:** the VAT-rate input had both `max="100"` and a JS clamp-on-submit.
+    HTML5 constraint validation silently blocks form submission when a number input exceeds
+    its `max` — so a user typing an out-of-range value and clicking Save would hit a native
+    validation block and nothing would happen, never reaching the JS clamp. Removed `max`
+    (kept `min="0"`), matching this app's existing convention (e.g. the repair-job labour-cost
+    input) of leaving upper-bound enforcement to the backend rather than a native `max`
+    attribute. A test that deliberately submitted 250 caught this — it got 0 mock calls
+    instead of the expected clamped `100` payload.
+  - **Tests:** `page.test.jsx` (5 tests: renders fetched values across all 3 sections, saves
+    shop profile, hides/shows + saves VAT fields on toggle, the vatRate-clamp regression,
+    add/remove service row). Full `vitest run`: 28 files / 131 tests passed. Lint clean;
+    `next build` succeeded (`/dashboard/business-settings` compiles).
+  - **Backend:** `backend-eaz/tasks.md` → T14.
+
 ---
 
 ## Ad-hoc fixes (found during work, outside the original audit)
