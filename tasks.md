@@ -206,6 +206,24 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `next build` succeeded (`/dashboard/business-settings` compiles).
   - **Backend:** `backend-eaz/tasks.md` → T14.
 
+- [x] **T15 · Refunds** — filed backend-only in `backend-eaz/tasks.md`, turned out to need a
+  small frontend addition too (see that entry for the full design writeup — atomicity,
+  crash-safety ordering, webhook-recovery paths, and the live sandbox finding that changed
+  the reconcile job's polling interval).
+  - **What shipped here:** a `RefundSection` on the admin order detail page
+    (`/dashboard/orders/[id]`), admin-only (staff excluded, matching the backend's role
+    gate) — a confirm-then-submit "Refund this order" flow (full amount, optional reason)
+    when the order is in a refundable state; a "Refund in progress" state with a manual
+    "Check status now" button (`POST /orders/:id/refund/sync`) for when the
+    refund.processed webhook doesn't arrive; a "Refunded" state with the amount/date; and a
+    "Refund failed" state linking to the Activity Log (no retry UI — see the backend
+    entry's explicit out-of-scope note on why). Matches this page's existing raw-`api`-call
+    style rather than introducing react-query hooks into a page that doesn't use them.
+  - **Tests:** 7 new tests in the existing `page.test.jsx` (button visibility for
+    admin/staff/ineligible-status, confirm-and-submit, check-status, completed, failed).
+    Full `vitest run`: 28 files / 138 tests passed. Lint clean; `next build` succeeded.
+  - **Backend:** `backend-eaz/tasks.md` → T15.
+
 ---
 
 ## Ad-hoc fixes (found during work, outside the original audit)
