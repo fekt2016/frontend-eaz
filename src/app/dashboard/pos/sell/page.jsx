@@ -21,6 +21,7 @@ import { useInventorySearch } from "@/hooks/queries/useInventory";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { Receipt } from "@/components/pos/Receipt";
+import ProductImage from "@/components/shop/ProductImage";
 import {
   Barcode, Trash2, Plus, Minus,
   CheckCircle2, Loader2, TriangleAlert,
@@ -116,6 +117,7 @@ export default function SellPage() {
         productId:  isProduct ? part._id : undefined,
         name:       part.name,
         barcode:    part.barcode || part.sku,
+        image:      part.images?.[0] || null,
         unitPrice:  Math.round(Number(part.sellingPrice) || Number(part.price) || 0) / 100,
         quantity:   1,
         stock,
@@ -376,13 +378,14 @@ export default function SellPage() {
                 key={p._id}
                 type="button"
                 onClick={() => { addToCart(p); setScanInput(""); setResults([]); focusScan(); }}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition text-left"
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition text-left"
               >
-                <div>
-                  <p className="text-sm text-gray-900 dark:text-white font-medium">{p.name}</p>
+                <ProductImage src={p.images?.[0]} alt={p.name} width={40} height={40} className="h-10 w-10 rounded-lg object-cover bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-900 dark:text-white font-medium truncate">{p.name}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{p.category} · Stock: <span className={p.quantity <= p.lowStockThreshold ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}>{p.quantity}</span></p>
                 </div>
-                <p className="text-sm font-bold text-brand-600 dark:text-brand-400 ml-4">{formatGhs(Number(p.sellingPrice))}</p>
+                <p className="text-sm font-bold text-brand-600 dark:text-brand-400 ml-4 flex-shrink-0">{formatGhs(Number(p.sellingPrice))}</p>
               </button>
             ))}
           </div>
@@ -413,7 +416,8 @@ export default function SellPage() {
                   key={item.key}
                   className={`flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800 last:border-0 ${idx === cart.length - 1 ? "bg-brand-500/5" : ""}`}
                 >
-                  {/* Item info */}
+                  {/* Item image + info */}
+                  <ProductImage src={item.image} alt={item.name} width={40} height={40} className="h-10 w-10 rounded-lg object-cover bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
                     <p className="text-xs text-gray-500">GH₵{item.unitPrice.toFixed(2)} each</p>
