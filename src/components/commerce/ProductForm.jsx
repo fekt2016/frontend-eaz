@@ -7,6 +7,9 @@ import UploadButton from "@/components/common/UploadButton";
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700";
 
+// Mirrors the `shortDescription` maxlength on the backend Product model (T39).
+const SHORT_DESCRIPTION_MAX = 200;
+
 const btnGhostClass =
   "inline-flex items-center gap-1.5 rounded-full border border-gray-300 dark:border-slate-600 px-3.5 py-2 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:border-gray-900 dark:hover:border-slate-400 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-50";
 
@@ -87,6 +90,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   const [stock, setStock] = useState(initial?.stock ?? "");
   const [sku, setSku] = useState(initial?.sku || "");
   const [description, setDescription] = useState(initial?.description || "");
+  const [shortDescription, setShortDescription] = useState(initial?.shortDescription || "");
   const [images, setImages] = useState((initial?.images || []).join("\n"));
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [variants, setVariants] = useState(() =>
@@ -110,6 +114,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setStock(initial.stock ?? "");
     setSku(initial.sku || "");
     setDescription(initial.description || "");
+    setShortDescription(initial.shortDescription || "");
     setImages((initial.images || []).join("\n"));
     setIsActive(initial.isActive ?? true);
     setVariants(
@@ -171,6 +176,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       stock: stock === "" || stock == null ? 0 : parseInt(stock, 10) || 0,
       sku: sku.trim(),
       description: description.trim(),
+      shortDescription: shortDescription.trim(),
       images: images
         .split("\n")
         .map((s) => s.trim())
@@ -258,6 +264,23 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
           />
         </Field>
       </div>
+
+      {/* T39: shown in the buy column on the product page; the full description
+          sits behind the Description tab. Left empty, the storefront summarises
+          the full description instead. */}
+      <Field label="Short description">
+        <textarea
+          className={`${inputClass} min-h-16 resize-y`}
+          value={shortDescription}
+          maxLength={SHORT_DESCRIPTION_MAX}
+          onChange={(e) => setShortDescription(e.target.value)}
+          placeholder="One or two lines shown next to the price"
+        />
+        <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+          {shortDescription.length}/{SHORT_DESCRIPTION_MAX} — optional; falls back to a
+          trimmed version of the description below.
+        </p>
+      </Field>
 
       <Field label="Description">
         <textarea
