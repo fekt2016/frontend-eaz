@@ -87,7 +87,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   const [stock, setStock] = useState(initial?.stock ?? "");
   const [sku, setSku] = useState(initial?.sku || "");
   const [description, setDescription] = useState(initial?.description || "");
-  const [images, setImages] = useState((initial?.images || []).join("\n"));
+  const [images, setImages] = useState(initial?.images || []);
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [variants, setVariants] = useState(() =>
     (Array.isArray(initial?.variants) ? initial.variants : []).map((v) => ({
@@ -112,7 +112,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setStock(initial.stock ?? "");
     setSku(initial.sku || "");
     setDescription(initial.description || "");
-    setImages((initial.images || []).join("\n"));
+    setImages(initial.images || []);
     setIsActive(initial.isActive ?? true);
     setVariants(
       (Array.isArray(initial.variants) ? initial.variants : []).map((v) => ({
@@ -177,10 +177,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       stock: stock === "" || stock == null ? 0 : parseInt(stock, 10) || 0,
       sku: sku.trim(),
       description: description.trim(),
-      images: images
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      images: images.filter(Boolean),
       // Structured variants — { sku, attributes (object), stock, images, price }.
       // Variants without a SKU are dropped; attributes without both a key and
       // value are dropped. Sending [] clears variants (non-variant product).
@@ -280,12 +277,13 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         />
       </Field>
 
-      <Field label="Image URLs (one per line)">
-        <textarea
-          className={`${inputClass} min-h-24 resize-y`}
-          value={images}
-          onChange={(e) => setImages(e.target.value)}
-          placeholder="https://...jpg"
+      <Field label="Images">
+        <StringListEditor
+          values={images}
+          onChange={setImages}
+          accept="image/*"
+          uploadLabel="Upload image"
+          placeholder="https://res.cloudinary.com/..."
         />
       </Field>
 

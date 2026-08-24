@@ -748,7 +748,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `item.price`, which the backend now resolves correctly at order-creation time. 36
     files/170 tests pass, lint clean, `next build` succeeds.
 
-- [ ] **T34 · Product form: main images should be uploadable locally, not just URL**
+- [x] **T34 · Product form: main images should be uploadable locally, not just URL** — ✅ done 2026-08-24
   - **Issue:** In the product add/edit form, the main **Image URLs (one per line)** field is a
     textarea that only accepts URLs. Staff should be able to **upload images from their local
     device** (Cloudinary) for the main product image, not just paste URLs. (Variants + gallery
@@ -759,6 +759,14 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `UploadButton`) for the main `images` list so staff can upload locally and/or add a URL.
   - **Backend note:** upload endpoint (`POST /api/v1/uploads`) already exists and is used by the
     form; no backend change expected (see `backend-eaz/tasks.md` → T34).
+  - **Shipped:** `images` state changed from a newline-joined string (split/joined only in the
+    old textarea's local state — `Product.images` was always a real Mongoose array in storage
+    and over the API, so this was a UI-only representation change, not a data migration) to a
+    plain array, matching `galleryImages`. The textarea was swapped for the same
+    `StringListEditor` component gallery/variant images already use. 4 new tests
+    (`ProductForm.test.jsx`): upload adds to `images[]`, manual URL entry still works, an
+    existing product's images load and remain exactly unchanged when saved untouched, and
+    removing one existing image works. 36 files/170 tests pass, lint clean, `next build` succeeds.
 
 - [x] **T33 · Inventory part form has no image input** — ✅ done 2026-08-23
   - **Issue:** The inventory part add/edit form (PartModal) has no field to upload/attach an
