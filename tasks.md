@@ -33,83 +33,6 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## P2 — Improvements
 
-- [x] **T17 · Registration form: allow email OR phone** — ✅ done 2026-08-23
-  - **Issue:** The register form marks `email` as required, but users should be able to
-    register using **either** an email **or** a phone number. (Backend schema/controller
-    changes live in `backend-eaz/tasks.md` → T17.)
-  - **Location:** `src/app/auth/register/page.jsx`
-  - **Fix:** Make email optional when phone is provided (and vice versa); require at least
-    one identifier on the client. Adjust the redirect on registration to send verification
-    to whichever identifier was chosen. Match the backend validation.
-  - **Backend part:** `backend-eaz/tasks.md` → T17.
-  - **Shipped:**
-    - **`src/app/auth/register/page.jsx`** — dropped the email input's hard `required`
-      attribute (a phone-only submit must not be native-HTML5-blocked); validation now
-      requires name + password + (email OR phone), matching the backend's rule exactly.
-      The post-register redirect to `/auth/verify` now picks `?email=` or `?phone=` based
-      on whichever identifier was actually submitted, instead of always assuming email
-      (the original code even had a latent bug here — it read the raw `email` state, not
-      the sanitized `cleanEmail`, for the redirect).
-    - **`src/app/auth/verify/page.jsx`** — turned out to need real changes too, not just
-      "receive whichever param the redirect sends": the whole page was hardcoded to
-      `email` — the query param name, the header copy ("Check your email"), the fallback
-      identifier input, and both the `verify-pin`/`resend-pin` request bodies. Now reads
-      `email` or `phone` from the query string, and when neither is present (direct
-      navigation) shows one generic "Email or phone number" input; on submit, the typed/
-      pre-filled value is sent as `{ email }` or `{ phone }` based on a simple
-      `/\S+@\S+\.\S+/` shape check (mirrors the backend's own detection in `verifyPin`/
-      `resendPin`). Header, icon, and button copy ("Check your email/phone", "Verify
-      Email/Phone →") switch on which param arrived.
-    - **`src/app/auth/login/page.jsx`** — found and fixed the same gap on the "please
-      verify your account" redirect from a failed login: it always built `?email=...`
-      even when the account backend returned no `email` (a phone-only account) and fell
-      back to whatever the user typed to log in, which could be a phone number labeled as
-      `email`. Now picks the matching param name by the same shape check. Small,
-      necessary for a phone-only account to ever reach a correctly-labeled verify page
-      via this path — not a separate task, this is the same T17 redirect concern.
-    - `src/app/auth/register/page.test.jsx` (4 tests) + `src/app/auth/verify/page.test.jsx`
-      (4 tests) — email-only and phone-only registration redirect targets, neither-given
-      rejected without calling the API, verify page pre-filled by each query param vs.
-      typed-in fallback (detected by shape), and resend showing the phone-specific
-      success message. `login/page.test.jsx`'s existing 5 tests unaffected.
-  - **Verified:** full suite 30 files/146 tests pass (up from 28/138); `npm run lint` 0
-    errors; `next build` succeeds.
-
-- [x] **T18 · Hide "Cancel Job" button once job is ready + add confirmation modal** — ✅
-  done 2026-08-23
-  - **Issue:** On the repair job detail page, the "Cancel Job" button is shown for statuses
-    `received`, `diagnosing`, `repairing`, **and `ready`** — but once a job is `ready` for
-    collection it should no longer be cancellable, so the button should hide at that stage.
-  - **Also requested:** The "Cancel Job" button should not cancel immediately — it should
-    open a **confirmation/warning modal** first, and the cancellation only happens when the
-    user confirms (or is aborted) from the modal.
-  - **Location:** `src/app/dashboard/pos/jobs/[id]/page.jsx` (~line 499,
-    `["received","diagnosing","repairing","ready"].includes(status)`)
-  - **Fix:** Remove `ready` from the status list that renders the "Cancel Job" button
-    (i.e. only show cancel for `received`/`diagnosing`/`repairing`); replace the immediate
-    `quickStatus("cancelled")` call with a confirmation modal, then cancel on confirm.
-  - **Backend parity:** `backend-eaz/tasks.md` → T18.
-  - **Shipped:**
-    - The button's status list (line ~592 by the time this landed, the file had grown
-      since the fix note was written) had `waiting_for_parts` in it already, which the fix
-      note's literal `received`/`diagnosing`/`repairing` list didn't mention — kept it
-      rather than removing it: the backend's `canTransitionJobStatus` guard (T53) already
-      allows `cancelled` from any live status except `ready`, including
-      `waiting_for_parts`, so dropping it here would have hidden a capability the backend
-      still permits. Only `ready` was removed, matching backend parity exactly rather
-      than the fix note's narrower literal list.
-    - New `showCancelConfirm` state; the button now opens a modal instead of calling
-      `quickStatus("cancelled")` directly. Modal styling mirrors the existing block/
-      unblock-user confirm modal in `src/app/dashboard/(admin)/users/page.jsx` (this
-      app's only prior confirm-modal precedent — no shared component existed to reuse).
-      "Keep Job" closes without effect; "Cancel Job" (confirm) closes the modal and then
-      fires the same `quickStatus("cancelled")` call as before.
-    - `page.test.jsx` (new, 5 tests): button shown for a live non-ready status, hidden for
-      `ready`, clicking opens the modal without patching yet, "Keep Job" closes without
-      patching, confirming patches `{ status: "cancelled" }`.
-  - **Verified:** full suite 31 files/151 tests pass (up from 30/146); `npm run lint` 0
-    errors; `next build` succeeds.
-
 ---
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
@@ -272,54 +195,6 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     tall viewports.
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T38).
 
-- [x] **T37 · Sell page: show item images in search results and cart/summary** — ✅ done
-  2026-08-23 (both halves; backend half added `images` to the product select, see
-  `backend-eaz/tasks.md` → T37)
-  - **Issue:** On `/dashboard/pos/sell`, searching for a product/part shows a text-only list
-    (name, category, stock, price) and the cart rows are text-only too. The item's **image**
-    should appear in the search results dropdown **and** in the cart/summary (right column)
-    so cashiers can visually confirm they're scanning the right item.
-  - **Location:** `src/app/dashboard/pos/sell/page.jsx` (search results ~lines 368–386,
-    cart rows ~lines 408–441; `addToCart` cart item shape ~lines 111–121)
-  - **Fix:** Store `image: part.images?.[0] || null` in each cart item; render a shared
-    `ProductImage` thumbnail (40×40, rounded, `object-cover`, gray placeholder background)
-    in both the search results dropdown and cart rows.
-  - **Deviated from the fix note's literal `part.images?.[0] || part.image || null`:**
-    dropped the `|| part.image` fallback. Neither `Part` (`models/Part.js`) nor `Product`
-    (`models/Product.js`) has ever had a singular `image` field — only `images` (array) —
-    confirmed by grepping both schemas. There's no legacy data it could recover; it would be
-    dead defensive code for a field that can't exist, which `CLAUDE.md` says not to add.
-  - **Note:** Part search already returned `images`; product search omitted them — fixed on
-    the backend (see `backend-eaz/tasks.md` → T37).
-  - **Depends on T33 (part image input) for parts to actually have photos — done.**
-  - **Tests:** `src/app/dashboard/pos/sell/page.test.jsx` (new, 2 tests) — a thumbnail
-    renders per search result including a photo-less product (shared placeholder, no
-    crash), and the clicked result's image carries into the cart row.
-
-- [x] **T36 · Suppliers: add WhatsApp and WeChat contact fields** — ✅ done 2026-08-23 (both
-  halves; backend half added `whatsapp`/`wechat` to `Supplier`, see `backend-eaz/tasks.md` →
-  T36)
-  - **Issue:** Suppliers will be sourced from China (WeChat/1688/AliExpress vendors + freight
-    forwarders) — messaging happens via **WhatsApp** and **WeChat**, not just phone/email.
-    Add dedicated contact fields so staff can open a chat directly (e.g. `wa.me` links,
-    WeChat ID display/copy).
-  - **Location:** `src/app/dashboard/pos/suppliers/page.jsx` (add + inline-edit forms,
-    rows), `src/app/dashboard/pos/suppliers/[id]/page.jsx` (contact card)
-  - **Fix:** Added `whatsapp` and `wechat` fields to the add form, inline-edit form, and list
-    rows in `suppliers/page.jsx` — `whatsapp` renders as an `https://wa.me/<digits>` link
-    (`FaWhatsapp`, `react-icons/fa` — matches the icon already used for WhatsApp elsewhere in
-    the app), `wechat` as a plain labeled badge (`FaWeixin`) since WeChat has no universal deep
-    link scheme. Detail page (`[id]/page.jsx`) contact card gained the same `wa.me` link plus a
-    click-to-copy WeChat ID button (`navigator.clipboard.writeText`, 2s "copied" checkmark —
-    same pattern as the existing tracking-link copy button on the job detail page). Kept phone
-    fully separate from WhatsApp per the fix note (a China number could be both, but they're
-    independent fields).
-  - **Tests:** `suppliers/page.test.jsx` (2 tests: row renders `wa.me` link + WeChat text, add
-    form submits both fields) and `[id]/page.test.jsx` (2 tests: detail `wa.me` link, WeChat
-    copy-to-clipboard) — both new. Full suite: 35 files/163 tests pass, lint clean, `next
-    build` succeeds.
-  - **Backend part:** `backend-eaz/tasks.md` → T36.
-
 - [ ] **T35 · Variant form: add a price input for each variant**
   - **Issue:** The variant editor in `ProductForm` has SKU, attributes, stock, and images —
     but **no price input**. Every variant therefore shares the product's base price, which
@@ -344,39 +219,6 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `UploadButton`) for the main `images` list so staff can upload locally and/or add a URL.
   - **Backend note:** upload endpoint (`POST /api/v1/uploads`) already exists and is used by the
     form; no backend change expected (see `backend-eaz/tasks.md` → T34).
-
-- [x] **T33 · Inventory part form has no image input** — ✅ done 2026-08-23
-  - **Issue:** The inventory part add/edit form (PartModal) has no field to upload/attach an
-    **image** for a repair part. Parts should support a photo (shown in inventory, sell search,
-    job parts, receipts) like shop products already do (`product.images`).
-  - **Location:** `src/app/dashboard/commerce/inventory/page.jsx` (`PartModal` payload,
-    ~lines 20–80), part list rendering
-  - **Fix:** Add an image upload input to the part form (single image via the existing
-    Cloudinary upload endpoint — see `backend-eaz/tasks.md` → T33), store it on the `Part`
-    model, display it in inventory rows/search results.
-  - **Backend part:** `backend-eaz/tasks.md` → T33.
-  - **Shipped:**
-    - **`PartModal`** lives at `src/app/dashboard/commerce/page.jsx` now, not the
-      `inventory/` path in the fix note — T24 moved it there; `inventory/page.jsx` is
-      just T24's redirect shim. Added a `images` state (array, matching the backend's
-      `Part.images` field) and a Photo field: shows an `UploadButton` when empty, or a
-      56×56 thumbnail + Remove control once a URL exists. `images` included in both
-      create and update payloads.
-    - **`src/components/common/UploadButton.jsx`** — new. Extracted verbatim out of
-      `ProductForm.jsx`, where it already existed for gallery/variant image uploads
-      (`POST /api/v1/uploads`) but was private to that file — reused here instead of
-      duplicated, per the fix note's own "existing Cloudinary upload endpoint."
-      `ProductForm.jsx` now imports it; no behavior change there.
-    - Parts table row gained a 36×36 `ProductImage` thumbnail (`p.images?.[0]`),
-      matching the existing product row's exact pattern one tab over — same component,
-      same graceful placeholder-on-missing/broken-image fallback (T16).
-    - `UploadButton.test.jsx` (3, isolated: uploads and calls back with the URL,
-      surfaces an error without calling back, no-op on a dismissed file picker) +
-      3 new tests in `commerce/page.test.jsx` (upload swaps in a thumbnail + Remove and
-      the save payload includes it, Remove reverts to the Upload button, an existing
-      part's photo renders in the table row).
-  - **Verified:** full suite 32 files/157 tests pass (up from 31/151); `npm run lint` 0
-    errors; `next build` succeeds.
 
 - [ ] **T32 · Reports page: staff see only their own report; admin sees all staff + per-staff activity**
   - **Issue:** The POS Reports page (`/dashboard/pos/reports`) shows **shop-wide** analytics to
@@ -418,7 +260,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
       stock `$inc`/transaction abort issues, or a `part` validation error.
     - Ensure the frontend surfaces a readable error instead of the raw 500.
   - **Backend part:** `backend-eaz/tasks.md` → T30.
-
+ 
 ---
 
 ## Notes / Reconciliation with `AUDIT_REPORT.md` (stale)
