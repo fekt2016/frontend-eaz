@@ -178,6 +178,36 @@ describe("ProductDetail — Description / Specs / Reviews tabs (T39)", () => {
     expect(screen.queryByRole("button", { name: /read more/i })).not.toBeInTheDocument();
   });
 
+  // Guards the T39/T35 merge seam: the short-description block and the variant-price
+  // line landed on the same conflict hunk, so resolving it the wrong way silently
+  // reverts the page to the base price with nothing else failing.
+  it("shows the selected variant's price, not the base price (T35)", () => {
+    mockProduct.mockReturnValue({
+      ...PRODUCT,
+      price: 450000,
+      variants: [
+        { sku: "V-256", attributes: { size: "256GB" }, stock: 3, price: 500000 },
+      ],
+    });
+    render(<ProductDetail slug="iphone-13" />);
+
+    expect(screen.getByText("GH₵4,500.00")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "256GB" }));
+    expect(screen.getByText("GH₵5,000.00")).toBeInTheDocument();
+  });
+
+  it("falls back to the base price when the variant has no price of its own (T35)", () => {
+    mockProduct.mockReturnValue({
+      ...PRODUCT,
+      price: 450000,
+      variants: [{ sku: "V-128", attributes: { size: "128GB" }, stock: 3, price: null }],
+    });
+    render(<ProductDetail slug="iphone-13" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "128GB" }));
+    expect(screen.getByText("GH₵4,500.00")).toBeInTheDocument();
+  });
+
   it("wires each tab to its panel for assistive tech", () => {
     render(<ProductDetail slug="iphone-13" />);
 

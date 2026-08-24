@@ -133,6 +133,10 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
 
   const variantLabel = (v) => Object.values(v.attributes || {}).join(" ");
 
+  // Variant price wins when set; unset (null/undefined) falls back to the
+  // base product price — not the same as an explicit 0 (free) variant.
+  const displayPrice = selectedVariant?.price != null ? selectedVariant.price : product.price;
+
   // Specs only earns a tab when the product actually has any (T39).
   const hasSpecs = product.specs?.length > 0;
   const fullDescription = (product.description || "").replace(/\s+/g, " ").trim();
@@ -276,7 +280,8 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
               </p>
             )}
 
-            <p className="font-mono font-bold text-3xl text-brand-500 mb-6">{formatGhs(product.price)}</p>
+            {/* T35: variant price when set, base price otherwise. */}
+            <p className="font-mono font-bold text-3xl text-brand-500 mb-6">{formatGhs(displayPrice)}</p>
 
             {/* Full description and specs live in the tabs below the grid (T39). */}
 
