@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CartProvider } from "@/context/CartContext";
 
@@ -91,5 +91,93 @@ describe("Track repair page (order tracking)", () => {
     renderPage();
     await waitFor(() => expect(screen.getByText("REP-3")).toBeInTheDocument());
     expect(screen.getByText("Device Received")).toBeInTheDocument();
+  });
+});
+
+// ── T41: part-order cart money ──────────────────────────────────────────────
+// The cart behind "Add to order" (fed from job.parts) stored money as float GHS
+// (`sellingPrice / 100`) and rebuilt pesewas with `subtotal * 100`, while the
+// shop-cart path on this same page stored integer pesewas. Two conventions on one
+// page, and the float round-trip drifts for ~19% of price/quantity combinations —
+// e.g. GH₵0.07 × 3 produced 21.000000000000004 instead of 21.
+//
+// Not to be confused with the catalogue's "Add to cart", which is the shop cart.
+describe("Track page part-order cart — integer pesewas (T41)", () => {
+  beforeEach(() => {
+    mockGet.mockReset();
+    searchParamValue = null;
+    window.localStorage.clear();
+  });
+
+  const jobWithPart = (pricePesewas) => ({
+    jobNumber: "REP-T41",
+    status: "diagnosing", // in ORDERABLE, so the order UI renders
+    customerName: "Ama",
+    dropoff: "bring",
+    faultDescription: "Cracked screen",
+    parts: [{ id: "p1", name: "Screw Set", pricePesewas, quantity: 1 }],
+  });
+
+  async function addToOrder(times, pricePesewas) {
+    mockGet.mockImplementation((url) =>
+      url.startsWith("/track/")
+        ? Promise.resolve({ data: jobWithPart(pricePesewas) })
+        : Promise.resolve({ data: [] }),
+    );
+    renderPage();
+    await screen.findByRole("button", { name: /add to order/i });
+    for (let n = 0; n < times; n++) {
+      // Re-query: the previous node is detached once setCart re-renders.
+      fireEvent.click(screen.getByRole("button", { name: /add to order/i }));
+    }
+  }
+
+  const summary = () => screen.getByText("Subtotal").closest("div").parentElement;
+
+  it("keeps a single unit exact", async () => {
+    await addToOrder(1, 7);
+    await waitFor(() =>
+      expect(within(summary()).getAllByText("GH₵0.07").length).toBeGreaterThan(0),
+    );
+  });
+
+  it("does not drift on the quantity that broke the float path", async () => {
+    await addToOrder(3, 7);
+    // The old path rendered GH₵0.21000000000000002 in the subtotal row.
+    await waitFor(() =>
+      expect(within(summary()).getAllByText("GH₵0.21").length).toBeGreaterThan(0),
+    );
+  });
+
+  it("never renders a floating-point artefact anywhere on the page", async () => {
+    await addToOrder(3, 7);
+    await waitFor(() =>
+      expect(within(summary()).getAllByText("GH₵0.21").length).toBeGreaterThan(0),
+    );
+    // Three or more decimal places is the signature of the old bug.
+    expect(document.body.textContent).not.toMatch(/GH₵[\d,]+\.\d{3,}/);
+  });
+
+  it("puts the exact total on the pay button", async () => {
+    await addToOrder(3, 7);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Pay GH₵0\.21 now/i })).toBeInTheDocument(),
+    );
+  });
+
+  it("stays exact for an ordinary price too", async () => {
+    await addToOrder(3, 1999); // GH₵19.99 × 3 = GH₵59.97
+    await waitFor(() =>
+      expect(within(summary()).getAllByText("GH₵59.97").length).toBeGreaterThan(0),
+    );
+  });
+
+  it("renders money through the shared formatter, not a raw GH₵ template", async () => {
+    // The thousands separator only appears via formatGhs; the old `GH₵{subtotal}`
+    // template printed a bare "2468".
+    await addToOrder(2, 123400);
+    await waitFor(() =>
+      expect(within(summary()).getAllByText("GH₵2,468.00").length).toBeGreaterThan(0),
+    );
   });
 });
