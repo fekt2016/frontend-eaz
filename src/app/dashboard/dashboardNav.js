@@ -41,7 +41,6 @@ export const marketplaceNav = [
 export const posNav = [
   { label: "Sell",       href: "/dashboard/pos/sell",      icon: Barcode,  roles: ["superadmin","staff"] },
   { label: "My Jobs",    href: "/dashboard/pos",           icon: Wrench,   roles: ["technician"] },
-  { label: "Jobs",       href: "/dashboard/pos/jobs",      icon: Wrench,   roles: ["superadmin","staff"] },
   { label: "Orders",     href: "/dashboard/pos/orders",    icon: ShoppingBag, roles: ["superadmin","admin","staff"] },
   { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: Truck,    roles: ["superadmin","staff"] },
   { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: Receipt,  roles: ["superadmin","staff"] },
