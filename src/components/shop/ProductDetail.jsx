@@ -103,6 +103,10 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
 
   const variantLabel = (v) => Object.values(v.attributes || {}).join(" ");
 
+  // Variant price wins when set; unset (null/undefined) falls back to the
+  // base product price — not the same as an explicit 0 (free) variant.
+  const displayPrice = selectedVariant?.price != null ? selectedVariant.price : product.price;
+
   return (
     <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
       <div className="max-w-6xl mx-auto">
@@ -206,7 +210,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
               )}
             </div>
 
-            <p className="font-mono font-bold text-3xl text-brand-500 mb-6">{formatGhs(product.price)}</p>
+            <p className="font-mono font-bold text-3xl text-brand-500 mb-6">{formatGhs(displayPrice)}</p>
 
             <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-8">{product.description}</p>
 

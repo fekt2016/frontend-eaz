@@ -65,7 +65,9 @@ export function CartProvider({ children }) {
             variant: { sku: selected.sku, attributes: selected.attributes || {} },
           }),
           name: product.name,
-          price: product.price,
+          // Variant price wins when set; unset falls back to base price —
+          // matches the server-side resolution in orderController.createOrder.
+          price: selected?.price != null ? selected.price : product.price,
           image: selected?.images?.[0] || product.images?.[0] || "",
           category: product.category,
           stock,

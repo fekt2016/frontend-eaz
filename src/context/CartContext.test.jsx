@@ -101,6 +101,31 @@ describe("CartContext variants", () => {
     expect(result.current.items[0].variant.attributes).toEqual({ color: "Black" });
   });
 
+  it("uses the variant's own price when set, not the base product price", () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+    const vp = variantProduct();
+    vp.variants[0].price = 17999;
+    act(() => result.current.addItem(vp, 1, { sku: "BLK", attributes: { color: "Black" } }));
+
+    expect(result.current.items[0].price).toBe(17999);
+  });
+
+  it("falls back to the base product price when the variant price is unset", () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+    act(() => result.current.addItem(variantProduct(), 1, { sku: "BLK", attributes: { color: "Black" } }));
+
+    expect(result.current.items[0].price).toBe(15999);
+  });
+
+  it("respects an explicit 0 variant price as free, not as unset", () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+    const vp = variantProduct();
+    vp.variants[0].price = 0;
+    act(() => result.current.addItem(vp, 1, { sku: "BLK", attributes: { color: "Black" } }));
+
+    expect(result.current.items[0].price).toBe(0);
+  });
+
   it("stores variant image for the line thumbnail when present", () => {
     const { result } = renderHook(() => useCart(), { wrapper });
     const vp = variantProduct();

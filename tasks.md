@@ -722,7 +722,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     build` succeeds.
   - **Backend part:** `backend-eaz/tasks.md` → T36.
 
-- [ ] **T35 · Variant form: add a price input for each variant**
+- [x] **T35 · Variant form: add a price input for each variant** — ✅ done 2026-08-24
   - **Issue:** The variant editor in `ProductForm` has SKU, attributes, stock, and images —
     but **no price input**. Every variant therefore shares the product's base price, which
     doesn't work for size/color/storage pricing differences. Add a per-variant **price**
@@ -734,6 +734,19 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     pesewas (`Math.round(Number(v.price) * 100)`), and include it in the submitted
     `variants[]` payload. Display the variant price on product detail and order lines.
   - **Backend part:** `backend-eaz/tasks.md` → T35.
+  - **Shipped:** "Price (GH₵)" input added to each variant row (blank = unset — falls back to
+    base price server-side, never coerced to 0). New variant rows added via "Add variant" are
+    pre-filled with the current base price as a convenience, per the fix note; existing variants
+    loaded from the API keep whatever they actually have (blank if never set), so the
+    unset/explicit-free distinction survives editing. Found and fixed the same base-price-only
+    bug independently in two other places the fix note didn't call out by file:
+    `ProductDetail.jsx` (the variant selector changed the SKU/stock shown but never the
+    displayed price) and `CartContext.jsx` (`addItem` always stored `product.price` on the cart
+    line, ignoring the selected variant) — both now resolve the same way as the backend. 3 new
+    tests in `CartContext.test.jsx`. Order-line/receipt display (`orders/[id]/page.jsx`,
+    `track-order`, `CartItems.jsx`) needed no change — they already render the stored
+    `item.price`, which the backend now resolves correctly at order-creation time. 36
+    files/170 tests pass, lint clean, `next build` succeeds.
 
 - [ ] **T34 · Product form: main images should be uploadable locally, not just URL**
   - **Issue:** In the product add/edit form, the main **Image URLs (one per line)** field is a

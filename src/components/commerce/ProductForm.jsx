@@ -95,6 +95,8 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       attributes: attributesToRows(v.attributes),
       stock: v.stock ?? "",
       images: Array.isArray(v.images) ? v.images : [],
+      // Blank = unset (falls back to base price at checkout), not "free".
+      priceGhs: v.price != null ? (Number(v.price) / 100).toFixed(2) : "",
     }))
   );
   const [galleryImages, setGalleryImages] = useState(initial?.gallery?.images || []);
@@ -118,6 +120,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         attributes: attributesToRows(v.attributes),
         stock: v.stock ?? "",
         images: Array.isArray(v.images) ? v.images : [],
+        priceGhs: v.price != null ? (Number(v.price) / 100).toFixed(2) : "",
       }))
     );
     setGalleryImages(initial.gallery?.images || []);
@@ -128,7 +131,10 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setVariants((prev) => prev.map((v, i) => (i === vi ? { ...v, [key]: value } : v)));
 
   const addVariant = () =>
-    setVariants((prev) => [...prev, { sku: "", attributes: [{ key: "color", value: "" }], stock: "", images: [] }]);
+    setVariants((prev) => [
+      ...prev,
+      { sku: "", attributes: [{ key: "color", value: "" }], stock: "", images: [], priceGhs },
+    ]);
 
   const removeVariant = (vi) => setVariants((prev) => prev.filter((_, i) => i !== vi));
 
@@ -175,9 +181,11 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         .split("\n")
         .map((s) => s.trim())
         .filter(Boolean),
-      // Structured variants — { sku, attributes (object), stock, images }.
+      // Structured variants — { sku, attributes (object), stock, images, price }.
       // Variants without a SKU are dropped; attributes without both a key and
       // value are dropped. Sending [] clears variants (non-variant product).
+      // A blank price is sent as `null` — "unset", falls back to base price —
+      // never coerced to 0, which would mean "free".
       variants: variants
         .map((v) => ({
           sku: v.sku.trim(),
@@ -188,6 +196,10 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
           ),
           stock: v.stock === "" || v.stock == null ? 0 : parseInt(v.stock, 10) || 0,
           images: v.images.filter(Boolean),
+          price:
+            v.priceGhs === "" || v.priceGhs == null
+              ? null
+              : Math.round((parseFloat(v.priceGhs) || 0) * 100),
         }))
         .filter((v) => v.sku),
       gallery: {
@@ -308,7 +320,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Field label="SKU">
                 <input
                   className={inputClass}
@@ -325,6 +337,17 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
                   value={v.stock}
                   onChange={(e) => updateVariant(vi, "stock", e.target.value)}
                   placeholder="0"
+                />
+              </Field>
+              <Field label="Price (GH₵)">
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className={inputClass}
+                  value={v.priceGhs}
+                  onChange={(e) => updateVariant(vi, "priceGhs", e.target.value)}
+                  placeholder="Same as base price"
                 />
               </Field>
             </div>
