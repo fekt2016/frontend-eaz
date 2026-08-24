@@ -37,13 +37,18 @@ function RegisterPageInner() {
     const cleanPhone = sanitizePhone(phone);
     const pwError = validatePassword(password);
     if (pwError) { setError(pwError); return; }
-    if (!cleanName || !cleanEmail) { setError("Name and email are required."); return; }
+    if (!cleanName) { setError("Name is required."); return; }
+    if (!cleanEmail && !cleanPhone) { setError("Provide an email or phone number."); return; }
     setLoading(true);
     try {
       const res = await register(cleanName, cleanEmail, cleanPhone, password);
-      // If account requires verification, redirect to verify page
+      // If account requires verification, redirect to verify page with whichever
+      // identifier was actually provided — a phone-only signup has no email to send to.
       if (res?.requiresVerification) {
-        router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+        const param = cleanEmail
+          ? `email=${encodeURIComponent(cleanEmail)}`
+          : `phone=${encodeURIComponent(cleanPhone)}`;
+        router.push(`/auth/verify?${param}`);
       } else {
         router.push("/dashboard");
       }
@@ -69,12 +74,13 @@ function RegisterPageInner() {
               <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Full name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputCls} required />
             </div>
+            <p className="text-xs text-gray-500 dark:text-slate-400 -mb-1">Provide an email or phone number — at least one is required.</p>
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email address</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} required />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Phone number <span className="text-gray-400 dark:text-slate-500">(optional)</span></label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Phone number</label>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+233 00 000 0000" className={inputCls} />
             </div>
             <div>

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 
 // T24: Marketplace (3-card landing page) and Inventory merged into one page
 // — /dashboard/commerce now renders inventory directly, with Delivery Zones
@@ -13,14 +13,19 @@ vi.mock("@/context/AuthContext", () => ({
   useAuth: () => ({ user: mockUser() }),
 }));
 
+let inventoryData = [];
+const mockPost = vi.fn(() => Promise.resolve({ data: {} }));
+const mockUpload = vi.fn(() => Promise.resolve({ data: { url: "https://res.cloudinary.com/demo/part.jpg" } }));
 vi.mock("@/lib/api", () => ({
   api: {
     get: vi.fn((path) => {
-      if (path.startsWith("/pos/inventory")) return Promise.resolve({ data: [], total: 0 });
+      if (path.startsWith("/pos/inventory")) return Promise.resolve({ data: inventoryData, total: inventoryData.length });
       if (path.startsWith("/pos/suppliers")) return Promise.resolve({ data: [] });
       if (path.startsWith("/products")) return Promise.resolve({ data: [] });
       return Promise.resolve({ data: [] });
     }),
+    post: (...args) => mockPost(...args),
+    upload: (...args) => mockUpload(...args),
   },
 }));
 
@@ -56,5 +61,71 @@ describe("Commerce page — merged Marketplace + Inventory (T24)", () => {
     await renderSettled();
 
     expect(screen.queryByText("Delivery Zones")).not.toBeInTheDocument();
+  });
+});
+
+describe("Part image upload (T33)", () => {
+  beforeEach(() => {
+    inventoryData = [];
+    mockPost.mockClear();
+    mockUpload.mockClear();
+    mockUser.mockReturnValue({ role: "staff" });
+  });
+
+  function fillRequiredFields() {
+    fireEvent.change(screen.getByPlaceholderText(/tecno spark/i), { target: { value: "iPhone 12 Screen" } });
+    const [costInput, sellInput] = screen.getAllByPlaceholderText("0");
+    fireEvent.change(costInput, { target: { value: "50" } });
+    fireEvent.change(sellInput, { target: { value: "90" } });
+  }
+
+  it("uploading a photo replaces the Upload button with a thumbnail + Remove, and the save payload includes it", async () => {
+    await renderSettled();
+    fireEvent.click(screen.getByRole("button", { name: /add part/i }));
+    expect(await screen.findByText("Add New Part")).toBeInTheDocument();
+
+    expect(screen.getByRole("button", { name: /upload photo/i })).toBeInTheDocument();
+
+    const file = new File(["fake"], "part.jpg", { type: "image/jpeg" });
+    const fileInput = document.querySelector('input[type="file"]');
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    // Upload button gone, replaced by a Remove control once the URL lands.
+    expect(await screen.findByRole("button", { name: /remove/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /upload photo/i })).not.toBeInTheDocument();
+
+    fillRequiredFields();
+    const addButtons = screen.getAllByRole("button", { name: /^add part$/i });
+    fireEvent.click(addButtons[addButtons.length - 1]); // header button vs. modal submit share the name
+
+    await waitFor(() => expect(mockPost).toHaveBeenCalledWith(
+      "/pos/inventory",
+      expect.objectContaining({ images: ["https://res.cloudinary.com/demo/part.jpg"] }),
+    ));
+  });
+
+  it("Remove clears the image and brings back the Upload button", async () => {
+    await renderSettled();
+    fireEvent.click(screen.getByRole("button", { name: /add part/i }));
+    await screen.findByText("Add New Part");
+
+    const file = new File(["fake"], "part.jpg", { type: "image/jpeg" });
+    fireEvent.change(document.querySelector('input[type="file"]'), { target: { files: [file] } });
+    fireEvent.click(await screen.findByRole("button", { name: /remove/i }));
+
+    expect(await screen.findByRole("button", { name: /upload photo/i })).toBeInTheDocument();
+  });
+
+  it("shows a thumbnail in the parts table for a part that already has a photo", async () => {
+    inventoryData = [{
+      _id: "p1", name: "Battery", quantity: 5, lowStockThreshold: 3,
+      costPrice: 2000, sellingPrice: 4000, category: "Battery",
+      images: ["https://res.cloudinary.com/demo/battery.jpg"],
+    }];
+    render(<CommercePage />);
+    await waitFor(() => expect(screen.getByText("Battery")).toBeInTheDocument());
+
+    const thumb = screen.getByAltText("Battery");
+    expect(thumb).toHaveAttribute("src", expect.stringContaining("battery.jpg"));
   });
 });

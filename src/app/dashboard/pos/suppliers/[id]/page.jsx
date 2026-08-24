@@ -2,7 +2,9 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Truck, Boxes, TriangleAlert, Phone, Mail, MapPin } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Truck, Boxes, TriangleAlert, Phone, Mail, MapPin, Copy, Check } from "lucide-react";
+import { FaWhatsapp, FaWeixin } from "react-icons/fa";
 import { useSupplier } from "@/hooks/queries/useSuppliers";
 import { formatGhs } from "@/lib/shop";
 
@@ -12,6 +14,15 @@ export default function SupplierDetailPage() {
   const supplier = data?.supplier ?? null;
   const parts    = data?.parts ?? [];
   const error    = queryError?.message || "";
+
+  const [wechatCopied, setWechatCopied] = useState(false);
+  const copyWechat = () => {
+    if (!supplier?.wechat) return;
+    navigator.clipboard.writeText(supplier.wechat).then(() => {
+      setWechatCopied(true);
+      setTimeout(() => setWechatCopied(false), 2000);
+    });
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
@@ -71,6 +82,25 @@ export default function SupplierDetailPage() {
               </div>
               <span>{supplier.email}</span>
             </a>
+          )}
+          {supplier.whatsapp && (
+            <a href={`https://wa.me/${supplier.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-emerald-400 transition">
+              <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                <FaWhatsapp size={12} className="text-emerald-500" />
+              </div>
+              <span>{supplier.whatsapp}</span>
+            </a>
+          )}
+          {supplier.wechat && (
+            <button onClick={copyWechat} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-green-400 transition text-left">
+              <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                <FaWeixin size={12} className="text-green-500" />
+              </div>
+              <span className="flex items-center gap-1.5">
+                {supplier.wechat}
+                {wechatCopied ? <Check size={10} className="text-green-500" /> : <Copy size={10} className="text-gray-500" />}
+              </span>
+            </button>
           )}
           {supplier.address && (
             <div className="flex items-start gap-2 text-gray-600 dark:text-gray-300">

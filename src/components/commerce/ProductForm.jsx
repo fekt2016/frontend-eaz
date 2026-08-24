@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Loader2, Plus, Trash2, Upload, X } from "lucide-react";
-import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { Plus, Trash2, X } from "lucide-react";
+import UploadButton from "@/components/common/UploadButton";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700";
@@ -18,50 +18,6 @@ function Field({ label, children }) {
       </span>
       {children}
     </label>
-  );
-}
-
-// Cloudinary upload via the shared /api/v1/uploads route (same pattern as the
-// POS job photos / hosting proof uploads elsewhere in the admin).
-function UploadButton({ accept = "image/*", onUploaded, label = "Upload" }) {
-  const inputRef = useRef(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleFile = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setBusy(true);
-    setError("");
-    try {
-      const fd = new FormData();
-      fd.append("image", file);
-      const res = await api.upload("/uploads", fd);
-      const url = res?.data?.url;
-      if (!url) throw new Error("Upload did not return a URL");
-      onUploaded(url);
-    } catch (err) {
-      setError(err.message || "Upload failed. Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="shrink-0">
-      <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={handleFile} />
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => inputRef.current?.click()}
-        className={`${btnGhostClass} ${busy ? "cursor-wait" : ""}`}
-      >
-        {busy ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-        {busy ? "Uploading…" : label}
-      </button>
-      {error && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{error}</p>}
-    </div>
   );
 }
 

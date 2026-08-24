@@ -14,7 +14,7 @@ import { STATUS_COLORS, statusLabel } from "./_components/jobStatus";
 import { useAuth } from "@/context/AuthContext";
 import {
   Trash2, Search, Plus,
-  Check, Loader2, Smartphone, CheckCircle2, XCircle, Wrench, Link2, CreditCard,
+  Check, Loader2, Smartphone, CheckCircle2, XCircle, Wrench, Link2, CreditCard, AlertTriangle,
 } from "lucide-react";
 import { formatPhoneInput } from "@/lib/sanitize";
 import { printRepairReceipt } from "@/lib/printReceipt";
@@ -68,6 +68,10 @@ export default function JobDetailPage() {
 
   // Share-link copy feedback
   const [linkCopied,   setLinkCopied]   = useState(false);
+
+  // T18: Cancel Job asks for confirmation before it fires — irreversible,
+  // customer-facing (mirrors the block/unblock user confirm modal's pattern).
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // MoMo + card charge state and polling live in dedicated hooks (wired up
   // below, once balanceDue and fetchJob are in scope).
@@ -582,9 +586,12 @@ export default function JobDetailPage() {
                 </button>
               </div>
             )}
-            {["received","diagnosing","waiting_for_parts","repairing","ready"].includes(status) && (
+            {/* T18: cancellable from any live status except `ready` (job is about
+                to be collected) — matches the backend's canTransitionJobStatus
+                guard, which rejects ready->cancelled. */}
+            {["received","diagnosing","waiting_for_parts","repairing"].includes(status) && (
               <div className="px-3 pb-3">
-                <button onClick={() => quickStatus("cancelled")} className="w-full py-1.5 rounded-xl border border-red-500/30 text-red-600 dark:text-red-400 text-xs hover:bg-red-500/10 transition">
+                <button onClick={() => setShowCancelConfirm(true)} className="w-full py-1.5 rounded-xl border border-red-500/30 text-red-600 dark:text-red-400 text-xs hover:bg-red-500/10 transition">
                   Cancel Job
                 </button>
               </div>
@@ -912,6 +919,40 @@ export default function JobDetailPage() {
       </div>
 
       {error && <p className="text-red-600 dark:text-red-400 text-sm print:hidden">{error}</p>}
+
+      {/* T18: confirm before cancelling — irreversible, customer-facing. */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800">
+            <div className="px-6 py-5">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-red-100 dark:bg-red-900/30">
+                <AlertTriangle size={20} className="text-red-500" />
+              </div>
+              <h3 className="font-bold text-center text-gray-900 dark:text-white mb-1">Cancel Job?</h3>
+              <p className="text-center text-xs text-gray-400 dark:text-slate-500 mb-4">
+                Job #{job?.jobNumber} will be marked cancelled and the customer notified. This cannot be undone.
+              </p>
+            </div>
+            <div className="px-6 pb-5 flex gap-3">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                disabled={saving}
+                className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition disabled:opacity-50"
+              >
+                Keep Job
+              </button>
+              <button
+                onClick={async () => { setShowCancelConfirm(false); await quickStatus("cancelled"); }}
+                disabled={saving}
+                className="flex-1 py-2.5 rounded-full bg-red-500 hover:bg-red-600 text-white text-sm font-semibold disabled:opacity-50 transition flex items-center justify-center gap-2"
+              >
+                {saving ? <Loader2 className="animate-spin" size={12} /> : null}
+                Cancel Job
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
