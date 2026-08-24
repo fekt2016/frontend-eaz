@@ -37,6 +37,36 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
 
+- [x] **T46 · Sell page: per-staff sales tracking** — ✅ done 2026-08-24 (both halves)
+  - **Request:** staff should be able to track their own sales from the Sell page; the
+    Sell page should have a section tracking sales per staff member.
+  - **Scope decided with the user:** staff see only the sales they rang up; admin and
+    superadmin see everything plus a per-cashier breakdown. That matches the existing
+    `/pos/my-overview` precedent and keeps T32 consistent rather than contradicting it.
+  - **Shipped:**
+    - `src/components/pos/SalesTracker.jsx` (new) — Today / All-time stat tiles for the
+      caller, a "Sales by staff" table for admins (name, today, all-time, count, and a
+      View button that filters the recent list to that cashier), and a recent-sales
+      list. Money via `formatGhs`; loading, error and empty states all handled.
+    - Mounted below the Sell page's two panels. The page's outer container is
+      `flex lg:flex-row`, not a grid, so it is wrapped in a new `flex flex-col gap-8`
+      column — dropping the section straight in as a flex sibling would have squeezed
+      the scan/cart panels into a third column.
+    - `src/hooks/queries/usePosSales.js` — added `usePosSalesList` and
+      `usePosSalesSummary`; `useCreateSale` now also invalidates `qk.posSales.all`, so
+      ringing up a sale refreshes the section immediately.
+    - `src/lib/queryKeys.js` — new `posSales` key group.
+    - `src/app/dashboard/pos/sell/page.test.jsx` — stubbed `SalesTracker` (+7 lines,
+      nothing removed); that file tests thumbnails and has no `AuthProvider`, so the
+      new child's `useAuth` was breaking two existing T37 tests.
+    - `SalesTracker.test.jsx` (new, 13 tests): staff vs admin views, the per-staff
+      table, the filter toggle, and loading/error/empty states — including that a staff
+      view never asks the server for another cashier's sales.
+  - **Backend:** `backend-eaz/tasks.md` → T46.
+  - **Verified:** 41 files / 247 tests pass; lint clean; `next build` succeeds (built in
+    a throwaway worktree so the running dev server's `.next` was untouched).
+    Not verified in a live browser — the Chrome extension is not connected on this host.
+
 - [ ] **T45 · Pre-order support for products** — storefront side of the pre-order feature; the
   model/order/payment design lives in `backend-eaz/tasks.md` → T45. Currently the shop blocks
   add-to-cart / checkout on zero stock, so items that are out of stock or not yet available in
@@ -399,7 +429,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     don't surface (or the 500 from **T30** also hits products), fix and add tests.
   - **Backend part:** `backend-eaz/tasks.md` → T31. Relates to T30 (the 500 on Complete Sale).
 
-- [ ] **T30 · POS Sell page: "Complete Sale" returns Request failed (500) when selling parts**
+- [x] **T30 · POS Sell page: "Complete Sale" returns Request failed (500) when selling parts** — ✅ already fixed; confirmed 2026-08-24
   - **Symptom:** On the Sell page (`/dashboard/pos/sell`), clicking **Complete Sale** with
     parts in the cart fails with **"Request failed (500)"** — no friendly error, no sale recorded.
     The failure happens with **all payment options** (Cash, MoMo, Card).
@@ -412,6 +442,21 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
       handling (`data: sale` returns an array), missing `saleNumber`/schema pre-save hooks,
       stock `$inc`/transaction abort issues, or a `part` validation error.
     - Ensure the frontend surfaces a readable error instead of the raw 500.
+  - **Outcome — this was already fixed; the tracker entry was stale.** Confirmed
+    2026-08-24 by reading the code and running the regression suite:
+    - `controllers/pos/salesController.js` now uses `session.withTransaction()` and
+      `const [createdSale] = await Sale.create([...], { session })`. The original bug
+      was the post-commit `logFromRequest` referencing `sale[0].saleNumber` on a plain
+      object — it threw *after* the transaction committed, so the sale saved and stock
+      deducted but the request 500'd. The catch block's unconditional
+      `abortTransaction()` then threw a second, unhandled error, which `server.js`
+      treats as fatal — so it crashed the whole server, not just the request.
+    - `backend-eaz/tests/posSale.test.js` (6 tests) covers it, spinning up its own
+      single-node `MongoMemoryReplSet` because the shared standalone test instance
+      cannot run transactions. All 6 pass.
+    - The frontend half is done too: `completeSale`'s catch does
+      `setPayError(err.message || "Sale failed. Try again.")`, so the raw 500 no longer
+      leaks to the cashier.
   - **Backend part:** `backend-eaz/tasks.md` → T30.
  
 ---

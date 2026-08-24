@@ -14,6 +14,13 @@ vi.mock("@/lib/api", () => ({
   api: { get: (...args) => mockGet(...args), post: vi.fn() },
 }));
 
+// The Sell page now renders the sales-tracking section, which needs AuthProvider and
+// its own queries. This file is about thumbnails, so stub it out — SalesTracker has
+// its own test suite.
+vi.mock("@/components/pos/SalesTracker", () => ({
+  default: () => <div data-testid="sales-tracker" />,
+}));
+
 import SellPage from "./page";
 
 function renderPage() {

@@ -27,6 +27,7 @@ import {
   CheckCircle2, Loader2, TriangleAlert,
   Printer, X,
 } from "lucide-react";
+import SalesTracker from "@/components/pos/SalesTracker";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -327,6 +328,7 @@ export default function SellPage() {
 
   // ─── MAIN POS VIEW ──────────────────────────────────────────────────────────
   return (
+    <div className="flex flex-col gap-8">
     <div className="flex flex-col lg:flex-row gap-4 h-full min-h-[calc(100vh-120px)]">
 
       {/* ── LEFT: Scan + Cart ─────────────────────────────────────────────── */}
@@ -579,6 +581,11 @@ export default function SellPage() {
           <p className="text-xs text-gray-600">Press F4 or Enter to checkout</p>
         </div>
       </div>
+
+    </div>
+
+      {/* Sales tracking — staff see their own, admin sees every cashier's. */}
+      <SalesTracker />
     </div>
   );
 }
