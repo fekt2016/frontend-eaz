@@ -33,17 +33,22 @@ export default function CartDrawer() {
             className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
             onClick={closeCart}
           />
+          {/* T38: the drawer must fit one viewport and never grow with its contents.
+              `top-0 bottom-0` sizes it in every browser; `max-h-[100dvh]` additionally
+              pins it to the *dynamic* viewport where supported, so a mobile URL bar
+              sliding in cannot push the footer under the fold. */}
           <motion.aside
             key="drawer"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-            className="fixed right-0 top-0 bottom-0 z-[70] flex w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-2xl"
+            className="fixed right-0 top-0 bottom-0 z-[70] flex max-h-[100dvh] w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-2xl"
             role="dialog"
+            aria-modal="true"
             aria-label="Shopping cart"
           >
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 px-5 py-4">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-100 dark:border-slate-800 px-5 py-3">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="text-brand-500" size={16} />
                 <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white">Your Cart</h2>
@@ -61,12 +66,15 @@ export default function CartDrawer() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5">
+            {/* `min-h-0` is what actually makes this scroll: a flex child defaults to
+                min-height:auto, so without it a long cart refuses to shrink and pushes
+                the footer off-screen instead of scrolling here. */}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5">
               <CartItems />
             </div>
 
             {items.length > 0 && (
-              <div className="border-t border-gray-100 dark:border-slate-800 px-5 py-4">
+              <div className="shrink-0 border-t border-gray-100 dark:border-slate-800 px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
                 <div className="mb-4 flex items-center justify-between">
                   <span className="text-sm text-gray-500 dark:text-slate-400">Subtotal</span>
                   <span className="font-display font-bold text-xl text-gray-900 dark:text-white">{formatGhs(subtotal)}</span>

@@ -41,29 +41,29 @@ const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
         const thumb = itemHref ? (
           <Link
             href={itemHref}
-            className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800"
+            className="relative block h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800"
           >
 <ProductImage
               src={item.image}
               alt={item.name}
               fill
-              sizes="80px"
+              sizes="64px"
               className="object-cover"
             />
           </Link>
         ) : (
-          <div className="block h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800">
+          <div className="relative block h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800">
             <ProductImage
               src={item.image}
               alt={item.name}
               fill
-              sizes="80px"
+              sizes="64px"
               className="object-cover"
             />
           </div>
         );
         return (
-        <li key={item.lineId} className="flex gap-4 py-4">
+        <li key={item.lineId} className="flex gap-3 py-3">
           {thumb}
           <div className="flex flex-1 flex-col">
             <div className="flex items-start justify-between gap-2">

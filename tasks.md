@@ -209,7 +209,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Verified:** full frontend suite 36 files / 179 tests pass (up from 36/171);
     `npm run lint` clean; `next build` succeeds. Not verified in a live browser.
 
-- [ ] **T38 · Cart overlay: fit all content within the viewport**
+- [x] **T38 · Cart overlay: fit all content within the viewport** — ✅ done 2026-08-24
   - **Issue:** The cart overlay that opens when clicking **Add to Cart** on a product detail
     page (`/shop/[slug]`) is a right-side drawer whose contents should fit **within one
     viewport**. On shorter screens the drawer is `w-full max-w-md` with `top-0 bottom-0` and
@@ -224,6 +224,52 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     that never pushes content off-screen. Ensure `h-full`/`dvh` (not content-driven height)
     so on small screens the footer buttons are always reachable. Verify at ~667px and ~800px
     tall viewports.
+  - **Shipped:**
+    - `src/components/cart/CartDrawer.jsx` — the real bug was one missing class: the
+      items area was `flex-1 overflow-y-auto` with no `min-h-0`. A flex child defaults
+      to `min-height: auto`, so a long cart refused to shrink and pushed the
+      subtotal/Checkout footer off-screen instead of scrolling in place. Added
+      `min-h-0` (plus `overscroll-contain`, so scrolling to the end of the cart does
+      not start scrolling the page behind it).
+    - Drawer capped with `max-h-[100dvh]` alongside the existing `top-0 bottom-0`:
+      `bottom-0` sizes it everywhere, and the dynamic-viewport unit additionally keeps
+      a mobile URL bar sliding in from pushing the footer under the fold.
+    - Header and footer marked `shrink-0` so neither is squeezed when the list is long;
+      header padding tightened `py-4` → `py-3` to buy back vertical space.
+    - Footer bottom padding is `max(1rem, env(safe-area-inset-bottom))`, keeping the
+      buttons clear of the iOS home indicator.
+    - Added `aria-modal="true"` — the drawer already had `role="dialog"` and a body
+      scroll lock, but not the attribute that tells assistive tech the rest of the page
+      is inert.
+    - `CartDrawer.test.jsx` (new, 9 tests) covering the height cap, the `min-h-0`
+      scroll behaviour, non-squeezable header/footer, safe-area padding, the empty-cart
+      case, the body scroll lock, and the a11y attributes. Confirmed the guard bites:
+      removing `min-h-0` again fails 2 of them.
+    - **Second, larger bug found once the layout was fixed and the drawer was opened
+      in a real browser (reported by the user: "the image in the overlay is too big so
+      some of the content of the overlay are not visible"):**
+      `src/components/cart/CartItems.jsx` rendered its thumbnails with
+      `<ProductImage fill>`, and `ProductImage` is a thin wrapper that passes `fill`
+      straight to `next/image` — which lays the image out as `position: absolute;
+      inset: 0`. The thumb container had `block h-20 w-20 overflow-hidden` but **no
+      `relative`**, so the image resolved against the nearest positioned ancestor —
+      the `fixed` drawer itself — and stretched to cover the entire overlay, hiding
+      the cart behind it. Added `relative` to both thumb containers (the linked
+      product branch and the non-linked retail-part branch, which are separate
+      elements). Audited every other `ProductImage fill` call site — `ShopGrid`,
+      `RecentProducts`, and both galleries in `ProductDetail` all already have
+      `relative` parents, so `CartItems` was the only one affected.
+    - Thumbs reduced `h-20 w-20` → `h-16 w-16` (with the `sizes` hint updated to match)
+      and row spacing tightened `gap-4 py-4` → `gap-3 py-3`, so more of the cart fits
+      in one viewport, which is what this task is about.
+    - `CartItems.test.jsx` (new, 4 tests) pinning the `relative`/fixed-size container
+      on both branches. Confirmed the guard bites: restoring the old
+      `block h-20 w-20` classes fails 2 of them.
+  - **Verified:** full frontend suite 39 files / 201 tests pass; `npm run lint` clean;
+    `next build` succeeds. The oversized-image bug above was found by the user in a real
+    browser, not by the suite — the automated checks could not have caught it, since the
+    drawer test mocks `CartItems` and jsdom does not do layout. The ~667px/~800px
+    viewport check in the fix note still wants a human eye.
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T38).
 
 - [x] **T35 · Variant form: add a price input for each variant** — ✅ done 2026-08-24
