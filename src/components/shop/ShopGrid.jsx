@@ -8,6 +8,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useShopProducts } from "@/hooks/queries/useProducts";
 import StarRule from "@/components/common/StarRule";
 import ProductImage from "@/components/shop/ProductImage";
+import ProductStats from "@/components/shop/ProductStats";
 
 const CATEGORIES = [
   "Phones",
@@ -240,6 +241,7 @@ function ProductCard({ product }) {
           {product.name}
         </h3>
         <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed line-clamp-3 mb-4 flex-1">{product.description}</p>
+        <ProductStats views={product.views} sold={product.sold} className="mb-2.5" />
         <div className="flex items-center justify-between border-t border-gray-100 dark:border-slate-800 pt-3">
           <div>
             <p className="font-display font-bold text-lg text-gray-900 dark:text-white">{formatGhs(product.price)}</p>

@@ -87,7 +87,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     changes the checkout copy/flow; how a pre-order line renders in order history / track-order.
   - **Backend:** `backend-eaz/tasks.md` → T45.
 
-- [ ] **T48 · Product cards + detail: show view count, sold count, and stock count**
+- [x] **T48 · Product cards + detail: show view count, sold count, and stock count** — ✅ done 2026-08-24 (both halves)
   - **Request:** product **cards** should show how many people **viewed** the product
     and how many units were **sold**; the product **detail page** should show the
     **stock count** and the **sold count**. Storefront half — the data comes from new
@@ -110,7 +110,29 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Conventions:** Tailwind utilities with `dark:` variants; icons from
     `lucide-react` (already used in both files). Don't trust client-side counting —
     display only what the API returns.
-  - **Backend part:** `backend-eaz/tasks.md` → T48.
+  - **Shipped:** `src/components/shop/ProductStats.jsx` (new), `src/lib/shop.js`,
+    `ShopGrid.jsx`, `RecentProducts.jsx`, `ProductDetail.jsx`
+    - `formatCount()` joins `formatGhs` in `lib/shop.js` as the single count
+      formatter: exact below 1,000, then `1.2k` / `15k` / `1.3m`.
+    - One `ProductStats` component serves both card grids rather than the same
+      badge row being written twice.
+    - **Zeros are hidden, not rendered.** A stat appears only when it is present
+      *and* above zero, so a new catalogue does not show "0 views · 0 sold" on every
+      card, and a product from an API that predates the counters renders nothing.
+      The detail page is the exception: stock is always spelled out there
+      ("In stock: 5" / "Out of stock") because the badge rounds it off above 10.
+    - Detail page also shows views, which the original note did not ask for — it is
+      the same data and the row already existed.
+    - `RecentProducts`' footer is now wrapped in a single `mt-auto` div: leaving
+      `mt-auto` on both the stats line and the price divider would split the free
+      space between them and open a gap.
+  - **Tests:** `src/components/shop/ProductStats.test.jsx` (new, 9) — the formatter
+    including the 999,999 → `1m` edge and junk input, both figures rendering, the
+    absent-field and all-zero cases rendering nothing, one-sided rendering, and the
+    "1 view" singular.
+  - **Verified:** full frontend suite 42 files / 261 tests, exit 0; `next build`
+    clean; `next lint` clean on all five files.
+  - **Backend part:** `backend-eaz/tasks.md` → T48 — done.
 
 ---
 

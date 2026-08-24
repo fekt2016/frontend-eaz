@@ -9,6 +9,20 @@ export function formatGhs(pesewas) {
   })}`;
 }
 
+// Compact counts for product cards (T48): 834, 1.2k, 15k, 1.3m. Small numbers
+// stay exact — "3 sold" says more than "0k". Single source of truth for count
+// formatting, the way formatGhs is for money.
+export function formatCount(value) {
+  const n = Math.max(0, Math.round(Number(value) || 0));
+  if (n < 1000) return String(n);
+  // 999,999 rounds up to "1000k", so hand anything that close to a million to
+  // the next unit instead.
+  const millions = n >= 999950;
+  const scaled = Math.round((millions ? n / 1000000 : n / 1000) * 10) / 10;
+  const digits = Number.isInteger(scaled) ? 0 : 1;
+  return `${scaled.toFixed(digits)}${millions ? "m" : "k"}`;
+}
+
 export function stockBadge(stock) {
   if (stock <= 0) {
     return { label: "Out of stock", classes: "bg-gray-100 text-gray-500" };

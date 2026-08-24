@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Play, Plus, Search } from "lucide-react";
-import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
+import { ArrowLeft, ChevronLeft, ChevronRight, Eye, Minus, Package, Play, Plus, Search, ShoppingBag } from "lucide-react";
+import { formatCount, formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useCart } from "@/context/CartContext";
 import { useProductBySlug } from "@/hooks/queries/useProducts";
 import { useProductReviews } from "@/hooks/queries/useProductReviews";
@@ -251,13 +251,32 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-5">
               <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${badge.classes}`}>
                 {badge.label}
               </span>
 {(selectedVariant?.sku || product.sku) && (
                 <span className="text-xs text-gray-400 dark:text-slate-500">
                   SKU: {selectedVariant ? selectedVariant.sku : product.sku}
+                </span>
+              )}
+              {/* T48: the badge rounds off ("In stock" above 10), so spell the
+                  numbers out here. Stock follows the selected variant; views and
+                  units sold are product-wide. */}
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
+                <Package className="h-3.5 w-3.5" aria-hidden="true" />
+                {inStock ? `In stock: ${displayStock}` : "Out of stock"}
+              </span>
+              {Number(product.sold) > 0 && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
+                  <ShoppingBag className="h-3.5 w-3.5" aria-hidden="true" />
+                  {formatCount(product.sold)} sold
+                </span>
+              )}
+              {Number(product.views) > 0 && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
+                  <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                  {formatCount(product.views)} {Number(product.views) === 1 ? "view" : "views"}
                 </span>
               )}
             </div>
