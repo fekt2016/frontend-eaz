@@ -1,15 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Play, Plus, Search } from "lucide-react";
 import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useCart } from "@/context/CartContext";
 import { useProductBySlug } from "@/hooks/queries/useProducts";
+import { useProductReviews } from "@/hooks/queries/useProductReviews";
 import ProductReviews from "./ProductReviews";
 import ProductImage, { PRODUCT_PLACEHOLDER } from "./ProductImage";
 
 const FALLBACK_IMAGE = PRODUCT_PLACEHOLDER;
+
+const TABS = { DESCRIPTION: "Description", SPECS: "Specs", REVIEWS: "Reviews" };
+
+const SHORT_DESCRIPTION_MAX = 180;
+
+// Fallback only. The buy column prefers the editor-authored `product.shortDescription`
+// (T39); this derives a stand-in for products created before that field existed, so
+// their buy column isn't left bare. Prefer the opening sentence, and fall back to a
+// word-boundary trim when that sentence is itself long.
+export function summarizeDescription(text, max = SHORT_DESCRIPTION_MAX) {
+  const clean = (text || "").replace(/\s+/g, " ").trim();
+  if (!clean) return "";
+  if (clean.length <= max) return clean;
+
+  const firstSentence = clean.match(/^.*?[.!?](?=\s|$)/)?.[0];
+  if (firstSentence && firstSentence.length <= max) return firstSentence;
+
+  const cut = clean.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).replace(/[,;:.\s]+$/, "")}…`;
+}
 
 export default function ProductDetail({ slug }) {
   const { data: product, isLoading: loading, error: queryError } = useProductBySlug(slug);
@@ -17,12 +39,20 @@ export default function ProductDetail({ slug }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [qty, setQty] = useState(1);
   const [selectedSku, setSelectedSku] = useState(null);
+  const [activeTab, setActiveTab] = useState(TABS.DESCRIPTION);
+  const tabPanelRef = useRef(null);
   const { addItem, openCart } = useCart();
+
+  // Same query key as ProductReviews' own call, so react-query serves both from one
+  // cache entry — this is for the "Reviews (n)" count, not a second network request.
+  const { data: reviewsData } = useProductReviews(product?._id);
+  const reviewCount = reviewsData?.total ?? 0;
 
   useEffect(() => {
     setActiveIndex(0);
     setQty(1);
     setSelectedSku(null);
+    setActiveTab(TABS.DESCRIPTION);
     window.scrollTo({ top: 0 });
   }, [slug]);
 
@@ -102,6 +132,28 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   };
 
   const variantLabel = (v) => Object.values(v.attributes || {}).join(" ");
+
+  // Specs only earns a tab when the product actually has any (T39).
+  const hasSpecs = product.specs?.length > 0;
+  const fullDescription = (product.description || "").replace(/\s+/g, " ").trim();
+  // Editor-authored summary wins; derive one only when the product predates the field.
+  const shortDescription =
+    (product.shortDescription || "").trim() || summarizeDescription(product.description);
+  // Only offer "Read more" when the tab actually holds something the summary didn't.
+  const isSummarized = Boolean(fullDescription) && shortDescription !== fullDescription;
+  const tabs = [TABS.DESCRIPTION, ...(hasSpecs ? [TABS.SPECS] : []), TABS.REVIEWS];
+  const slugifyTab = (tab) => tab.toLowerCase();
+  const tabId = (tab) => `product-tab-${slugifyTab(tab)}`;
+  const panelId = (tab) => `product-panel-${slugifyTab(tab)}`;
+
+  const selectTab = (tab) => {
+    setActiveTab(tab);
+    // Bring the panel into view on switch, so a tall Reviews list doesn't leave the
+    // reader stranded mid-page. scroll-mt on the panel keeps it clear of the header.
+    requestAnimationFrame(() => {
+      tabPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
@@ -206,9 +258,27 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
               )}
             </div>
 
+            {shortDescription && (
+              <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-5 max-w-prose">
+                {shortDescription}
+                {isSummarized && (
+                  <>
+                    {" "}
+                    <button
+                      type="button"
+                      onClick={() => selectTab(TABS.DESCRIPTION)}
+                      className="font-semibold text-brand-500 hover:text-brand-400 underline underline-offset-2"
+                    >
+                      Read more
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
+
             <p className="font-mono font-bold text-3xl text-brand-500 mb-6">{formatGhs(product.price)}</p>
 
-            <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-8">{product.description}</p>
+            {/* Full description and specs live in the tabs below the grid (T39). */}
 
             {hasVariants && (
               <div className="mb-8">
@@ -243,29 +313,6 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                     {selectedVariant.stock} in stock
                   </p>
                 )}
-              </div>
-            )}
-
-            {product.specs?.length > 0 && (
-              <div className="mb-8">
-                <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-3">
-                  Specifications
-                </h2>
-                <dl className="divide-y divide-gray-100 dark:divide-slate-800 rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden">
-                  {product.specs.map((s) => (
-                    <div
-                      key={s.label}
-                      className="flex items-start justify-between gap-4 px-4 py-2.5 bg-white dark:bg-slate-900"
-                    >
-                      <dt className="text-xs font-semibold text-gray-500 dark:text-slate-400 pt-0.5">
-                        {s.label}
-                      </dt>
-                      <dd className="text-sm text-gray-900 dark:text-white text-right">
-                        {s.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
               </div>
             )}
 
@@ -320,7 +367,69 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
           </div>
         </div>
 
-        <ProductReviews product={product} />
+        {/* TABS (T39) — Description / Specs / Reviews */}
+        <div className="mt-16">
+          <div
+            role="tablist"
+            aria-label="Product details"
+            className="flex gap-2 flex-wrap border-b border-gray-100 dark:border-slate-800 pb-4"
+          >
+            {tabs.map((tab) => {
+              const selected = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  id={tabId(tab)}
+                  aria-selected={selected}
+                  aria-controls={panelId(tab)}
+                  onClick={() => selectTab(tab)}
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition ${
+                    selected
+                      ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                      : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white"
+                  }`}
+                >
+                  {tab === TABS.REVIEWS ? `Reviews (${reviewCount})` : tab}
+                </button>
+              );
+            })}
+          </div>
+
+          <div
+            ref={tabPanelRef}
+            role="tabpanel"
+            id={panelId(activeTab)}
+            aria-labelledby={tabId(activeTab)}
+            tabIndex={-1}
+            className="pt-8 scroll-mt-28 focus:outline-none"
+          >
+            {activeTab === TABS.DESCRIPTION && (
+              <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed whitespace-pre-line max-w-3xl">
+                {product.description || "No description available for this product yet."}
+              </p>
+            )}
+
+            {activeTab === TABS.SPECS && hasSpecs && (
+              <dl className="divide-y divide-gray-100 dark:divide-slate-800 rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden max-w-3xl">
+                {product.specs.map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex items-start justify-between gap-4 px-4 py-2.5 bg-white dark:bg-slate-900"
+                  >
+                    <dt className="text-xs font-semibold text-gray-500 dark:text-slate-400 pt-0.5">
+                      {s.label}
+                    </dt>
+                    <dd className="text-sm text-gray-900 dark:text-white text-right">{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+
+            {activeTab === TABS.REVIEWS && <ProductReviews product={product} />}
+          </div>
+        </div>
       </div>
     </div>
   );

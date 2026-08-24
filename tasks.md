@@ -161,7 +161,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `Part` model — items carry only `partId`+`quantity` — so this is safe.)
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T41).
 
-- [ ] **T39 · Product detail page: add Description and Reviews tabs**
+- [x] **T39 · Product detail page: add Description / Specs / Reviews tabs** — ✅ done 2026-08-24 (both halves)
   - **Issue:** On `/shop/[slug]` the product description is rendered as a plain paragraph
     under the price (~line 211) and `ProductReviews` is stacked full-width below the
     product grid (~line 323) — a long "small page" you have to scroll. The page should
@@ -176,7 +176,38 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     the `<ProductReviews>` (rating summary + list + review form) under Reviews. Keep the
     Reviews tab count in the label (`Reviews (n)`). Scroll to top of the tab content on
     switch. Tabs work without a page reload; initial tab = Description.
-  - **Backend:** none needed (see `backend-eaz/tasks.md` → T39).
+  - **Shipped:**
+    - `src/components/shop/ProductDetail.jsx` — **three** tabs, not the two the fix note
+      described: Specs was split out of Description into its own tab (product decision
+      during the work). The Specs tab is omitted entirely when a product has no specs, so
+      a bare product shows Description | Reviews.
+    - Tab bar sits full-width below the image/buy grid, not inside the buy column, so the
+      review list gets the whole width instead of ~40%. Styling mirrors the only prior tab
+      precedent in the app, `src/components/resources/ResourcesListing.jsx` (pill buttons)
+      — no shared Tabs component existed to reuse.
+    - Proper `role="tablist"` / `role="tab"` / `role="tabpanel"` wiring with
+      `aria-selected`, `aria-controls`, and `aria-labelledby`, so the tabs are usable with
+      a screen reader rather than being styled buttons.
+    - Reviews label carries the count (`Reviews (12)`) via `useProductReviews` — the same
+      query key `ProductReviews` already uses, so react-query serves both from one cache
+      entry rather than firing a second request.
+    - Switching tabs scrolls the panel into view (deferred to a `requestAnimationFrame` so
+      it runs after paint); `activeTab` resets to Description when the slug changes.
+    - **Short description (added mid-task):** the buy column would otherwise have been left
+      with no prose at all once the description moved into a tab, so it now shows
+      `product.shortDescription` under the SKU/stock row, above the price, with a "Read
+      more" that jumps to the Description tab. Backed by a real schema field — see below.
+    - `src/components/commerce/ProductForm.jsx` — admin "Short description" textarea with a
+      live `n/200` counter, matching the backend `maxlength`.
+    - `summarizeDescription()` (exported for test) — fallback for the ~30 existing products
+      whose `shortDescription` is empty: prefers the opening sentence, else trims on a word
+      boundary with an ellipsis. "Read more" is hidden when the summary is the whole text.
+    - `ProductDetail.test.jsx` (new, 16 tests) covering tab switching, the count label, the
+      omitted-Specs case, a11y wiring, the short description, and the fallback helper.
+  - **Backend:** the "none needed" note above was wrong once `shortDescription` became a
+    real field — see `backend-eaz/tasks.md` → T39 for the schema/controller half.
+  - **Verified:** full frontend suite 36 files / 179 tests pass (up from 36/171);
+    `npm run lint` clean; `next build` succeeds. Not verified in a live browser.
 
 - [ ] **T38 · Cart overlay: fit all content within the viewport**
   - **Issue:** The cart overlay that opens when clicking **Add to Cart** on a product detail
