@@ -329,7 +329,11 @@ export default function SellPage() {
   // ─── MAIN POS VIEW ──────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-8">
-    <div className="flex flex-col lg:flex-row gap-4 h-full min-h-[calc(100vh-120px)]">
+    {/* Bounded rather than full-viewport (was `h-full min-h-[calc(100vh-120px)]`), so
+        the sales section below is on screen instead of a whole page-scroll away. The
+        cart list inside is `flex-1 overflow-y-auto`, so it just scrolls within its
+        panel when the cart is long. */}
+    <div className="flex flex-col lg:flex-row gap-4 min-h-[26rem] lg:h-[58vh]">
 
       {/* ── LEFT: Scan + Cart ─────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col gap-3">

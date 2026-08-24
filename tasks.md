@@ -52,6 +52,14 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
       `flex lg:flex-row`, not a grid, so it is wrapped in a new `flex flex-col gap-8`
       column — dropping the section straight in as a flex sibling would have squeezed
       the scan/cart panels into a third column.
+    - **Follow-up after the user reported "there is no sales table section":** it *was*
+      mounted, but the cart row above it was `h-full min-h-[calc(100vh-120px)]` — a full
+      viewport — so the section sat an entire page-scroll down and read as missing.
+      Bounded that row to `min-h-[26rem] lg:h-[58vh]`; the cart list inside is already
+      `flex-1 overflow-y-auto`, so a long cart now scrolls within its own panel instead
+      of stretching the page. Two guards added to `page.test.jsx` (+22 lines, nothing
+      removed): one asserts the tracker is mounted, one asserts the row never goes back
+      to a `100vh` min-height.
     - `src/hooks/queries/usePosSales.js` — added `usePosSalesList` and
       `usePosSalesSummary`; `useCreateSale` now also invalidates `qk.posSales.all`, so
       ringing up a sale refreshes the section immediately.
@@ -78,6 +86,31 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Open questions (resolve with backend before building):** upfront payment vs. deposit
     changes the checkout copy/flow; how a pre-order line renders in order history / track-order.
   - **Backend:** `backend-eaz/tasks.md` → T45.
+
+- [ ] **T48 · Product cards + detail: show view count, sold count, and stock count**
+  - **Request:** product **cards** should show how many people **viewed** the product
+    and how many units were **sold**; the product **detail page** should show the
+    **stock count** and the **sold count**. Storefront half — the data comes from new
+    backend fields (`views`, `sold` on `Product`) added in `backend-eaz/tasks.md` → T48.
+  - **Locations:**
+    - Cards render in two places — both need it:
+      `src/components/shop/ShopGrid.jsx` (card block ~line 208) and
+      `src/components/home/RecentProducts.jsx` (~line 82). Both already compute a
+      `stockBadge(product.stock)` badge next to the price.
+    - Detail: `src/components/shop/ProductDetail.jsx` — the SKU/stock row
+      (`stockBadge(displayStock)` ~line 119), where T39's short description also sits.
+  - **Card fix:** add a compact stats row/badges — e.g. an eye icon + view count and
+    "N sold" beside the existing stock badge. Use compact formatting for large counts
+    (1.2k views); hide gracefully when the API hasn't shipped yet (fields absent →
+    render nothing, not "0 views").
+  - **Detail fix:** in the buy column show explicit counts — e.g. "In stock: 5"
+    (or "Out of stock") and "23 sold" — near the SKU row. Keep using
+    `formatGhs`-style single-source helpers; if a reusable `formatCount()` is needed,
+    put it in `lib/shop.js` rather than duplicating in each component.
+  - **Conventions:** Tailwind utilities with `dark:` variants; icons from
+    `lucide-react` (already used in both files). Don't trust client-side counting —
+    display only what the API returns.
+  - **Backend part:** `backend-eaz/tasks.md` → T48.
 
 ---
 

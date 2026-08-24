@@ -83,3 +83,25 @@ describe("Sell page — item thumbnails in search & cart (T37)", () => {
     });
   });
 });
+
+// The sales-tracking section was reported missing from the Sell page once already: it
+// was mounted, but the cart row above it was `min-h-[calc(100vh-120px)]`, so it sat a
+// full viewport down and read as absent. These pin both the mount and the bounded row.
+describe("Sell page — sales tracking section (T46)", () => {
+  it("mounts the sales tracker on the page", async () => {
+    mockGet.mockResolvedValue({ data: [] });
+    renderPage();
+
+    expect(await screen.findByTestId("sales-tracker")).toBeInTheDocument();
+  });
+
+  it("does not let the cart row claim the whole viewport, which hid the section", async () => {
+    mockGet.mockResolvedValue({ data: [] });
+    const { container } = renderPage();
+
+    await screen.findByTestId("sales-tracker");
+    const row = container.querySelector('[class*="lg:flex-row"]');
+    expect(row).toBeTruthy();
+    expect(row.className).not.toMatch(/min-h-\[calc\(100vh/);
+  });
+});
