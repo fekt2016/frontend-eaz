@@ -241,6 +241,7 @@ export default function SellPage() {
   const debouncedScanInput = useDebounce(scanInput, 200);
   const typeSearch = useInventorySearch(debouncedScanInput, {
     includeProducts: true,
+    limit: 10, // the dropdown scrolls, so show a full 10 rather than the default 8
     enabled: debouncedScanInput.trim().length >= 2,
   });
 
@@ -378,7 +379,11 @@ export default function SellPage() {
         {/* Search results dropdown */}
         {results.length > 0 && (
           <div className="rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 overflow-hidden shadow-xl">
-            <p className="px-4 py-2 text-xs text-gray-500 border-b border-gray-300 dark:border-gray-700">{results.length} results — click or press ↑↓ Enter</p>
+            <p className="px-4 py-2 text-xs text-gray-500 border-b border-gray-300 dark:border-gray-700">
+              {results.length} result{results.length === 1 ? "" : "s"} — click to add
+            </p>
+            {/* Scrolls at ~5 rows so a full 10 results never push the cart off screen. */}
+            <div className="max-h-80 overflow-y-auto overscroll-contain">
             {results.map(p => (
               <button
                 key={p._id}
@@ -394,6 +399,7 @@ export default function SellPage() {
                 <p className="text-sm font-bold text-brand-600 dark:text-brand-400 ml-4 flex-shrink-0">{formatGhs(Number(p.sellingPrice))}</p>
               </button>
             ))}
+            </div>
           </div>
         )}
 
