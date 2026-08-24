@@ -173,7 +173,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Verified:** full frontend suite 40 files / 228 tests pass; `npm run lint` clean.
     Not verified in a live browser — the Chrome extension is not connected on this host.
 
-- [ ] **T41 · Public track page part-order cart mixes float-GHS and pesewas**
+- [x] **T41 · Public track page part-order cart mixes float-GHS and pesewas** — ✅ done 2026-08-24
   - **Issue:** On `/track/[token]`, `addToCart` stores `unitPriceGhs: Math.round(Number(part.sellingPrice)) / 100`
     (float GHS) and computes `totalPesewas = partsSubtotalGhs * 100 + shippingPesewas`
     (float × 100), while `addPartToShopCart` (line 105) stores integer pesewas
@@ -185,7 +185,36 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     `unitPricePesewas: Math.round(Number(part.sellingPrice))`, subtotal in pesewas, add
     shipping pesewas directly, and display with `formatGhs`. (Backend re-prices from the
     `Part` model — items carry only `partId`+`quantity` — so this is safe.)
+  - **Shipped:** `src/app/track/[token]/page.jsx`
+    - Cart lines now store `unitPricePesewas: Math.round(Number(part.sellingPrice))`
+      — integer pesewas, the same convention as `addPartToShopCart` on this same page.
+    - `partsSubtotalPesewas` sums in pesewas and `totalPesewas` is a plain integer add,
+      replacing `partsSubtotalGhs * 100 + shippingPesewas`.
+    - The two raw `GH₵{...}` templates (line total, subtotal) now go through
+      `formatGhs`, which also closes the part of **T43** that was explicitly deferred
+      here — T43's audit says the real fix for this file belongs to T41, not a display
+      swap. Every other money display in the file already used `formatGhs`.
+  - **Why it mattered — measured, not assumed:** the old round-trip
+    (`sellingPrice / 100` → `× quantity` → `× 100`) drifts for **38,432 of 200,000**
+    price/quantity combinations (19.2%) across GH₵0.01–GH₵200.00 at qty 1–10. The
+    cheapest failing case is GH₵0.07 × 3 → `21.000000000000004` instead of `21`, which
+    rendered on the page as `SubtotalGH₵0.21000000000000002`.
+  - **Safe because the money never leaves the browser:** confirmed the backend
+    (`controllers/pos/jobController.js` → `createRepairOrder`) reads only `partId` and
+    `quantity` from the request and re-prices from `Part.sellingPrice` and
+    `DeliveryZone.fee`. The client's figures are ignored entirely, so this was a display
+    correctness fix, not a payment one. The submit payload is
+    `items: cart.map((i) => ({ partId: i.partId, quantity: i.quantity }))`.
+  - **Tests:** 6 added to the existing `page.test.jsx` (which already had 6 covering
+    loading/not-found/status labels — those are untouched). Confirmed the guard bites:
+    reintroducing the float path fails the "no floating-point artefact" test with the
+    literal `GH₵0.21000000000000002` in the rendered output.
+  - **Note:** the cart under test is the one behind **"Add to order"** (fed from
+    `job.parts`). The catalogue's "Add to cart" button is the separate shop cart, which
+    already used integer pesewas.
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T41).
+  - **Verified:** full frontend suite 40 files / 234 tests pass; `npm run lint` clean.
+    Not verified in a live browser — the Chrome extension is not connected on this host.
 
 - [x] **T39 · Product detail page: add Description / Specs / Reviews tabs** — ✅ done 2026-08-24 (both halves)
   - **Issue:** On `/shop/[slug]` the product description is rendered as a plain paragraph

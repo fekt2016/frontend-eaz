@@ -45,7 +45,10 @@ export default function TrackRepairPage() {
 
   // Part catalogue + cart
   const [catQuery, setCatQuery] = useState("");
-  const [cart, setCart] = useState([]); // { partId, name, sku, unitPriceGhs, quantity, stock }
+  // Integer pesewas throughout, same convention as addPartToShopCart and the rest of
+  // the app (T41). The server re-prices from the Part model anyway — items are sent as
+  // { partId, quantity } only — so this money is display-only.
+  const [cart, setCart] = useState([]); // { partId, name, sku, unitPricePesewas, quantity, stock }
   const [zones, setZones] = useState([]);
   const [zoneId, setZoneId] = useState("");
 
@@ -117,13 +120,13 @@ export default function TrackRepairPage() {
         if (existing.quantity >= part.quantity) return prev;
         return prev.map((i) => i.partId === part._id ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...prev, { partId: part._id, name: part.name, sku: part.sku || "", unitPriceGhs: Math.round(Number(part.sellingPrice)) / 100, quantity: 1, stock: part.quantity }];
+      return [...prev, { partId: part._id, name: part.name, sku: part.sku || "", unitPricePesewas: Math.round(Number(part.sellingPrice)), quantity: 1, stock: part.quantity }];
     });
   };
 
-  const partsSubtotalGhs = cart.reduce((sum, i) => sum + i.unitPriceGhs * i.quantity, 0);
+  const partsSubtotalPesewas = cart.reduce((sum, i) => sum + i.unitPricePesewas * i.quantity, 0);
   const shippingPesewas = selectedZone && job?.dropoff === "rider" ? selectedZone.fee : 0;
-  const totalPesewas = partsSubtotalGhs * 100 + shippingPesewas;
+  const totalPesewas = partsSubtotalPesewas + shippingPesewas;
 
   const submitOrder = async (e) => {
     e.preventDefault();
@@ -375,12 +378,12 @@ export default function TrackRepairPage() {
                   {cart.map((i) => (
                     <div key={i.partId} className="flex items-center justify-between text-sm">
                       <span className="text-gray-700 dark:text-slate-300">{i.name} <span className="text-gray-400 dark:text-slate-500">× {i.quantity}</span></span>
-                      <span className="font-semibold">GH₵{i.unitPriceGhs * i.quantity}</span>
+                      <span className="font-semibold">{formatGhs(i.unitPricePesewas * i.quantity)}</span>
                     </div>
                   ))}
                   <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-200 dark:border-slate-800">
                     <span className="text-gray-500 dark:text-slate-400">Subtotal</span>
-                    <span className="font-medium">GH₵{partsSubtotalGhs}</span>
+                    <span className="font-medium">{formatGhs(partsSubtotalPesewas)}</span>
                   </div>
                   {job.dropoff === "rider" && (
                     <div className="flex items-center justify-between text-sm">
