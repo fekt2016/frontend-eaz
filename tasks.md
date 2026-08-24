@@ -135,7 +135,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     warnings/errors; full suite `npm test` 13 files / 78 tests pass; `npm run build`
     compiles successfully, exit 0.
 
-- [ ] **T42 · `BlogArticle` renders markdown via `dangerouslySetInnerHTML` — stored-XSS risk**
+- [x] **T42 · `BlogArticle` renders markdown via `dangerouslySetInnerHTML` — stored-XSS risk** — ✅ done 2026-08-24 (both halves)
   - **Issue:** Blog post content is markdown→HTML-converted with regex and injected via
     `dangerouslySetInnerHTML` (lines 39, 52, 62) with **no escaping**. A post body containing
     HTML/JS (admin-authored or compromised) executes for every reader.
@@ -144,8 +144,34 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Fix:** Escape HTML entities **before** the markdown regexes (so `**bold**` still works
     but `<script>`/`onclick`/`javascript:` become inert), or render via a safe markdown
     library. Also add a test for a malicious post body.
+  - **Shipped:**
+    - `src/components/blog/BlogArticle.jsx` — the three `dangerouslySetInnerHTML` sites
+      each had their own copy of the same two markdown regexes, run against **raw**
+      post content. Extracted one `inlineMarkdown()` helper and routed all three
+      through it, so the escaping fix could not land in two places and miss the third.
+    - `escapeHtml()` runs **before** the markdown regexes, not after. Order is the
+      whole fix: escaping first keeps `**bold**` working while `<script>` and
+      `<img onerror=…>` become inert text; escaping afterwards would undo the markdown
+      it just produced.
+    - `safeUrl()` gates every link `href` to an allowlist (`http:`, `https:`,
+      `mailto:`, `tel:`, plus in-site `/` and `#`). `javascript:`, `data:` and
+      `vbscript:` collapse to `#`. Control characters are stripped before the scheme
+      check, since browsers drop tab/newline inside a URL before parsing it.
+    - Two defences cover the classic attribute breakout `[x](" onmouseover="alert(1))`:
+      escaping turns the quotes into `&quot;` so they cannot close the attribute, and
+      the mangled result then fails the scheme check and becomes `#`.
+    - `BlogArticle.test.jsx` (new, 27 tests) — each payload is a real attack shape
+      (script tag, onerror image, `javascript:` link, quote breakout, markup in a link
+      label), alongside tests that ordinary prose and markdown still render. Confirmed
+      the guard bites: reverting to the unescaped version fails 6 of them.
+    - **Audited the other `dangerouslySetInnerHTML` uses and left them alone:**
+      `JsonLd.jsx` already escapes `<`, `>`, `&` and the line/paragraph separators
+      before serialising, and `layout.jsx`'s theme-init is a static string with no
+      interpolated data. `BlogArticle` was the only dynamic-content case.
   - **Backend defense-in-depth:** sanitize post `content` on write — see `backend-eaz/tasks.md`
     → T42.
+  - **Verified:** full frontend suite 40 files / 228 tests pass; `npm run lint` clean.
+    Not verified in a live browser — the Chrome extension is not connected on this host.
 
 - [ ] **T41 · Public track page part-order cart mixes float-GHS and pesewas**
   - **Issue:** On `/track/[token]`, `addToCart` stores `unitPriceGhs: Math.round(Number(part.sellingPrice)) / 100`
