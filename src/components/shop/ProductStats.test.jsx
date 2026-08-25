@@ -43,15 +43,22 @@ describe("ProductStats (T48)", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("renders nothing rather than '0 views · 0 sold' for a brand-new product", () => {
-    const { container } = render(<ProductStats views={0} sold={0} />);
-    expect(container.firstChild).toBeNull();
+  it("shows '0 views' for a product nobody has opened yet", () => {
+    render(<ProductStats views={0} sold={0} />);
+    expect(screen.getByText(/0 views/)).toBeTruthy();
   });
 
-  it("shows only the half that has something to say", () => {
+  it("holds back the sold count until there is a sale", () => {
     render(<ProductStats views={5} sold={0} />);
     expect(screen.getByText(/5 views/)).toBeTruthy();
     expect(screen.queryByText(/sold/)).toBeNull();
+  });
+
+  it("distinguishes an untracked product from one with no views", () => {
+    // A retail part, or a product from an API predating T48 — no counter at all.
+    const { container } = render(<ProductStats views={null} sold={4} />);
+    expect(container.textContent).not.toMatch(/view/);
+    expect(screen.getByText(/4 sold/)).toBeTruthy();
   });
 
   it("says 'view', not 'views', for a single view", () => {
