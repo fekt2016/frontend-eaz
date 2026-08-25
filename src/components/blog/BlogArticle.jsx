@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, ArrowLeft } from "lucide-react";
 import { FaFacebook, FaTwitter, FaLinkedin, FaWhatsapp } from "react-icons/fa";
+import DOMPurify from "dompurify";
 
 const CATEGORY_COLORS = {
   SEO:               "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
@@ -17,48 +18,31 @@ const CATEGORY_COLORS = {
   "Email Marketing": "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400",
 };
 
-// ── Markdown rendering (T42) ────────────────────────────────────────────────
-// Post bodies are markdown-ish and end up in dangerouslySetInnerHTML, so every
-// string must be escaped BEFORE the markdown regexes run. Escaping first is what
-// makes `**bold**` keep working while `<script>`, `<img onerror=…>` and quote
-// breakouts become inert text. Escaping afterwards would undo the markdown.
-export function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+// Post content is admin-authored markdown-ish text, converted to a tiny
+// fixed set of inline HTML tags (bold, links) below, then injected via
+// dangerouslySetInnerHTML. The danger isn't raw HTML slipping through — it's
+// these regexes *constructing* dangerous HTML from otherwise-plain-looking
+// text (e.g. a markdown link with a `javascript:` href has no `<`/`>` at
+// all, so a backend filter looking for HTML tags never sees it). Sanitizing
+// the *constructed* HTML with an explicit allowlist, right before render,
+// closes that regardless of what the regexes produce — this is the primary
+// defense; backend sanitization (postController.js) is defense-in-depth.
+const PURIFY_CONFIG = {
+  ALLOWED_TAGS: ["strong", "a"],
+  ALLOWED_ATTR: ["href", "class"],
+  ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|\/)/i, // rejects javascript:, data:, vbscript:, etc.
+};
 
-// Only these schemes may reach an href. Anything else — javascript:, data:,
-// vbscript: — collapses to "#". The probe strips control characters first so
-// obfuscation like "java\tscript:" can't slip past the check, and it runs on
-// already-escaped text, where entity tricks such as "&Tab;" are literal.
-const ALLOWED_SCHEME = /^(?:https?:|mailto:|tel:)/i;
-
-export function safeUrl(raw) {
-  const url = String(raw ?? "").trim();
-  const probe = url.replace(/[\u0000-\u0020]/g, "").toLowerCase();
-  if (ALLOWED_SCHEME.test(probe)) return url;
-  if (url.startsWith("/") || url.startsWith("#")) return url; // in-site links
-  return "#";
-}
-
-// Bold + links. Extracted because the paragraph, bullet and numbered-list branches
-// below each had their own copy of this regex pair, and the escaping fix had to land
-// in all three.
-export function inlineMarkdown(text, strongClass = "") {
-  const cls = strongClass ? ` class="${strongClass}"` : "";
-  return escapeHtml(text)
-    .replace(/\*\*([^*]+)\*\*/g, `<strong${cls}>$1</strong>`)
-    .replace(
-      /\[([^\]]+)\]\(([^)]+)\)/g,
-      // `label` and `href` come from already-escaped text, so quotes are &quot;
-      // and can't terminate the attribute — do not re-escape or they double-encode.
-      (_match, label, href) =>
-        `<a href="${safeUrl(href)}" class="text-brand-500 hover:underline">${label}</a>`,
-    );
+// Bold + link markdown -> a fixed, safe set of inline tags, sanitized.
+// `strongClass` preserves the pre-existing distinction between list items
+// (bare <strong>) and paragraphs (styled <strong>) — same visual output as
+// before, just sanitized.
+function renderInline(text, strongClass = "") {
+  const strongOpen = strongClass ? `<strong class="${strongClass}">` : "<strong>";
+  const html = text
+    .replace(/\*\*([^*]+)\*\*/g, `${strongOpen}$1</strong>`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-brand-500 hover:underline">$1</a>');
+  return DOMPurify.sanitize(html, PURIFY_CONFIG);
 }
 
 function renderContent(content) {
@@ -80,7 +64,7 @@ function renderContent(content) {
           {items.map((item, j) => (
             <li key={j} className="flex items-start gap-2 text-gray-600 dark:text-slate-400">
               <span className="text-brand-500 mt-1 flex-shrink-0">•</span>
-              <span dangerouslySetInnerHTML={{ __html: inlineMarkdown(item) }} />
+              <span dangerouslySetInnerHTML={{ __html: renderInline(item) }} />
             </li>
           ))}
         </ul>
@@ -93,14 +77,14 @@ function renderContent(content) {
         <ol key={`ol-${i}`} className="space-y-2 mb-4 list-decimal list-inside">
           {items.map((item, j) => (
             <li key={j} className="text-gray-600 dark:text-slate-400">
-              <span dangerouslySetInnerHTML={{ __html: inlineMarkdown(item) }} />
+              <span dangerouslySetInnerHTML={{ __html: renderInline(item) }} />
             </li>
           ))}
         </ol>
       );
       continue;
     } else {
-      const html = inlineMarkdown(line, "font-semibold text-gray-900 dark:text-white");
+      const html = renderInline(line, "font-semibold text-gray-900 dark:text-white");
       elements.push(<p key={i} className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: html }} />);
     }
     i++;
