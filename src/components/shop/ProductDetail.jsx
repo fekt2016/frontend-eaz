@@ -267,13 +267,13 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                 <Package className="h-3.5 w-3.5" aria-hidden="true" />
                 {inStock ? `In stock: ${displayStock}` : "Out of stock"}
               </span>
-              {Number(product.sold) > 0 && (
+              {product.sold != null && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
                   <ShoppingBag className="h-3.5 w-3.5" aria-hidden="true" />
                   {formatCount(product.sold)} sold
                 </span>
               )}
-              {Number(product.views) > 0 && (
+              {product.views != null && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
                   <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                   {formatCount(product.views)} {Number(product.views) === 1 ? "view" : "views"}

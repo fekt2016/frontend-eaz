@@ -116,14 +116,13 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
       formatter: exact below 1,000, then `1.2k` / `15k` / `1.3m`.
     - One `ProductStats` component serves both card grids rather than the same
       badge row being written twice.
-    - **The view count always shows; the sold count waits for a sale.** Zero views
-      renders as "0 views" — asked for explicitly after the first pass hid it, and a
-      product nobody has opened yet is honestly reported. "0 sold" stays hidden,
-      because on a card it reads as a verdict on the product rather than as
-      information. Absent is still distinct from zero: a product from an API that
-      predates the counters, or a retail part (no view tracking at all), renders
-      nothing. The detail page always spells stock out ("In stock: 5" /
-      "Out of stock") because the badge flattens it above 10.
+    - **Both counts always show, zeros included.** The first pass hid zeros; that was
+      reversed on request, first for views and then for sold, so a product nobody has
+      opened or bought reads "0 views · 0 sold" on the card and on the detail page.
+      Absent is still distinct from zero: a product from an API that predates the
+      counters, or a retail part (no tracking at all), renders nothing. The detail
+      page always spells stock out ("In stock: 5" / "Out of stock") because the badge
+      flattens it above 10.
     - Detail page also shows views, which the original note did not ask for — it is
       the same data and the row already existed.
     - `RecentProducts`' footer is now wrapped in a single `mt-auto` div: leaving
@@ -137,7 +136,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     the backend's list aggregation was not projecting the fields (see
     `backend-eaz/tasks.md` → T48). `RecentProducts.test.jsx` now covers the whole
     path from API payload to homepage card, so the wiring cannot rot silently.
-  - **Verified:** full frontend suite 43 files / 264 tests, exit 0; `next lint` clean.
+  - **Verified:** full frontend suite 43 files / 263 tests, exit 0; `next lint` clean.
     Confirmed against the running dev stack — a live product's view count moved
     0 → 3 through the homepage's own query.
   - **Backend part:** `backend-eaz/tasks.md` → T48 — done.

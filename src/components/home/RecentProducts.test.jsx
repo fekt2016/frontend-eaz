@@ -32,13 +32,12 @@ describe("RecentProducts — popularity on the homepage card (T48)", () => {
     expect(screen.getByText(/3 sold/)).toBeTruthy();
   });
 
-  it("still shows a view count for a product nobody has opened yet", async () => {
+  it("still shows both counts for a product nobody has opened or bought yet", async () => {
     mockGet.mockResolvedValue({ data: [{ ...product, views: 0, sold: 0 }] });
 
     render(<RecentProducts />);
 
     await waitFor(() => expect(screen.getByText(/0 views/)).toBeTruthy());
-    // No sale yet — that half stays quiet rather than reading "0 sold".
-    expect(screen.queryByText(/sold/)).toBeNull();
+    expect(screen.getByText(/0 sold/)).toBeTruthy();
   });
 });

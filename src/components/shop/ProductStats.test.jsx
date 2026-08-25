@@ -43,15 +43,10 @@ describe("ProductStats (T48)", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("shows '0 views' for a product nobody has opened yet", () => {
+  it("shows both zeros for a product nobody has opened or bought yet", () => {
     render(<ProductStats views={0} sold={0} />);
     expect(screen.getByText(/0 views/)).toBeTruthy();
-  });
-
-  it("holds back the sold count until there is a sale", () => {
-    render(<ProductStats views={5} sold={0} />);
-    expect(screen.getByText(/5 views/)).toBeTruthy();
-    expect(screen.queryByText(/sold/)).toBeNull();
+    expect(screen.getByText(/0 sold/)).toBeTruthy();
   });
 
   it("distinguishes an untracked product from one with no views", () => {
