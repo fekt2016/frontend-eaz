@@ -668,7 +668,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Shipped:** see `backend-eaz/tasks.md` → T40 — fixed backend-only, out of queue order,
     surfaced by the new ESLint tooling (T10).
 
-- [ ] **T39 · Product detail page: add Description and Reviews tabs**
+- [x] **T39 · Product detail page: add Description and Reviews tabs** — ✅ done 2026-08-25
   - **Issue:** On `/shop/[slug]` the product description is rendered as a plain paragraph
     under the price (~line 211) and `ProductReviews` is stacked full-width below the
     product grid (~line 323) — a long "small page" you have to scroll. The page should
@@ -684,6 +684,20 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     Reviews tab count in the label (`Reviews (n)`). Scroll to top of the tab content on
     switch. Tabs work without a page reload; initial tab = Description.
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T39).
+  - **Shipped:** `ProductDetail.jsx` gets `activeTab` state (default `"description"`, reset on
+    slug change) — description + specs moved into the Description panel (unchanged content,
+    just relocated below the always-visible variant picker instead of above it, per the fix
+    note's own scoping). `ProductReviews.jsx` itself is completely untouched: its internal
+    `lg:grid-cols-[1fr_360px]` layout needs full page width to not look cramped, so rather than
+    literally squeezing it into the ~half-width right column, the Reviews tab conditionally
+    mounts the existing full-width `<ProductReviews>` in its existing below-the-grid position
+    and scrolls it into view — Description tab shows a short "↓ See the full review list below"
+    prompt in the right column instead of an empty gap. Tab label reads `Reviews (n)` from
+    `product.ratingSummary.count` (already on the `product` object, no new fetch). Scroll target
+    is the tab bar itself when switching back to Description. 6 new tests
+    (`ProductDetail.test.jsx`, `ProductReviews` stubbed since its own behavior isn't what this
+    covers) — confirmed 5 of 6 fail without the fix (the "no specs" case correctly passes both
+    ways). 39 files/194 tests pass, lint clean, `next build` succeeds.
 
 - [ ] **T38 · Cart overlay: fit all content within the viewport**
   - **Issue:** The cart overlay that opens when clicking **Add to Cart** on a product detail

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Play, Plus, Search } from "lucide-react";
 import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
@@ -17,14 +17,29 @@ export default function ProductDetail({ slug }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [qty, setQty] = useState(1);
   const [selectedSku, setSelectedSku] = useState(null);
+  const [activeTab, setActiveTab] = useState("description");
+  const tabBarRef = useRef(null);
+  const reviewsRef = useRef(null);
   const { addItem, openCart } = useCart();
 
   useEffect(() => {
     setActiveIndex(0);
     setQty(1);
     setSelectedSku(null);
+    setActiveTab("description");
     window.scrollTo({ top: 0 });
   }, [slug]);
+
+  // Scroll the active tab's content into view on switch — Reviews renders
+  // full-width below the image/details grid (its own [1fr_360px] internal
+  // layout needs the full page width, not the ~half-width right column), so
+  // switching to it from Description can jump the user a long way down.
+  const isFirstTabRender = useRef(true);
+  useEffect(() => {
+    if (isFirstTabRender.current) { isFirstTabRender.current = false; return; }
+    const target = activeTab === "reviews" ? reviewsRef.current : tabBarRef.current;
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [activeTab]);
 
   if (loading) {
     return (
@@ -106,6 +121,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   // Variant price wins when set; unset (null/undefined) falls back to the
   // base product price — not the same as an explicit 0 (free) variant.
   const displayPrice = selectedVariant?.price != null ? selectedVariant.price : product.price;
+  const reviewCount = product.ratingSummary?.count ?? 0;
 
   return (
     <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
@@ -212,8 +228,6 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
 
             <p className="font-mono font-bold text-3xl text-brand-500 mb-6">{formatGhs(displayPrice)}</p>
 
-            <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-8">{product.description}</p>
-
             {hasVariants && (
               <div className="mb-8">
                 <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2">
@@ -250,28 +264,71 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
               </div>
             )}
 
-            {product.specs?.length > 0 && (
-              <div className="mb-8">
-                <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-3">
-                  Specifications
-                </h2>
-                <dl className="divide-y divide-gray-100 dark:divide-slate-800 rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden">
-                  {product.specs.map((s) => (
-                    <div
-                      key={s.label}
-                      className="flex items-start justify-between gap-4 px-4 py-2.5 bg-white dark:bg-slate-900"
-                    >
-                      <dt className="text-xs font-semibold text-gray-500 dark:text-slate-400 pt-0.5">
-                        {s.label}
-                      </dt>
-                      <dd className="text-sm text-gray-900 dark:text-white text-right">
-                        {s.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
+            {/* Description / Reviews tabs — lets shoppers switch between the
+                detailed description+specs and the review list without
+                scrolling through both stacked on one long page. */}
+            <div ref={tabBarRef} className="mb-8">
+              <div className="flex gap-6 border-b border-gray-100 dark:border-slate-800 mb-5">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("description")}
+                  aria-pressed={activeTab === "description"}
+                  className={`pb-3 text-sm font-semibold border-b-2 -mb-px transition ${
+                    activeTab === "description"
+                      ? "border-brand-500 text-gray-900 dark:text-white"
+                      : "border-transparent text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
+                  }`}
+                >
+                  Description
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("reviews")}
+                  aria-pressed={activeTab === "reviews"}
+                  className={`pb-3 text-sm font-semibold border-b-2 -mb-px transition ${
+                    activeTab === "reviews"
+                      ? "border-brand-500 text-gray-900 dark:text-white"
+                      : "border-transparent text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
+                  }`}
+                >
+                  Reviews ({reviewCount})
+                </button>
               </div>
-            )}
+
+              {activeTab === "description" ? (
+                <div>
+                  <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-8">
+                    {product.description}
+                  </p>
+                  {product.specs?.length > 0 && (
+                    <div>
+                      <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-3">
+                        Specifications
+                      </h2>
+                      <dl className="divide-y divide-gray-100 dark:divide-slate-800 rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden">
+                        {product.specs.map((s) => (
+                          <div
+                            key={s.label}
+                            className="flex items-start justify-between gap-4 px-4 py-2.5 bg-white dark:bg-slate-900"
+                          >
+                            <dt className="text-xs font-semibold text-gray-500 dark:text-slate-400 pt-0.5">
+                              {s.label}
+                            </dt>
+                            <dd className="text-sm text-gray-900 dark:text-white text-right">
+                              {s.value}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 dark:text-slate-500">
+                  ↓ See the full review list below.
+                </p>
+              )}
+            </div>
 
             {/* QTY + ADD TO CART */}
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 p-5">
@@ -324,7 +381,9 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
           </div>
         </div>
 
-        <ProductReviews product={product} />
+        <div ref={reviewsRef}>
+          {activeTab === "reviews" && <ProductReviews product={product} />}
+        </div>
       </div>
     </div>
   );
