@@ -604,7 +604,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     warnings/errors; full suite `npm test` 13 files / 78 tests pass; `npm run build`
     compiles successfully, exit 0.
 
-- [ ] **T42 · `BlogArticle` renders markdown via `dangerouslySetInnerHTML` — stored-XSS risk**
+- [x] **T42 · `BlogArticle` renders markdown via `dangerouslySetInnerHTML` — stored-XSS risk** — ✅ done 2026-08-25
   - **Issue:** Blog post content is markdown→HTML-converted with regex and injected via
     `dangerouslySetInnerHTML` (lines 39, 52, 62) with **no escaping**. A post body containing
     HTML/JS (admin-authored or compromised) executes for every reader.
@@ -615,6 +615,24 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     library. Also add a test for a malicious post body.
   - **Backend defense-in-depth:** sanitize post `content` on write — see `backend-eaz/tasks.md`
     → T42.
+  - **Shipped:** went with the "safe library" option, not hand-escaping — chose `DOMPurify`
+    (allowlist-based: `ALLOWED_TAGS: ['strong','a']`, `ALLOWED_ATTR: ['href','class']`,
+    `ALLOWED_URI_REGEXP` rejecting `javascript:`/`data:`/`vbscript:`) over enumerating dangerous
+    patterns by hand, since the real bug is `renderContent`'s own regexes *constructing*
+    dangerous HTML from plain-looking markdown (a `javascript:` link has no `<`/`>` at all, so
+    no backend tag-filter on the source text can ever see it) — an allowlist closes that by
+    construction instead of by how many vectors I happened to enumerate. Kept the exact same
+    hand-rolled parser (headers/lists/bold/links) untouched — zero rendering-behavior change for
+    legitimate posts, including preserving the pre-existing bare-`<strong>`-in-lists vs.
+    styled-`<strong>`-in-paragraphs distinction that a careless refactor could easily have lost.
+    New dep `dompurify` (client-only; this component is `"use client"` and only ever renders
+    post-mount in a real browser DOM, so no jsdom shim needed) — 0 new vulnerabilities
+    (`npm audit`: still 10, matching T11's documented baseline). 5 new tests
+    (`BlogArticle.test.jsx`): `<script>` stripped, `<img onerror>` stripped, `javascript:`
+    markdown link neutralized, normal bold/link markdown renders identically, and the bare-vs
+    -styled `<strong>` distinction holds — confirmed all 3 security tests fail without the fix
+    (temporarily reverted `renderInline` to prove it) before restoring it. 38 files/186 tests
+    pass, lint clean, `next build` succeeds.
 
 - [ ] **T41 · Public track page part-order cart mixes float-GHS and pesewas**
   - **Issue:** On `/track/[token]`, `addToCart` stores `unitPriceGhs: Math.round(Number(part.sellingPrice)) / 100`

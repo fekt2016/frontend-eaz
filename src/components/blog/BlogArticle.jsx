@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, ArrowLeft } from "lucide-react";
 import { FaFacebook, FaTwitter, FaLinkedin, FaWhatsapp } from "react-icons/fa";
+import DOMPurify from "dompurify";
 
 const CATEGORY_COLORS = {
   SEO:               "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
@@ -16,6 +17,33 @@ const CATEGORY_COLORS = {
   "Paid Advertising":"bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
   "Email Marketing": "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400",
 };
+
+// Post content is admin-authored markdown-ish text, converted to a tiny
+// fixed set of inline HTML tags (bold, links) below, then injected via
+// dangerouslySetInnerHTML. The danger isn't raw HTML slipping through — it's
+// these regexes *constructing* dangerous HTML from otherwise-plain-looking
+// text (e.g. a markdown link with a `javascript:` href has no `<`/`>` at
+// all, so a backend filter looking for HTML tags never sees it). Sanitizing
+// the *constructed* HTML with an explicit allowlist, right before render,
+// closes that regardless of what the regexes produce — this is the primary
+// defense; backend sanitization (postController.js) is defense-in-depth.
+const PURIFY_CONFIG = {
+  ALLOWED_TAGS: ["strong", "a"],
+  ALLOWED_ATTR: ["href", "class"],
+  ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|\/)/i, // rejects javascript:, data:, vbscript:, etc.
+};
+
+// Bold + link markdown -> a fixed, safe set of inline tags, sanitized.
+// `strongClass` preserves the pre-existing distinction between list items
+// (bare <strong>) and paragraphs (styled <strong>) — same visual output as
+// before, just sanitized.
+function renderInline(text, strongClass = "") {
+  const strongOpen = strongClass ? `<strong class="${strongClass}">` : "<strong>";
+  const html = text
+    .replace(/\*\*([^*]+)\*\*/g, `${strongOpen}$1</strong>`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-brand-500 hover:underline">$1</a>');
+  return DOMPurify.sanitize(html, PURIFY_CONFIG);
+}
 
 function renderContent(content) {
   const lines = content.trim().split("\n");
@@ -36,7 +64,7 @@ function renderContent(content) {
           {items.map((item, j) => (
             <li key={j} className="flex items-start gap-2 text-gray-600 dark:text-slate-400">
               <span className="text-brand-500 mt-1 flex-shrink-0">•</span>
-              <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-brand-500 hover:underline">$1</a>') }} />
+              <span dangerouslySetInnerHTML={{ __html: renderInline(item) }} />
             </li>
           ))}
         </ul>
@@ -49,16 +77,14 @@ function renderContent(content) {
         <ol key={`ol-${i}`} className="space-y-2 mb-4 list-decimal list-inside">
           {items.map((item, j) => (
             <li key={j} className="text-gray-600 dark:text-slate-400">
-              <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-brand-500 hover:underline">$1</a>') }} />
+              <span dangerouslySetInnerHTML={{ __html: renderInline(item) }} />
             </li>
           ))}
         </ol>
       );
       continue;
     } else {
-      const html = line
-        .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-white">$1</strong>')
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-brand-500 hover:underline">$1</a>');
+      const html = renderInline(line, "font-semibold text-gray-900 dark:text-white");
       elements.push(<p key={i} className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: html }} />);
     }
     i++;
