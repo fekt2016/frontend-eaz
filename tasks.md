@@ -825,7 +825,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     (`page.test.jsx`) covering the staff/admin/technician role branches and the picker's
     re-query on selection. 37 files/175 tests pass, lint clean, `next build` succeeds.
 
-- [ ] **T31 · Sell page must sell products (accessories) as well as parts**
+- [x] **T31 · Sell page must sell products (accessories) as well as parts** — ✅ done 2026-08-25
   - **Issue:** The POS Sell page is expected to sell **both** repair parts **and** shop
     products/accessories, found via **search**, **inventory**, and **product lookup** — not
     parts only. Confirm the full flow works for products end-to-end.
@@ -836,6 +836,19 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     cart correctly, complete the sale without error, and print a correct receipt. If products
     don't surface (or the 500 from **T30** also hits products), fix and add tests.
   - **Backend part:** `backend-eaz/tasks.md` → T31. Relates to T30 (the 500 on Complete Sale).
+  - **Shipped:** confirmed — no code changes needed; the existing search/cart/checkout wiring
+    already handled products correctly once T30's backend fix landed (the product branch shared
+    T30's exact bug, already fixed together on 2026-08-21). Same gap as T30: untested. 3 new
+    tests (`page.test.jsx`): a product surfaces via search and adds to cart, a products-only sale
+    completes and sends `productId` (not `partId`), and a mixed parts+products sale in one cart
+    sends both line shapes correctly. **Live-verified** against the same disposable local Mongo
+    replica set used for T30 (never the real Atlas DB): seeded a real `Product` alongside the
+    part, confirmed search returns it, a product-only sale returns `201` with stock correctly
+    decremented, and a mixed cart (1 part + 1 product) completes as one sale with both items
+    attributed correctly and both stocks decremented independently (part 5→4, product 8→7).
+    Receipt rendering needed no separate check — `Receipt.jsx` already renders generically off
+    `sale.items[]` regardless of part/product origin (confirmed by T30's Receipt-dependent tests
+    passing for both item shapes). 37 files/181 tests pass, lint clean, `next build` succeeds.
 
 - [x] **T30 · POS Sell page: "Complete Sale" returns Request failed (500) when selling parts** — ✅ done 2026-08-25
   - **Symptom:** On the Sell page (`/dashboard/pos/sell`), clicking **Complete Sale** with
