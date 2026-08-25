@@ -92,8 +92,8 @@ export default function JobDetailPage() {
         id:          p._id || p.part?._id || Math.random().toString(36).slice(2),
         name:        p.name || p.part?.name || "",
         quantity:    p.quantity || 1,
-        cost:        (p.priceAtTime || 0) / 100, // pesewas → cedis
-        costAtTime:  (p.costAtTime  || 0) / 100,
+        cost:        Math.round(p.priceAtTime || 0),  // integer pesewas (T43)
+        costAtTime:  Math.round(p.costAtTime  || 0),
         sku:         p.part?.sku || "",
       })) || []);
       if (j.parts?.length) setShowParts(true);
@@ -113,7 +113,7 @@ export default function JobDetailPage() {
     setSelectedParts(prev => {
       const exists = prev.find(p => p.id === part._id);
       if (exists) return prev.map(p => p.id === part._id ? { ...p, quantity: p.quantity + 1 } : p);
-      return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: (Number(part.sellingPrice) || 0) / 100 }];
+      return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: Math.round(Number(part.sellingPrice) || 0) }];
     });
     setPartQuery(""); setShowPartDrop(false);
   };
@@ -123,10 +123,15 @@ export default function JobDetailPage() {
   const updatePart = (id, field, val) =>
     setSelectedParts(prev => prev.map(p => p.id === id ? { ...p, [field]: val } : p));
 
+  // Integer pesewas throughout (T43). `laborCost` and `diagnosisFee` stay cedis
+  // strings because they are edit-box state a technician types into — converted
+  // once here, rather than the whole file working in cedis.
+  const laborCostPesewas    = Math.round((Number(laborCost) || 0) * 100);
+  const diagnosisFeePesewas = Math.round((Number(diagnosisFee) || 0) * 100);
   const totalParts     = selectedParts.reduce((s, p) => s + (p.cost || 0) * (p.quantity || 1), 0);
   const totalPartsCost = selectedParts.reduce((s, p) => s + (p.costAtTime || 0) * (p.quantity || 1), 0);
-  const totalAmount    = (job?.requiresDiagnosis ? (Number(diagnosisFee) || 0) : 0) + totalParts + (Number(laborCost) || 0);
-  const totalPaid      = (job?.payments?.reduce((s, p) => s + p.amount, 0) || 0) / 100; // pesewas → cedis
+  const totalAmount    = (job?.requiresDiagnosis ? diagnosisFeePesewas : 0) + totalParts + laborCostPesewas;
+  const totalPaid      = job?.payments?.reduce((s, p) => s + p.amount, 0) || 0;
   const balanceDue     = Math.max(0, totalAmount - totalPaid);
   const grossProfit    = totalAmount - totalPartsCost;
   const marginPct      = totalAmount > 0 ? Math.round((grossProfit / totalAmount) * 100) : 0;
@@ -138,12 +143,14 @@ export default function JobDetailPage() {
   const {
     momoPhone, setMomoPhone, momoProvider, setMomoProvider, momoAmount, setMomoAmount,
     momoStatus, momoRef, momoMsg, momoLoading, initiateMomo, cancelMomo,
-  } = useMomoCharge({ jobId: id, balanceDue, onPaid: fetchJob, defaultPhone: job?.customer?.phone });
+    // balanceDue is pesewas (T43); these hooks multiply by 100 themselves, so they
+    // take cedis. Getting this wrong charges the customer 100x.
+  } = useMomoCharge({ jobId: id, balanceDue: balanceDue / 100, onPaid: fetchJob, defaultPhone: job?.customer?.phone });
 
   const {
     cardAmount, setCardAmount, cardStatus, cardRef, cardUrl, cardMsg, cardLoading,
     initiateCard, cancelCard,
-  } = useCardCharge({ jobId: id, balanceDue, onPaid: fetchJob });
+  } = useCardCharge({ jobId: id, balanceDue: balanceDue / 100, onPaid: fetchJob });  // cedis — see above
 
   const quickStatus = async (newStatus) => {
     setStatus(newStatus);
@@ -164,12 +171,12 @@ export default function JobDetailPage() {
     try {
       await api.patch(`/pos/jobs/${id}`, {
         // Money entered in cedis → sent as integer pesewas (×100).
-        status, diagnosis, repairWork, laborCost: Math.round((Number(laborCost) || 0) * 100), notes,
-        diagnosisFee: Math.round((Number(diagnosisFee) || 0) * 100),
+        status, diagnosis, repairWork, laborCost: laborCostPesewas, notes,
+        diagnosisFee: diagnosisFeePesewas,
         estimatedCompletion: estimatedCompletion || undefined,
         warrantyDays:  Number(warrantyDays) || 0,
         warrantyNotes: warrantyNotes || undefined,
-        parts: selectedParts.map(p => ({ name: p.name, quantity: p.quantity, cost: Math.round((Number(p.cost) || 0) * 100), partId: p.id })),
+        parts: selectedParts.map(p => ({ name: p.name, quantity: p.quantity, cost: Math.round(Number(p.cost) || 0), partId: p.id })),
       });
       await fetchJob();
     } catch (err) {
@@ -206,11 +213,12 @@ export default function JobDetailPage() {
     });
   };
 
-  // The receipt renders in cedis, so hand it cedis values (local state is
-  // already cedis; payment amounts come from the API in pesewas → ÷100).
+  // printRepairReceipt renders cedis. Everything above is pesewas now (T43), so
+  // this call site is the single place that converts back — deliberately, at the
+  // boundary of a helper this task does not own.
   const handlePrint = () => printRepairReceipt(
-    { ...job, repairWork, laborCost: Number(laborCost) || 0, diagnosisFee: Number(diagnosisFee) || 0,
-      parts: selectedParts.map(p => ({ name: p.name, quantity: p.quantity, priceAtTime: p.cost || 0 })),
+    { ...job, repairWork, laborCost: laborCostPesewas / 100, diagnosisFee: diagnosisFeePesewas / 100,
+      parts: selectedParts.map(p => ({ name: p.name, quantity: p.quantity, priceAtTime: (p.cost || 0) / 100 })),
       status, estimatedCompletion },
     (job?.payments || []).map(p => ({ ...p, amount: (p.amount || 0) / 100 }))
   );
@@ -373,12 +381,12 @@ export default function JobDetailPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <p className={labelCls}>Labour charge</p>
-                  <p className="text-gray-900 dark:text-white">{formatGhs(Math.round((Number(laborCost) || 0) * 100))}</p>
+                  <p className="text-gray-900 dark:text-white">{formatGhs(laborCostPesewas)}</p>
                 </div>
                 {job?.requiresDiagnosis && (
                   <div>
                     <p className={labelCls}>Diagnosis fee</p>
-                    <p className="text-gray-900 dark:text-white">{formatGhs(Math.round((Number(diagnosisFee) || 0) * 100))}</p>
+                    <p className="text-gray-900 dark:text-white">{formatGhs(diagnosisFeePesewas)}</p>
                   </div>
                 )}
               </div>
@@ -433,7 +441,7 @@ export default function JobDetailPage() {
                       {p.name}{p.sku ? ` (${p.sku})` : ""} × {p.quantity}
                     </p>
                     <p className="font-semibold text-brand-600 dark:text-brand-400">
-                      GH₵{((p.cost || 0) * p.quantity).toLocaleString()}
+                      {formatGhs((p.cost || 0) * p.quantity)}
                     </p>
                   </div>
                 ))
@@ -506,7 +514,7 @@ export default function JobDetailPage() {
                         <p className="text-sm text-gray-900 dark:text-white truncate">{p.name}</p>
                         <p className="text-xs text-gray-500">
                           {p.sku && <span className="mr-2">SKU: {p.sku}</span>}
-                          <span className="text-green-600">GH₵{(p.cost || 0).toLocaleString()} each</span>
+                          <span className="text-green-600">{formatGhs(p.cost || 0)} each</span>
                         </p>
                       </div>
                       <div className="flex items-center gap-1.5 print:hidden">
@@ -515,7 +523,7 @@ export default function JobDetailPage() {
                         <button onClick={() => updatePart(p.id, "quantity", p.quantity + 1)} className="w-6 h-6 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-xs flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
                       </div>
                       <p className="text-sm font-semibold text-brand-600 dark:text-brand-400 w-20 text-right">
-                        GH₵{((p.cost || 0) * p.quantity).toLocaleString()}
+                        {formatGhs((p.cost || 0) * p.quantity)}
                       </p>
                       <button onClick={() => removePart(p.id)} className="text-gray-600 hover:text-red-400 transition print:hidden">
                         <Trash2 size={11} />
@@ -627,22 +635,22 @@ export default function JobDetailPage() {
               <div>
                 <label className={labelCls}>Quick select</label>
                 <div className="flex flex-wrap gap-2">
-                  {job?.requiresDiagnosis && (Number(diagnosisFee) || 0) > 0 && totalPaid < (Number(diagnosisFee) || 0) && (
+                  {job?.requiresDiagnosis && diagnosisFeePesewas > 0 && totalPaid < diagnosisFeePesewas && (
                     <button type="button" onClick={() => setPayAmount(String(Number(diagnosisFee)))}
                       className="px-3 py-1.5 rounded-lg bg-purple-500/15 text-purple-600 dark:text-purple-400 text-xs font-medium hover:bg-purple-500/30 transition border border-purple-500/20">
-                      Diagnosis GH₵{Number(diagnosisFee).toLocaleString()}
+                      Diagnosis {formatGhs(diagnosisFeePesewas)}
                     </button>
                   )}
-                  {(totalParts + (Number(laborCost) || 0)) > 0 && (
-                    <button type="button" onClick={() => setPayAmount(String(Math.max(0, totalParts + (Number(laborCost) || 0) - Math.max(0, totalPaid - (Number(diagnosisFee) || 0)))))}
+                  {(totalParts + laborCostPesewas) > 0 && (
+                    <button type="button" onClick={() => setPayAmount(((Math.max(0, totalParts + laborCostPesewas - Math.max(0, totalPaid - diagnosisFeePesewas))) / 100).toFixed(2))}
                       className="px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20">
-                      Parts + Labour GH₵{(totalParts + (Number(laborCost) || 0)).toLocaleString()}
+                      Parts + Labour {formatGhs(totalParts + laborCostPesewas)}
                     </button>
                   )}
                   {balanceDue > 0 && (
                     <button type="button" onClick={() => setPayAmount(String(balanceDue))}
                       className="px-3 py-1.5 rounded-lg bg-green-500/15 text-green-600 dark:text-green-400 text-xs font-medium hover:bg-green-500/30 transition border border-green-500/20">
-                      Full balance GH₵{balanceDue.toLocaleString()}
+                      Full balance {formatGhs(balanceDue)}
                     </button>
                   )}
                 </div>

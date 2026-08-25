@@ -1,16 +1,21 @@
 import { STATUS_COLORS, statusLabel } from "./jobStatus";
+import { formatGhs } from "@/lib/shop";
 
 /**
  * Invoice card: repair-work summary, parts breakdown, totals, and a
- * staff-only profit breakdown. Presentational — all amounts are passed in as
- * cedis (already divided from pesewas by the caller), so they render with
- * `.toLocaleString()` directly (not formatGhs, which expects pesewas).
+ * staff-only profit breakdown. Presentational — every amount arrives as integer
+ * pesewas (T43) and renders through `formatGhs`, the single money formatter.
+ * `diagnosisFee` and `laborCost` are the exception: they are the caller's edit-box
+ * state, still cedis strings, so they are converted on the way in below.
  */
 export function JobInvoice({
   status, repairWork, job, selectedParts,
   diagnosisFee, laborCost, totalParts, totalAmount, totalPaid, balanceDue,
   isTechnician, totalPartsCost, grossProfit, marginPct,
 }) {
+  const diagnosisFeePesewas = Math.round((Number(diagnosisFee) || 0) * 100);
+  const laborCostPesewas    = Math.round((Number(laborCost) || 0) * 100);
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
       <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50 flex items-center justify-between">
@@ -35,7 +40,7 @@ export function JobInvoice({
           {selectedParts.map(p => (
             <div key={p.id} className="flex justify-between text-xs">
               <span className="text-gray-500 dark:text-gray-400">{p.name} × {p.quantity}</span>
-              <span className="text-gray-900 dark:text-white">GH₵{((p.cost || 0) * p.quantity).toLocaleString()}</span>
+              <span className="text-gray-900 dark:text-white">{formatGhs((p.cost || 0) * p.quantity)}</span>
             </div>
           ))}
         </div>
@@ -48,28 +53,28 @@ export function JobInvoice({
               Diagnosis fee
               <span className="text-xs bg-purple-500/15 border border-purple-500/20 px-1.5 py-0.5 rounded-full">upfront</span>
             </span>
-            <span className="text-gray-900 dark:text-white">GH₵{(Number(diagnosisFee) || 0).toLocaleString()}</span>
+            <span className="text-gray-900 dark:text-white">{formatGhs(diagnosisFeePesewas)}</span>
           </div>
         )}
         <div className="flex justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">Parts</span>
-          <span className="text-gray-900 dark:text-white">GH₵{totalParts.toLocaleString()}</span>
+          <span className="text-gray-900 dark:text-white">{formatGhs(totalParts)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">Labour</span>
-          <span className="text-gray-900 dark:text-white">GH₵{(Number(laborCost) || 0).toLocaleString()}</span>
+          <span className="text-gray-900 dark:text-white">{formatGhs(laborCostPesewas)}</span>
         </div>
         <div className="flex justify-between text-sm font-semibold border-t border-gray-200 dark:border-gray-800 pt-2.5">
           <span className="text-gray-600 dark:text-gray-300">Total</span>
-          <span className="text-gray-900 dark:text-white">GH₵{totalAmount.toLocaleString()}</span>
+          <span className="text-gray-900 dark:text-white">{formatGhs(totalAmount)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">Paid</span>
-          <span className="text-green-600 dark:text-green-400">GH₵{totalPaid.toLocaleString()}</span>
+          <span className="text-green-600 dark:text-green-400">{formatGhs(totalPaid)}</span>
         </div>
         <div className={`flex justify-between text-base font-bold border-t border-gray-200 dark:border-gray-800 pt-2.5 ${balanceDue > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
           <span>Balance due</span>
-          <span>GH₵{balanceDue.toLocaleString()}</span>
+          <span>{formatGhs(balanceDue)}</span>
         </div>
 
         {/* Profit margin — staff/superadmin only */}
@@ -78,15 +83,15 @@ export function JobInvoice({
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Profit Breakdown</p>
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">Parts cost</span>
-              <span className="text-gray-500 dark:text-gray-400">GH₵{totalPartsCost.toLocaleString()}</span>
+              <span className="text-gray-500 dark:text-gray-400">{formatGhs(totalPartsCost)}</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">Revenue</span>
-              <span className="text-gray-600 dark:text-gray-300">GH₵{totalAmount.toLocaleString()}</span>
+              <span className="text-gray-600 dark:text-gray-300">{formatGhs(totalAmount)}</span>
             </div>
             <div className={`flex justify-between text-sm font-bold pt-1 ${grossProfit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
               <span>Gross Profit</span>
-              <span>GH₵{grossProfit.toLocaleString()} ({marginPct}%)</span>
+              <span>{formatGhs(grossProfit)} ({marginPct}%)</span>
             </div>
             {/* Visual margin bar */}
             <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mt-1">

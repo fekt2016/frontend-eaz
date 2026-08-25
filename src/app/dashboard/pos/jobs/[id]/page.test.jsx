@@ -22,16 +22,20 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-// Neither charge hook is exercised by this test — stub both to plain idle state.
+// Neither charge hook is exercised by the T18 tests — stub both to plain idle
+// state. The args ARE captured, because what the page passes as `balanceDue` is a
+// money-unit boundary (T43): the hooks multiply by 100 themselves.
+const momoArgs = vi.fn();
+const cardArgs = vi.fn();
 vi.mock("@/hooks/useMomoCharge", () => ({
-  useMomoCharge: () => ({
+  useMomoCharge: (args) => (momoArgs(args), {
     momoPhone: "", setMomoPhone: vi.fn(), momoProvider: "mtn", setMomoProvider: vi.fn(),
     momoAmount: "", setMomoAmount: vi.fn(), momoStatus: "idle", momoRef: null, momoMsg: "",
     momoLoading: false, initiateMomo: vi.fn(), cancelMomo: vi.fn(),
   }),
 }));
 vi.mock("@/hooks/useCardCharge", () => ({
-  useCardCharge: () => ({
+  useCardCharge: (args) => (cardArgs(args), {
     cardAmount: "", setCardAmount: vi.fn(), cardStatus: "idle", cardRef: null,
     cardUrl: "", cardMsg: "", cardLoading: false, initiateCard: vi.fn(), cancelCard: vi.fn(),
   }),
@@ -116,5 +120,64 @@ describe("Job detail page — Cancel Job confirmation (T18)", () => {
     fireEvent.click(confirmButtons[confirmButtons.length - 1]);
 
     await waitFor(() => expect(mockPatch).toHaveBeenCalledWith("/pos/jobs/job1", { status: "cancelled" }));
+  });
+});
+
+// T43: this page used to hold money as cedis floats (`pesewas / 100` on load,
+// `× 100` again on submit) while rendering some figures through formatGhs, which
+// expects pesewas — two units in one file. State is integer pesewas now. These
+// pin the boundaries, because every mistake here is a silent 100x money error.
+describe("Job detail — money units (T43)", () => {
+  beforeEach(() => {
+    mockGet.mockReset();
+    mockPatch.mockReset();
+    momoArgs.mockReset();
+    cardArgs.mockReset();
+  });
+
+  // GH₵90 part, GH₵25 labour, GH₵10 diagnosis fee, GH₵30 already paid.
+  const moneyJob = () => baseJob({
+    requiresDiagnosis: true,
+    diagnosisFee: 1000,
+    laborCost: 2500,
+    parts: [{ partId: "p1", name: "Screen", quantity: 1, priceAtTime: 9000, costAtTime: 6000 }],
+    payments: [{ _id: "pay1", amount: 3000, method: "cash" }],
+  });
+
+  it("renders the invoice totals through formatGhs, in cedis", async () => {
+    await renderWithJob(moneyJob());
+
+    // parts 90 + labour 25 + diagnosis 10 = GH₵125.00; paid 30 → balance GH₵95.00.
+    // Each figure appears in more than one place (invoice card and summary), which
+    // is the point — they all read the same value through the same formatter.
+    expect((await screen.findAllByText("GH₵125.00")).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("GH₵30.00").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("GH₵95.00").length).toBeGreaterThan(0);
+    // The 100x failure modes, stated explicitly.
+    expect(screen.queryByText("GH₵12,500.00")).not.toBeInTheDocument();
+    expect(screen.queryByText("GH₵1.25")).not.toBeInTheDocument();
+  });
+
+  it("hands the charge hooks CEDIS, since they multiply by 100 themselves", async () => {
+    await renderWithJob(moneyJob());
+
+    // Balance is 9500 pesewas. The hooks must receive 95, not 9500 — passing
+    // pesewas here would charge the customer GH₵9,500 for a GH₵95 repair.
+    await waitFor(() => expect(momoArgs).toHaveBeenCalled());
+    expect(momoArgs.mock.calls.at(-1)[0].balanceDue).toBe(95);
+    expect(cardArgs.mock.calls.at(-1)[0].balanceDue).toBe(95);
+  });
+
+  it("submits labour and diagnosis fees as integer pesewas", async () => {
+    await renderWithJob(moneyJob());
+    mockPatch.mockResolvedValue({ data: moneyJob() });
+
+    fireEvent.click(screen.getByRole("button", { name: /save|update/i }));
+
+    await waitFor(() => expect(mockPatch).toHaveBeenCalled());
+    const payload = mockPatch.mock.calls.at(-1)[1];
+    expect(payload.laborCost).toBe(2500);     // GH₵25 round-tripped unchanged
+    expect(payload.diagnosisFee).toBe(1000);  // GH₵10
+    expect(payload.parts[0].cost).toBe(9000); // GH₵90 part price preserved
   });
 });

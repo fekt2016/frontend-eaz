@@ -67,10 +67,13 @@ export default function SellPage() {
   const amountPaidRef = useRef(null);
 
   // ── Totals ──────────────────────────────────────────────────────────────────
+  // Integer pesewas throughout (T43), matching Sale/Part/Product and the rest of
+  // the app. `discount` and `amountPaid` stay cedis STRINGS because a cashier
+  // types them — they are converted here, once, at that input edge.
   const subtotal   = cart.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
-  const disc       = Number(discount) || 0;
+  const disc       = Math.round((Number(discount) || 0) * 100);
   const total      = Math.max(0, subtotal - disc);
-  const paid       = Number(amountPaid) || 0;
+  const paid       = Math.round((Number(amountPaid) || 0) * 100);
   const changeDue  = Math.max(0, paid - total);
   const canCheckout = cart.length > 0 && !completing;
 
@@ -119,7 +122,7 @@ export default function SellPage() {
         name:       part.name,
         barcode:    part.barcode || part.sku,
         image:      part.images?.[0] || null,
-        unitPrice:  Math.round(Number(part.sellingPrice) || Number(part.price) || 0) / 100,
+        unitPrice:  Math.round(Number(part.sellingPrice) || Number(part.price) || 0),
         quantity:   1,
         stock,
         allowNegativeStock: allowNeg,
@@ -150,7 +153,7 @@ export default function SellPage() {
   // ── Payment ──────────────────────────────────────────────────────────────────
   const openPayment = useCallback(() => {
     setPayError("");
-    setAmountPaid(payMethod === "momo" || payMethod === "card" ? total.toFixed(2) : "");
+    setAmountPaid(payMethod === "momo" || payMethod === "card" ? (total / 100).toFixed(2) : "");
     setShowPay(true);
     setTimeout(() => amountPaidRef.current?.focus(), 100);
   }, [payMethod, total]);
@@ -257,17 +260,18 @@ export default function SellPage() {
 
   const completeSale = async () => {
     if (!amountPaid || paid < total) {
-      setPayError(`Enter amount paid. Need at least GH₵${total.toFixed(2)}`);
+      setPayError(`Enter amount paid. Need at least ${formatGhs(total)}`);
       return;
     }
     setPayError("");
     try {
-      // Money entered in cedis → sent as integer pesewas (×100).
+      // `paid` and `disc` are already integer pesewas — converted once where the
+      // cashier's typed cedis are read, not again here.
       const sale = await createSale.mutateAsync({
         items: cart.map(i => ({ partId: i.partId, productId: i.productId, quantity: i.quantity })),
         paymentMethod: payMethod,
-        amountPaid: Math.round(paid * 100),
-        discount: disc ? Math.round(disc * 100) : undefined,
+        amountPaid: paid,
+        discount: disc || undefined,
         momoReference: momoRef || undefined,
       });
       setCompletedSale(sale);
@@ -432,7 +436,7 @@ export default function SellPage() {
                   <ProductImage src={item.image} alt={item.name} width={40} height={40} className="h-10 w-10 rounded-lg object-cover bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
-                    <p className="text-xs text-gray-500">GH₵{item.unitPrice.toFixed(2)} each</p>
+                    <p className="text-xs text-gray-500">{formatGhs(item.unitPrice)} each</p>
                   </div>
 
                   {/* Qty controls */}
@@ -451,7 +455,7 @@ export default function SellPage() {
                   </div>
 
                   {/* Subtotal */}
-                  <p className="text-sm font-bold text-gray-900 dark:text-white w-20 text-right">GH₵{(item.unitPrice * item.quantity).toFixed(2)}</p>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white w-20 text-right">{formatGhs(item.unitPrice * item.quantity)}</p>
 
                   {/* Remove */}
                   <button onClick={() => removeFromCart(item.key)} className="text-gray-600 hover:text-red-400 transition ml-1">
@@ -478,7 +482,7 @@ export default function SellPage() {
 
           <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
             <span>Subtotal</span>
-            <span className="text-gray-900 dark:text-white">GH₵{subtotal.toFixed(2)}</span>
+            <span className="text-gray-900 dark:text-white">{formatGhs(subtotal)}</span>
           </div>
 
           {/* Discount */}
@@ -497,7 +501,7 @@ export default function SellPage() {
 
           <div className="flex justify-between text-base font-bold border-t border-gray-200 dark:border-gray-800 pt-2.5">
             <span className="text-gray-900 dark:text-white">Total</span>
-            <span className="text-brand-600 dark:text-brand-400">GH₵{total.toFixed(2)}</span>
+            <span className="text-brand-600 dark:text-brand-400">{formatGhs(total)}</span>
           </div>
         </div>
 
@@ -508,7 +512,7 @@ export default function SellPage() {
               key={m.key}
               onClick={() => {
                 setPayMethod(m.key);
-                if (m.key !== "cash") setAmountPaid(total.toFixed(2));
+                if (m.key !== "cash") setAmountPaid((total / 100).toFixed(2));
               }}
               className={`py-2.5 rounded-xl text-sm font-bold transition ${
                 payMethod === m.key ? m.color + " ring-2 ring-white/30 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-900 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white"
@@ -552,7 +556,7 @@ export default function SellPage() {
             {paid > 0 && paid >= total && (
               <div className="flex justify-between text-sm bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
                 <span className="text-green-600 dark:text-green-400 font-medium">Change due</span>
-                <span className="text-green-600 dark:text-green-400 font-bold">GH₵{changeDue.toFixed(2)}</span>
+                <span className="text-green-600 dark:text-green-400 font-bold">{formatGhs(changeDue)}</span>
               </div>
             )}
 
@@ -581,7 +585,7 @@ export default function SellPage() {
             disabled={!canCheckout}
             className="w-full py-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base transition disabled:opacity-30 flex items-center justify-center gap-2"
           >
-            Checkout →  GH₵{total.toFixed(2)}
+            Checkout →  {formatGhs(total)}
           </button>
         )}
 

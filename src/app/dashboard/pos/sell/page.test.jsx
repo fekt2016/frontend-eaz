@@ -275,3 +275,89 @@ describe("Sell page — sells shop products, not just parts (T31)", () => {
     }));
   });
 });
+
+// T43: the cart used to hold money as cedis floats (`pesewas / 100` on entry,
+// `× 100` again at submit) while other parts of the same file already rendered
+// pesewas through formatGhs — two units in one component. State is integer
+// pesewas throughout now, and only the two boxes a cashier types into are cedis.
+// These pin the unit at every boundary, because a slip here is a 100x money bug
+// that renders perfectly plausibly.
+describe("Sell page — money is integer pesewas end to end (T43)", () => {
+  beforeEach(() => {
+    mockGet.mockReset();
+    mockPost.mockReset();
+  });
+
+  it("renders a 9000-pesewas part as GH₵90.00, not GH₵9,000.00 or GH₵0.90", async () => {
+    await addPartToCart();
+
+    // Unit price on the cart row, the line total, and the checkout button.
+    expect(await screen.findByText("GH₵90.00 each")).toBeInTheDocument();
+    expect(screen.getByText(/Checkout →/).textContent).toContain("GH₵90.00");
+  });
+
+  it("sends amountPaid as pesewas when the cashier types cedis", async () => {
+    await addPartToCart();
+    mockPost.mockResolvedValue({
+      data: { saleNumber: "SALE-002", total: 9000, changeDue: 0, paymentMethod: "cash", items: [] },
+    });
+
+    fireEvent.click(screen.getByText(/Checkout →/));
+    fireEvent.change(await screen.findByPlaceholderText("0.00"), { target: { value: "90" } });
+    fireEvent.click(screen.getByText(/Complete Sale/));
+
+    await screen.findByText("Sale Complete");
+    expect(mockPost).toHaveBeenCalledWith("/pos/sales", expect.objectContaining({
+      amountPaid: 9000, // GH₵90 typed → 9000 pesewas, not 90 and not 900000
+    }));
+  });
+
+  it("converts a typed discount to pesewas, in the total and in the payload", async () => {
+    await addPartToCart();
+    mockPost.mockResolvedValue({
+      data: { saleNumber: "SALE-003", total: 8000, changeDue: 0, paymentMethod: "cash", items: [] },
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("0"), { target: { value: "10" } });
+
+    // GH₵90 − GH₵10 discount = GH₵80.00 on the button.
+    await waitFor(() => expect(screen.getByText(/Checkout →/).textContent).toContain("GH₵80.00"));
+
+    fireEvent.click(screen.getByText(/Checkout →/));
+    fireEvent.change(await screen.findByPlaceholderText("0.00"), { target: { value: "80" } });
+    fireEvent.click(screen.getByText(/Complete Sale/));
+
+    await screen.findByText("Sale Complete");
+    expect(mockPost).toHaveBeenCalledWith("/pos/sales", expect.objectContaining({
+      discount: 1000, // GH₵10 → 1000 pesewas
+      amountPaid: 8000,
+    }));
+  });
+
+  it("computes change due in pesewas and shows it as cedis", async () => {
+    await addPartToCart();
+
+    fireEvent.click(screen.getByText(/Checkout →/));
+    fireEvent.change(await screen.findByPlaceholderText("0.00"), { target: { value: "100" } });
+
+    // GH₵100 tendered against a GH₵90 total.
+    await waitFor(() => expect(screen.getByText("GH₵10.00")).toBeInTheDocument());
+  });
+
+  it("compares tendered against total in the same unit, so an underpayment stays blocked", async () => {
+    // The guard is `paid < total` with both sides in pesewas. Get the unit wrong on
+    // one side and GH₵5 reads as enough for a GH₵90 sale, or GH₵90 reads as short.
+    await addPartToCart();
+    fireEvent.click(screen.getByText(/Checkout →/));
+    const box = await screen.findByPlaceholderText("0.00");
+
+    fireEvent.change(box, { target: { value: "5" } });
+    const button = screen.getByText(/Complete Sale/).closest("button");
+    await waitFor(() => expect(button).toBeDisabled());
+
+    // Exactly the total is enough — the boundary, where a rounding slip would show.
+    fireEvent.change(box, { target: { value: "90" } });
+    await waitFor(() => expect(button).not.toBeDisabled());
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+});
