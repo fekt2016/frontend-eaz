@@ -257,3 +257,72 @@ describe("Order detail — refund section (T15)", () => {
     expect(screen.getByRole("link", { name: /view details in the activity log/i })).toHaveAttribute("href", "/dashboard/activity-logs");
   });
 });
+
+// Staff opened an order to work it, clicked the tracking number, and were sent to
+// /track/order/… — the customer's read-only view, where there is nothing to
+// update. The "Add tracking update" form was on the page they had just left.
+describe("Order detail — where the tracking link takes staff", () => {
+  beforeEach(() => {
+    mockGet.mockReset();
+    mockPost.mockReset();
+    mockPatch.mockReset();
+  });
+
+  const withTracking = () => {
+    mockGet.mockImplementation((path) => {
+      if (path === "/orders/order1") {
+        return Promise.resolve({ data: makeOrder({ trackingNumber: "EZWTRK-ABC123" }) });
+      }
+      return Promise.resolve({ data: null });
+    });
+  };
+
+  it("sends staff to the update form on this page, not to the customer view", async () => {
+    mockUser.mockReturnValue({ role: "staff" });
+    withTracking();
+
+    render(<CustomerOrderDetailPage />);
+
+    const number = await screen.findByText("EZWTRK-ABC123");
+    expect(number.closest("a")).toHaveAttribute("href", "#tracking-update");
+    expect(screen.getByText("Update tracking").closest("a")).toHaveAttribute("href", "#tracking-update");
+  });
+
+  it("gives staff an anchor to land on", async () => {
+    mockUser.mockReturnValue({ role: "staff" });
+    withTracking();
+
+    const { container } = render(<CustomerOrderDetailPage />);
+
+    await screen.findByText("EZWTRK-ABC123");
+    expect(container.querySelector("#tracking-update")).toBeTruthy();
+    // The heading, not the submit button — both carry this label.
+    expect(screen.getByRole("heading", { name: "Add tracking update" })).toBeInTheDocument();
+  });
+
+  it("still lets staff see the customer's view deliberately", async () => {
+    mockUser.mockReturnValue({ role: "staff" });
+    withTracking();
+
+    render(<CustomerOrderDetailPage />);
+
+    const asCustomer = await screen.findByText("View as customer");
+    expect(asCustomer.closest("a")).toHaveAttribute("href", "/track/order/EZWTRK-ABC123");
+  });
+
+  it("leaves the customer's own link pointing at the public tracking page", async () => {
+    mockUser.mockReturnValue({ role: "user" });
+    mockGet.mockImplementation((path) => {
+      if (path === "/orders/mine/order1") {
+        return Promise.resolve({ data: makeOrder({ trackingNumber: "EZWTRK-ABC123" }) });
+      }
+      return Promise.resolve({ data: null });
+    });
+
+    render(<CustomerOrderDetailPage />);
+
+    const number = await screen.findByText("EZWTRK-ABC123");
+    expect(number.closest("a")).toHaveAttribute("href", "/track/order/EZWTRK-ABC123");
+    expect(screen.queryByText("Update tracking")).not.toBeInTheDocument();
+  });
+});

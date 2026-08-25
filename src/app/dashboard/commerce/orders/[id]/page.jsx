@@ -115,11 +115,19 @@ export default function AdminOrderDetailPage() {
             {order.trackingNumber && (
               <p className="text-gray-500 text-sm mt-0.5">
                 Tracking number{" "}
+                {/* This page is admin/staff only, so the number goes to the update
+                    form below rather than to the customer's read-only view. */}
                 <Link
-                  href={`/track/order/${order.trackingNumber}`}
+                  href="#tracking-update"
                   className="font-mono font-semibold text-brand-600 hover:underline"
                 >
                   {order.trackingNumber}
+                </Link>{" "}
+                <Link
+                  href={`/track/order/${order.trackingNumber}`}
+                  className="text-xs text-gray-400 hover:underline"
+                >
+                  (view as customer)
                 </Link>
               </p>
             )}
@@ -186,7 +194,7 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
+        <div id="tracking-update" className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6 scroll-mt-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Add tracking update</h2>
           <form onSubmit={handleTrackingUpdate} className="space-y-3">
             <div className="grid sm:grid-cols-2 gap-3">
