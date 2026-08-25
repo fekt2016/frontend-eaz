@@ -522,7 +522,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Location:** backend — `controllers/pos/expenseController.js`.
   - **Fix:** Backend change only. No frontend work.
 
-- [ ] **T44 · Hosting/domain/service amounts stored as major-GHS floats**
+- [x] **T44 · Hosting/domain/service amounts stored as major-GHS floats** — ✅ **RESOLVED 2026-08-25 — Option B, intentional exception, not migrated**
   - **Issue:** Hosting/domain/service orders store money as **major GHS floats** (e.g.
     `GH₵{order.amount}`), not integer pesewas. This is a deviation from the money rule and
     is why several of these admin pages render raw `GH₵{...}` instead of `formatGhs`.
@@ -538,6 +538,13 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Fix (decision needed):** Either migrate these flows to integer pesewas end-to-end
     (backend + webhook + these displays switch to `formatGhs`) or explicitly document the
     float-GHS exception. Backend part: `backend-eaz/tasks.md` → T44.
+  - **Decision (2026-08-25):** documented as intentional, permanent — **not migrating**.
+    Reasoning and what shipped in `backend-eaz/tasks.md` → T44 and `MASTER_TASK_ORDER.md`'s
+    "✅ Resolved decisions" section (PHASE7 Group C precedent, working webhook boundary
+    conversion, live-subscription-money migration risk; the residual float-precision risk was
+    closed separately via a small `amountPesewas` follow-up, backend-only). **Unblocks T43's
+    remaining scope** — all 10 locations above still need `formatGhs`, but purely as cosmetic
+    display formatting now, no unit-conversion involved (see T43 below).
 
 - [ ] **T43 · Money display bypasses the single `formatGhs` formatter**
   - **Issue:** The convention is to render money with `formatGhs(pesewas)` from `lib/shop.js`.
