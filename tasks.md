@@ -45,6 +45,17 @@ _None open._
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T69 · Chat monitoring UI — staff attribution, supervisor view, metrics**
+  - **Frontend half of `backend-eaz/tasks.md` → T69.** Admin/superadmin want to monitor the
+    quality of staff↔customer chats; the data model and endpoints land on the backend first.
+  - **Attribution:** staff bubbles in `/dashboard/chats` show *which* staff member replied
+    (currently a bare "admin"/"Eazy" label) once messages carry `senderName`.
+  - **Supervisor mode:** admins read transcripts read-only until they explicitly Claim a session —
+    ends silent double-replies and makes "watching" distinct from "answering".
+  - **Metrics:** quality cards + per-staff table on the chats page (ui-kit `SectionCard`/`Badge`,
+    date filters) fed by the backend Phase 3 endpoint; CSAT display if that phase lands too.
+  - **Blocked on backend phases 1–3 landing first.**
+
 - [~] **T67 · "Save GH₵0" was shown on every annual hosting plan** — ✅ frontend fix done 2026-08-25
   - **Was:** `saving = plan.monthlyPrice * 12 - plan.annualPrice`, rendered unguarded. Every tier in
     `config/hostingPlans.js` has `annualPrice === monthlyPrice * 12`, so the saving is always 0 and
