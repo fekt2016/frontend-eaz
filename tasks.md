@@ -634,7 +634,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     (temporarily reverted `renderInline` to prove it) before restoring it. 38 files/186 tests
     pass, lint clean, `next build` succeeds.
 
-- [ ] **T41 · Public track page part-order cart mixes float-GHS and pesewas**
+- [x] **T41 · Public track page part-order cart mixes float-GHS and pesewas** — ✅ done 2026-08-25
   - **Issue:** On `/track/[token]`, `addToCart` stores `unitPriceGhs: Math.round(Number(part.sellingPrice)) / 100`
     (float GHS) and computes `totalPesewas = partsSubtotalGhs * 100 + shippingPesewas`
     (float × 100), while `addPartToShopCart` (line 105) stores integer pesewas
@@ -647,6 +647,16 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     shipping pesewas directly, and display with `formatGhs`. (Backend re-prices from the
     `Part` model — items carry only `partId`+`quantity` — so this is safe.)
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T41).
+  - **Shipped:** exactly as scoped — `unitPriceGhs`/`partsSubtotalGhs` renamed to
+    `unitPricePesewas`/`partsSubtotalPesewas`, dropped the `/100` at store time and the stray
+    `*100` in the total, and swapped the two raw `GH₵{...}` interpolations for `formatGhs`.
+    Independently re-confirmed (before touching anything) that `submitOrder` sends only
+    `{ partId, quantity }` per line — the fix note's safety claim holds, this is a client-side
+    cart-state/display fix only, never touches what a customer is actually charged. 2 new tests
+    (`page.test.jsx`): a whole-cedi price (GH₵150.00) that the old raw-interpolation bug would
+    have rendered as bare `GH₵150` with no decimals, and a price (GH₵10.10) chosen so the old
+    `unitPriceGhs` float division renders one decimal place short — both confirmed to fail
+    without the fix. 38 files/188 tests pass, lint clean, `next build` succeeds.
 
 - [x] **T40 · `authController.logout` calls `jwt.decode` without importing `jsonwebtoken`** ✅ done 2026-08-20
   - **Issue:** Backend bug — `jwt.decode(token)` at `controllers/authController.js` ~line 283
