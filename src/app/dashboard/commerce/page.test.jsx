@@ -39,14 +39,25 @@ async function renderSettled() {
 }
 
 describe("Commerce page — merged Marketplace + Inventory (T24)", () => {
-  it("renders inventory content directly, with an Orders link", async () => {
+  it("renders inventory content directly", async () => {
     mockUser.mockReturnValue({ role: "staff" });
     await renderSettled();
 
     expect(screen.getByText("Inventory")).toBeInTheDocument();
     expect(screen.getByText("Repair Parts")).toBeInTheDocument();
     expect(screen.getByText("Shop Products")).toBeInTheDocument();
-    expect(screen.getByText("Orders").closest("a")).toHaveAttribute("href", "/dashboard/commerce/orders");
+  });
+
+  // The Orders button and the /dashboard/commerce/orders list it opened were both
+  // removed — /dashboard/pos/orders already lists shop orders and part orders for
+  // the same roles, so the marketplace copy was a second door to the same thing.
+  // The order *detail* route stays: the dashboard overview and the POS reports page
+  // both link straight to it.
+  it("no longer offers an Orders button", async () => {
+    mockUser.mockReturnValue({ role: "staff" });
+    await renderSettled();
+
+    expect(screen.queryByText("Orders")).not.toBeInTheDocument();
   });
 
   it("shows the Delivery Zones link for admin", async () => {

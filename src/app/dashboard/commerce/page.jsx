@@ -9,7 +9,7 @@ import ProductImage from "@/components/shop/ProductImage";
 import UploadButton from "@/components/common/UploadButton";
 import {
   Plus, Search, Pen, Trash2, TriangleAlert, Barcode, PackageOpen,
-  Wrench, Truck, ClipboardList, X,
+  Wrench, Truck, X,
 } from "lucide-react";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
@@ -644,12 +644,6 @@ export default function CommercePage() {
               <Truck size={13} /> Delivery Zones
             </Link>
           )}
-          <Link
-            href="/dashboard/commerce/orders"
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-400 dark:hover:border-gray-600 transition"
-          >
-            <ClipboardList size={13} /> Orders
-          </Link>
         </div>
       </div>
 

@@ -46,3 +46,16 @@ describe("Orders list — read-only, links to detail page (T28)", () => {
     expect(link.closest("a")).toHaveAttribute("href", "/dashboard/orders/o1");
   });
 });
+
+// The "Visit Shop" button was removed from the page header on request. The empty
+// state keeps its own "Browse the Shop" link — that one is the whole point of the
+// empty state, and is a different control.
+describe("Shop Orders header — no Visit Shop button", () => {
+  it("does not render a Visit Shop button", () => {
+    mockUser.mockReturnValue({ role: "admin" });
+
+    render(<CustomerOrdersPage />);
+
+    expect(screen.queryByText("Visit Shop")).not.toBeInTheDocument();
+  });
+});

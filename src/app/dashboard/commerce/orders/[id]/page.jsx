@@ -92,7 +92,7 @@ export default function AdminOrderDetailPage() {
       <div className="mx-auto max-w-3xl">
         <div className="rounded-2xl border border-gray-100 bg-paper p-8 text-center">
           <p className="text-gray-400 text-sm">Order not found.</p>
-            <Link href="/dashboard/commerce/orders" className="text-sm text-gray-500 hover:text-gray-900 mt-2 inline-block">
+            <Link href="/dashboard/pos/orders" className="text-sm text-gray-500 hover:text-gray-900 mt-2 inline-block">
               ← Back to Orders
             </Link>
           </div>
