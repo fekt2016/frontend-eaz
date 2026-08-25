@@ -129,3 +129,31 @@ describe("Part image upload (T33)", () => {
     expect(thumb).toHaveAttribute("src", expect.stringContaining("battery.jpg"));
   });
 });
+
+// The marketplace renders inside DashboardShell, whose <main> is a bare
+// `flex-1 overflow-auto` with no padding — unlike PosShell, which pads its own.
+// Both sibling commerce pages (orders, delivery-zones) bring their own gutters;
+// this one did not, so its header and both tabs sat flush against the edges.
+describe("Commerce page — content gutters", () => {
+  it("pads the page content, since DashboardShell's main does not", async () => {
+    mockUser.mockReturnValue({ role: "admin" });
+    const { container } = render(<CommercePage />);
+
+    const root = container.firstChild;
+    expect(root.className).toMatch(/\bp-5\b/);
+    expect(root.className).toMatch(/\blg:p-7\b/);
+  });
+
+  it("puts them on the root, so both tabs' content is padded, not just the first", async () => {
+    mockUser.mockReturnValue({ role: "admin" });
+    const { container } = render(<CommercePage />);
+    const root = container.firstChild;
+
+    // The tab switcher and the panel below it are both children of the padded
+    // root, so switching tabs cannot land on an unpadded panel.
+    fireEvent.click(screen.getByRole("button", { name: /Shop Products/i }));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Shop Products/i })).toBeInTheDocument());
+    expect(container.firstChild).toBe(root);
+    expect(root.className).toMatch(/\bp-5\b/);
+  });
+});

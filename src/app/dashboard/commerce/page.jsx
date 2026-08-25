@@ -620,7 +620,14 @@ export default function CommercePage() {
   ];
 
   return (
-    <div className="space-y-5">
+    // Padding lives here, not in DashboardShell: that shell renders a bare
+    // `<main className="flex-1 overflow-auto">`, so its pages each bring their own
+    // gutters — and the sibling commerce pages (orders, delivery-zones) already do,
+    // which is why only this page sat flush against the viewport edges. The values
+    // match PosShell's `p-5 lg:p-7`, so the marketplace lines up with every other
+    // POS screen. On the root, so the header, the tab switcher, and both tabs'
+    // content share the same gutters.
+    <div className="space-y-5 p-5 lg:p-7">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Inventory</h1>
