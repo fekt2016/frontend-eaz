@@ -9,6 +9,9 @@ export default function OrderConfirmationPage({ params }) {
   const reference = params.reference;
   // The hook polls every 4s while unpaid and stops once the order is paid.
   const { data: order, isLoading: loading, error: queryError } = useOrderByReference(reference);
+  // A pre-order line changes what we promise the customer next, so the copy below
+  // has to know. Derived, never trusted from anywhere else.
+  const hasPreorder = (order?.items || []).some((i) => i.isPreorder);
   const error = queryError ? (queryError.message || "Order not found") : null;
 
   if (loading) {
@@ -101,6 +104,33 @@ export default function OrderConfirmationPage({ params }) {
           </div>
         </div>
 
+        {/* T62: the tracking number exists from the moment the order is created, but
+            the customer was never shown it — they had to remember the order number and
+            use the lookup form. For a pre-order they will follow for weeks, this is
+            the difference between the tracking journey being reachable and not. */}
+        {order.trackingNumber && (
+          <div className="mt-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+            <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+              Tracking
+            </h3>
+            <p className="font-mono text-sm font-semibold text-gray-900 dark:text-white">
+              {order.trackingNumber}
+            </p>
+            {hasPreorder && (
+              <p className="mt-2 text-sm text-blue-600 dark:text-blue-300">
+                One or more items are pre-orders. Follow this number to see where your
+                order is — we&apos;ll email you as soon as it reaches our shop.
+              </p>
+            )}
+            <Link
+              href={`/track/order/${order.trackingNumber}`}
+              className="mt-3 inline-block text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+            >
+              Follow your order →
+            </Link>
+          </div>
+        )}
+
         {order.customer?.address && (
           <div className="mt-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
             <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">Delivery</h3>
@@ -118,7 +148,7 @@ export default function OrderConfirmationPage({ params }) {
             Continue Shopping
           </Link>
           <Link
-            href="/track-order"
+            href={order.trackingNumber ? `/track/order/${order.trackingNumber}` : "/track-order"}
             className="rounded-full border border-gray-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition"
           >
             Track Your Order

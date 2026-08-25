@@ -81,6 +81,24 @@ _None open._
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
+- [ ] **T62 · Surface the tracking number, and mirror the transactional emails**
+  - **Why:** a customer pays and lands on the order-confirmation page, which shows the
+    order number but **not the tracking number** — even though the order already has one
+    from the moment it is created. For a pre-order they will check on for weeks, that is
+    the difference between the T45 tracking journey being reachable and not.
+  - **What this needs here:**
+    - `src/app/order-confirmation/[reference]/page.jsx` — show the tracking number and
+      link straight to `/track/order/<number>`, rather than only linking to the
+      `/track-order` lookup form. The API already returns the field on this lookup; it
+      is simply not rendered.
+    - Where a pre-order is involved, say so on the confirmation page and set the
+      expectation ("you'll be emailed when it reaches our shop").
+    - Any new email template that needs a matching page/link should point at existing
+      routes — `/track/order/:trackingNumber` already renders the full journey.
+  - **Backend:** `backend-eaz/tasks.md` → T62 has the full audit of which areas send
+    email today and which send nothing.
+
+
 - [x] **T43 · Money display bypasses the single `formatGhs` formatter** — ✅ done 2026-08-25 (both halves)
   - **Issue:** The convention is to render money with `formatGhs(pesewas)` from `lib/shop.js`.
     These pages hand-roll `GH₵{...toFixed(2)}` / `GH₵{...toLocaleString()}` raw templates:
