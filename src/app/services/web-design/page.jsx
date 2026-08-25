@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckCircle2, Zap, CreditCard } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import ServicePaymentModal from "@/components/ServicePaymentModal";
+import { formatGhsMajor } from "@/lib/shop";
 
 const packages = [
   {
@@ -208,7 +209,7 @@ export default function WebDesignPage() {
 
                 <div className="space-y-1.5 text-xs text-gray-400 dark:text-slate-500 border-t border-gray-100 dark:border-slate-800 pt-4 mb-5">
                   <div className="flex justify-between"><span>Turnaround</span><span className="text-gray-700 dark:text-slate-300 font-medium">{pkg.turnaround}</span></div>
-                  <div className="flex justify-between"><span>Deposit</span><span className="text-gray-700 dark:text-slate-300 font-medium">GH₵{pkg.deposit.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Deposit</span><span className="text-gray-700 dark:text-slate-300 font-medium">{formatGhsMajor(pkg.deposit)}</span></div>
                 </div>
 
                 {/* Two action buttons */}
@@ -221,7 +222,7 @@ export default function WebDesignPage() {
                         : "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400"
                     }`}
                   >
-                    <CreditCard size={11} /> Pay GH₵{pkg.deposit.toLocaleString()} Deposit
+                    <CreditCard size={11} /> Pay {formatGhsMajor(pkg.deposit)} Deposit
                   </button>
                   <Link
                     href="/book-consultation"

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { FaServer, FaArrowLeft, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaCopy } from "react-icons/fa";
 import { useHostingPlans, useStaffCreateHostingAccount } from "@/hooks/queries/useHosting";
+import { formatGhsMajor } from "@/lib/shop";
 
 const EMPTY_PLANS = {};
 const STAFF_ROLES = ["admin", "staff", "superadmin"];
@@ -147,7 +148,7 @@ export default function StaffCreateHostingAccountPage() {
             </div>
             <div className="mt-2 flex items-center justify-between text-sm">
               <span className="text-gray-500 dark:text-slate-400">Price</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{price != null ? `GH₵${price.toLocaleString()}` : "—"}</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{price != null ? formatGhsMajor(price) : "—"}</span>
             </div>
             {!isCpanel && (
               <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">

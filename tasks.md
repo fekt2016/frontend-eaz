@@ -546,7 +546,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     remaining scope** — all 10 locations above still need `formatGhs`, but purely as cosmetic
     display formatting now, no unit-conversion involved (see T43 below).
 
-- [ ] **T43 · Money display bypasses the single `formatGhs` formatter**
+- [x] **T43 · Money display bypasses the single `formatGhs` formatter** — ✅ done 2026-08-25 (fully closed, both scopes)
   - **Issue:** The convention is to render money with `formatGhs(pesewas)` from `lib/shop.js`.
     These pages hand-roll `GH₵{...toFixed(2)}` / `GH₵{...toLocaleString()}` raw templates:
   - **Location:**
@@ -610,6 +610,27 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Verified:** `PosOverview.test.jsx` + `Receipt.test.jsx` 5/5 pass; `next lint` 0
     warnings/errors; full suite `npm test` 13 files / 78 tests pass; `npm run build`
     compiles successfully, exit 0.
+  - **Shipped 2026-08-25 (the hosting/domain/service part, unblocked by T44's DECISION 1 —
+    Option B, not migrated to pesewas):** these 10 locations render genuinely major-GHS
+    values (`amount`/`price`/`depositAmount`/`totalAmount`), so wrapping them in `formatGhs`
+    (pesewas-only) would have silently divided every number by 100 again. Added a sibling
+    formatter, `formatGhsMajor` (`lib/shop.js`) — same `GH₵1,234.56` output as `formatGhs`,
+    without the `/100`; `formatGhs` now delegates to it internally rather than duplicating
+    the locale-formatting logic. Swapped all 10 raw `GH₵{...}` / `.toLocaleString()` /
+    `.toFixed(0)` interpolations for `formatGhsMajor(value)`:
+    `dashboard/(admin)/domain-orders/page.jsx`, `dashboard/(admin)/hosting-orders/page.jsx`,
+    `dashboard/hosting/[orderId]/page.jsx`, `dashboard/hosting/new-account/page.jsx`,
+    `dashboard/customer/CustomerCards.jsx` (×2), `components/CheckoutForm.jsx` (×2),
+    `components/ServicePaymentModal.jsx` (×3), `app/services/web-design/page.jsx` (×2),
+    `app/hosting/page.jsx`, `components/domains/DomainsSearch.jsx`. `CheckoutForm.jsx`'s
+    total/per-year price previously used `.toFixed(0)` (0 decimals) — now renders 2 decimals
+    via `formatGhsMajor`, matching the stated "always 2 decimals" convention; updated the one
+    pre-existing test (`CheckoutForm.test.jsx`) asserting the old `GH₵100` text to the new
+    `GH₵100.00` (its failure was cascading into 2 unrelated later tests in the same file —
+    a thrown assertion mid-test left state uncleaned; fixing the one assertion resolved all
+    3). 3 new tests for `formatGhsMajor` in `shop.test.js`, including one asserting it does
+    *not* divide by 100 (the exact bug this avoids). 40 files/201 tests pass, lint clean,
+    `next build` succeeds. No backend change (see `backend-eaz/tasks.md` → T43).
 
 - [x] **T42 · `BlogArticle` renders markdown via `dangerouslySetInnerHTML` — stored-XSS risk** — ✅ done 2026-08-25
   - **Issue:** Blog post content is markdown→HTML-converted with regex and injected via

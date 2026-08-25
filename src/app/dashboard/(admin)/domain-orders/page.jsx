@@ -8,6 +8,7 @@ import { FaRedo, FaSpinner } from "react-icons/fa";
 import { Globe, Search, RotateCw, Loader2, ExternalLink } from "lucide-react";
 import { useAdminDomainOrders, useUpdateDomainOrderStatus, useRetryDomainRegistration } from "@/hooks/queries/useDomains";
 import { isAdminRole } from "@/lib/roles";
+import { formatGhsMajor } from "@/lib/shop";
 
 const statusColors = {
   pending:   "bg-brand-50 text-brand-700 ring-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:ring-brand-900/30",
@@ -94,7 +95,7 @@ export default function AdminDomainOrdersPage() {
             { label: "Total orders", value: orders.length },
             { label: "Completed", value: orders.filter(o => o.status === "completed").length, accent: "text-emerald-700" },
             { label: "Pending", value: orders.filter(o => o.status === "pending").length, accent: "text-brand-700" },
-            { label: "Revenue", value: `GH₵${totalRevenue.toLocaleString()}`, accent: "text-gray-900" },
+            { label: "Revenue", value: formatGhsMajor(totalRevenue), accent: "text-gray-900" },
           ].map(({ label, value, accent }) => (
             <div key={label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
               <p className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{label}</p>
@@ -169,7 +170,7 @@ className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 roun
                         <p className="font-medium text-gray-900 dark:text-white truncate max-w-[180px]">{o.customerName || "—"}</p>
                         <p className="text-xs text-gray-400 dark:text-slate-500 truncate max-w-[180px]">{o.email}</p>
                       </td>
-                      <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">GH₵{o.price}</td>
+                      <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">{formatGhsMajor(o.price)}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-slate-400">{o.years || 1}yr</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 capitalize ${statusColors[o.status] || "bg-paper text-gray-600 ring-gray-100 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700"}`}>

@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { isAdminRole } from "@/lib/roles";
+import { formatGhsMajor } from "@/lib/shop";
 import {
   Trash2,
   Search,
@@ -420,7 +421,7 @@ export default function AdminHostingOrdersPage() {
                           </Link>
                           <p className="text-xs text-gray-400 dark:text-slate-500 capitalize">{order.billingCycle}</p>
                         </td>
-                        <td className="px-4 py-3 align-top whitespace-nowrap font-medium text-gray-900 dark:text-white">GH₵{order.amount}</td>
+                        <td className="px-4 py-3 align-top whitespace-nowrap font-medium text-gray-900 dark:text-white">{formatGhsMajor(order.amount)}</td>
                         <td className="px-4 py-3 align-top capitalize text-xs text-gray-600 dark:text-slate-400">
                           {(order.paymentMethod || "").replace(/_/g, " ")}
                         </td>

@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { Server, Globe, ShoppingBag, Wrench } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { formatGhs } from "@/lib/shop";
+import { formatGhs, formatGhsMajor } from "@/lib/shop";
 import { useHostingOrders } from "@/hooks/queries/useHosting";
 import { useDomainOrders } from "@/hooks/queries/useDomains";
 import { useMyOrders } from "@/hooks/queries/useOrders";
@@ -66,7 +66,7 @@ export function HostingCard({ order }) {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{order.planType} — {order.tier}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 capitalize">{order.billingCycle} · GH₵{order.amount}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 capitalize">{order.billingCycle} · {formatGhsMajor(order.amount)}</p>
           </div>
         </div>
         <StatusBadge status={order.status} />
@@ -117,7 +117,7 @@ export function DomainCard({ order }) {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white font-mono">{order.domain}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500">{order.years} year{order.years > 1 ? "s" : ""} · GH₵{order.price}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">{order.years} year{order.years > 1 ? "s" : ""} · {formatGhsMajor(order.price)}</p>
           </div>
         </div>
         <StatusBadge status={order.status} />

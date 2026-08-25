@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SHARED_PLANS, WORDPRESS_PLANS, HOSTING_FEATURES } from "@/data/hostingHostingData";
 import { Banknote, Check, Lock, MapPin, Phone, RefreshCw, X, Zap } from "lucide-react";
+import { formatGhsMajor } from "@/lib/shop";
 
 function scrollTo(id) {
   if (typeof window === "undefined") return;
@@ -191,7 +192,7 @@ export default function Hosting() {
                     <td className="px-5 py-3 text-[0.82rem] font-medium text-gray-500 dark:text-slate-400">{row.label}</td>
                     {SHARED_PLANS.map((p) => {
                       if (row.key === "price") {
-                        return <td key={p.name} className="px-5 py-3 text-[0.82rem] font-semibold text-gray-900 dark:text-white">GH₵{p.monthlyPrice}/mo</td>;
+                        return <td key={p.name} className="px-5 py-3 text-[0.82rem] font-semibold text-gray-900 dark:text-white">{formatGhsMajor(p.monthlyPrice)}/mo</td>;
                       }
                       if (row.key) {
                         const val = p.specs.find(s => s.label === row.key)?.value ?? "—";
