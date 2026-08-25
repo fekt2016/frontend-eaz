@@ -3,7 +3,7 @@
 import {
   Barcode, BarChart3, CalendarDays, FileText, Gauge, Globe,
   History, Mail, MessagesSquare, PackageCheck, Receipt, Server, Settings, ShieldCheck,
-  ShoppingBag, Star, Store, Truck, Users, Wrench,
+  Ship, ShoppingBag, Star, Store, Truck, Users, Wrench,
 } from "lucide-react";
 
 // Shown to every logged-in dashboard user except where `hideRoles` excludes them.
@@ -37,6 +37,7 @@ export const marketplaceNav = [
   // T45 — the pre-order release queue. Its own entry because releasing is a
   // recurring job someone has to go looking for, not a detail of one order.
   { href: "/dashboard/commerce/preorders", icon: PackageCheck, label: "Pre-orders" },
+  { href: "/dashboard/commerce/shipments", icon: Ship, label: "Shipments" },
 ];
 
 // roles: if undefined, visible to all POS roles.

@@ -13,6 +13,12 @@ export const qk = {
     // invalidates the prefix, refreshes the lists that show the same order.
     preorders: ["orders", "preorders"],
   },
+  // T45 — incoming stock batches (a container from a supplier).
+  shipments: {
+    all: ["shipments"],
+    list: ["shipments", "list"],
+    detail: (id) => ["shipments", "detail", id],
+  },
   // POS sales — scoped server-side: staff see only their own, admin sees all.
   posSales: {
     all: ["posSales"],

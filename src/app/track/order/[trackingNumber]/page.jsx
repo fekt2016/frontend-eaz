@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { statusBadge } from "@/lib/orderStatus";
 import { useOrderTracking } from "@/hooks/queries/useTracking";
+import PreorderProgress from "@/components/shop/PreorderProgress";
 
 function fmtDate(value) {
   if (!value) return "";
@@ -61,6 +62,11 @@ export default function OrderTrackingDetailPage() {
                   {statusBadge(tracking.status).label}
                 </span>
               </div>
+
+              {/* T45: a pre-ordered item's journey, shown above the order's own
+                  timeline because "where is my phone" is the question that
+                  brought the customer here. Null for an ordinary order. */}
+              <PreorderProgress preorder={tracking.preorder} />
 
               {tracking.latestEvent && (
                 <div className="mt-5 rounded-xl bg-paper dark:bg-ink p-4">
