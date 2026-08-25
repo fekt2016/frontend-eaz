@@ -14,6 +14,13 @@ vi.mock("@/lib/api", () => ({
   api: { get: (...args) => mockGet(...args), post: vi.fn() },
 }));
 
+// The Sell page now renders the sales-tracking section, which needs AuthProvider and
+// its own queries. This file is about thumbnails, so stub it out — SalesTracker has
+// its own test suite.
+vi.mock("@/components/pos/SalesTracker", () => ({
+  default: () => <div data-testid="sales-tracker" />,
+}));
+
 import SellPage from "./page";
 
 function renderPage() {
@@ -74,5 +81,27 @@ describe("Sell page — item thumbnails in search & cart (T37)", () => {
       const thumbs = screen.getAllByAltText("iPhone 12 Screen");
       expect(thumbs.some((el) => el.getAttribute("src")?.includes("screen.jpg"))).toBe(true);
     });
+  });
+});
+
+// The sales-tracking section was reported missing from the Sell page once already: it
+// was mounted, but the cart row above it was `min-h-[calc(100vh-120px)]`, so it sat a
+// full viewport down and read as absent. These pin both the mount and the bounded row.
+describe("Sell page — sales tracking section (T46)", () => {
+  it("mounts the sales tracker on the page", async () => {
+    mockGet.mockResolvedValue({ data: [] });
+    renderPage();
+
+    expect(await screen.findByTestId("sales-tracker")).toBeInTheDocument();
+  });
+
+  it("does not let the cart row claim the whole viewport, which hid the section", async () => {
+    mockGet.mockResolvedValue({ data: [] });
+    const { container } = renderPage();
+
+    await screen.findByTestId("sales-tracker");
+    const row = container.querySelector('[class*="lg:flex-row"]');
+    expect(row).toBeTruthy();
+    expect(row.className).not.toMatch(/min-h-\[calc\(100vh/);
   });
 });

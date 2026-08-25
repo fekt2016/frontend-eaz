@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { formatGhs, stockBadge } from "@/lib/shop";
 import StarRule from "@/components/common/StarRule";
 import ProductImage from "@/components/shop/ProductImage";
+import ProductStats from "@/components/shop/ProductStats";
 
 // Shop showcase on the homepage — a quick look at the newest items, placed after
 // the agency story & proof.
@@ -113,14 +114,17 @@ function RecentCard({ product }) {
         <h3 className="font-display font-bold text-sm text-gray-900 dark:text-white group-hover:text-brand-500 transition mb-2 line-clamp-2">
           {product.name}
         </h3>
-        <div className="mt-auto flex items-center justify-between border-t border-gray-100 dark:border-slate-800 pt-3">
-          <p className="font-display font-bold text-base text-gray-900 dark:text-white">{formatGhs(product.price)}</p>
-          <Link
-            href={`/shop/${product.slug}`}
-            className="rounded-full border border-gray-200 dark:border-slate-700 px-3 py-1 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-900 dark:hover:border-brand-500 hover:text-gray-900 dark:hover:text-brand-400 transition"
-          >
-            View →
-          </Link>
+        <div className="mt-auto">
+          <ProductStats views={product.views} sold={product.sold} className="mb-2.5" />
+          <div className="flex items-center justify-between border-t border-gray-100 dark:border-slate-800 pt-3">
+            <p className="font-display font-bold text-base text-gray-900 dark:text-white">{formatGhs(product.price)}</p>
+            <Link
+              href={`/shop/${product.slug}`}
+              className="rounded-full border border-gray-200 dark:border-slate-700 px-3 py-1 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-900 dark:hover:border-brand-500 hover:text-gray-900 dark:hover:text-brand-400 transition"
+            >
+              View →
+            </Link>
+          </div>
         </div>
       </div>
     </article>

@@ -37,6 +37,44 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
 
+- [x] **T46 · Sell page: per-staff sales tracking** — ✅ done 2026-08-24 (both halves)
+  - **Request:** staff should be able to track their own sales from the Sell page; the
+    Sell page should have a section tracking sales per staff member.
+  - **Scope decided with the user:** staff see only the sales they rang up; admin and
+    superadmin see everything plus a per-cashier breakdown. That matches the existing
+    `/pos/my-overview` precedent and keeps T32 consistent rather than contradicting it.
+  - **Shipped:**
+    - `src/components/pos/SalesTracker.jsx` (new) — Today / All-time stat tiles for the
+      caller, a "Sales by staff" table for admins (name, today, all-time, count, and a
+      View button that filters the recent list to that cashier), and a recent-sales
+      list. Money via `formatGhs`; loading, error and empty states all handled.
+    - Mounted below the Sell page's two panels. The page's outer container is
+      `flex lg:flex-row`, not a grid, so it is wrapped in a new `flex flex-col gap-8`
+      column — dropping the section straight in as a flex sibling would have squeezed
+      the scan/cart panels into a third column.
+    - **Follow-up after the user reported "there is no sales table section":** it *was*
+      mounted, but the cart row above it was `h-full min-h-[calc(100vh-120px)]` — a full
+      viewport — so the section sat an entire page-scroll down and read as missing.
+      Bounded that row to `min-h-[26rem] lg:h-[58vh]`; the cart list inside is already
+      `flex-1 overflow-y-auto`, so a long cart now scrolls within its own panel instead
+      of stretching the page. Two guards added to `page.test.jsx` (+22 lines, nothing
+      removed): one asserts the tracker is mounted, one asserts the row never goes back
+      to a `100vh` min-height.
+    - `src/hooks/queries/usePosSales.js` — added `usePosSalesList` and
+      `usePosSalesSummary`; `useCreateSale` now also invalidates `qk.posSales.all`, so
+      ringing up a sale refreshes the section immediately.
+    - `src/lib/queryKeys.js` — new `posSales` key group.
+    - `src/app/dashboard/pos/sell/page.test.jsx` — stubbed `SalesTracker` (+7 lines,
+      nothing removed); that file tests thumbnails and has no `AuthProvider`, so the
+      new child's `useAuth` was breaking two existing T37 tests.
+    - `SalesTracker.test.jsx` (new, 13 tests): staff vs admin views, the per-staff
+      table, the filter toggle, and loading/error/empty states — including that a staff
+      view never asks the server for another cashier's sales.
+  - **Backend:** `backend-eaz/tasks.md` → T46.
+  - **Verified:** 41 files / 247 tests pass; lint clean; `next build` succeeds (built in
+    a throwaway worktree so the running dev server's `.next` was untouched).
+    Not verified in a live browser — the Chrome extension is not connected on this host.
+
 - [ ] **T45 · Pre-order support for products** — storefront side of the pre-order feature; the
   model/order/payment design lives in `backend-eaz/tasks.md` → T45. Currently the shop blocks
   add-to-cart / checkout on zero stock, so items that are out of stock or not yet available in
@@ -48,6 +86,69 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Open questions (resolve with backend before building):** upfront payment vs. deposit
     changes the checkout copy/flow; how a pre-order line renders in order history / track-order.
   - **Backend:** `backend-eaz/tasks.md` → T45.
+
+- [x] **T48 · Product cards + detail: show view count, sold count, and stock count** — ✅ done 2026-08-24 (both halves)
+  - **Request:** product **cards** should show how many people **viewed** the product
+    and how many units were **sold**; the product **detail page** should show the
+    **stock count** and the **sold count**. Storefront half — the data comes from new
+    backend fields (`views`, `sold` on `Product`) added in `backend-eaz/tasks.md` → T48.
+  - **Locations:**
+    - Cards render in two places — both need it:
+      `src/components/shop/ShopGrid.jsx` (card block ~line 208) and
+      `src/components/home/RecentProducts.jsx` (~line 82). Both already compute a
+      `stockBadge(product.stock)` badge next to the price.
+    - Detail: `src/components/shop/ProductDetail.jsx` — the SKU/stock row
+      (`stockBadge(displayStock)` ~line 119), where T39's short description also sits.
+  - **Card fix:** add a compact stats row/badges — e.g. an eye icon + view count and
+    "N sold" beside the existing stock badge. Use compact formatting for large counts
+    (1.2k views); hide gracefully when the API hasn't shipped yet (fields absent →
+    render nothing, not "0 views").
+  - **Detail fix:** in the buy column show explicit counts — e.g. "In stock: 5"
+    (or "Out of stock") and "23 sold" — near the SKU row. Keep using
+    `formatGhs`-style single-source helpers; if a reusable `formatCount()` is needed,
+    put it in `lib/shop.js` rather than duplicating in each component.
+  - **Conventions:** Tailwind utilities with `dark:` variants; icons from
+    `lucide-react` (already used in both files). Don't trust client-side counting —
+    display only what the API returns.
+  - **Shipped:** `src/components/shop/ProductStats.jsx` (new), `src/lib/shop.js`,
+    `ShopGrid.jsx`, `RecentProducts.jsx`, `ProductDetail.jsx`
+    - `formatCount()` joins `formatGhs` in `lib/shop.js` as the single count
+      formatter: exact below 1,000, then `1.2k` / `15k` / `1.3m`.
+    - One `ProductStats` component serves both card grids rather than the same
+      badge row being written twice.
+    - **Both counts always show, zeros included.** The first pass hid zeros; that was
+      reversed on request, first for views and then for sold, so a product nobody has
+      opened or bought reads "0 views · 0 sold" on the card and on the detail page.
+      Absent is still distinct from zero: a product from an API that predates the
+      counters, or a retail part (no tracking at all), renders nothing. The detail
+      page always spells stock out ("In stock: 5" / "Out of stock") because the badge
+      flattens it above 10.
+    - Detail page also shows views, which the original note did not ask for — it is
+      the same data and the row already existed.
+    - `RecentProducts`' footer is now wrapped in a single `mt-auto` div: leaving
+      `mt-auto` on both the stats line and the price divider would split the free
+      space between them and open a gap.
+  - **Tests:** `src/components/shop/ProductStats.test.jsx` (new, 9) — the formatter
+    including the 999,999 → `1m` edge and junk input, both figures rendering, the
+    absent-field and all-zero cases rendering nothing, one-sided rendering, and the
+    "1 view" singular.
+  - **Follow-up (same day) — the view is recorded on opening the page, not on fetching
+    the product.** `ProductDetail` now POSTs to `/products/:slug/view` once after the
+    product renders (ref-guarded against React's development double-mount, skipped for
+    `part-` slugs), and displays the count the server returns so it includes the visit
+    being made. Counting used to happen inside the detail GET, which this route calls
+    three times per visit — `generateMetadata`, the server render, then this component —
+    and which Next also calls when it prefetches a `<Link>` on hover, so shop cards
+    accumulated views for products nobody opened. Backend half in
+    `backend-eaz/tasks.md` → T48.
+  - **Follow-up (same day):** the cards rendered no counts at all on first run —
+    the backend's list aggregation was not projecting the fields (see
+    `backend-eaz/tasks.md` → T48). `RecentProducts.test.jsx` now covers the whole
+    path from API payload to homepage card, so the wiring cannot rot silently.
+  - **Verified:** full frontend suite 43 files / 267 tests, exit 0; `next lint` clean.
+    Confirmed against the running dev stack — a live product's view count moved
+    0 → 3 through the homepage's own query.
+  - **Backend part:** `backend-eaz/tasks.md` → T48 — done.
 
 ---
 
@@ -399,7 +500,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     don't surface (or the 500 from **T30** also hits products), fix and add tests.
   - **Backend part:** `backend-eaz/tasks.md` → T31. Relates to T30 (the 500 on Complete Sale).
 
-- [ ] **T30 · POS Sell page: "Complete Sale" returns Request failed (500) when selling parts**
+- [x] **T30 · POS Sell page: "Complete Sale" returns Request failed (500) when selling parts** — ✅ already fixed; confirmed 2026-08-24
   - **Symptom:** On the Sell page (`/dashboard/pos/sell`), clicking **Complete Sale** with
     parts in the cart fails with **"Request failed (500)"** — no friendly error, no sale recorded.
     The failure happens with **all payment options** (Cash, MoMo, Card).
@@ -412,6 +513,21 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
       handling (`data: sale` returns an array), missing `saleNumber`/schema pre-save hooks,
       stock `$inc`/transaction abort issues, or a `part` validation error.
     - Ensure the frontend surfaces a readable error instead of the raw 500.
+  - **Outcome — this was already fixed; the tracker entry was stale.** Confirmed
+    2026-08-24 by reading the code and running the regression suite:
+    - `controllers/pos/salesController.js` now uses `session.withTransaction()` and
+      `const [createdSale] = await Sale.create([...], { session })`. The original bug
+      was the post-commit `logFromRequest` referencing `sale[0].saleNumber` on a plain
+      object — it threw *after* the transaction committed, so the sale saved and stock
+      deducted but the request 500'd. The catch block's unconditional
+      `abortTransaction()` then threw a second, unhandled error, which `server.js`
+      treats as fatal — so it crashed the whole server, not just the request.
+    - `backend-eaz/tests/posSale.test.js` (6 tests) covers it, spinning up its own
+      single-node `MongoMemoryReplSet` because the shared standalone test instance
+      cannot run transactions. All 6 pass.
+    - The frontend half is done too: `completeSale`'s catch does
+      `setPayError(err.message || "Sale failed. Try again.")`, so the raw 500 no longer
+      leaks to the cashier.
   - **Backend part:** `backend-eaz/tasks.md` → T30.
  
 ---

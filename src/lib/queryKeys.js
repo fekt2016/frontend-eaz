@@ -10,6 +10,12 @@ export const qk = {
     detail: (id) => ["orders", "detail", id],
     tracking: (trackingNumber) => ["orders", "tracking", trackingNumber],
   },
+  // POS sales — scoped server-side: staff see only their own, admin sees all.
+  posSales: {
+    all: ["posSales"],
+    list: (params = {}) => ["posSales", "list", params],
+    summary: ["posSales", "summary"],
+  },
   inventory: {
     all: ["inventory"],
     list: (params = {}) => ["inventory", "list", params],

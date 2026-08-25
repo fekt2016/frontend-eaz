@@ -17,6 +17,9 @@ vi.mock("@/context/CartContext", () => ({
   useCart: () => ({ addItem: vi.fn(), openCart: vi.fn() }),
 }));
 
+const mockPost = vi.fn();
+vi.mock("@/lib/api", () => ({ api: { post: (...args) => mockPost(...args) } }));
+
 // The reviews panel is exercised by its own component; here we only care that the
 // Reviews tab mounts it.
 vi.mock("./ProductReviews", () => ({
@@ -42,6 +45,13 @@ const PRODUCT = {
 const tab = (name) => screen.getByRole("tab", { name });
 
 beforeEach(() => {
+  // This file has no global clearMocks, and every test renders the component —
+  // without a reset the call counts accumulate across tests.
+  mockPost.mockReset();
+  // Pending by default: the tests below that don't care about the view counter
+  // would otherwise get a state update after their assertions and log act()
+  // warnings. The tests that do care resolve it themselves.
+  mockPost.mockReturnValue(new Promise(() => {}));
   mockProduct.mockReturnValue(PRODUCT);
   mockReviews.mockReturnValue({ data: [], total: 12, pages: 1, page: 1 });
   window.scrollTo = vi.fn();
@@ -215,5 +225,46 @@ describe("ProductDetail — Description / Specs / Reviews tabs (T39)", () => {
     const panel = screen.getByRole("tabpanel");
     expect(panel).toHaveAttribute("id", selected.getAttribute("aria-controls"));
     expect(panel).toHaveAttribute("aria-labelledby", selected.getAttribute("id"));
+  });
+});
+
+
+// T48 follow-up: a view is a person opening this page. It used to be counted on
+// the detail GET, which runs three times per visit (generateMetadata, the server
+// render, then this component) and also runs when Next prefetches the route on
+// link hover — so products nobody had opened accumulated views.
+describe("ProductDetail — recording a view (T48)", () => {
+  it("records exactly one view when the page is opened", async () => {
+    render(<ProductDetail slug="iphone-13" />);
+
+    await waitFor(() => expect(mockPost).toHaveBeenCalledTimes(1));
+    expect(mockPost).toHaveBeenCalledWith("/products/iphone-13/view");
+  });
+
+  it("shows the count the server returned, so it includes this visit", async () => {
+    mockProduct.mockReturnValue({ ...PRODUCT, views: 40 });
+    mockPost.mockResolvedValue({ data: { views: 41 } });
+
+    render(<ProductDetail slug="iphone-13" />);
+
+    await waitFor(() => expect(screen.getByText(/41 views/)).toBeTruthy());
+  });
+
+  it("does not count a view for a retail part, which has no counter", async () => {
+    mockProduct.mockReturnValue({ ...PRODUCT, slug: "part-123" });
+
+    render(<ProductDetail slug="part-123" />);
+
+    await waitFor(() => expect(screen.getByText(PRODUCT.name)).toBeTruthy());
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("still renders the product when recording the view fails", async () => {
+    mockPost.mockRejectedValue(new Error("network down"));
+    mockProduct.mockReturnValue({ ...PRODUCT, views: 7 });
+
+    render(<ProductDetail slug="iphone-13" />);
+
+    await waitFor(() => expect(screen.getByText(/7 views/)).toBeTruthy());
   });
 });
