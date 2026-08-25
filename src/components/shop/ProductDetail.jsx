@@ -112,9 +112,9 @@ export default function ProductDetail({ slug }) {
     return (
 <div className="min-h-screen bg-white dark:bg-ink px-4 pt-32 pb-24 flex items-start justify-center">
         <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center max-w-md w-full">
-          <p className="text-3xl mb-3"><Search size={30} className="inline text-gray-400 dark:text-slate-500" /></p>
+          <p className="text-3xl mb-3"><Search size={30} className="inline text-gray-600 dark:text-slate-500" /></p>
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Product not found</p>
-          <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">{error}</p>
+          <p className="text-gray-600 dark:text-slate-500 text-sm mb-6">{error}</p>
           <Link
             href="/shop"
             className="rounded-full border border-gray-300 dark:border-slate-600 px-5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-900 dark:hover:border-white hover:text-gray-900 dark:hover:text-white transition"
@@ -289,7 +289,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
 
           {/* DETAILS */}
           <div>
-            <span className="inline-flex rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400 px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em]">
+            <span className="inline-flex rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400 px-3 py-1 font-mono text-eyebrow font-bold uppercase">
               {product.category}
             </span>
             <h1 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mt-3 mb-3 leading-tight">
@@ -301,7 +301,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                 {badge.label}
               </span>
 {(selectedVariant?.sku || product.sku) && (
-                <span className="text-xs text-gray-400 dark:text-slate-500">
+                <span className="text-xs text-gray-600 dark:text-slate-500">
                   SKU: {selectedVariant ? selectedVariant.sku : product.sku}
                 </span>
               )}
@@ -382,7 +382,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                   })}
                 </div>
                 {selectedVariant && (
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-2">
+                  <p className="text-xs text-gray-600 dark:text-slate-500 mt-2">
                     {selectedVariant.stock} in stock
                   </p>
                 )}
@@ -399,7 +399,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                       type="button"
                       disabled={qty <= 1}
                       onClick={() => setQty((v) => v - 1)}
-                      className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
+                      className="text-gray-600 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
                       aria-label="Decrease quantity"
                     >
                       <Minus size={11} />
@@ -409,7 +409,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                       type="button"
                       disabled={!orderable || qty >= maxQty}
                       onClick={() => setQty((v) => v + 1)}
-                      className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
+                      className="text-gray-600 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
                       aria-label="Increase quantity"
                     >
                       <Plus size={11} />
@@ -442,7 +442,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                   {product.preorder?.maxQty ? ` Limit ${product.preorder.maxQty} per order.` : ""}
                 </p>
               ) : (
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-3">
+                <p className="text-xs text-gray-600 dark:text-slate-500 mt-3">
                   You&apos;ll choose a delivery zone at checkout — stock is confirmed at payment.
                 </p>
               )}

@@ -33,7 +33,7 @@ export default function SupplierDetailPage() {
   if (error || !supplier) return (
     <div className="text-center py-16 text-gray-500">
       {error || "Supplier not found."}{" "}
-      <Link href="/dashboard/pos/suppliers" className="text-brand-600 dark:text-brand-400 hover:underline">Back</Link>
+      <Link href="/dashboard/pos/suppliers" className="text-brand-ink dark:text-brand-400 hover:underline">Back</Link>
     </div>
   );
 
@@ -62,7 +62,7 @@ export default function SupplierDetailPage() {
           {supplier.contactPerson && (
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
               <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <Truck size={11} className="text-brand-600 dark:text-brand-400" />
+                <Truck size={11} className="text-brand-ink dark:text-brand-400" />
               </div>
               <span>{supplier.contactPerson}</span>
             </div>
@@ -70,7 +70,7 @@ export default function SupplierDetailPage() {
           {supplier.phone && (
             <a href={`tel:${supplier.phone}`} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-brand-400 transition">
               <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <Phone size={10} className="text-brand-600 dark:text-brand-400" />
+                <Phone size={10} className="text-brand-ink dark:text-brand-400" />
               </div>
               <span>{supplier.phone}</span>
             </a>
@@ -78,7 +78,7 @@ export default function SupplierDetailPage() {
           {supplier.email && (
             <a href={`mailto:${supplier.email}`} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-brand-400 transition">
               <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <Mail size={10} className="text-brand-600 dark:text-brand-400" />
+                <Mail size={10} className="text-brand-ink dark:text-brand-400" />
               </div>
               <span>{supplier.email}</span>
             </a>
@@ -98,14 +98,14 @@ export default function SupplierDetailPage() {
               </div>
               <span className="flex items-center gap-1.5">
                 {supplier.wechat}
-                {wechatCopied ? <Check size={10} className="text-green-500" /> : <Copy size={10} className="text-gray-500" />}
+                {wechatCopied ? <Check size={10} aria-hidden="true" className="text-success dark:text-success-dark" /> : <Copy size={10} className="text-gray-500" />}
               </span>
             </button>
           )}
           {supplier.address && (
             <div className="flex items-start gap-2 text-gray-600 dark:text-gray-300">
               <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <MapPin size={10} className="text-brand-600 dark:text-brand-400" />
+                <MapPin size={10} className="text-brand-ink dark:text-brand-400" />
               </div>
               <span>{supplier.address}</span>
             </div>
@@ -122,12 +122,12 @@ export default function SupplierDetailPage() {
       {/* Low stock alert */}
       {lowStockParts.length > 0 && (
         <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl bg-red-500/10 border border-red-500/30">
-          <TriangleAlert size={14} className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+          <TriangleAlert size={14} className="text-error dark:text-error-dark flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-red-600 dark:text-red-400">{lowStockParts.length} part{lowStockParts.length !== 1 ? "s" : ""} need reordering</p>
+            <p className="text-sm font-semibold text-error dark:text-error-dark">{lowStockParts.length} part{lowStockParts.length !== 1 ? "s" : ""} need reordering</p>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               {lowStockParts.map(p => (
-                <Link key={p._id} href="/dashboard/commerce" className="text-xs px-2.5 py-1 rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/30 transition">
+                <Link key={p._id} href="/dashboard/commerce" className="text-xs px-2.5 py-1 rounded-lg bg-error-surface text-error hover:bg-error/20 dark:bg-error-surface-dark dark:text-error-dark transition">
                   {p.name} · {p.quantity} left
                 </Link>
               ))}
@@ -140,9 +140,9 @@ export default function SupplierDetailPage() {
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <Boxes size={13} className="text-brand-600 dark:text-brand-400" /> Linked Parts
+            <Boxes size={13} className="text-brand-ink dark:text-brand-400" /> Linked Parts
           </h2>
-          <Link href="/dashboard/commerce" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">Manage inventory →</Link>
+          <Link href="/dashboard/commerce" className="text-xs text-brand-ink dark:text-brand-400 hover:underline">Manage inventory →</Link>
         </div>
 
         {parts.length === 0 ? (
@@ -167,11 +167,11 @@ export default function SupplierDetailPage() {
                     </div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{p.category}</span>
                     <div className="flex items-center gap-1.5">
-                      {isLow && <TriangleAlert size={9} className="text-red-600 dark:text-red-400" />}
-                      <span className={`text-sm font-semibold ${isLow ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
+                      {isLow && <TriangleAlert size={9} className="text-error dark:text-error-dark" />}
+                      <span className={`text-sm font-semibold ${isLow ? "text-error dark:text-error-dark" : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
                     </div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{formatGhs(p.costPrice)}</span>
-                    <span className="text-xs text-brand-600 dark:text-brand-400 hidden sm:block">{formatGhs(p.sellingPrice)}</span>
+                    <span className="text-xs text-brand-ink dark:text-brand-400 hidden sm:block">{formatGhs(p.sellingPrice)}</span>
                   </div>
                 );
               })}

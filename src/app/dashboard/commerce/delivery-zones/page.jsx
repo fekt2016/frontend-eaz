@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { formatGhs } from "@/lib/shop";
 import { useDeliveryZones, useCreateZone, useUpdateZone, useDeleteZone } from "@/hooks/queries/useDeliveryZones";
+import { Badge, Button } from "@/components/ui";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200";
@@ -181,7 +182,7 @@ export default function AdminDeliveryZonesPage() {
           </div>
         ) : zones.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 bg-paper p-8 text-center">
-            <p className="text-gray-400 text-sm">No delivery zones yet.</p>
+            <p className="text-gray-600 text-sm">No delivery zones yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -192,33 +193,29 @@ export default function AdminDeliveryZonesPage() {
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-gray-900">{zone.name}</p>
                       {!zone.isActive && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">
-                          Archived
-                        </span>
+                        <Badge tone="neutral">Archived</Badge>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-gray-600 mt-0.5">
                       {formatGhs(zone.fee)} · ~{zone.estimatedDays} {zone.estimatedDays === 1 ? "day" : "days"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setEditingId(editingId === zone._id ? null : zone._id)}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-gray-400 transition"
                     >
                       Edit
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant={zone.isActive ? "danger" : "primary"}
+                      size="sm"
                       onClick={() => handleArchive(zone)}
-                      disabled={updating === zone._id}
-                      className={`text-xs font-semibold px-3 py-1.5 rounded-full transition disabled:opacity-60 ${
-                        zone.isActive
-                          ? "border border-red-200 text-red-500 hover:bg-red-50"
-                          : "bg-emerald-600 text-white hover:bg-emerald-700"
-                      }`}
+                      loading={updating === zone._id}
                     >
-                      {updating === zone._id ? "..." : zone.isActive ? "Archive" : "Activate"}
-                    </button>
+                      {zone.isActive ? "Archive" : "Activate"}
+                    </Button>
                   </div>
                 </div>
                 {editingId === zone._id && (

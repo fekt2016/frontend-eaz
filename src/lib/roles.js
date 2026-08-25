@@ -7,6 +7,12 @@ export function isAdminRole(role) {
   return ADMIN_ROLES.includes(role);
 }
 
+// Who can work the live-chat console (/dashboard/chats): admins plus
+// front-desk staff. Backend mirrors this via restrictTo('admin', 'staff').
+export function canHandleChats(role) {
+  return [...ADMIN_ROLES, "staff"].includes(role);
+}
+
 // Where each role should land right after signing in — login, email
 // verification, and 2FA verification all need this same mapping (T29).
 export function landingPathForRole(role) {

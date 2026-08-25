@@ -44,7 +44,7 @@ export default function ReviewsPage() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Client Reviews</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Client Reviews</p>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">What Our Clients Say</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg">Real feedback from real customers. We&apos;re proud of every project we deliver.</p>
         </div>
@@ -56,7 +56,7 @@ export default function ReviewsPage() {
           {[[avgRating, "Average Rating"], ["100%", "Client Satisfaction"], ["4+", "Years in Accra"]].map(([val, label]) => (
             <div key={label}>
               <p className="font-display font-bold text-3xl text-brand-500">{val}</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
+              <p className="text-xs text-gray-600 dark:text-slate-500 mt-1">{label}</p>
             </div>
           ))}
         </div>
@@ -71,7 +71,7 @@ export default function ReviewsPage() {
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-8">
               Recent Reviews
               {reviews.length > 0 && (
-                <span className="ml-3 text-sm font-normal text-gray-400 dark:text-slate-500">({reviews.length})</span>
+                <span className="ml-3 text-sm font-normal text-gray-600 dark:text-slate-500">({reviews.length})</span>
               )}
             </h2>
 
@@ -97,7 +97,7 @@ export default function ReviewsPage() {
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-16 text-center">
                 <p className="text-3xl mb-3">⭐</p>
                 <p className="font-semibold text-gray-900 dark:text-white mb-2">No reviews yet</p>
-                <p className="text-gray-400 dark:text-slate-500 text-sm">Be the first to share your experience with EazWorld.</p>
+                <p className="text-gray-600 dark:text-slate-500 text-sm">Be the first to share your experience with EazWorld.</p>
               </div>
             ) : (
               <div className="space-y-5">
@@ -105,12 +105,12 @@ export default function ReviewsPage() {
                   <div key={r._id} className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center font-display font-bold text-brand-600 dark:text-brand-400 text-sm flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center font-display font-bold text-brand-ink dark:text-brand-400 text-sm flex-shrink-0">
                           {r.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <p className="font-semibold text-gray-900 dark:text-white text-sm">{r.name}</p>
-                          <p className="text-xs text-gray-400 dark:text-slate-500">{r.service}</p>
+                          <p className="text-xs text-gray-600 dark:text-slate-500">{r.service}</p>
                         </div>
                       </div>
                       <StarRating rating={r.rating} />

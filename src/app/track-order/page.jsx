@@ -45,7 +45,7 @@ export default function TrackOrderPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
       <div className="mx-auto max-w-3xl">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Order Tracking</p>
+        <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Order Tracking</p>
         <h1 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-2">Track Your Order</h1>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-10">
           Enter the order number from your confirmation and the phone number you checked out with.
@@ -97,14 +97,14 @@ export default function TrackOrderPage() {
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800 pb-4">
                 <div>
-                  <p className="text-xs text-gray-400 dark:text-slate-500">Order Number</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-500">Order Number</p>
                   <p className="font-display font-bold text-lg text-gray-900 dark:text-white">{order.orderNumber}</p>
                   {order.trackingNumber && (
                     <>
-                      <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">Tracking Number</p>
+                      <p className="mt-2 text-xs text-gray-600 dark:text-slate-500">Tracking Number</p>
                       <Link
                         href={`/track/order/${order.trackingNumber}`}
-                        className="font-mono text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+                        className="font-mono text-sm font-semibold text-brand-ink dark:text-brand-400 hover:underline"
                       >
                         {order.trackingNumber}
                       </Link>
@@ -118,7 +118,7 @@ export default function TrackOrderPage() {
                 {order.items.map((item) => (
                   <li key={item.product || item.name} className="flex justify-between gap-3 py-3 text-sm">
                     <span className="text-gray-700 dark:text-slate-300">
-                      {item.name} <span className="text-gray-400 dark:text-slate-500">× {item.qty}</span>
+                      {item.name} <span className="text-gray-600 dark:text-slate-500">× {item.qty}</span>
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">{formatGhs(item.price * item.qty)}</span>
                   </li>
@@ -142,7 +142,7 @@ export default function TrackOrderPage() {
 
               {order.customer?.address && (
                 <div className="mt-5 rounded-xl bg-paper dark:bg-ink p-4 text-sm">
-                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Deliver To</p>
+                  <p className="text-xs font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-1">Deliver To</p>
                   <p className="text-gray-700 dark:text-slate-300">{order.customer.name}</p>
                   <p className="text-gray-500 dark:text-slate-400">{order.customer.phone}</p>
                   <p className="text-gray-500 dark:text-slate-400">{order.customer.address}</p>
@@ -151,7 +151,7 @@ export default function TrackOrderPage() {
 
               {(order.trackingHistory || []).length > 0 && (
                 <div className="mt-6">
-                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">Tracking History</p>
+                  <p className="text-xs font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-4">Tracking History</p>
                   <ol className="relative border-l border-gray-200 dark:border-slate-700 ml-2 space-y-6">
                     {[...order.trackingHistory].reverse().map((h, i) => (
                       <li key={i} className="ml-6">
@@ -160,12 +160,12 @@ export default function TrackOrderPage() {
                           <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${(STATUS_STYLES[h.status] || STATUS_STYLES.pending).classes}`}>
                             {(STATUS_STYLES[h.status] || STATUS_STYLES.pending).label}
                           </span>
-                          <span className="text-xs text-gray-400 dark:text-slate-500">
+                          <span className="text-xs text-gray-600 dark:text-slate-500">
                             {new Date(h.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}
                           </span>
                         </div>
                         {h.note && <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">{h.note}</p>}
-                        {h.location && <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500">{h.location}</p>}
+                        {h.location && <p className="mt-0.5 text-xs text-gray-600 dark:text-slate-500">{h.location}</p>}
                       </li>
                     ))}
                   </ol>

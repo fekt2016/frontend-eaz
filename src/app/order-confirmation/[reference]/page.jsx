@@ -31,7 +31,7 @@ export default function OrderConfirmationPage({ params }) {
         <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
           <TriangleAlert size={28} className="text-brand-500 mb-3" />
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Order not found</p>
-          <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">{error}</p>
+          <p className="text-gray-600 dark:text-slate-500 text-sm mb-6">{error}</p>
           <Link
             href="/shop"
             className="rounded-full bg-gray-900 dark:bg-brand-500 px-5 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
@@ -77,12 +77,12 @@ export default function OrderConfirmationPage({ params }) {
         </div>
 
         <div className="mt-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
-          <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
           <ul className="divide-y divide-gray-100 dark:divide-slate-800 border-b border-gray-100 dark:border-slate-800 mb-4">
             {order.items.map((item) => (
               <li key={item.product || item.name} className="flex justify-between gap-3 py-3 text-sm">
                 <span className="text-gray-700 dark:text-slate-300">
-                  {item.name} <span className="text-gray-400 dark:text-slate-500">× {item.qty}</span>
+                  {item.name} <span className="text-gray-600 dark:text-slate-500">× {item.qty}</span>
                 </span>
                 <span className="font-medium text-gray-900 dark:text-white">{formatGhs(item.price * item.qty)}</span>
               </li>
@@ -110,7 +110,7 @@ export default function OrderConfirmationPage({ params }) {
             the difference between the tracking journey being reachable and not. */}
         {order.trackingNumber && (
           <div className="mt-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
-            <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+            <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-2">
               Tracking
             </h3>
             <p className="font-mono text-sm font-semibold text-gray-900 dark:text-white">
@@ -124,7 +124,7 @@ export default function OrderConfirmationPage({ params }) {
             )}
             <Link
               href={`/track/order/${order.trackingNumber}`}
-              className="mt-3 inline-block text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+              className="mt-3 inline-block text-sm font-semibold text-brand-ink dark:text-brand-400 hover:underline"
             >
               Follow your order →
             </Link>
@@ -133,7 +133,7 @@ export default function OrderConfirmationPage({ params }) {
 
         {order.customer?.address && (
           <div className="mt-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
-            <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">Delivery</h3>
+            <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-2">Delivery</h3>
             <p className="text-sm text-gray-700 dark:text-slate-300">{order.customer.name}</p>
             <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer.phone}</p>
             <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer.address}</p>

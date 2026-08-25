@@ -16,10 +16,16 @@ export const baseNav = [
   { href: "/dashboard/domains", icon: Globe, label: "Domains", hideRoles: ["technician"] },
 ];
 
+// Live-chat console — admins plus front-desk staff. Kept out of adminNav so
+// staff get this without the rest of the admin toolset (backend mirrors via
+// restrictTo('admin', 'staff')).
+export const chatNav = [
+  { href: "/dashboard/chats", icon: MessagesSquare, label: "Chat Sessions" },
+];
+
 // Admin/superadmin only.
 export const adminNav = [
   { href: "/dashboard/consultations", icon: CalendarDays, label: "Consultations" },
-  { href: "/dashboard/chats", icon: MessagesSquare, label: "Chat Sessions" },
   { href: "/dashboard/reviews", icon: Star, label: "Reviews" },
   { href: "/dashboard/blog", icon: FileText, label: "Blog Posts" },
   { href: "/dashboard/hosting-orders", icon: Server, label: "Hosting Orders" },
@@ -51,3 +57,52 @@ export const posNav = [
   { label: "Warranty",   href: "/dashboard/pos/warranty",  icon: ShieldCheck, roles: ["superadmin","staff"] },
   { label: "Reports",    href: "/dashboard/pos/reports",   icon: BarChart3, roles: ["superadmin","admin","staff"] },
 ];
+
+// ── Page titles ──────────────────────────────────────────────────────────────
+// DashboardShell renders its `title` prop as the desktop topbar <h1>, defaulting
+// to "Dashboard". AppShellDecision never passed one, so every route except the
+// Marketplace announced itself as "Dashboard" — and pages that also rendered
+// their own heading produced two <h1>s. This resolves a real name from the nav
+// entries already defined above, so the sidebar label and the page title can
+// never drift apart.
+
+// Routes that have a title but deliberately no sidebar entry.
+const extraTitles = {
+  "/dashboard/settings": "Settings",
+  "/dashboard/notifications": "Notifications",
+  "/dashboard/pos/jobs": "Repair Jobs",
+  "/dashboard/pos/jobs/new": "New Repair Job",
+  "/dashboard/pos/sell": "Sell",
+  "/dashboard/commerce/inventory": "Inventory",
+  "/dashboard/commerce/products": "Products",
+  "/dashboard/commerce/products/new": "New Product",
+  "/dashboard/commerce/delivery-zones": "Delivery Zones",
+  "/dashboard/hosting/new-account": "New Hosting Account",
+};
+
+/**
+ * Resolve a page title for a dashboard pathname.
+ *
+ * Longest-prefix match, so detail routes inherit their section's name
+ * (`/dashboard/orders/653…` → "Shop Orders") instead of falling back to the
+ * generic default.
+ */
+export function titleForPath(pathname) {
+  if (!pathname) return "Dashboard";
+  const candidates = [
+    ...extraTitles ? Object.entries(extraTitles).map(([href, label]) => ({ href, label })) : [],
+    ...baseNav,
+    ...chatNav,
+    ...adminNav,
+    ...marketplaceNav,
+    ...posNav,
+  ];
+
+  let best = null;
+  for (const entry of candidates) {
+    if (pathname === entry.href || pathname.startsWith(entry.href + "/")) {
+      if (!best || entry.href.length > best.href.length) best = entry;
+    }
+  }
+  return best ? best.label : "Dashboard";
+}

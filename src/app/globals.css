@@ -36,9 +36,56 @@ body {
   border-radius: 4px;
 }
 
+/*
+ * Accessibility: honour prefers-reduced-motion (WCAG 2.3.3).
+ * The app ships a framer-motion hero carousel, ~113 spinners and ~41 pulse
+ * skeletons; none of them previously checked this setting. Vestibular triggers
+ * come from movement, not from state change, so we collapse animation and
+ * transition duration to a hair rather than to 0 — that keeps
+ * transition/animation END events firing, so components that wait on them
+ * (drawers, dialogs) still complete instead of hanging.
+ *
+ * framer-motion reads the same media query via useReducedMotion(); this block
+ * covers the CSS-driven majority.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Spinners still need to read as "busy", so let them turn — slowly. */
+  .animate-spin {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /*
+   * Screen-reader-only text. Needed by the ui/ primitives so icon-only controls
+   * and live regions can carry a real accessible name without visible chrome.
+   */
+  .sr-only-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 }
 

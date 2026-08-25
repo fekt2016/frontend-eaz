@@ -34,7 +34,7 @@ function Countdown({ until }) {
   return (
     <div className="mt-8 flex items-center justify-center gap-3">
       <Clock size={14} className="text-brand-400 flex-shrink-0" />
-      <p className="text-sm text-gray-400 dark:text-slate-400">Back in</p>
+      <p className="text-sm text-gray-600 dark:text-slate-400">Back in</p>
       {[
         { label: "hrs",  val: remaining.h },
         { label: "min",  val: remaining.m },
@@ -77,7 +77,7 @@ function MaintenanceContent() {
       </h1>
 
       {/* Message */}
-      <p className="text-gray-400 text-base max-w-md leading-relaxed whitespace-pre-line">
+      <p className="text-gray-600 text-base max-w-md leading-relaxed whitespace-pre-line">
         {message}
       </p>
 

@@ -24,7 +24,7 @@ export default function Testimonials() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-14">
           <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Reviews</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Reviews</p>
             <StarRule className="mb-4" />
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               What Our Clients Say
@@ -59,7 +59,7 @@ export default function Testimonials() {
           </div>
         ) : reviews.length === 0 ? (
           <div className="text-center py-12 mb-10">
-            <p className="text-gray-400 dark:text-slate-500 text-sm">No reviews yet — be the first!</p>
+            <p className="text-gray-600 dark:text-slate-500 text-sm">No reviews yet — be the first!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -72,12 +72,12 @@ export default function Testimonials() {
                 </div>
                 <p className="text-gray-700 dark:text-slate-300 leading-relaxed mb-6">&ldquo;{t.review}&rdquo;</p>
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-slate-700">
-                  <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-semibold text-sm flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-ink dark:text-brand-400 font-semibold text-sm flex-shrink-0">
                     {t.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900 dark:text-white text-sm">{t.name}</p>
-                    <p className="text-gray-400 dark:text-slate-500 text-xs">{t.service}</p>
+                    <p className="text-gray-600 dark:text-slate-500 text-xs">{t.service}</p>
                   </div>
                 </div>
               </div>
@@ -89,7 +89,7 @@ export default function Testimonials() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
           <div>
             <p className="font-semibold text-gray-900 dark:text-white text-sm">Had a great experience?</p>
-            <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">Share your feedback — it helps others find us.</p>
+            <p className="text-gray-600 dark:text-slate-500 text-xs mt-0.5">Share your feedback — it helps others find us.</p>
           </div>
           <Link href="/reviews#leave-review" className="flex-shrink-0 px-6 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">
             Leave a Review <Star size={12} className="inline-block -mt-0.5 text-brand-400" />

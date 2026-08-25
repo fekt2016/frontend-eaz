@@ -18,7 +18,7 @@ function Stat({ label, value, hint }) {
     <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">{label}</p>
       <p className="mt-1 font-display font-bold text-2xl text-gray-900 dark:text-white">{value}</p>
-      {hint && <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500">{hint}</p>}
+      {hint && <p className="mt-0.5 text-xs text-gray-600 dark:text-slate-500">{hint}</p>}
     </div>
   );
 }
@@ -50,7 +50,7 @@ export default function SalesTracker() {
       </div>
 
       {summaryQ.isLoading ? (
-        <p className="flex items-center gap-2 text-sm text-gray-400 dark:text-slate-500">
+        <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-500">
           <Loader2 size={14} className="animate-spin" /> Loading sales…
         </p>
       ) : summaryQ.isError ? (
@@ -73,7 +73,7 @@ export default function SalesTracker() {
           {isAdmin && byStaff.length > 0 && (
             <div className="mt-6">
               <div className="flex items-center gap-2 mb-3">
-                <Users size={14} className="text-gray-400 dark:text-slate-500" />
+                <Users size={14} className="text-gray-600 dark:text-slate-500" />
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Sales by staff</h3>
               </div>
               <div className="overflow-x-auto">
@@ -122,11 +122,11 @@ export default function SalesTracker() {
 
           <div className="mt-6">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp size={14} className="text-gray-400 dark:text-slate-500" />
+              <TrendingUp size={14} className="text-gray-600 dark:text-slate-500" />
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                 Recent sales
                 {isAdmin && cashierId && (
-                  <span className="ml-1 font-normal text-gray-400 dark:text-slate-500">
+                  <span className="ml-1 font-normal text-gray-600 dark:text-slate-500">
                     — {byStaff.find((r) => r.cashierId === cashierId)?.name || "selected staff"}
                   </span>
                 )}
@@ -134,11 +134,11 @@ export default function SalesTracker() {
             </div>
 
             {listQ.isLoading ? (
-              <p className="flex items-center gap-2 text-sm text-gray-400 dark:text-slate-500">
+              <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-500">
                 <Loader2 size={14} className="animate-spin" /> Loading…
               </p>
             ) : sales.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 p-6 text-center text-sm text-gray-400 dark:text-slate-500">
+              <p className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 p-6 text-center text-sm text-gray-600 dark:text-slate-500">
                 No sales yet. Completed sales will appear here.
               </p>
             ) : (
@@ -147,7 +147,7 @@ export default function SalesTracker() {
                   <li key={s._id} className="flex items-center justify-between gap-4 bg-white dark:bg-slate-900 px-4 py-3">
                     <div className="min-w-0">
                       <p className="font-mono text-xs text-gray-500 dark:text-slate-400">{s.saleNumber}</p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                      <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">
                         {fmtTime(s.createdAt)}
                         {isAdmin && s.cashier?.name ? ` · ${s.cashier.name}` : ""}
                         {` · ${s.paymentMethod}`}

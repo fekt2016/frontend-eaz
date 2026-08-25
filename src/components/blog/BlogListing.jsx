@@ -32,7 +32,7 @@ function PostCard({ post }) {
     <article className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <CategoryPill cat={post.category} />
-        <span className="text-gray-400 dark:text-slate-500 text-xs flex items-center gap-1">
+        <span className="text-gray-600 dark:text-slate-500 text-xs flex items-center gap-1">
           <Clock size={10} /> {post.readTime}
         </span>
       </div>
@@ -43,7 +43,7 @@ function PostCard({ post }) {
       <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 dark:border-slate-800">
         <div>
           <p className="text-gray-700 dark:text-slate-300 text-xs font-medium">{post.author}</p>
-          {date && <p className="text-gray-400 dark:text-slate-500 text-xs">{new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>}
+          {date && <p className="text-gray-600 dark:text-slate-500 text-xs">{new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>}
         </div>
         <Link href={`/blog/${post.slug}`} className="text-brand-500 text-xs font-medium hover:underline">
           Read →
@@ -101,7 +101,7 @@ export default function BlogListing() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Insights & Guides</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Insights & Guides</p>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">The EazWorld Blog</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg max-w-xl mx-auto">
             Practical guides, case studies, and insights on digital marketing, web design, and growing your business in Ghana.
@@ -116,7 +116,7 @@ export default function BlogListing() {
             <div className="p-8 md:p-10 rounded-3xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 grid md:grid-cols-[1fr_auto] gap-8 items-start">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-900/20 dark:text-brand-400 dark:border-brand-800/30">
+                  <span className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-0.5 text-xs font-medium text-brand-ink dark:bg-brand-900/20 dark:text-brand-400 dark:border-brand-800/30">
                     Featured
                   </span>
                   <CategoryPill cat={featured.category} />
@@ -125,7 +125,7 @@ export default function BlogListing() {
                   <Link href={`/blog/${featured.slug}`}>{featured.title}</Link>
                 </h2>
                 <p className="text-gray-500 dark:text-slate-400 mb-4 leading-relaxed">{featured.excerpt}</p>
-                <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-slate-500 flex-wrap">
+                <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-slate-500 flex-wrap">
                   <span>{featured.author}</span>
                   <span>·</span>
                   {(featured.publishedAt || featured.createdAt) && (
@@ -165,7 +165,7 @@ export default function BlogListing() {
               ))}
             </div>
             <div className="relative w-full sm:w-56">
-              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Search articles…"
@@ -186,8 +186,8 @@ export default function BlogListing() {
               {[1,2,3,4,5,6].map((i) => <PostCardSkeleton key={i} />)}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-20 text-gray-400 dark:text-slate-500">
-              <Inbox size={30} className="mb-3 mx-auto text-gray-400 dark:text-slate-500" />
+            <div className="text-center py-20 text-gray-600 dark:text-slate-500">
+              <Inbox size={30} className="mb-3 mx-auto text-gray-600 dark:text-slate-500" />
               <p className="font-semibold text-gray-900 dark:text-white mb-1">No articles found</p>
               <p className="text-sm">Try a different search or category.</p>
             </div>

@@ -39,6 +39,8 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { count, openCart } = useCart();
   const dropdownRef = useRef(null);
+  const servicesBtnRef = useRef(null);
+  const mobileBtnRef = useRef(null);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -56,6 +58,25 @@ export default function Navbar() {
     setServicesOpen(false);
     setMobileOpen(false);
   }, [pathname]);
+
+  // Escape closes whichever disclosure is open and hands focus back to its
+  // trigger — without this, keyboard users had no way out of the menu.
+  useEffect(() => {
+    if (!servicesOpen && !mobileOpen) return;
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      if (servicesOpen) {
+        setServicesOpen(false);
+        servicesBtnRef.current?.focus();
+      }
+      if (mobileOpen) {
+        setMobileOpen(false);
+        mobileBtnRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [servicesOpen, mobileOpen]);
 
   if (pathname?.startsWith("/auth")) return null;
 
@@ -93,15 +114,19 @@ export default function Navbar() {
           {/* Services dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
+              ref={servicesBtnRef}
               onClick={() => setServicesOpen((v) => !v)}
+              aria-expanded={servicesOpen}
+              aria-haspopup="true"
+              aria-controls="services-menu"
               className={`flex items-center gap-1 text-sm font-medium transition ${isServiceActive ? "text-brand-500" : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"}`}
             >
               Services
-              <ChevronDown size={10} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={14} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
             </button>
 
             {servicesOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[520px] bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl p-4">
+              <div id="services-menu" className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[520px] bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl p-4 animate-pop-in">
                 {/* Arrow */}
                 <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-slate-900 border-l border-t border-gray-100 dark:border-slate-800 rotate-45" />
 
@@ -118,10 +143,10 @@ export default function Navbar() {
                     >
                       <Icon size={18} className="mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className={`text-xs font-semibold leading-tight ${pathname === href ? "text-brand-600 dark:text-brand-400" : "text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white"}`}>
+                        <p className={`text-xs font-semibold leading-tight ${pathname === href ? "text-brand-ink dark:text-brand-400" : "text-gray-900 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white"}`}>
                           {label}
                         </p>
-                        <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5 leading-tight">{desc}</p>
+                        <p className="text-[11px] text-gray-600 dark:text-slate-500 mt-0.5 leading-tight">{desc}</p>
                       </div>
                     </Link>
                   ))}
@@ -129,7 +154,7 @@ export default function Navbar() {
 
                 {/* Footer row */}
                 <div className="border-t border-gray-100 dark:border-slate-800 pt-3 flex items-center justify-between">
-                  <Link href="/services" className="text-xs text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-white transition">
+                  <Link href="/services" className="text-xs text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-white transition">
                     View all services →
                   </Link>
                   <Link href="/book-consultation" className="text-xs font-semibold px-4 py-1.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
@@ -162,7 +187,7 @@ export default function Navbar() {
           >
             <ShoppingCart size={18} />
             {count > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white">
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-gray-900">
                 {count}
               </span>
             )}
@@ -184,7 +209,7 @@ export default function Navbar() {
               <Link href="/auth/login" className="text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">
                 Sign In
               </Link>
-              <Link href="/book-consultation" className="text-sm font-medium px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white hover:bg-gray-700 dark:hover:bg-brand-400 transition">
+              <Link href="/book-consultation" className="text-sm font-medium px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
                 Book a Call
               </Link>
             </div>
@@ -203,17 +228,20 @@ export default function Navbar() {
           >
             <ShoppingCart size={18} />
             {count > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white">
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-gray-900">
                 {count}
               </span>
             )}
           </button>
           <ThemeToggle />
           <button
+            ref={mobileBtnRef}
             type="button"
-            className="p-2 text-gray-600 dark:text-slate-400"
+            className="p-2.5 text-gray-600 dark:text-slate-400"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Menu"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-menu"
           >
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -222,7 +250,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 space-y-0.5">
+        <div id="mobile-menu" className="md:hidden border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 space-y-0.5">
 
           {user && (
             <Link
@@ -230,12 +258,12 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 py-2.5 border-b border-gray-50 dark:border-slate-800"
             >
-              <span className="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+              <span className="w-8 h-8 rounded-full bg-brand-500 text-gray-900 flex items-center justify-center text-sm font-bold flex-shrink-0">
                 {user.name?.charAt(0).toUpperCase()}
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold text-gray-900 dark:text-white truncate">{user.name}</span>
-                <span className="block text-xs text-gray-400 dark:text-slate-500">Go to Dashboard</span>
+                <span className="block text-xs text-gray-600 dark:text-slate-500">Go to Dashboard</span>
               </span>
             </Link>
           )}
@@ -248,14 +276,16 @@ export default function Navbar() {
           <div className="border-b border-gray-50 dark:border-slate-800">
             <button
               onClick={() => setMobileServicesOpen((v) => !v)}
-              className={`flex items-center justify-between w-full py-2.5 text-sm font-medium ${isServiceActive ? "text-brand-500" : "text-gray-700 dark:text-slate-300"}`}
+              aria-expanded={mobileServicesOpen}
+              aria-controls="mobile-services"
+              className={`flex items-center justify-between w-full py-3 text-sm font-medium ${isServiceActive ? "text-brand-500" : "text-gray-700 dark:text-slate-300"}`}
             >
               Services
-              <ChevronDown size={10} className={`transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={14} className={`transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`} />
             </button>
 
             {mobileServicesOpen && (
-              <div className="pb-2 space-y-0.5 pl-2">
+              <div id="mobile-services" className="pb-2 space-y-0.5 pl-2">
                 {serviceLinks.map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
@@ -293,7 +323,7 @@ export default function Navbar() {
               <Link href="/auth/login" className="block py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 border-b border-gray-50 dark:border-slate-800" onClick={() => setMobileOpen(false)}>
                 Sign In
               </Link>
-              <Link href="/book-consultation" className="block mt-3 text-center py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white text-sm font-medium" onClick={() => setMobileOpen(false)}>
+              <Link href="/book-consultation" className="block mt-3 text-center py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-medium" onClick={() => setMobileOpen(false)}>
                 Book a Free Consultation
               </Link>
             </>

@@ -4,11 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { ShieldCheck, TriangleAlert, CheckCircle2, XCircle } from "lucide-react";
 import { useWarrantyJobs } from "@/hooks/queries/usePosJobs";
+import {
+  Alert, Badge, Button, Card, EmptyState, PageHeader, Skeleton,
+} from "@/components/ui";
 
-const WARRANTY_COLORS = {
-  active:        "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
-  expiring_soon: "bg-brand-500/15 text-brand-600 dark:text-brand-400 border-brand-500/30",
-  expired:       "bg-gray-500/15 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700",
+const WARRANTY_TONES = {
+  active:        "success",
+  expiring_soon: "brand",
+  expired:       "neutral",
 };
 
 const WARRANTY_LABELS = {
@@ -17,49 +20,56 @@ const WARRANTY_LABELS = {
   expired:       "Expired",
 };
 
+const ICON_TONES = {
+  active:        "text-success dark:text-success-dark",
+  expiring_soon: "text-brand-ink dark:text-brand-400",
+  expired:       "text-gray-600 dark:text-slate-400",
+};
+
 function daysLeft(dateStr) {
   const diff = new Date(dateStr) - Date.now();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
 function JobWarrantyRow({ job, warrantyStatus }) {
-  const expires  = job.warrantyExpires ? new Date(job.warrantyExpires) : null;
-  const days     = expires ? daysLeft(expires) : null;
+  const expires = job.warrantyExpires ? new Date(job.warrantyExpires) : null;
+  const days    = expires ? daysLeft(expires) : null;
 
   return (
     <Link
       href={`/dashboard/pos/jobs/${job._id}`}
-      className="flex items-center justify-between px-5 py-4 hover:bg-gray-100/40 dark:hover:bg-gray-800/40 transition border-b border-gray-200 dark:border-gray-800 last:border-0"
+      className="flex items-center justify-between border-b border-gray-100 px-5 py-4 transition-colors last:border-0 hover:bg-paper dark:border-slate-800 dark:hover:bg-slate-800/40"
     >
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
-          <ShieldCheck size={11} className={
-            warrantyStatus === "active"        ? "text-green-600 dark:text-green-400" :
-            warrantyStatus === "expiring_soon" ? "text-brand-600 dark:text-brand-400" : "text-gray-500"
-          } />
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-100 dark:border-slate-700 dark:bg-slate-800">
+          <ShieldCheck size={14} aria-hidden="true" className={ICON_TONES[warrantyStatus] || ICON_TONES.expired} />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-mono font-semibold text-brand-600 dark:text-brand-400">{job.jobNumber}</p>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${WARRANTY_COLORS[warrantyStatus]}`}>
+            <p className="font-mono text-body-sm font-semibold text-brand-ink dark:text-brand-400">{job.jobNumber}</p>
+            <Badge tone={WARRANTY_TONES[warrantyStatus] || "neutral"}>
               {WARRANTY_LABELS[warrantyStatus]}
-            </span>
+            </Badge>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+          <p className="mt-0.5 truncate text-caption text-gray-600 dark:text-slate-400">
             {job.customer?.name} · {[job.deviceBrand, job.deviceModel].filter(Boolean).join(" ") || "—"}
           </p>
           {job.warrantyNotes && (
-            <p className="text-xs text-gray-600 truncate">{job.warrantyNotes}</p>
+            <p className="truncate text-caption text-gray-600 dark:text-slate-400">{job.warrantyNotes}</p>
           )}
         </div>
       </div>
-      <div className="flex-shrink-0 ml-3 text-right">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+      <div className="ml-3 flex-shrink-0 text-right">
+        <p className="text-caption text-gray-600 dark:text-slate-400">
           {expires ? expires.toLocaleDateString("en-GH", { dateStyle: "medium" }) : "—"}
         </p>
         {days !== null && (
-          <p className={`text-xs font-semibold mt-0.5 ${
-            days < 0 ? "text-gray-500" : days <= 7 ? "text-brand-600 dark:text-brand-400" : "text-green-600 dark:text-green-400"
+          <p className={`mt-0.5 text-caption font-semibold ${
+            days < 0
+              ? "text-gray-600 dark:text-slate-400"
+              : days <= 7
+                ? "text-brand-ink dark:text-brand-400"
+                : "text-success dark:text-success-dark"
           }`}>
             {days < 0 ? `${Math.abs(days)}d ago` : days === 0 ? "Today" : `${days}d left`}
           </p>
@@ -69,48 +79,75 @@ function JobWarrantyRow({ job, warrantyStatus }) {
   );
 }
 
+function StatTile({ label, value, sub, icon: Icon, tone }) {
+  return (
+    <Card padding="sm">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="font-mono text-eyebrow font-bold uppercase text-gray-600 dark:text-slate-400">{label}</p>
+        <Icon size={15} aria-hidden="true" className={tone} />
+      </div>
+      <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-white">{value}</p>
+      <p className="mt-0.5 text-caption text-gray-600 dark:text-slate-400">{sub}</p>
+    </Card>
+  );
+}
+
 export default function WarrantyPage() {
-  const [tab,     setTab]     = useState("active");
+  const [tab, setTab] = useState("active");
 
   const { data, isLoading: loading, error: queryError } = useWarrantyJobs();
   const error = queryError?.message || "";
 
-  const activeJobs      = data?.active     || [];
-  const expiringSoon    = data?.expiringSoon || [];
-  const expiredJobs     = data?.expired     || [];
+  const activeJobs   = data?.active       || [];
+  const expiringSoon = data?.expiringSoon || [];
+  const expiredJobs  = data?.expired      || [];
+
+  const trulyActive = activeJobs.filter(
+    (j) => j.warrantyStatus === "active" && !expiringSoon.find((e) => e._id === j._id)
+  );
 
   const displayJobs = tab === "active"
-    ? activeJobs.filter(j => j.warrantyStatus === "active" && !expiringSoon.find(e => e._id === j._id))
+    ? trulyActive
     : tab === "expiring"
-    ? expiringSoon
-    : expiredJobs;
+      ? expiringSoon
+      : expiredJobs;
+
+  const TABS = [
+    { key: "active",   label: `Active (${trulyActive.length})` },
+    { key: "expiring", label: `Expiring Soon (${expiringSoon.length})` },
+    { key: "expired",  label: `Expired (${expiredJobs.length})` },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ShieldCheck className="text-green-600 dark:text-green-400" size={18} /> Warranty Tracker
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Track active warranties and upcoming expirations</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Warranty Tracker"
+        description="Track active warranties and upcoming expirations."
+        actions={
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-success-surface dark:bg-success-surface-dark">
+            <ShieldCheck size={18} aria-hidden="true" className="text-success dark:text-success-dark" />
+          </span>
+        }
+      />
 
       {/* Alert banner — expiring soon */}
       {!loading && expiringSoon.length > 0 && (
-        <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl bg-brand-500/10 border border-brand-500/30">
-          <TriangleAlert size={14} className="text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" />
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3.5 dark:border-brand-800/40 dark:bg-brand-900/20"
+        >
+          <TriangleAlert size={16} aria-hidden="true" className="mt-0.5 flex-shrink-0 text-brand-ink dark:text-brand-400" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">
+            <p className="text-body-sm font-semibold text-brand-ink dark:text-brand-400">
               {expiringSoon.length} warranty{expiringSoon.length !== 1 ? "s" : ""} expiring within 7 days
             </p>
-            <div className="flex flex-wrap gap-1.5 mt-1.5">
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
               {expiringSoon.map(j => (
                 <Link
                   key={j._id}
                   href={`/dashboard/pos/jobs/${j._id}`}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-brand-500/15 text-brand-300 hover:bg-brand-500/30 transition font-mono"
+                  // Was text-brand-300 on a pale gold chip — 1.5:1, effectively invisible in light mode.
+                  className="rounded-lg bg-brand-500/15 px-2.5 py-1 font-mono text-caption font-semibold text-brand-ink transition-colors hover:bg-brand-500/30 dark:text-brand-400"
                 >
                   {j.jobNumber} · {daysLeft(j.warrantyExpires)}d
                 </Link>
@@ -123,76 +160,65 @@ export default function WarrantyPage() {
       {/* Stat cards */}
       {loading ? (
         <div className="grid grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-20 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 animate-pulse" />)}
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Active</p>
-              <CheckCircle2 size={13} className="text-green-600 dark:text-green-400" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{activeJobs.length}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Valid warranties</p>
-          </div>
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Expiring</p>
-              <TriangleAlert size={13} className="text-brand-600 dark:text-brand-400" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{expiringSoon.length}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Within 7 days</p>
-          </div>
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Expired</p>
-              <XCircle size={13} className="text-gray-500" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{expiredJobs.length}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Last 90 days</p>
-          </div>
+          <StatTile
+            label="Active" value={activeJobs.length} sub="Valid warranties"
+            icon={CheckCircle2} tone="text-success dark:text-success-dark"
+          />
+          <StatTile
+            label="Expiring" value={expiringSoon.length} sub="Within 7 days"
+            icon={TriangleAlert} tone="text-brand-ink dark:text-brand-400"
+          />
+          <StatTile
+            label="Expired" value={expiredJobs.length} sub="Last 90 days"
+            icon={XCircle} tone="text-gray-600 dark:text-slate-400"
+          />
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1.5">
-        {[
-          { key: "active",   label: `Active (${activeJobs.filter(j => j.warrantyStatus === "active" && !expiringSoon.find(e => e._id === j._id)).length})` },
-          { key: "expiring", label: `Expiring Soon (${expiringSoon.length})` },
-          { key: "expired",  label: `Expired (${expiredJobs.length})` },
-        ].map(t => (
-          <button
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Warranty status">
+        {TABS.map(t => (
+          <Button
             key={t.key}
+            size="sm"
+            variant={tab === t.key ? "primary" : "secondary"}
+            aria-pressed={tab === t.key}
             onClick={() => setTab(t.key)}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition ${
-              tab === t.key
-                ? "bg-brand-500 text-white"
-                : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-700"
-            }`}
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
       {/* Jobs list */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <Card padding="none" className="overflow-hidden">
         {loading ? (
-          <div className="p-5 space-y-3">
-            {[...Array(4)].map((_, i) => <div key={i} className="h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+          <div className="space-y-3 p-5">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
           </div>
         ) : error ? (
-          <p className="text-red-600 dark:text-red-400 text-sm p-5">{error}</p>
+          <div className="p-5"><Alert tone="error">{error}</Alert></div>
         ) : displayJobs.length === 0 ? (
-          <div className="py-16 text-center">
-            <ShieldCheck size={24} className="text-gray-700 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400 font-medium">No warranties in this category</p>
-            <p className="text-gray-600 text-sm mt-1">
-              {tab === "active"   ? "No active warranties right now." :
-               tab === "expiring" ? "No warranties expiring within 7 days." :
-               "No expired warranties in the last 90 days."}
-            </p>
-          </div>
+          <EmptyState
+            icon={ShieldCheck}
+            title="No warranties in this category"
+            description={
+              tab === "active"   ? "No active warranties right now." :
+              tab === "expiring" ? "No warranties expiring within 7 days." :
+              "No expired warranties in the last 90 days."
+            }
+            action={
+              tab !== "active" && trulyActive.length > 0 ? (
+                <Button variant="secondary" onClick={() => setTab("active")}>
+                  See {trulyActive.length} active
+                </Button>
+              ) : null
+            }
+          />
         ) : (
           <div>
             {displayJobs.map(job => (
@@ -204,7 +230,7 @@ export default function WarrantyPage() {
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

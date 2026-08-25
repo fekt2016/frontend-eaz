@@ -47,7 +47,7 @@ export default function BlogPreview() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">From the Blog</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">From the Blog</p>
             <StarRule className="mb-4" />
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white">Latest Insights</h2>
           </div>
@@ -71,7 +71,7 @@ export default function BlogPreview() {
                 <h3 className="font-display font-bold text-gray-900 dark:text-white leading-snug mb-2 group-hover:text-brand-500 transition">
                   {post.title}
                 </h3>
-                <p className="text-gray-400 dark:text-slate-500 text-xs flex items-center gap-1.5">
+                <p className="text-gray-600 dark:text-slate-500 text-xs flex items-center gap-1.5">
                   <Clock size={9} /> {post.readTime}
                   {post.publishedAt && (
                     <> · {new Date(post.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>

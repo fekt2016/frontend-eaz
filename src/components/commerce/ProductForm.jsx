@@ -285,7 +285,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
           onChange={(e) => setShortDescription(e.target.value)}
           placeholder="One or two lines shown next to the price"
         />
-        <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+        <p className="mt-1 text-xs text-gray-600 dark:text-slate-500">
           {shortDescription.length}/{SHORT_DESCRIPTION_MAX} — optional; falls back to a
           trimmed version of the description below.
         </p>
@@ -316,11 +316,11 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
           <span className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
             Variants
           </span>
-          <span className="text-xs text-gray-400 dark:text-slate-500">Optional — each has its own SKU, attributes, and stock</span>
+          <span className="text-xs text-gray-600 dark:text-slate-500">Optional — each has its own SKU, attributes, and stock</span>
         </div>
 
         {variants.length === 0 && (
-          <p className="rounded-xl border border-dashed border-gray-300 dark:border-slate-600 px-4 py-3 text-xs text-gray-400 dark:text-slate-500">
+          <p className="rounded-xl border border-dashed border-gray-300 dark:border-slate-600 px-4 py-3 text-xs text-gray-600 dark:text-slate-500">
             No variants — the product is sold as a single SKU using the stock above.
           </p>
         )}

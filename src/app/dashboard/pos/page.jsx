@@ -6,60 +6,46 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Wrench, RefreshCw, Clock, TriangleAlert } from "lucide-react";
 import { useJobs } from "@/hooks/queries/usePosJobs";
-
-const STATUS_COLORS = {
-  received:           "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
-  diagnosing:         "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
-  waiting_for_parts:  "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30",
-  repairing:          "bg-brand-500/15 text-brand-600 dark:text-brand-400 border-brand-500/30",
-  ready:              "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
-  collected:          "bg-gray-500/15 text-gray-500 dark:text-gray-400 border-gray-500/30",
-  cancelled:          "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
-};
-
-const ACTIVE_STATUSES = ["received", "diagnosing", "waiting_for_parts", "repairing", "ready"];
+import { ACTIVE_STATUSES, statusBadgeProps, statusLabel } from "@/lib/jobStatus";
+import { Badge, Button, Card, EmptyState, PageHeader, Skeleton } from "@/components/ui";
 
 function JobRow({ job }) {
   return (
     <Link
       href={`/dashboard/pos/jobs/${job._id}`}
-      className="flex items-center gap-4 px-5 py-4 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition"
+      className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-paper dark:hover:bg-slate-800/50"
     >
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-sm font-mono font-semibold text-gray-900 dark:text-white">{job.jobNumber}</span>
+        <div className="mb-0.5 flex items-center gap-2">
+          <span className="font-mono text-body-sm font-semibold text-gray-900 dark:text-white">{job.jobNumber}</span>
           {job.priority === "urgent" && (
-            <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded-full">
-              <TriangleAlert size={8} /> Urgent
-            </span>
+            <Badge tone="error"><TriangleAlert size={11} aria-hidden="true" /> Urgent</Badge>
           )}
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+        <p className="truncate text-caption text-gray-600 dark:text-slate-400">
           {job.customer?.phone}
           {(job.deviceBrand || job.deviceModel) && (
-            <span className="ml-2 text-gray-500">
-              · {[job.deviceBrand, job.deviceModel].filter(Boolean).join(" ")}
-            </span>
+            <span className="ml-2">· {[job.deviceBrand, job.deviceModel].filter(Boolean).join(" ")}</span>
           )}
         </p>
-        <p className="text-xs text-gray-600 truncate mt-0.5">{job.faultDescription}</p>
+        <p className="mt-0.5 truncate text-caption text-gray-600 dark:text-slate-400">{job.faultDescription}</p>
       </div>
       {job.estimatedCompletion && (
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 flex-shrink-0">
-          <Clock size={10} />
+        <div className="hidden flex-shrink-0 items-center gap-1.5 text-caption text-gray-600 dark:text-slate-400 sm:flex">
+          <Clock size={12} aria-hidden="true" />
           {new Date(job.estimatedCompletion).toLocaleDateString("en-GH", { dateStyle: "medium" })}
         </div>
       )}
-      <span className={`text-xs px-2.5 py-1 rounded-full border font-medium capitalize flex-shrink-0 ${STATUS_COLORS[job.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-        {job.status.replace(/_/g, " ")}
+      <span className="flex-shrink-0">
+        <Badge {...statusBadgeProps(job.status)}>{statusLabel(job.status)}</Badge>
       </span>
     </Link>
   );
 }
 
 const Spinner = () => (
-  <div className="min-h-screen bg-paper dark:bg-gray-950 flex items-center justify-center">
-    <div className="w-6 h-6 border-2 border-slate-700 border-t-brand-400 rounded-full animate-spin" />
+  <div className="flex min-h-screen items-center justify-center bg-paper dark:bg-ink">
+    <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-700 border-t-brand-400" />
   </div>
 );
 
@@ -68,7 +54,7 @@ const Spinner = () => (
 export default function PosRoot() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [tab,     setTab]     = useState("mine"); // 'mine' | 'all'
+  const [tab, setTab] = useState("mine"); // 'mine' | 'all'
 
   const showJobs = !!user && ["technician", "admin", "staff"].includes(user.role);
 
@@ -99,100 +85,116 @@ export default function PosRoot() {
     urgent:   myJobs.filter(j => j.priority === "urgent").length,
   };
 
+  const TABS = [
+    { key: "mine", label: `My Jobs (${myJobs.length})` },
+    { key: "all",  label: `All Active (${allJobs.length})` },
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Greeting */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Welcome, {user?.name?.split(" ")[0]} 👋
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Technician · Repair Dashboard</p>
-        </div>
-        <button
-          onClick={fetchJobs}
-          className="w-9 h-9 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
-        >
-          <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
-        </button>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title={`Welcome, ${user?.name?.split(" ")[0]} 👋`}
+        description="Technician · Repair Dashboard"
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            className="px-2.5"
+            onClick={fetchJobs}
+            aria-label="Refresh jobs"
+          >
+            <RefreshCw size={15} aria-hidden="true" className={loading ? "animate-spin" : ""} />
+          </Button>
+        }
+      />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "New / Waiting",  value: counts.received, color: "text-blue-600 dark:text-blue-400" },
-          { label: "In Progress",    value: counts.active,   color: "text-brand-600 dark:text-brand-400" },
-          { label: "Ready",          value: counts.ready,    color: "text-green-600 dark:text-green-400" },
-          { label: "Urgent",         value: counts.urgent,   color: "text-red-600 dark:text-red-400" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 text-center">
-            <p className={`text-2xl font-bold ${color}`}>{value}</p>
-            <p className="text-xs text-gray-500 mt-1">{label}</p>
-          </div>
+          { label: "New / Waiting", value: counts.received, tone: "text-info dark:text-info-dark" },
+          { label: "In Progress",   value: counts.active,   tone: "text-brand-ink dark:text-brand-400" },
+          { label: "Ready",         value: counts.ready,    tone: "text-success dark:text-success-dark" },
+          { label: "Urgent",        value: counts.urgent,   tone: "text-error dark:text-error-dark" },
+        ].map(({ label, value, tone }) => (
+          <Card key={label} padding="sm" className="text-center">
+            <p className={`text-2xl font-bold tabular-nums ${tone}`}>{value}</p>
+            <p className="mt-1 text-caption text-gray-600 dark:text-slate-400">{label}</p>
+          </Card>
         ))}
       </div>
 
       {/* Tab toggle */}
-      <div className="flex gap-1 p-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl w-fit">
-        {[
-          { key: "mine", label: `My Jobs (${myJobs.length})` },
-          { key: "all",  label: `All Active (${allJobs.length})` },
-        ].map(t => (
-          <button
+      <div className="flex w-fit gap-2" role="group" aria-label="Which jobs to show">
+        {TABS.map(t => (
+          <Button
             key={t.key}
+            size="sm"
+            variant={tab === t.key ? "primary" : "secondary"}
+            aria-pressed={tab === t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
-              tab === t.key
-                ? "bg-brand-500 text-white"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-            }`}
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
       {/* Job list */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <Card padding="none" className="overflow-hidden">
         {loading ? (
-          <div className="p-5 space-y-3">
+          <div className="space-y-3 p-5">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+              <Skeleton key={i} className="h-16 rounded-xl" />
             ))}
           </div>
         ) : jobs.length === 0 ? (
-          <div className="py-16 text-center text-gray-500">
-            <Wrench size={24} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm">{tab === "mine" ? "No jobs assigned to you." : "No active jobs."}</p>
-          </div>
+          <EmptyState
+            icon={Wrench}
+            title={tab === "mine" ? "No jobs assigned to you" : "No active jobs"}
+            description={
+              tab === "mine"
+                ? "Jobs assigned to you appear here as soon as the front desk books them in."
+                : "Nothing is on the bench right now."
+            }
+            action={
+              tab === "mine" && allJobs.length > 0 ? (
+                <Button variant="secondary" onClick={() => setTab("all")}>
+                  See all {allJobs.length} active jobs
+                </Button>
+              ) : (
+                <Button href="/dashboard/pos/jobs/new">Book in a new job</Button>
+              )
+            }
+          />
         ) : (
           <div>
-            {/* Active jobs */}
             {activeJobs.length > 0 && (
               <div>
-                <div className="px-5 py-2.5 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Active · {activeJobs.length}</p>
+                <div className="border-b border-gray-200 bg-paper px-5 py-2.5 dark:border-slate-800 dark:bg-slate-800/50">
+                  <p className="font-mono text-eyebrow font-bold uppercase text-gray-600 dark:text-slate-400">
+                    Active · {activeJobs.length}
+                  </p>
                 </div>
-                <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                <div className="divide-y divide-gray-100 dark:divide-slate-800">
                   {activeJobs.map(job => <JobRow key={job._id} job={job} />)}
                 </div>
               </div>
             )}
 
-            {/* Completed jobs */}
             {completedJobs.length > 0 && (
               <div>
-                <div className="px-5 py-2.5 bg-gray-100/30 dark:bg-gray-800/30 border-t border-b border-gray-200 dark:border-gray-800">
-                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Completed · {completedJobs.length}</p>
+                <div className="border-b border-t border-gray-200 bg-paper px-5 py-2.5 dark:border-slate-800 dark:bg-slate-800/30">
+                  <p className="font-mono text-eyebrow font-bold uppercase text-gray-600 dark:text-slate-400">
+                    Completed · {completedJobs.length}
+                  </p>
                 </div>
-                <div className="divide-y divide-gray-200 dark:divide-gray-800 opacity-60">
+                <div className="divide-y divide-gray-100 opacity-60 dark:divide-slate-800">
                   {completedJobs.map(job => <JobRow key={job._id} job={job} />)}
                 </div>
               </div>
             )}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

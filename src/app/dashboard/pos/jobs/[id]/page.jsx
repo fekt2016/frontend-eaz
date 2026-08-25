@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -10,7 +11,7 @@ import { useCardCharge } from "@/hooks/useCardCharge";
 import { CustomerDeviceCard } from "./_components/CustomerDeviceCard";
 import { JobHeader } from "./_components/JobHeader";
 import { JobInvoice } from "./_components/JobInvoice";
-import { STATUS_COLORS, statusLabel } from "./_components/jobStatus";
+import { statusBannerClass, statusLabel } from "./_components/jobStatus";
 import { useAuth } from "@/context/AuthContext";
 import {
   Trash2, Search, Plus,
@@ -22,9 +23,9 @@ import JobPhotos from "@/components/pos/JobPhotos";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useInventorySearch } from "@/hooks/queries/useInventory";
 
-const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 const selectCls = `${inputCls} cursor-pointer`;
-const labelCls  = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
+const labelCls = "block text-body-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5";
 
 const STATUSES = ["received", "diagnosing", "waiting_for_parts", "repairing", "ready", "collected", "cancelled"];
 
@@ -231,7 +232,7 @@ export default function JobDetailPage() {
 
   if (!job && !loading) return (
     <div className="text-center py-16 text-gray-500">
-      Job not found. <Link href="/dashboard/pos/jobs" className="text-brand-600 dark:text-brand-400 hover:underline">Back to jobs</Link>
+      Job not found. <Link href="/dashboard/pos/jobs" className="text-brand-ink dark:text-brand-400 hover:underline">Back to jobs</Link>
     </div>
   );
 
@@ -258,8 +259,8 @@ export default function JobDetailPage() {
           {/* Technician section */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 print:hidden">
             <div className="flex items-center gap-2 px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50">
-              <Wrench size={11} className="text-brand-600 dark:text-brand-400" />
-              <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">Technician Update</p>
+              <Wrench size={11} className="text-brand-ink dark:text-brand-400" />
+              <p className="text-xs font-semibold text-brand-ink dark:text-brand-400 uppercase tracking-wide">Technician Update</p>
             </div>
             {isEditable ? (
             <div className="p-5 space-y-4">
@@ -292,7 +293,7 @@ export default function JobDetailPage() {
                   <div>
                     <label className={labelCls}>
                       Diagnosis fee (GH₵)
-                      <span className="ml-2 text-purple-600 dark:text-purple-400 text-xs font-normal">upfront</span>
+                      <span className="ml-2 text-brand-ink dark:text-brand-400 text-xs font-normal">upfront</span>
                     </label>
                     <input
                       type="number" min="0" value={diagnosisFee}
@@ -359,8 +360,8 @@ export default function JobDetailPage() {
                 </div>
                 {job?.warrantyExpires && (
                   <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs ${
-                    job.warrantyStatus === "active"        ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400" :
-                    job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-600 dark:text-brand-400" :
+                    job.warrantyStatus === "active"        ? "bg-success-surface border-success/20 text-success dark:bg-success-surface-dark dark:border-success-dark/30 dark:text-success-dark" :
+                    job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-ink dark:text-brand-400" :
                     "bg-gray-500/10 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400"
                   }`}>
                     <span className="font-medium">Warranty expires:</span>
@@ -410,8 +411,8 @@ export default function JobDetailPage() {
                 </p>
                 {job?.warrantyExpires && (
                   <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs ${
-                    job.warrantyStatus === "active"        ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400" :
-                    job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-600 dark:text-brand-400" :
+                    job.warrantyStatus === "active"        ? "bg-success-surface border-success/20 text-success dark:bg-success-surface-dark dark:border-success-dark/30 dark:text-success-dark" :
+                    job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-ink dark:text-brand-400" :
                     "bg-gray-500/10 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400"
                   }`}>
                     <span className="font-medium">Warranty expires:</span>
@@ -440,7 +441,7 @@ export default function JobDetailPage() {
                     <p className="text-gray-900 dark:text-white">
                       {p.name}{p.sku ? ` (${p.sku})` : ""} × {p.quantity}
                     </p>
-                    <p className="font-semibold text-brand-600 dark:text-brand-400">
+                    <p className="font-semibold text-brand-ink dark:text-brand-400">
                       {formatGhs((p.cost || 0) * p.quantity)}
                     </p>
                   </div>
@@ -495,7 +496,7 @@ export default function JobDetailPage() {
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">{formatGhs(p.sellingPrice || 0)}</p>
+                          <p className="text-sm text-brand-ink dark:text-brand-400 font-semibold">{formatGhs(p.sellingPrice || 0)}</p>
                           <p className="text-xs text-gray-500">Stock: {p.quantity}</p>
                         </div>
                       </button>
@@ -514,7 +515,7 @@ export default function JobDetailPage() {
                         <p className="text-sm text-gray-900 dark:text-white truncate">{p.name}</p>
                         <p className="text-xs text-gray-500">
                           {p.sku && <span className="mr-2">SKU: {p.sku}</span>}
-                          <span className="text-green-600">{formatGhs(p.cost || 0)} each</span>
+                          <span className="text-success dark:text-success-dark">{formatGhs(p.cost || 0)} each</span>
                         </p>
                       </div>
                       <div className="flex items-center gap-1.5 print:hidden">
@@ -522,10 +523,10 @@ export default function JobDetailPage() {
                         <span className="text-sm text-gray-900 dark:text-white w-5 text-center">{p.quantity}</span>
                         <button onClick={() => updatePart(p.id, "quantity", p.quantity + 1)} className="w-6 h-6 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-xs flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
                       </div>
-                      <p className="text-sm font-semibold text-brand-600 dark:text-brand-400 w-20 text-right">
+                      <p className="text-sm font-semibold text-brand-ink dark:text-brand-400 w-20 text-right">
                         {formatGhs((p.cost || 0) * p.quantity)}
                       </p>
-                      <button onClick={() => removePart(p.id)} className="text-gray-600 hover:text-red-400 transition print:hidden">
+                      <button onClick={() => removePart(p.id)} className="text-gray-600 hover:text-error dark:hover:text-error-dark transition print:hidden">
                         <Trash2 size={11} />
                       </button>
                     </div>
@@ -551,7 +552,7 @@ export default function JobDetailPage() {
 
           {/* Status + quick progression */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden print:hidden">
-            <div className={`p-4 text-center border-b ${STATUS_COLORS[status] || "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300"}`}>
+            <div className={`p-4 text-center border-b ${statusBannerClass(status)}`}>
               <p className="text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">Status</p>
               <p className="text-lg font-bold">{statusLabel(status)}</p>
             </div>
@@ -568,7 +569,7 @@ export default function JobDetailPage() {
             )}
             {status === "diagnosing" && (
               <div className="p-3">
-                <button onClick={() => quickStatus("repairing")} className="w-full py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition">
+                <button onClick={() => quickStatus("repairing")} className="w-full py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-xs font-semibold transition">
                   Diagnosis done → Start Repairing
                 </button>
               </div>
@@ -599,7 +600,7 @@ export default function JobDetailPage() {
                 guard, which rejects ready->cancelled. */}
             {["received","diagnosing","waiting_for_parts","repairing"].includes(status) && (
               <div className="px-3 pb-3">
-                <button onClick={() => setShowCancelConfirm(true)} className="w-full py-1.5 rounded-xl border border-red-500/30 text-red-600 dark:text-red-400 text-xs hover:bg-red-500/10 transition">
+                <button onClick={() => setShowCancelConfirm(true)} className="w-full py-1.5 rounded-xl border border-error/30 text-error dark:text-error-dark text-xs hover:bg-error/10 transition">
                   Cancel Job
                 </button>
               </div>
@@ -637,19 +638,19 @@ export default function JobDetailPage() {
                 <div className="flex flex-wrap gap-2">
                   {job?.requiresDiagnosis && diagnosisFeePesewas > 0 && totalPaid < diagnosisFeePesewas && (
                     <button type="button" onClick={() => setPayAmount(String(Number(diagnosisFee)))}
-                      className="px-3 py-1.5 rounded-lg bg-purple-500/15 text-purple-600 dark:text-purple-400 text-xs font-medium hover:bg-purple-500/30 transition border border-purple-500/20">
+                      className="px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-ink dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20">
                       Diagnosis {formatGhs(diagnosisFeePesewas)}
                     </button>
                   )}
                   {(totalParts + laborCostPesewas) > 0 && (
                     <button type="button" onClick={() => setPayAmount(((Math.max(0, totalParts + laborCostPesewas - Math.max(0, totalPaid - diagnosisFeePesewas))) / 100).toFixed(2))}
-                      className="px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20">
+                      className="px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-ink dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20">
                       Parts + Labour {formatGhs(totalParts + laborCostPesewas)}
                     </button>
                   )}
                   {balanceDue > 0 && (
                     <button type="button" onClick={() => setPayAmount(String(balanceDue))}
-                      className="px-3 py-1.5 rounded-lg bg-green-500/15 text-green-600 dark:text-green-400 text-xs font-medium hover:bg-green-500/30 transition border border-green-500/20">
+                      className="px-3 py-1.5 rounded-lg bg-success/15 text-success dark:text-success-dark text-xs font-medium hover:bg-success/30 transition border border-success/20">
                       Full balance {formatGhs(balanceDue)}
                     </button>
                   )}
@@ -698,15 +699,15 @@ export default function JobDetailPage() {
           {!isTechnician && (balanceDue > 0 || momoStatus === "pending" || momoStatus === "success") && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 space-y-4 print:hidden">
             <div className="flex items-center gap-2">
-              <Smartphone size={14} className="text-brand-600 dark:text-brand-400" />
+              <Smartphone size={14} className="text-brand-ink dark:text-brand-400" />
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Request MoMo Payment</p>
             </div>
 
             {momoStatus === "success" ? (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
-                <CheckCircle2 size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                <CheckCircle2 size={20} aria-hidden="true" className="text-success dark:text-success-dark flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-green-600 dark:text-green-400">Payment confirmed</p>
+                  <p className="text-sm font-semibold text-success dark:text-success-dark">Payment confirmed</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{momoMsg}</p>
                 </div>
                 <button
@@ -718,9 +719,9 @@ export default function JobDetailPage() {
               </div>
             ) : momoStatus === "failed" ? (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
-                <XCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+                <XCircle size={20} aria-hidden="true" className="text-error dark:text-error-dark flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-red-600 dark:text-red-400">Payment failed</p>
+                  <p className="text-sm font-semibold text-error dark:text-error-dark">Payment failed</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{momoMsg}</p>
                 </div>
                 <button
@@ -733,9 +734,9 @@ export default function JobDetailPage() {
             ) : momoStatus === "pending" ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/10 border border-brand-500/30">
-                  <Loader2 size={16} className="text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0" />
+                  <Loader2 size={16} className="text-brand-ink dark:text-brand-400 animate-spin flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">Waiting for customer…</p>
+                    <p className="text-sm font-semibold text-brand-ink dark:text-brand-400">Waiting for customer…</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{momoMsg || "Customer will receive a USSD prompt on their phone."}</p>
                     {momoRef && <p className="text-xs text-gray-600 mt-0.5 font-mono">Ref: {momoRef}</p>}
                   </div>
@@ -806,7 +807,7 @@ export default function JobDetailPage() {
                 <button
                   onClick={initiateMomo}
                   disabled={momoLoading || !momoPhone || (!momoAmount && balanceDue <= 0)}
-                  className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {momoLoading ? <Loader2 className="animate-spin" size={12} /> : <Smartphone size={12} />}
                   Send Payment Request
@@ -820,15 +821,15 @@ export default function JobDetailPage() {
           {!isTechnician && (balanceDue > 0 || cardStatus === "pending" || cardStatus === "success") && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 space-y-4 print:hidden">
             <div className="flex items-center gap-2">
-              <CreditCard size={14} className="text-brand-600 dark:text-brand-400" />
+              <CreditCard size={14} className="text-brand-ink dark:text-brand-400" />
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Charge Card (Paystack)</p>
             </div>
 
             {cardStatus === "success" ? (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
-                <CheckCircle2 size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                <CheckCircle2 size={20} aria-hidden="true" className="text-success dark:text-success-dark flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-green-600 dark:text-green-400">Payment confirmed</p>
+                  <p className="text-sm font-semibold text-success dark:text-success-dark">Payment confirmed</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg}</p>
                 </div>
                 <button
@@ -840,9 +841,9 @@ export default function JobDetailPage() {
               </div>
             ) : cardStatus === "failed" ? (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
-                <XCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+                <XCircle size={20} aria-hidden="true" className="text-error dark:text-error-dark flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-red-600 dark:text-red-400">Payment failed</p>
+                  <p className="text-sm font-semibold text-error dark:text-error-dark">Payment failed</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg}</p>
                 </div>
                 <button
@@ -855,9 +856,9 @@ export default function JobDetailPage() {
             ) : cardStatus === "pending" ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/10 border border-brand-500/30">
-                  <Loader2 size={16} className="text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0" />
+                  <Loader2 size={16} className="text-brand-ink dark:text-brand-400 animate-spin flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">Waiting for customer…</p>
+                    <p className="text-sm font-semibold text-brand-ink dark:text-brand-400">Waiting for customer…</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cardMsg || "The Paystack payment page is open in a new tab."}</p>
                     {cardRef && <p className="text-xs text-gray-600 mt-0.5 font-mono break-all">Ref: {cardRef}</p>}
                     {cardUrl && (
@@ -865,7 +866,7 @@ export default function JobDetailPage() {
                         href={cardUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20"
+                        className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg bg-brand-500/15 text-brand-ink dark:text-brand-400 text-xs font-medium hover:bg-brand-500/30 transition border border-brand-500/20"
                       >
                         <Link2 size={10} /> Reopen payment page
                       </a>
@@ -895,7 +896,7 @@ export default function JobDetailPage() {
                 <button
                   onClick={initiateCard}
                   disabled={cardLoading || (balanceDue <= 0 && !cardAmount)}
-                  className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {cardLoading ? <Loader2 className="animate-spin" size={12} /> : <CreditCard size={12} />}
                   Charge Card
@@ -916,7 +917,7 @@ export default function JobDetailPage() {
                       <p className="text-sm text-gray-900 dark:text-white capitalize">{p.method}</p>
                       <p className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString("en-GH")}</p>
                     </div>
-                    <p className="text-sm font-semibold text-green-600 dark:text-green-400">{formatGhs(p.amount || 0)}</p>
+                    <p className="text-sm font-semibold text-success dark:text-success-dark">{formatGhs(p.amount || 0)}</p>
                   </div>
                 ))}
               </div>
@@ -926,7 +927,7 @@ export default function JobDetailPage() {
         </div>
       </div>
 
-      {error && <p className="text-red-600 dark:text-red-400 text-sm print:hidden">{error}</p>}
+      {error && <p className="text-error dark:text-error-dark text-sm print:hidden" role="alert">{error}</p>}
 
       {/* T18: confirm before cancelling — irreversible, customer-facing. */}
       {showCancelConfirm && (
@@ -934,10 +935,10 @@ export default function JobDetailPage() {
           <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800">
             <div className="px-6 py-5">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-red-100 dark:bg-red-900/30">
-                <AlertTriangle size={20} className="text-red-500" />
+                <AlertTriangle size={20} aria-hidden="true" className="text-error dark:text-error-dark" />
               </div>
               <h3 className="font-bold text-center text-gray-900 dark:text-white mb-1">Cancel Job?</h3>
-              <p className="text-center text-xs text-gray-400 dark:text-slate-500 mb-4">
+              <p className="text-center text-xs text-gray-600 dark:text-slate-500 mb-4">
                 Job #{job?.jobNumber} will be marked cancelled and the customer notified. This cannot be undone.
               </p>
             </div>

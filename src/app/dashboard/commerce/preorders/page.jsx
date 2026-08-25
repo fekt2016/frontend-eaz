@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PackageCheck, Loader2, AlertTriangle } from "lucide-react";
+import { PackageCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { formatGhs } from "@/lib/shop";
 import { usePreorders, useReleasePreorder } from "@/hooks/queries/useOrders";
+import { Alert, Button, Card, EmptyState, PageHeader, Skeleton } from "@/components/ui";
 
 const ALLOWED = ["admin", "superadmin", "staff"];
 
@@ -43,75 +44,65 @@ export default function PreordersPage() {
 
   return (
     <div className="space-y-5 p-5 lg:p-7">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Pre-orders</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Paid orders waiting on stock. Release one when the item is physically in —
-          that moves the stock, counts the sale, and emails the customer.
-        </p>
-      </div>
+      <PageHeader
+        title="Pre-orders"
+        description="Paid orders waiting on stock. Release one when the item is physically in — that moves the stock, counts the sale, and emails the customer."
+      />
 
-      {error && (
-        <div className="flex items-start gap-2 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3">
-          <AlertTriangle size={14} className="text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        </div>
-      )}
+      <Alert tone="error">{error}</Alert>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 size={20} className="animate-spin text-brand-500" />
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
         </div>
       ) : orders.length === 0 ? (
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-12 text-center">
-          <p className="text-sm text-gray-500">No pre-orders waiting on stock.</p>
-        </div>
+        <Card padding="none">
+          <EmptyState
+            icon={PackageCheck}
+            title="No pre-orders waiting on stock."
+            description="Paid orders appear here the moment a customer checks out on an out-of-stock item."
+          />
+        </Card>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => {
             const pending = (order.items || []).filter((i) => i.isPreorder && !i.preorderReleasedAt);
             return (
-              <div
-                key={order._id}
-                className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5"
-              >
+              <Card key={order._id}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <Link
                       href={`/dashboard/commerce/orders/${order._id}`}
-                      className="font-mono text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+                      className="font-mono text-sm font-semibold text-brand-ink hover:underline dark:text-brand-400"
                     >
                       {order.orderNumber}
                     </Link>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
                       {order.customer?.name || "Customer"} · {order.customer?.phone} · ordered {fmtDate(order.createdAt)}
                     </p>
                   </div>
-                  <button
-                    type="button"
+                  <Button
+                    size="sm"
                     onClick={() => handleRelease(order)}
-                    disabled={releasing === order._id}
-                    className="inline-flex items-center gap-2 rounded-full bg-gray-900 dark:bg-brand-500 px-4 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition disabled:opacity-50"
+                    loading={releasing === order._id}
                   >
-                    {releasing === order._id
-                      ? <><Loader2 size={12} className="animate-spin" /> Releasing…</>
-                      : <><PackageCheck size={12} /> Release</>}
-                  </button>
+                    <PackageCheck size={12} aria-hidden="true" /> Release
+                  </Button>
                 </div>
 
-                <ul className="mt-3 space-y-1 border-t border-gray-100 dark:border-gray-800 pt-3">
+                <ul className="mt-3 space-y-1 border-t border-gray-100 dark:border-slate-800 pt-3">
                   {pending.map((item, i) => (
                     <li key={i} className="flex justify-between text-xs">
-                      <span className="text-gray-600 dark:text-gray-300">
+                      <span className="text-gray-600 dark:text-slate-400">
                         {item.name}{item.variant?.sku ? ` (${item.variant.sku})` : ""} × {item.qty}
                       </span>
-                      <span className="text-gray-900 dark:text-white font-medium">
+                      <span className="text-gray-900 dark:text-white font-medium tabular-nums">
                         {formatGhs((item.price || 0) * (item.qty || 1))}
                       </span>
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             );
           })}
         </div>

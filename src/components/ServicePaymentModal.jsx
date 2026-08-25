@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useMemo } from "react";
 import { Check, X, Lock, Loader2, Eye, EyeOff, User } from "lucide-react";
 import { api } from "@/lib/api";
@@ -40,7 +41,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
 
   const passwordRules  = useMemo(() => getPasswordRules(password), [password]);
 
-  const inputCls    = "w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
   const selectCls   = `${inputCls} cursor-pointer`;
 
   const handleSubmit = async (e) => {
@@ -109,9 +110,9 @@ export default function ServicePaymentModal({ pkg, onClose }) {
         <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-slate-800">
           <div>
             <h2 className="font-bold text-gray-900 dark:text-white text-lg">{pkg.name}</h2>
-            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Pay 50% deposit to get started</p>
+            <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">Pay 50% deposit to get started</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+          <button onClick={onClose} className="p-2 rounded-lg text-gray-600 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition">
             <X size={14} />
           </button>
         </div>
@@ -120,10 +121,10 @@ export default function ServicePaymentModal({ pkg, onClose }) {
         <div className="mx-5 mt-4 p-3 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 flex items-center justify-between">
           <div>
             <p className="text-xs text-brand-700 dark:text-brand-400 font-medium">Deposit (50% upfront)</p>
-            <p className="text-xl font-bold text-brand-600 dark:text-brand-400">GH₵{pkg.deposit.toLocaleString()}</p>
+            <p className="text-xl font-bold text-brand-ink dark:text-brand-400">GH₵{pkg.deposit.toLocaleString()}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-gray-400 dark:text-slate-500">Project total starts from</p>
+            <p className="text-xs text-gray-600 dark:text-slate-500">Project total starts from</p>
             <p className="text-sm font-semibold text-gray-600 dark:text-slate-300">GH₵{pkg.total.toLocaleString()}</p>
           </div>
         </div>
@@ -133,12 +134,12 @@ export default function ServicePaymentModal({ pkg, onClose }) {
           {/* Logged-in greeting */}
           {!isGuest && (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-paper dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-              <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-ink dark:text-brand-400 font-bold text-sm flex-shrink-0">
                 {user.name?.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{user.email}</p>
+                <p className="text-xs text-gray-600 dark:text-slate-500 truncate">{user.email}</p>
               </div>
               <User size={11} className="text-gray-300 dark:text-slate-600 flex-shrink-0 ml-auto" />
             </div>
@@ -166,7 +167,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-                  Create a password <span className="text-gray-400 font-normal">(optional — to track your order)</span>
+                  Create a password <span className="text-gray-600 font-normal">(optional — to track your order)</span>
                 </label>
                 <div className="relative">
                   <input
@@ -176,7 +177,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
                     placeholder="Min. 8 characters"
                     className={`${inputCls} pr-10`}
                   />
-                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-600 dark:hover:text-white">
                     {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
@@ -190,7 +191,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">
+                <p className="text-xs text-gray-600 dark:text-slate-500 mt-1.5">
                   We&apos;ll create a free account so you can track your order in the dashboard.
                 </p>
               </div>
@@ -214,22 +215,22 @@ export default function ServicePaymentModal({ pkg, onClose }) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Color preferences <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Color preferences <span className="text-gray-600">(optional)</span></label>
             <input value={colorPrefs} onChange={(e) => setColorPrefs(e.target.value)} placeholder="e.g. Blue and white, dark theme…" className={inputCls} />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Features needed <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Features needed <span className="text-gray-600">(optional)</span></label>
             <input value={features} onChange={(e) => setFeatures(e.target.value)} placeholder="e.g. Online store, booking, gallery, blog…" className={inputCls} />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Reference websites <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Reference websites <span className="text-gray-600">(optional)</span></label>
             <input value={refWebsites} onChange={(e) => setRefWebsites(e.target.value)} placeholder="e.g. apple.com, airbnb.com…" className={inputCls} />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Additional notes <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Additional notes <span className="text-gray-600">(optional)</span></label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -244,7 +245,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-full bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <><Loader2 className="animate-spin" size={13} /> Redirecting to payment…</>
@@ -253,7 +254,7 @@ export default function ServicePaymentModal({ pkg, onClose }) {
             )}
           </button>
 
-          <p className="text-center text-xs text-gray-400 dark:text-slate-500">
+          <p className="text-center text-xs text-gray-600 dark:text-slate-500">
             Secured by Paystack · MTN MoMo · Vodafone Cash · Card
           </p>
         </form>

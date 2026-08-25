@@ -3,114 +3,134 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { Plus, Pen, Trash2, RotateCw, Loader2, Eye, EyeOff, Star, X, Check, PenLine } from "lucide-react";
+import { api } from "@/lib/api";
+import { Plus, Pen, Trash2, RotateCw, Eye, EyeOff, Star, Check, PenLine } from "lucide-react";
 import { isAdminRole } from "@/lib/roles";
+import {
+  Badge, Button, Card, EmptyState, Input, Modal, PageHeader,
+  Select, Skeleton, Switch, Textarea,
+} from "@/components/ui";
 
 const CATEGORIES = ["SEO", "Web Design", "Case Study", "Social Media", "Branding", "Phone Repair", "Paid Advertising", "Email Marketing", "General"];
 
+/*
+ * Nine categories against six semantic tones, so these keep their own hues and
+ * ride Badge's tone={null} escape hatch. Every pair is a Tailwind 700-on-50,
+ * which clears AA; the old General used gray-600 on gray-100 and did not.
+ */
 const CATEGORY_COLORS = {
   SEO:               "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
   "Web Design":      "bg-violet-50 text-violet-700 dark:bg-violet-900/20 dark:text-violet-400",
-  "Case Study":      "bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400",
+  "Case Study":      "bg-brand-50 text-brand-ink dark:bg-brand-900/20 dark:text-brand-400",
   "Social Media":    "bg-pink-50 text-pink-700 dark:bg-pink-900/20 dark:text-pink-400",
   Branding:          "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
   "Phone Repair":    "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-400",
   "Paid Advertising":"bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
   "Email Marketing": "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400",
-  General:           "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400",
+  General:           "bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300",
 };
 
 const empty = { title: "", excerpt: "", content: "", category: "General", author: "EazWorld Team", featured: false, published: false };
+
+const CONTENT_PLACEHOLDER = `## Introduction
+
+Write your article here...
+
+## Section Title
+
+- Point one
+- Point two
+
+**Key takeaway:** Summary here.`;
 
 function fmtDate(d) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function PostForm({ initial, onSave, onCancel, saving }) {
+function PostForm({ initial, onSave, onCancel, saving, error }) {
   const [fields, setFields] = useState(initial || empty);
   const set = (k) => (e) => setFields((f) => ({ ...f, [k]: e.target.value }));
-  const toggle = (k) => () => setFields((f) => ({ ...f, [k]: !f[k] }));
+  const setValue = (k) => (v) => setFields((f) => ({ ...f, [k]: v }));
 
-  const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition bg-white dark:bg-slate-800";
+  const incomplete = !fields.title || !fields.excerpt || !fields.content;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
-      <div className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-2xl my-8">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white">
-            {initial?._id ? "Edit Post" : "New Post"}
-          </h2>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-700 dark:hover:text-white transition">
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1.5">Title <span className="text-red-400">*</span></label>
-            <input type="text" value={fields.title} onChange={set("title")} placeholder="e.g. How to Rank on Google in Ghana" className={inputCls} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1.5">Category <span className="text-red-400">*</span></label>
-              <select value={fields.category} onChange={set("category")} className={inputCls}>
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1.5">Author</label>
-              <input type="text" value={fields.author} onChange={set("author")} placeholder="EazWorld Team" className={inputCls} />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1.5">Excerpt <span className="text-red-400">*</span></label>
-            <textarea value={fields.excerpt} onChange={set("excerpt")} rows={2} placeholder="Short summary shown on the blog list page…" className={inputCls} />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1.5">
-              Content <span className="text-red-400">*</span>
-              <span className="ml-2 font-normal text-gray-400">(Markdown supported: ## Heading, **bold**, - list, 1. numbered)</span>
-            </label>
-            <textarea value={fields.content} onChange={set("content")} rows={16} placeholder={`## Introduction\n\nWrite your article here...\n\n## Section Title\n\n- Point one\n- Point two\n\n**Key takeaway:** Summary here.`} className={`${inputCls} font-mono text-xs`} />
-          </div>
-
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <button type="button" onClick={toggle("published")}
-                className={`w-10 h-6 rounded-full transition ${fields.published ? "bg-emerald-500" : "bg-gray-200 dark:bg-slate-700"} relative`}>
-                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${fields.published ? "left-5" : "left-1"}`} />
-              </button>
-              <span className="text-sm text-gray-700 dark:text-slate-300 font-medium">Published</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <button type="button" onClick={toggle("featured")}
-                className={`w-10 h-6 rounded-full transition ${fields.featured ? "bg-brand-500" : "bg-gray-200 dark:bg-slate-700"} relative`}>
-                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${fields.featured ? "left-5" : "left-1"}`} />
-              </button>
-              <span className="text-sm text-gray-700 dark:text-slate-300 font-medium">Featured</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition">
-            Cancel
-          </button>
-          <button
-            onClick={() => onSave(fields)}
-            disabled={saving || !fields.title || !fields.excerpt || !fields.content}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition"
+    <Modal
+      open
+      onClose={onCancel}
+      size="full"
+      title={initial?._id ? "Edit post" : "New post"}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+          <Button onClick={() => onSave(fields)} loading={saving} disabled={incomplete}>
+            {!saving && <Check size={15} aria-hidden="true" />}
+            {saving ? "Saving…" : initial?._id ? "Save changes" : "Publish post"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {error && (
+          <p
+            role="alert"
+            className="rounded-xl border border-error/20 bg-error-surface px-3 py-2 text-caption font-medium text-error dark:border-error-dark/30 dark:bg-error-surface-dark dark:text-error-dark"
           >
-            {saving ? <Loader2 className="animate-spin" size={12} /> : <Check size={12} />}
-            {saving ? "Saving…" : initial?._id ? "Save Changes" : "Publish Post"}
-          </button>
+            {error}
+          </p>
+        )}
+
+        <Input
+          label="Title"
+          required
+          value={fields.title}
+          onChange={set("title")}
+          placeholder="e.g. How to Rank on Google in Ghana"
+        />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Select label="Category" required value={fields.category} onChange={set("category")}>
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </Select>
+          <Input label="Author" value={fields.author} onChange={set("author")} placeholder="EazWorld Team" />
+        </div>
+
+        <Textarea
+          label="Excerpt"
+          required
+          rows={2}
+          value={fields.excerpt}
+          onChange={set("excerpt")}
+          placeholder="Short summary shown on the blog list page…"
+        />
+
+        <Textarea
+          label="Content"
+          required
+          rows={16}
+          value={fields.content}
+          onChange={set("content")}
+          placeholder={CONTENT_PLACEHOLDER}
+          hint="Markdown supported: ## Heading, **bold**, - list, 1. numbered"
+          className="font-mono text-caption"
+        />
+
+        <div className="flex flex-wrap items-center gap-8 pt-1">
+          <Switch
+            checked={fields.published}
+            onChange={setValue("published")}
+            label="Published"
+            tone="success"
+          />
+          <Switch
+            checked={fields.featured}
+            onChange={setValue("featured")}
+            label="Featured"
+          />
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -122,6 +142,9 @@ export default function AdminBlogPage() {
   const [showForm, setShowForm]   = useState(false);
   const [editing, setEditing]     = useState(null);
   const [saving, setSaving]       = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting]   = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAdminRole(user?.role)) router.replace("/dashboard");
@@ -130,9 +153,8 @@ export default function AdminBlogPage() {
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/v1/posts/admin/all");
-      const json = await res.json();
-      setPosts(json.data || []);
+      const res = await api.get("/posts/admin/all");
+      setPosts(res.data || []);
     } catch { setPosts([]); }
     finally { setLoading(false); }
   }, []);
@@ -143,46 +165,49 @@ export default function AdminBlogPage() {
 
   const handleSave = async (fields) => {
     setSaving(true);
+    setSaveError("");
     try {
-      const url    = editing?._id ? `/api/v1/posts/${editing._id}` : "/api/v1/posts";
-      const method = editing?._id ? "PATCH" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(fields),
-      });
-      if (res.ok) {
-        await fetchPosts();
-        setShowForm(false);
-        setEditing(null);
-      }
+      // The old handler swallowed a failed save silently — the dialog just sat
+      // there. Now the server's own message comes back into the form.
+      if (editing?._id) await api.patch(`/posts/${editing._id}`, fields);
+      else await api.post("/posts", fields);
+      await fetchPosts();
+      setShowForm(false);
+      setEditing(null);
+    } catch (e) {
+      setSaveError(e?.message || "Failed to save the post.");
     } finally { setSaving(false); }
   };
 
   const handleToggle = async (post, key) => {
+    // Optimistic: flip locally, roll back if the server disagrees.
+    setPosts((prev) => prev.map((p) => (p._id === post._id ? { ...p, [key]: !p[key] } : p)));
     try {
-      await fetch(`/api/v1/posts/${post._id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [key]: !post[key] }),
-      });
-      setPosts((prev) => prev.map((p) => p._id === post._id ? { ...p, [key]: !p[key] } : p));
-    } catch {}
+      await api.patch(`/posts/${post._id}`, { [key]: !post[key] });
+    } catch {
+      setPosts((prev) => prev.map((p) => (p._id === post._id ? { ...p, [key]: post[key] } : p)));
+    }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Delete this post permanently?")) return;
-    await fetch(`/api/v1/posts/${id}`, { method: "DELETE" });
-    setPosts((prev) => prev.filter((p) => p._id !== id));
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/posts/${deleteTarget._id}`);
+      setPosts((prev) => prev.filter((p) => p._id !== deleteTarget._id));
+      setDeleteTarget(null);
+    } finally { setDeleting(false); }
   };
 
   const handleEdit = async (post) => {
-    // fetch full post with content
-    const res = await fetch(`/api/v1/posts/admin/${post._id}`);
-    const json = await res.json();
-    setEditing(json.data);
+    // The list endpoint omits the body — fetch the full post before editing.
+    const res = await api.get(`/posts/admin/${post._id}`);
+    setEditing(res.data);
+    setSaveError("");
     setShowForm(true);
   };
+
+  const openNew = () => { setEditing(null); setSaveError(""); setShowForm(true); };
 
   if (authLoading || !isAdminRole(user?.role)) return null;
 
@@ -190,116 +215,135 @@ export default function AdminBlogPage() {
   const drafts    = posts.filter((p) => !p.published).length;
 
   return (
-    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
+    <div className="px-4 pb-24 pt-6 sm:px-6">
       <div className="mx-auto max-w-5xl">
+        <PageHeader
+          title="Blog Posts"
+          description={`${published} published · ${drafts} draft${drafts !== 1 ? "s" : ""}`}
+          actions={
+            <>
+              <Button size="sm" variant="secondary" onClick={fetchPosts} disabled={loading}>
+                <RotateCw size={15} aria-hidden="true" className={loading ? "animate-spin" : ""} /> Refresh
+              </Button>
+              <Button size="sm" onClick={openNew}>
+                <Plus size={15} aria-hidden="true" /> New post
+              </Button>
+            </>
+          }
+        />
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Blog Posts</h1>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">
-              {published} published · {drafts} draft{drafts !== 1 ? "s" : ""}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={fetchPosts} disabled={loading}
-              className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 transition disabled:opacity-50">
-              <RotateCw size={11} className={loading ? "animate-spin" : ""} /> Refresh
-            </button>
-            <button
-              onClick={() => { setEditing(null); setShowForm(true); }}
-              className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
-            >
-              <Plus size={11} /> New Post
-            </button>
-          </div>
-        </div>
-
-        {/* Posts list */}
         {loading ? (
-          <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <Loader2 className="animate-spin text-brand-500" size={24} />
-            <span className="text-sm">Loading posts…</span>
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <Skeleton className="mb-3 h-5 w-24 rounded-full" />
+                <Skeleton className="mb-2 h-4 w-2/3" />
+                <Skeleton className="h-3 w-1/3" />
+              </Card>
+            ))}
           </div>
         ) : posts.length === 0 ? (
-          <div className="text-center py-24">
-            <PenLine size={36} className="mb-4 mx-auto text-gray-400 dark:text-slate-500" />
-            <p className="font-semibold text-gray-900 dark:text-white mb-2">No posts yet</p>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mb-5">Create your first blog post.</p>
-            <button onClick={() => { setEditing(null); setShowForm(true); }}
-              className="px-5 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 transition">
-              Write First Post
-            </button>
-          </div>
+          <Card padding="none">
+            <EmptyState
+              icon={PenLine}
+              title="No posts yet"
+              description="Write the first article — it goes straight onto the public blog once published."
+              action={<Button onClick={openNew}>Write first post</Button>}
+            />
+          </Card>
         ) : (
           <div className="space-y-3">
             {posts.map((post) => (
-              <div key={post._id} className="flex items-start justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 transition">
+              <Card key={post._id} interactive className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[post.category] || CATEGORY_COLORS.General}`}>
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                    <Badge tone={null} className={CATEGORY_COLORS[post.category] || CATEGORY_COLORS.General}>
                       {post.category}
-                    </span>
+                    </Badge>
                     {post.featured && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400 border border-brand-200 dark:border-brand-800/30">
-                        <Star size={9} /> Featured
-                      </span>
+                      <Badge tone="brand"><Star size={11} aria-hidden="true" /> Featured</Badge>
                     )}
-                    {!post.published && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400">
-                        Draft
-                      </span>
-                    )}
+                    {!post.published && <Badge tone="neutral">Draft</Badge>}
                   </div>
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight mb-1">{post.title}</p>
-                  <p className="text-xs text-gray-400 dark:text-slate-500">
+                  <p className="text-body-sm font-semibold leading-tight text-gray-900 dark:text-white">{post.title}</p>
+                  <p className="mt-1 text-caption text-gray-600 dark:text-slate-400">
                     {post.author} · {post.readTime} · {fmtDate(post.publishedAt || post.createdAt)}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <button
+                <div className="flex flex-shrink-0 items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`px-2 ${post.published ? "text-success dark:text-success-dark" : ""}`}
                     onClick={() => handleToggle(post, "published")}
-                    title={post.published ? "Unpublish" : "Publish"}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition ${post.published ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                    aria-label={post.published ? `Unpublish ${post.title}` : `Publish ${post.title}`}
                   >
-                    {post.published ? <Eye size={13} /> : <EyeOff size={13} />}
-                  </button>
-                  <button
+                    {post.published ? <Eye size={15} aria-hidden="true" /> : <EyeOff size={15} aria-hidden="true" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`px-2 ${post.featured ? "text-brand-ink dark:text-brand-400" : ""}`}
                     onClick={() => handleToggle(post, "featured")}
-                    title={post.featured ? "Remove featured" : "Mark featured"}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition ${post.featured ? "text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                    aria-label={post.featured ? `Remove ${post.title} from featured` : `Mark ${post.title} as featured`}
                   >
-                    <Star size={13} />
-                  </button>
-                  <button
+                    <Star size={15} aria-hidden="true" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-2"
                     onClick={() => handleEdit(post)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-white transition"
+                    aria-label={`Edit ${post.title}`}
                   >
-                    <Pen size={13} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(post._id)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition"
+                    <Pen size={15} aria-hidden="true" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-2 text-error dark:text-error-dark"
+                    onClick={() => setDeleteTarget(post)}
+                    aria-label={`Delete ${post.title}`}
                   >
-                    <Trash2 size={12} />
-                  </button>
+                    <Trash2 size={15} aria-hidden="true" />
+                  </Button>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
-
       </div>
 
-      {/* Post form modal */}
       {showForm && (
         <PostForm
           initial={editing}
           onSave={handleSave}
           onCancel={() => { setShowForm(false); setEditing(null); }}
           saving={saving}
+          error={saveError}
         />
+      )}
+
+      {/* Replaces window.confirm(), which the rest of the app no longer uses. */}
+      {deleteTarget && (
+        <Modal
+          open
+          size="sm"
+          onClose={() => setDeleteTarget(null)}
+          title="Delete this post?"
+          description={`“${deleteTarget.title}” will be removed permanently. This cannot be undone.`}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+              <Button variant="danger" onClick={handleDelete} loading={deleting}>Delete post</Button>
+            </>
+          }
+        >
+          <p className="text-body-sm text-gray-600 dark:text-slate-400">
+            If you only want it off the public blog, unpublish it instead — the draft stays here.
+          </p>
+        </Modal>
       )}
     </div>
   );

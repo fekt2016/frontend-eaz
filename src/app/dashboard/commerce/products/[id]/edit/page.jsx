@@ -46,7 +46,7 @@ export default function AdminEditProductPage() {
           </div>
         ) : !product ? (
           <div className="rounded-2xl border border-gray-100 bg-paper p-8 text-center">
-            <p className="text-gray-400 text-sm">Product not found.</p>
+            <p className="text-gray-600 text-sm">Product not found.</p>
           </div>
         ) : (
           <div className="rounded-2xl border border-gray-100 bg-paper p-6">

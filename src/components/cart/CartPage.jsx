@@ -23,7 +23,7 @@ export default function CartPage() {
 <ShoppingCart className="text-brand-500" size={22} />
           <h1 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">Your Cart</h1>
           {count > 0 && (
-            <span className="rounded-full bg-brand-500 px-2.5 py-0.5 text-xs font-bold text-white">{count} items</span>
+            <span className="rounded-full bg-brand-500 px-2.5 py-0.5 text-xs font-bold text-gray-900">{count} items</span>
           )}
         </div>
 
@@ -34,7 +34,7 @@ export default function CartPage() {
         {items.length > 0 && (
           <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 px-6 py-5 sm:flex-row">
             <div>
-              <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-slate-500">Subtotal</p>
+              <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-slate-500">Subtotal</p>
               <p className="font-display font-bold text-3xl text-gray-900 dark:text-white">{formatGhs(subtotal)}</p>
             </div>
             <Link

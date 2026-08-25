@@ -67,7 +67,7 @@ export default function DonutChart({ data, total, size = 148, strokeWidth = 16, 
               </span>
               <span className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-xs font-semibold text-gray-900 dark:text-white">{valueFormatter(s.value)}</span>
-                <span className="text-[11px] text-gray-400 w-10 text-right">{Math.round(s.frac * 100)}%</span>
+                <span className="text-[11px] text-gray-600 w-10 text-right">{Math.round(s.frac * 100)}%</span>
               </span>
             </li>
           ))}

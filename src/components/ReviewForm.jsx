@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
 import { z } from "zod";
@@ -25,7 +26,7 @@ const services = [
   "Other",
 ];
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
 export default function ReviewForm({ onSuccess }) {
   const { user } = useAuth();
@@ -79,7 +80,7 @@ export default function ReviewForm({ onSuccess }) {
         <div className="text-4xl mb-4">⭐</div>
         <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-2">Thank You!</h3>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-1">Your review has been submitted and is now live.</p>
-        <p className="text-gray-400 dark:text-slate-500 text-xs mb-5">Refresh the page to see it in the reviews list.</p>
+        <p className="text-gray-600 dark:text-slate-500 text-xs mb-5">Refresh the page to see it in the reviews list.</p>
         <button onClick={() => setStatus("idle")} className="px-5 py-2.5 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-gray-100 transition">
           Write Another Review
         </button>

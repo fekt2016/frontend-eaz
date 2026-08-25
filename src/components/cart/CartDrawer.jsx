@@ -53,13 +53,13 @@ export default function CartDrawer() {
                 <ShoppingCart className="text-brand-500" size={16} />
                 <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white">Your Cart</h2>
                 {count > 0 && (
-                  <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-bold text-white">{count}</span>
+                  <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-bold text-gray-900">{count}</span>
                 )}
               </div>
               <button
                 type="button"
                 onClick={closeCart}
-                className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition"
+                className="text-gray-600 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition"
                 aria-label="Close cart"
               >
                 <X size={18} />

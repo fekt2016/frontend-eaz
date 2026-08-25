@@ -5,10 +5,14 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { isAdminRole } from "@/lib/roles";
 import {
-  Loader2, RotateCw, Pen, Ban, CheckCircle2,
-  X, Search, ShieldCheck, User, Key, Eye, EyeOff,
-  Plus, UserCog, Wrench,
+  RotateCw, Pen, Ban, CheckCircle2,
+  Search, ShieldCheck, User, Key, Eye, EyeOff,
+  Plus, UserCog, Wrench, Users as UsersIcon,
 } from "lucide-react";
+import {
+  Badge, Button, Card, EmptyState, Field, Input, Modal,
+  PageHeader, Select, Skeleton, Table, TableWrap, Td, Th,
+} from "@/components/ui";
 
 function fmtDate(d) {
   if (!d) return "—";
@@ -23,12 +27,18 @@ const ROLE_OPTIONS = [
   { value: "superadmin", label: "Super Admin" },
 ];
 
-const roleStyles = {
-  superadmin: "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  admin:      "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400",
-  user:       "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  staff:      "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  technician: "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+/*
+ * Roles used to carry five hand-picked Tailwind hues (purple/blue/emerald/
+ * orange) whose light shades were never contrast-checked. They now map onto the
+ * measured semantic tones, which stay distinguishable while clearing 4.5:1 in
+ * both themes. Gold is reserved for the highest authority — the house accent.
+ */
+const roleTones = {
+  superadmin: "brand",
+  admin:      "info",
+  staff:      "success",
+  technician: "warning",
+  user:       "neutral",
 };
 
 const roleIcons = {
@@ -39,16 +49,65 @@ const roleIcons = {
   technician: Wrench,
 };
 
+/*
+ * The fetch wrapper in lib/api.js throws a plain Error carrying the server's
+ * message — it is not axios, so the `e.response.data.error` this page used to
+ * read was always undefined and every failure showed the generic fallback.
+ */
+const errMsg = (e, fallback) => e?.message || fallback;
+
+function FormError({ children }) {
+  if (!children) return null;
+  return (
+    <p
+      role="alert"
+      className="rounded-xl border border-error/20 bg-error-surface px-3 py-2 text-caption font-medium text-error dark:border-error-dark/30 dark:bg-error-surface-dark dark:text-error-dark"
+    >
+      {children}
+    </p>
+  );
+}
+
+/** Password input with a show/hide toggle, wired to a real <label>. */
+function PasswordField({ label, value, onChange, placeholder, hint, required }) {
+  const [show, setShow] = useState(false);
+  return (
+    <Field label={label} hint={hint} required={required}>
+      {(p) => (
+        <div className="relative">
+          <Input
+            bare
+            type={show ? "text" : "password"}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            className="pr-11"
+            {...p}
+          />
+          <button
+            type="button"
+            onClick={() => setShow((v) => !v)}
+            aria-label={show ? "Hide password" : "Show password"}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white"
+          >
+            {show ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+          </button>
+        </div>
+      )}
+    </Field>
+  );
+}
+
 // ─── Create User Modal ─────────────────────────────────────────────────────
 function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "", role: "user",
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const visibleRoles = ROLE_OPTIONS.filter((r) => r.value !== "superadmin" || isSuperAdmin);
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleCreate = async () => {
     if (!form.name.trim() || !form.email.trim() || !form.password) {
@@ -66,110 +125,56 @@ function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
       onCreated();
       onClose();
     } catch (e) {
-      setError(e?.response?.data?.error || "Failed to create user.");
+      setError(errMsg(e, "Failed to create user."));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <Plus size={13} />
-            </div>
-            <p className="font-semibold text-gray-900 dark:text-white text-sm">Create User</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-            <X size={13} />
-          </button>
-        </div>
+    <Modal
+      open
+      onClose={onClose}
+      title="Create user"
+      description="The account is active immediately."
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleCreate} loading={saving}>
+            {!saving && <Plus size={15} aria-hidden="true" />}
+            {saving ? "Creating…" : "Create user"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <FormError>{error}</FormError>
 
-        {/* Form */}
-        <div className="px-6 py-5 space-y-4">
-          {error && (
-            <p className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl border border-red-100 dark:border-red-900/30">
-              {error}
-            </p>
-          )}
+        <Input label="Full name" required value={form.name} onChange={set("name")} placeholder="e.g. Kwame Mensah" />
+        <Input label="Email address" required type="email" value={form.email} onChange={set("email")} placeholder="user@example.com" />
+        <Input label="Phone number" type="tel" value={form.phone} onChange={set("phone")} placeholder="+233 24 000 0000" />
 
-          {[
-            { label: "Full Name",     key: "name",  type: "text",  placeholder: "e.g. Kwame Mensah" },
-            { label: "Email Address", key: "email", type: "email", placeholder: "user@example.com" },
-            { label: "Phone Number",  key: "phone", type: "tel",   placeholder: "+233 24 000 0000" },
-          ].map(({ label, key, type, placeholder }) => (
-            <div key={key}>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">{label}</label>
-              <input
-                type={type}
-                value={form[key]}
-                onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                placeholder={placeholder}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition"
-              />
-            </div>
+        <PasswordField
+          label="Temporary password"
+          required
+          value={form.password}
+          onChange={set("password")}
+          placeholder="Min. 8 characters"
+          hint="Share this with the user — they can change it later from their settings."
+        />
+
+        <Select
+          label="Role"
+          value={form.role}
+          onChange={set("role")}
+          hint="Staff = shop team & sales · Technician = repairs · Admin = full management"
+        >
+          {visibleRoles.map((r) => (
+            <option key={r.value} value={r.value}>{r.label}</option>
           ))}
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">Temporary Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={form.password}
-                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                placeholder="Min. 8 characters"
-                className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400 transition"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
-              >
-                {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
-              </button>
-            </div>
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Share this with the user — they can change it later from their settings.</p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">Role</label>
-            <select
-              value={form.role}
-              onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400 transition"
-            >
-              {visibleRoles.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">
-              Staff = shop team & sales · Technician = repairs · Admin = full management
-            </p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 pb-5 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleCreate}
-            disabled={saving}
-            className="flex-1 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold disabled:opacity-50 transition flex items-center justify-center gap-2"
-          >
-            {saving ? <Loader2 className="animate-spin" size={12} /> : <Plus size={11} />}
-            {saving ? "Creating…" : "Create User"}
-          </button>
-        </div>
+        </Select>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -185,6 +190,7 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
   const [error, setError]   = useState("");
 
   const visibleRoles = ROLE_OPTIONS.filter((r) => r.value !== "superadmin" || isSuperAdmin);
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleSave = async () => {
     if (!form.name.trim() || !form.email.trim()) {
@@ -198,84 +204,41 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
       onSaved(res.data);
       onClose();
     } catch (e) {
-      setError(e?.response?.data?.error || "Failed to update user.");
+      setError(errMsg(e, "Failed to update user."));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm">
-              {user.name?.charAt(0).toUpperCase()}
-            </div>
-            <p className="font-semibold text-gray-900 dark:text-white text-sm">Edit User</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-            <X size={13} />
-          </button>
-        </div>
+    <Modal
+      open
+      onClose={onClose}
+      title="Edit user"
+      description={user.email || user.phone || undefined}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} loading={saving}>
+            {saving ? "Saving…" : "Save changes"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <FormError>{error}</FormError>
 
-        {/* Form */}
-        <div className="px-6 py-5 space-y-4">
-          {error && (
-            <p className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl border border-red-100 dark:border-red-900/30">
-              {error}
-            </p>
-          )}
-          {[
-            { label: "Full Name",     key: "name",  type: "text" },
-            { label: "Email Address", key: "email", type: "email" },
-            { label: "Phone Number",  key: "phone", type: "tel" },
-          ].map(({ label, key, type }) => (
-            <div key={key}>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">{label}</label>
-              <input
-                type={type}
-                value={form[key]}
-                onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 dark:focus:border-brand-500 transition"
-              />
-            </div>
+        <Input label="Full name" required value={form.name} onChange={set("name")} />
+        <Input label="Email address" required type="email" value={form.email} onChange={set("email")} />
+        <Input label="Phone number" type="tel" value={form.phone} onChange={set("phone")} />
+
+        <Select label="Role" value={form.role} onChange={set("role")}>
+          {visibleRoles.map((r) => (
+            <option key={r.value} value={r.value}>{r.label}</option>
           ))}
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">Role</label>
-            <select
-              value={form.role}
-              onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
-            >
-              {visibleRoles.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 pb-5 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex-1 py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition flex items-center justify-center gap-2"
-          >
-            {saving ? <Loader2 className="animate-spin" size={12} /> : null}
-            {saving ? "Saving…" : "Save Changes"}
-          </button>
-        </div>
+        </Select>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -283,82 +246,82 @@ function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
 function BlockModal({ user, onClose, onSaved }) {
   const [reason, setReason] = useState(user.blockedReason || "");
   const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState("");
+
+  const blocking = !user.isBlocked;
 
   const handleBlock = async () => {
     setSaving(true);
+    setError("");
     try {
       const res = await api.patch(`/auth/users/${user._id}/block`, {
-        isBlocked: !user.isBlocked,
-        blockedReason: !user.isBlocked ? reason : "",
+        isBlocked: blocking,
+        blockedReason: blocking ? reason : "",
       });
       onSaved(res.data);
       onClose();
-    } catch {
+    } catch (e) {
+      setError(errMsg(e, blocking ? "Failed to block user." : "Failed to unblock user."));
       setSaving(false);
     }
   };
 
-  const blocking = !user.isBlocked;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800">
-        <div className="px-6 py-5">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 ${blocking ? "bg-red-100 dark:bg-red-900/30" : "bg-emerald-100 dark:bg-emerald-900/30"}`}>
-            {blocking ? <Ban size={20} className="text-red-500" /> : <CheckCircle2 size={20} className="text-emerald-500" />}
-          </div>
-          <h3 className="font-bold text-center text-gray-900 dark:text-white mb-1">
-            {blocking ? "Block User" : "Unblock User"}
-          </h3>
-          <p className="text-center text-xs text-gray-400 dark:text-slate-500 mb-4">
-            {blocking
-              ? `${user.name} will be blocked and unable to log in.`
-              : `${user.name} will be able to log in again.`}
-          </p>
+    <Modal
+      open
+      onClose={onClose}
+      size="sm"
+      title={blocking ? "Block user" : "Unblock user"}
+      description={
+        blocking
+          ? `${user.name} will be blocked and unable to log in.`
+          : `${user.name} will be able to log in again.`
+      }
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button variant={blocking ? "danger" : "primary"} onClick={handleBlock} loading={saving}>
+            {blocking ? "Block user" : "Unblock user"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <FormError>{error}</FormError>
 
-          {blocking && (
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">Reason (optional)</label>
-              <input
-                type="text"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="e.g. Violated terms of service"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-red-400 transition"
-              />
-            </div>
-          )}
+        <div
+          className={`mx-auto flex h-12 w-12 items-center justify-center rounded-2xl ${
+            blocking
+              ? "bg-error-surface dark:bg-error-surface-dark"
+              : "bg-success-surface dark:bg-success-surface-dark"
+          }`}
+        >
+          {blocking
+            ? <Ban size={20} aria-hidden="true" className="text-error dark:text-error-dark" />
+            : <CheckCircle2 size={20} aria-hidden="true" className="text-success dark:text-success-dark" />}
         </div>
 
-        <div className="px-6 pb-5 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition">
-            Cancel
-          </button>
-          <button
-            onClick={handleBlock}
-            disabled={saving}
-            className={`flex-1 py-2.5 rounded-full text-white text-sm font-semibold disabled:opacity-50 transition flex items-center justify-center gap-2 ${
-              blocking ? "bg-red-500 hover:bg-red-600" : "bg-emerald-600 hover:bg-emerald-700"
-            }`}
-          >
-            {saving ? <Loader2 className="animate-spin" size={12} /> : null}
-            {blocking ? "Block User" : "Unblock User"}
-          </button>
-        </div>
+        {blocking && (
+          <Input
+            label="Reason (optional)"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="e.g. Violated terms of service"
+            hint="Shown to staff on the user list, not to the user."
+          />
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }
 
 // ─── Change Password Modal ─────────────────────────────────────────────────
 function ChangePasswordModal({ user, onClose }) {
-  const [newPassword, setNewPassword]     = useState("");
-  const [confirmPassword, setConfirm]     = useState("");
-  const [showNew, setShowNew]             = useState(false);
-  const [showConfirm, setShowConfirm]     = useState(false);
-  const [saving, setSaving]               = useState(false);
-  const [error, setError]                 = useState("");
-  const [success, setSuccess]             = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirm] = useState("");
+  const [saving, setSaving]           = useState(false);
+  const [error, setError]             = useState("");
+  const [success, setSuccess]         = useState(false);
 
   const handleSave = async () => {
     setError("");
@@ -375,111 +338,132 @@ function ChangePasswordModal({ user, onClose }) {
       await api.patch(`/auth/users/${user._id}/password`, { newPassword });
       setSuccess(true);
     } catch (e) {
-      setError(e?.response?.data?.error || "Failed to update password.");
+      setError(errMsg(e, "Failed to update password."));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-              <Key size={13} className="text-violet-500" />
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">Change Password</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500">{user.name}</p>
-            </div>
+    <Modal
+      open
+      onClose={onClose}
+      size="sm"
+      title="Change password"
+      description={user.name}
+      footer={
+        success ? (
+          <Button onClick={onClose}>Done</Button>
+        ) : (
+          <>
+            <Button variant="secondary" onClick={onClose}>Cancel</Button>
+            <Button onClick={handleSave} loading={saving}>
+              {!saving && <Key size={15} aria-hidden="true" />}
+              {saving ? "Saving…" : "Set password"}
+            </Button>
+          </>
+        )
+      }
+    >
+      {success ? (
+        <div className="py-2 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success-surface dark:bg-success-surface-dark">
+            <CheckCircle2 size={22} aria-hidden="true" className="text-success dark:text-success-dark" />
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-            <X size={13} />
-          </button>
+          <p className="font-display font-bold text-gray-900 dark:text-white">Password updated</p>
+          <p className="mt-1 text-body-sm text-gray-600 dark:text-slate-400">
+            The new password is active immediately.
+          </p>
         </div>
+      ) : (
+        <div className="space-y-4">
+          <FormError>{error}</FormError>
+          <PasswordField
+            label="New password"
+            required
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Min. 8 characters"
+          />
+          <PasswordField
+            label="Confirm password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="Repeat new password"
+          />
+        </div>
+      )}
+    </Modal>
+  );
+}
 
-        <div className="px-6 py-5 space-y-4">
-          {success ? (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-3">
-                <CheckCircle2 size={22} className="text-emerald-500" />
-              </div>
-              <p className="font-semibold text-gray-900 dark:text-white mb-1">Password Updated</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500">The new password is active immediately.</p>
-              <button onClick={onClose} className="mt-4 w-full py-2.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition">
-                Done
-              </button>
-            </div>
-          ) : (
-            <>
-              {error && (
-                <p className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl border border-red-100 dark:border-red-900/30">
-                  {error}
-                </p>
-              )}
-
-              {/* New Password */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">New Password</label>
-                <div className="relative">
-                  <input
-                    type={showNew ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Min. 8 characters"
-                    className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-violet-400 transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNew((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
-                  >
-                    {showNew ? <EyeOff size={13} /> : <Eye size={13} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">Confirm Password</label>
-                <div className="relative">
-                  <input
-                    type={showConfirm ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirm(e.target.value)}
-                    placeholder="Repeat new password"
-                    className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-violet-400 transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirm((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
-                  >
-                    {showConfirm ? <EyeOff size={13} /> : <Eye size={13} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-1">
-                <button onClick={onClose} className="flex-1 py-2.5 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-paper dark:hover:bg-slate-800 transition">
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1 py-2.5 rounded-full bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
-                >
-                  {saving ? <Loader2 className="animate-spin" size={12} /> : <Key size={11} />}
-                  {saving ? "Saving…" : "Set Password"}
-                </button>
-              </div>
-            </>
+// ─── Row ───────────────────────────────────────────────────────────────────
+function UserRow({ u, isSelf, onEdit, onPassword, onBlock }) {
+  const RoleIcon = roleIcons[u.role] || User;
+  return (
+    <tr className={`transition-colors hover:bg-paper dark:hover:bg-slate-800/40 ${u.isBlocked ? "opacity-60" : ""}`}>
+      <Td>
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 font-bold text-body-sm text-brand-ink dark:bg-brand-900/30 dark:text-brand-400">
+            {u.name?.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-body-sm font-semibold leading-tight text-gray-900 dark:text-white">{u.name}</p>
+            <p className="truncate text-caption text-gray-600 dark:text-slate-400">{u.email}</p>
+          </div>
+        </div>
+      </Td>
+      <Td>{u.phone || "—"}</Td>
+      <Td>
+        <Badge tone={roleTones[u.role] || "neutral"} className="uppercase">
+          <RoleIcon size={11} aria-hidden="true" />
+          {u.role}
+        </Badge>
+      </Td>
+      <Td>
+        {u.isBlocked ? (
+          <div>
+            <Badge tone="error">
+              <Ban size={11} aria-hidden="true" /> Blocked
+            </Badge>
+            {u.blockedReason && (
+              <p className="mt-1 max-w-[140px] truncate text-caption text-gray-600 dark:text-slate-400" title={u.blockedReason}>
+                {u.blockedReason}
+              </p>
+            )}
+          </div>
+        ) : (
+          <Badge tone="success">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-success dark:bg-success-dark" /> Active
+          </Badge>
+        )}
+      </Td>
+      <Td className="whitespace-nowrap">{fmtDate(u.createdAt)}</Td>
+      <Td>
+        <div className="flex items-center justify-end gap-1">
+          <Button variant="ghost" size="sm" onClick={onEdit} aria-label={`Edit ${u.name}`} className="px-2">
+            <Pen size={15} aria-hidden="true" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onPassword} aria-label={`Change password for ${u.name}`} className="px-2">
+            <Key size={15} aria-hidden="true" />
+          </Button>
+          {!isSelf && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBlock}
+              aria-label={u.isBlocked ? `Unblock ${u.name}` : `Block ${u.name}`}
+              className={`px-2 ${u.isBlocked ? "text-success dark:text-success-dark" : "text-error dark:text-error-dark"}`}
+            >
+              {u.isBlocked
+                ? <CheckCircle2 size={15} aria-hidden="true" />
+                : <Ban size={15} aria-hidden="true" />}
+            </Button>
           )}
         </div>
-      </div>
-    </div>
+      </Td>
+    </tr>
   );
 }
 
@@ -513,7 +497,7 @@ export default function AdminUsersPage() {
   }, [authLoading, me?.role, fetchUsers]);
 
   const handleSaved = (updated) => {
-    setUsers((prev) => prev.map((u) => u._id === updated._id ? updated : u));
+    setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)));
   };
 
   const filtered = users.filter((u) => {
@@ -527,161 +511,132 @@ export default function AdminUsersPage() {
 
   if (authLoading) return null;
 
-  return (
-    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
-      <div className="mx-auto max-w-6xl">
+  const blockedCount = users.filter((u) => u.isBlocked).length;
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Users</h1>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">
-              {users.length} registered · {users.filter(u => u.isBlocked).length} blocked
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCreateOpen(true)}
-              className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white transition"
-            >
-              <Plus size={11} /> Create User
-            </button>
-            <button
-              onClick={fetchUsers}
-              disabled={loading}
-              className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50"
-            >
-              <RotateCw size={11} className={loading ? "animate-spin" : ""} /> Refresh
-            </button>
-          </div>
-        </div>
+  return (
+    <div className="px-4 pb-24 pt-6 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <PageHeader
+          title="Users"
+          description={`${users.length} registered · ${blockedCount} blocked`}
+          actions={
+            <>
+              <Button size="sm" onClick={() => setCreateOpen(true)}>
+                <Plus size={15} aria-hidden="true" /> Create user
+              </Button>
+              <Button size="sm" variant="secondary" onClick={fetchUsers} disabled={loading}>
+                <RotateCw size={15} aria-hidden="true" className={loading ? "animate-spin" : ""} /> Refresh
+              </Button>
+            </>
+          }
+        />
 
         {/* Search */}
         <div className="relative mb-6">
-          <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
+          <Search
+            size={16}
+            aria-hidden="true"
+            className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-gray-600 dark:text-slate-400"
+          />
+          <Input
+            label="Search users"
+            hideLabel
+            type="search"
+            size="lg"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email or phone…"
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition"
+            className="pl-11"
           />
         </div>
 
-        {/* Table */}
         {loading ? (
-          <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <Loader2 size={24} className="animate-spin text-brand-500" />
-            <span className="text-sm">Loading users…</span>
-          </div>
+          <Card padding="none" className="overflow-hidden">
+            <div className="space-y-3 p-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <Skeleton className="h-3.5 w-1/3" />
+                  <Skeleton className="ml-auto h-3.5 w-24" />
+                </div>
+              ))}
+            </div>
+          </Card>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
-            <p className="text-gray-400 dark:text-slate-500 text-sm">No users found.</p>
-          </div>
+          <Card padding="none">
+            <EmptyState
+              icon={UsersIcon}
+              title={search ? "No users match that search" : "No users yet"}
+              description={
+                search
+                  ? "Try a different name, email or phone number."
+                  : "Create the first account to get your team into the dashboard."
+              }
+              action={
+                search ? (
+                  <Button variant="secondary" onClick={() => setSearch("")}>Clear search</Button>
+                ) : (
+                  <Button onClick={() => setCreateOpen(true)}>
+                    <Plus size={15} aria-hidden="true" /> Create user
+                  </Button>
+                )
+              }
+            />
+          </Card>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[640px]">
+          <Card padding="none" className="overflow-hidden">
+            <TableWrap>
+              <Table className="min-w-[640px]">
                 <thead>
-                  <tr className="bg-paper dark:bg-slate-800/60 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
-                    <th className="px-5 py-3.5">User</th>
-                    <th className="px-5 py-3.5">Phone</th>
-                    <th className="px-5 py-3.5">Role</th>
-                    <th className="px-5 py-3.5">Status</th>
-                    <th className="px-5 py-3.5">Joined</th>
-                    <th className="px-5 py-3.5 text-right">Actions</th>
+                  <tr className="bg-paper dark:bg-slate-800/60">
+                    <Th>User</Th>
+                    <Th>Phone</Th>
+                    <Th>Role</Th>
+                    <Th>Status</Th>
+                    <Th>Joined</Th>
+                    <Th className="text-right">Actions</Th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
+                <tbody>
                   {filtered.map((u) => (
-                    <tr key={u._id} className={`hover:bg-paper dark:hover:bg-slate-800/40 transition ${u.isBlocked ? "opacity-60" : ""}`}>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0">
-                            {u.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{u.name}</p>
-                            <p className="text-xs text-gray-400 dark:text-slate-500">{u.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500 dark:text-slate-400">{u.phone || "—"}</td>
-                      <td className="px-5 py-3.5">
-                        {(() => {
-                          const RoleIcon = roleIcons[u.role] || User;
-                          return (
-                            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${roleStyles[u.role] || "bg-paper text-gray-600 dark:bg-slate-800 dark:text-slate-400"}`}>
-                              <RoleIcon size={8} />
-                              {u.role}
-                            </span>
-                          );
-                        })()}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        {u.isBlocked ? (
-                          <div>
-                            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-                              <Ban size={8} /> Blocked
-                            </span>
-                            {u.blockedReason && (
-                              <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5 max-w-[120px] truncate" title={u.blockedReason}>
-                                {u.blockedReason}
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Active
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-gray-400 dark:text-slate-500 whitespace-nowrap">{fmtDate(u.createdAt)}</td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2 justify-end">
-                          <button
-                            onClick={() => setEditTarget(u)}
-                            title="Edit user"
-                            className="p-2 rounded-lg text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-300 transition"
-                          >
-                            <Pen size={13} />
-                          </button>
-                          <button
-                            onClick={() => setPasswordTarget(u)}
-                            title="Change password"
-                            className="p-2 rounded-lg text-gray-400 dark:text-slate-500 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 dark:hover:text-violet-400 transition"
-                          >
-                            <Key size={13} />
-                          </button>
-                          {String(u._id) !== String(me?._id) && (
-                            <button
-                              onClick={() => setBlockTarget(u)}
-                              title={u.isBlocked ? "Unblock user" : "Block user"}
-                              className={`p-2 rounded-lg transition ${
-                                u.isBlocked
-                                  ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                                  : "text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                              }`}
-                            >
-                              {u.isBlocked ? <CheckCircle2 size={13} /> : <Ban size={13} />}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+                    <UserRow
+                      key={u._id}
+                      u={u}
+                      isSelf={String(u._id) === String(me?._id)}
+                      onEdit={() => setEditTarget(u)}
+                      onPassword={() => setPasswordTarget(u)}
+                      onBlock={() => setBlockTarget(u)}
+                    />
                   ))}
                 </tbody>
-              </table>
-            </div>
-          </div>
+              </Table>
+            </TableWrap>
+          </Card>
         )}
       </div>
 
       {/* Modals */}
-      {createOpen    && <CreateUserModal     isSuperAdmin={isSuperAdmin} onClose={() => setCreateOpen(null)} onCreated={fetchUsers} />}
-      {editTarget    && <EditModal           user={editTarget}     isSuperAdmin={isSuperAdmin} onClose={() => setEditTarget(null)}     onSaved={handleSaved} />}
-      {blockTarget   && <BlockModal          user={blockTarget}    onClose={() => setBlockTarget(null)}    onSaved={handleSaved} />}
-      {passwordTarget && <ChangePasswordModal user={passwordTarget} onClose={() => setPasswordTarget(null)} />}
+      {createOpen && (
+        <CreateUserModal
+          isSuperAdmin={isSuperAdmin}
+          onClose={() => setCreateOpen(false)}
+          onCreated={fetchUsers}
+        />
+      )}
+      {editTarget && (
+        <EditModal
+          user={editTarget}
+          isSuperAdmin={isSuperAdmin}
+          onClose={() => setEditTarget(null)}
+          onSaved={handleSaved}
+        />
+      )}
+      {blockTarget && (
+        <BlockModal user={blockTarget} onClose={() => setBlockTarget(null)} onSaved={handleSaved} />
+      )}
+      {passwordTarget && (
+        <ChangePasswordModal user={passwordTarget} onClose={() => setPasswordTarget(null)} />
+      )}
     </div>
   );
 }

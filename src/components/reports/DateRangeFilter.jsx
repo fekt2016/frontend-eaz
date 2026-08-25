@@ -61,7 +61,7 @@ export default function DateRangeFilter({ from, to, onChange, onRefresh, refresh
         ))}
 
         <div className="flex items-center gap-2 ml-auto">
-          <CalendarDays size={12} className="text-gray-400 hidden sm:block" aria-hidden="true" />
+          <CalendarDays size={12} className="text-gray-600 hidden sm:block" aria-hidden="true" />
           <label className="sr-only" htmlFor="reports-from">From date</label>
           <input
             id="reports-from"

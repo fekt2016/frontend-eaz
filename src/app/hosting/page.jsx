@@ -31,14 +31,14 @@ export default function Hosting() {
             <br />
             <span className="text-brand-400">Hosting Built for Africa.</span>
           </h1>
-          <p className="mx-auto max-w-2xl text-gray-400 text-lg mb-8">
+          <p className="mx-auto max-w-2xl text-gray-600 text-lg mb-8">
             Enterprise-grade hosting infrastructure powered from Africa. Blazing fast NVMe SSD servers,
             99.9% uptime guarantee, free SSL, and cPanel on every plan.
           </p>
           <div className="flex flex-wrap justify-center gap-3 mb-10">
             <button
               onClick={() => scrollTo("plans")}
-              className="rounded-full bg-brand-500 px-7 py-3 text-sm font-semibold text-white hover:bg-brand-400 transition"
+              className="rounded-full bg-brand-500 px-7 py-3 text-sm font-semibold text-gray-900 hover:bg-brand-400 transition"
             >
               View All Plans
             </button>
@@ -49,7 +49,7 @@ export default function Hosting() {
               Compare Plans
             </button>
           </div>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-gray-400">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-gray-600">
             {["✅ 99.9% Uptime SLA", "🔒 Free SSL", "⚡ NVMe SSD", "💳 No Setup Fees", "🔄 Free Migration"].map(t => (
               <span key={t}>{t}</span>
             ))}
@@ -78,7 +78,7 @@ export default function Hosting() {
 
           {/* Section header */}
           <div className="text-center mb-10">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Hosting Plans</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">Hosting Plans</p>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-3">
               Choose Your Perfect Plan
             </h2>
@@ -150,7 +150,7 @@ export default function Hosting() {
       <section id="compare" className="bg-paper dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800 px-4 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-10">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Compare Plans</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">Compare Plans</p>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               Shared Hosting Side by Side
             </h2>
@@ -159,7 +159,7 @@ export default function Hosting() {
             <table className="min-w-[640px] w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800">
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 dark:text-slate-500">Feature</th>
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-600 dark:text-slate-500">Feature</th>
                   {SHARED_PLANS.map((p) => (
                     <th
                       key={p.name}
@@ -220,7 +220,7 @@ export default function Hosting() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-12">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Why EazWorld</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">Why EazWorld</p>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white">
               Hosting You Can Actually Trust
             </h2>
@@ -250,13 +250,13 @@ export default function Hosting() {
           <h2 className="font-display font-bold text-3xl md:text-4xl text-white mb-3">
             Ready to Launch Your Website?
           </h2>
-          <p className="text-gray-400 text-sm mb-8 max-w-xl mx-auto">
+          <p className="text-gray-600 text-sm mb-8 max-w-xl mx-auto">
             Join hundreds of businesses hosted on EazWorld. Fast setup, free migration, and expert support from day one.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <button
               onClick={() => scrollTo("plans")}
-              className="rounded-full bg-brand-500 px-8 py-3 text-sm font-semibold text-white hover:bg-brand-400 transition"
+              className="rounded-full bg-brand-500 px-8 py-3 text-sm font-semibold text-gray-900 hover:bg-brand-400 transition"
             >
               Get Started Today
             </button>
@@ -292,22 +292,22 @@ function PlanCard({ plan, billing, planType }) {
         : "border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900"
     }`}>
       {plan.badge && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-500 px-4 py-1 text-[11px] font-bold text-white whitespace-nowrap">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-500 px-4 py-1 text-[11px] font-bold text-gray-900 whitespace-nowrap">
           {plan.badge}
         </span>
       )}
 
       <div className="mb-4">
         <h3 className="text-base font-bold text-gray-900 dark:text-white">{plan.name}</h3>
-        <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{plan.tagline}</p>
+        <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">{plan.tagline}</p>
       </div>
 
       <div className="mb-4">
         <div className="flex items-end gap-1">
           <span className="text-3xl font-bold text-brand-500">{plan.symbol}{price}</span>
-          <span className="text-xs text-gray-400 dark:text-slate-500 mb-1">/{billing === "annual" ? "yr" : "mo"}</span>
+          <span className="text-xs text-gray-600 dark:text-slate-500 mb-1">/{billing === "annual" ? "yr" : "mo"}</span>
         </div>
-        {billing === "annual" && (
+        {billing === "annual" && saving > 0 && (
           <p className="text-[11px] text-emerald-600 font-medium">Save {plan.symbol}{saving}/yr</p>
         )}
       </div>
@@ -335,7 +335,7 @@ function PlanCard({ plan, billing, planType }) {
           </li>
         ))}
         {plan.features.length > 7 && (
-          <li className="text-[0.78rem] text-gray-400 dark:text-slate-500 pl-4">+{plan.features.length - 7} more features</li>
+          <li className="text-[0.78rem] text-gray-600 dark:text-slate-500 pl-4">+{plan.features.length - 7} more features</li>
         )}
       </ul>
 

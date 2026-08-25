@@ -23,7 +23,7 @@ const PAGE_TITLES = {
 };
 
 const Spinner = () => (
-  <div className="min-h-screen bg-paper dark:bg-gray-950 flex items-center justify-center">
+  <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center">
     <div className="w-6 h-6 border-2 border-slate-700 border-t-brand-400 rounded-full animate-spin" />
   </div>
 );
@@ -61,16 +61,16 @@ export default function PosShell({ children }) {
   // Technicians get a horizontal top navigation bar instead of the left sidebar.
   if (user.role === "technician") {
     return (
-      <div className="h-screen overflow-hidden bg-paper dark:bg-gray-950 flex flex-col">
-        <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <div className="h-screen overflow-hidden bg-paper dark:bg-ink flex flex-col">
+        <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
           <div className="flex items-center gap-4 px-4 sm:px-6 py-3">
             <Link href="/dashboard/pos" className="flex items-center gap-2.5 flex-shrink-0">
               <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-                <Wrench size={13} className="text-gray-900 dark:text-white" />
+                <Wrench size={14} aria-hidden="true" className="text-gray-900" />
               </div>
               <div className="hidden sm:block">
                 <p className="font-bold text-gray-900 dark:text-white text-sm leading-none">EazWorld</p>
-                <p className="text-gray-500 text-xs">Dashboard</p>
+                <p className="text-caption text-gray-600 dark:text-slate-400">Dashboard</p>
               </div>
             </Link>
 
@@ -83,11 +83,11 @@ export default function PosShell({ children }) {
                     href={href}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${
                       active
-                        ? "bg-brand-500/15 text-brand-600 dark:text-brand-400"
-                        : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                        ? "bg-brand-500/15 text-brand-ink dark:text-brand-400"
+                        : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800"
                     }`}
                   >
-                    <Icon size={14} className="flex-shrink-0" />
+                    <Icon size={15} aria-hidden="true" className="flex-shrink-0" />
                     <span>{label}</span>
                   </Link>
                 );
@@ -99,14 +99,14 @@ export default function PosShell({ children }) {
               <ThemeToggle />
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-semibold text-gray-900 dark:text-white truncate max-w-[120px]">{user.name}</p>
-                <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                <p className="text-caption capitalize text-gray-600 dark:text-slate-400">{user.role}</p>
               </div>
               <Link
                 href="/dashboard/settings"
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition"
                 aria-label="Settings"
               >
-                <Settings size={13} />
+                <Settings size={15} aria-hidden="true" />
                 <span className="hidden sm:inline">Settings</span>
               </Link>
             </div>
@@ -121,7 +121,7 @@ export default function PosShell({ children }) {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-paper dark:bg-gray-950 flex">
+    <div className="h-screen overflow-hidden bg-paper dark:bg-ink flex">
 
       {/* Mobile overlay */}
       {sidebarOpen && (
@@ -136,29 +136,35 @@ export default function PosShell({ children }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar (mobile) */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-          <button onClick={() => setSidebarOpen(true)} className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1">
-            <Menu size={18} />
+        <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open menu"
+            className="p-1 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white"
+          >
+            <Menu size={18} aria-hidden="true" />
           </button>
-          <span className="font-bold text-gray-900 dark:text-white text-sm">EazWorld</span>
+          <span className="text-body-sm font-bold text-gray-900 dark:text-white">{pageTitle}</span>
           <div className="flex items-center gap-2">
             <NotificationBell />
             <ThemeToggle />
-            <div className="w-7 h-7 rounded-full bg-brand-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs">
+            <div className="w-7 h-7 rounded-full bg-brand-500/20 flex items-center justify-center text-brand-ink dark:text-brand-400 font-bold text-xs">
               {user.name?.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>
 
         {/* Topbar (desktop) */}
-        <header className="hidden lg:flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-30">
-          <h1 className="text-base font-bold text-gray-900 dark:text-white">{pageTitle}</h1>
+        <header className="hidden lg:flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-30">
+          {/* Wayfinding, not the page heading: every POS page renders its own
+              <h1>, so this must not be a second one. */}
+          <p className="text-base font-bold text-gray-900 dark:text-white">{pageTitle}</p>
           <div className="flex items-center gap-3">
             <NotificationBell />
             <ThemeToggle />
             <div className="text-right hidden xl:block">
               <p className="text-xs font-semibold text-gray-900 dark:text-white truncate max-w-[140px]">{user.name}</p>
-              <p className="text-xs text-gray-500 truncate capitalize">
+              <p className="truncate text-caption capitalize text-gray-600 dark:text-slate-400">
                 {user.role === "superadmin" ? "Super Admin" : user.role === "admin" ? "Admin" : user.role}
               </p>
             </div>

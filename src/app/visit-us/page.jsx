@@ -30,7 +30,7 @@ export default function VisitUs() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Visit Us in Accra</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Visit Us in Accra</p>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">Come See Us In Person</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg">Phone repair, digital consultations, or just to say hello — we&apos;re in Accra and always happy to meet face to face.</p>
         </div>
@@ -52,7 +52,7 @@ export default function VisitUs() {
               <div key={label} className="flex items-start gap-3 text-sm">
                 <Ic className="text-brand-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-gray-400 dark:text-slate-500 text-xs mb-0.5">{label}</p>
+                  <p className="text-gray-600 dark:text-slate-500 text-xs mb-0.5">{label}</p>
                   {href ? <a href={href} className="text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition">{value}</a> : <p className="text-gray-700 dark:text-slate-300">{value}</p>}
                 </div>
               </div>
@@ -90,7 +90,7 @@ export default function VisitUs() {
       {/* AMENITIES */}
       <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Our Space</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Our Space</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-8">Comfortable & Professional</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {amenities.map((a) => (
@@ -120,7 +120,7 @@ export default function VisitUs() {
       {/* TESTIMONIALS */}
       <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Reviews</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Reviews</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-8">What Visitors Say</h2>
           <div className="grid md:grid-cols-2 gap-5">
             {testimonials.map((t) => (
@@ -130,7 +130,7 @@ export default function VisitUs() {
                 </div>
                 <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</p>
                 <p className="font-semibold text-gray-900 dark:text-white text-sm">{t.name}</p>
-                <p className="text-gray-400 dark:text-slate-500 text-xs">{t.service}</p>
+                <p className="text-gray-600 dark:text-slate-500 text-xs">{t.service}</p>
               </div>
             ))}
           </div>

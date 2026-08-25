@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Palette, Search, Megaphone, Star, Hash,
   Mail, Smartphone, ChevronLeft, ChevronRight,
@@ -94,14 +94,19 @@ export default function HeroCarousel() {
     setReady(true);
   }, []);
 
+  const prefersReducedMotion = useReducedMotion();
+
   const next = useCallback(() => setCurrent((c) => (c + 1) % slides.length), []);
   const prev = useCallback(() => setCurrent((c) => (c - 1 + slides.length) % slides.length), []);
 
+  // WCAG 2.2.2: content that moves on its own for more than five seconds needs
+  // a way to stop it. Honouring the OS setting is that stop for anyone who has
+  // asked for reduced motion — they get a static first slide and the arrows.
   useEffect(() => {
-    if (paused) return;
+    if (paused || prefersReducedMotion) return;
     const t = setInterval(next, 6000);
     return () => clearInterval(t);
-  }, [paused, next]);
+  }, [paused, prefersReducedMotion, next]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -152,7 +157,7 @@ export default function HeroCarousel() {
                 <Icon size={28} style={{ color: slide.accent }} />
               </div>
 
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] mb-3" style={{ color: slide.accent }}>
+              <p className="font-mono text-eyebrow font-bold uppercase mb-3" style={{ color: slide.accent }}>
                 {slide.service}
               </p>
 
@@ -208,7 +213,7 @@ export default function HeroCarousel() {
                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mb-2">
                   <Star className="text-emerald-600 dark:text-emerald-400" size={16} />
                 </div>
-                <p className="font-mono text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase">Success Rate</p>
+                <p className="font-mono text-[10px] font-bold text-gray-600 dark:text-slate-500 uppercase">Success Rate</p>
                 <p className="font-mono text-lg font-bold text-gray-900 dark:text-white">99.9%</p>
               </motion.div>
             </motion.div>

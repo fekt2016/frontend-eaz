@@ -101,7 +101,6 @@ export async function middleware(request) {
   // Admin-only dashboard pages (flat routes under /dashboard).
   const ADMIN_DASHBOARD_PATHS = [
     "/dashboard/consultations",
-    "/dashboard/chats",
     "/dashboard/reviews",
     "/dashboard/blog",
     "/dashboard/hosting-orders",
@@ -119,10 +118,12 @@ export async function middleware(request) {
     }
   }
 
-  // Staff-accessible dashboard pages (marketplace). The backend gates shop
-  // order APIs to admin + staff, so staff may open the marketplace overview
-  // and shop orders — but not the admin-only commerce subpages above.
+  // Staff-accessible dashboard pages. The backend gates shop order APIs to
+  // admin + staff, so staff may open the marketplace overview and shop
+  // orders — but not the admin-only commerce subpages above. Staff also work
+  // the live-chat console (backend: restrictTo('admin', 'staff')).
   const STAFF_DASHBOARD_PATHS = [
+    "/dashboard/chats",
     "/dashboard/commerce",
     "/dashboard/commerce/orders",
   ];

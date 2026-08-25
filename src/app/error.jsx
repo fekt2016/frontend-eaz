@@ -1,55 +1,53 @@
 "use client";
 
-export default function Error({ reset }) {
+import { AlertTriangle } from "lucide-react";
+import Button from "@/components/ui/Button";
+import StarRule from "@/components/common/StarRule";
+
+/*
+ * The global error boundary.
+ *
+ * Previously written entirely in inline styles — which the style guide
+ * explicitly forbids — on a cool #f9fafb background, in system sans, with no
+ * dark mode. It was the one screen users see when something breaks, and it
+ * looked like it belonged to a different product. This is the same screen in
+ * the house system: warm paper/ink, Space Grotesk, the star rule, dark mode.
+ *
+ * error.jsx renders inside the root layout, so globals.css and the brand fonts
+ * are available; there is no reason to inline anything here.
+ */
+export default function Error({ error, reset }) {
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "16px",
-      backgroundColor: "#f9fafb",
-      fontFamily: "sans-serif",
-    }}>
-      <div style={{ maxWidth: "400px", width: "100%", textAlign: "center" }}>
-        <div style={{
-          width: "64px", height: "64px", borderRadius: "16px",
-          backgroundColor: "#fee2e2", display: "flex",
-          alignItems: "center", justifyContent: "center",
-          margin: "0 auto 24px", fontSize: "28px",
-        }}>
-          ⚠️
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-20 bg-paper dark:bg-ink">
+      <div className="w-full max-w-md text-center">
+        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-error-surface dark:bg-error-surface-dark">
+          <AlertTriangle size={24} aria-hidden="true" className="text-error dark:text-error-dark" />
         </div>
-        <h1 style={{ fontSize: "22px", fontWeight: 800, color: "#111827", marginBottom: "12px" }}>
-          Something went wrong
+
+        <div className="flex justify-center mb-5">
+          <StarRule />
+        </div>
+
+        <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-3">
+          This page didn&apos;t load
         </h1>
-        <p style={{ fontSize: "14px", color: "#6b7280", lineHeight: 1.6, marginBottom: "32px" }}>
-          An unexpected error occurred. Please try again or go back to the homepage.
+        <p className="text-body text-gray-600 dark:text-slate-400 mb-8">
+          Something on our side failed while building the page. Trying again usually works — if it
+          doesn&apos;t, head back home and we&apos;ll pick it up from there.
         </p>
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-          <button
-            onClick={() => reset()}
-            style={{
-              padding: "12px 24px", borderRadius: "999px",
-              backgroundColor: "#111827", color: "#ffffff",
-              fontWeight: 600, fontSize: "14px",
-              border: "none", cursor: "pointer",
-            }}
-          >
-            Try Again
-          </button>
-          <a
-            href="/"
-            style={{
-              padding: "12px 24px", borderRadius: "999px",
-              border: "1px solid #e5e7eb", color: "#374151",
-              fontWeight: 500, fontSize: "14px",
-              textDecoration: "none", display: "inline-block",
-            }}
-          >
-            Go Home
-          </a>
+
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button onClick={() => reset()}>Try again</Button>
+          <Button href="/" variant="secondary">
+            Go home
+          </Button>
         </div>
+
+        {error?.digest && (
+          <p className="mt-8 font-mono text-caption text-gray-600 dark:text-slate-400">
+            Reference: {error.digest}
+          </p>
+        )}
       </div>
     </div>
   );

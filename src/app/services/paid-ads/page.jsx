@@ -77,7 +77,7 @@ export default function PaidAdsPage() {
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Paid Advertising</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Paid Advertising</p>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
             Ads That Bring<br />Real Customers.
           </h1>
@@ -110,7 +110,7 @@ export default function PaidAdsPage() {
       {/* PACKAGES */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Monthly Plans</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Monthly Plans</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-3">Choose Your Plan</h2>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-12">Management fee only — ad spend is paid separately by you directly to the platform.</p>
 
@@ -118,13 +118,13 @@ export default function PaidAdsPage() {
             {packages.map((pkg) => (
               <div key={pkg.name} className={`relative flex flex-col p-6 rounded-2xl border-2 bg-white dark:bg-slate-900 ${pkg.color}`}>
                 {pkg.badge && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap bg-brand-500 text-white">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap bg-brand-500 text-gray-900">
                     {pkg.badge}
                   </span>
                 )}
                 <div className="mb-5">
                   <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-1">{pkg.name}</h3>
-                  <p className="text-2xl font-bold text-brand-500">{pkg.price}<span className="text-sm font-normal text-gray-400 dark:text-slate-500"> / month</span></p>
+                  <p className="text-2xl font-bold text-brand-500">{pkg.price}<span className="text-sm font-normal text-gray-600 dark:text-slate-500"> / month</span></p>
                 </div>
                 <p className="text-gray-500 dark:text-slate-400 text-xs leading-relaxed mb-5">{pkg.desc}</p>
                 <ul className="space-y-2 mb-5 flex-1">
@@ -135,7 +135,7 @@ export default function PaidAdsPage() {
                     </li>
                   ))}
                 </ul>
-                <p className="text-[11px] text-gray-400 dark:text-slate-500 italic mb-5">{pkg.note}</p>
+                <p className="text-[11px] text-gray-600 dark:text-slate-500 italic mb-5">{pkg.note}</p>
                 <Link href="/book-consultation"
                   className={`block text-center py-2.5 rounded-full text-sm font-semibold transition ${
                     pkg.badge === "Most Popular"
@@ -153,7 +153,7 @@ export default function PaidAdsPage() {
       {/* ADD-ONS */}
       <section className="py-20 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Add-ons</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Add-ons</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">Optional Extras</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {addons.map((a) => (
@@ -162,7 +162,7 @@ export default function PaidAdsPage() {
                   <p className="font-semibold text-gray-900 dark:text-white text-sm">{a.name}</p>
                   <span className="text-brand-500 font-bold text-sm whitespace-nowrap ml-2">{a.price}</span>
                 </div>
-                <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed">{a.desc}</p>
+                <p className="text-gray-600 dark:text-slate-500 text-xs leading-relaxed">{a.desc}</p>
               </div>
             ))}
           </div>
@@ -172,7 +172,7 @@ export default function PaidAdsPage() {
       {/* FAQ */}
       <section className="py-20 px-4">
         <div className="max-w-3xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">FAQ</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">FAQ</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-8">Common Questions</h2>
           <div className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden">
             {faqs.map((faq) => (
@@ -189,7 +189,7 @@ export default function PaidAdsPage() {
       <section className="py-16 px-4 bg-gray-900 dark:bg-slate-900">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="font-display font-bold text-2xl md:text-3xl text-white mb-3">Ready to Run Ads That Actually Work?</h2>
-          <p className="text-gray-400 mb-7 text-sm">Book a free consultation. We&apos;ll review your business, recommend a strategy, and give you a realistic expectation of results.</p>
+          <p className="text-gray-600 mb-7 text-sm">Book a free consultation. We&apos;ll review your business, recommend a strategy, and give you a realistic expectation of results.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/book-consultation" className="rounded-full bg-brand-500 text-gray-900 font-semibold px-6 py-3 text-sm hover:bg-brand-400 transition">
               Book Free Consultation

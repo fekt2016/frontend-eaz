@@ -13,7 +13,7 @@ export function ErrorState({ title = "Unable to load report", message, onRetry }
         <button
           type="button"
           onClick={onRetry}
-          className="mt-4 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
+          className="mt-4 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition"
         >
           Try Again
         </button>
@@ -27,7 +27,7 @@ export function EmptyState({ title = "No data", message }) {
   return (
     <div className="py-10 text-center">
       <div className="w-10 h-10 mx-auto rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-        <Inbox size={16} className="text-gray-400" />
+        <Inbox size={16} className="text-gray-600" />
       </div>
       <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{title}</p>
       {message && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm mx-auto">{message}</p>}

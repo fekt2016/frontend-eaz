@@ -4,6 +4,7 @@ import "./globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import JsonLd from "@/components/common/JsonLd";
 import QueryProvider from "@/components/providers/QueryProvider";
+import MotionProvider from "@/components/providers/MotionProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/cart/CartDrawer";
@@ -37,7 +38,13 @@ export const metadata = {
   description: "Ghana's trusted digital agency. Web design, SEO, paid ads, branding, social media, email marketing, hosting and phone repair in Accra.",
   keywords: ["web design Accra", "SEO Ghana", "digital marketing Ghana", "phone repair Accra", "web hosting Ghana", "digital agency Accra"],
   icons: {
-    icon: "/favicon.ico",
+    // Firefox's ICO decoder rejects PNG-compressed .ico entries, so a plain
+    // PNG is listed alongside — browsers that prefer PNG will use it.
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+    ],
+    shortcut: ["/favicon.ico"],
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
@@ -72,15 +79,17 @@ export default function RootLayout({ children }) {
       <body className="font-sans antialiased text-gray-900 dark:text-slate-100 bg-paper dark:bg-ink min-h-screen flex flex-col">
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInit }} />
         <QueryProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <CartProvider>
-                <JsonLd data={organizationJsonLd()} />
-                <ConditionalLayout>{children}</ConditionalLayout>
-                <CartDrawer />
-              </CartProvider>
-            </AuthProvider>
-          </ThemeProvider>
+          <MotionProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <JsonLd data={organizationJsonLd()} />
+                  <ConditionalLayout>{children}</ConditionalLayout>
+                  <CartDrawer />
+                </CartProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </MotionProvider>
         </QueryProvider>
       </body>
     </html>

@@ -19,9 +19,9 @@ const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-        <p className="text-3xl mb-3"><ShoppingCart size={30} className="inline text-gray-400 dark:text-slate-500" /></p>
+        <p className="text-3xl mb-3"><ShoppingCart size={30} className="inline text-gray-600 dark:text-slate-500" /></p>
         <p className="font-semibold text-gray-900 dark:text-white mb-1">Your cart is empty</p>
-        <p className="text-gray-400 dark:text-slate-500 text-sm mb-6 max-w-xs">
+        <p className="text-gray-600 dark:text-slate-500 text-sm mb-6 max-w-xs">
           Browse the shop and add a product to get started.
         </p>
         <Link
@@ -80,7 +80,7 @@ const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
                 <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">{item.name}</p>
                 )}
                 {variantLabel(item) && (
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{variantLabel(item)}</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">{variantLabel(item)}</p>
                 )}
               </div>
               <button
@@ -98,7 +98,7 @@ const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
                   type="button"
                   disabled={item.qty <= 1}
                   onClick={() => updateQty(item.lineId, item.qty - 1)}
-                  className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
+                  className="text-gray-600 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
                   aria-label="Decrease quantity"
                 >
                   <Minus size={9} />
@@ -108,7 +108,7 @@ const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
                   type="button"
                   disabled={item.qty >= item.stock}
                   onClick={() => updateQty(item.lineId, item.qty + 1)}
-                  className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
+                  className="text-gray-600 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
                   aria-label="Increase quantity"
                 >
                   <Plus size={9} />

@@ -27,7 +27,7 @@ export default function ServicesPage() {
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">What We Offer</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">What We Offer</p>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-5">Our Services</h1>
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-10">
             Six digital services and in-person phone repair — everything your business needs online, all from one trusted team in Accra.
@@ -62,7 +62,7 @@ export default function ServicesPage() {
 
           {/* Left: copy */}
           <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">All Services in Action</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">All Services in Action</p>
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-4">
               See What&apos;s Possible When All 7 Work Together
             </h2>
@@ -75,7 +75,7 @@ export default function ServicesPage() {
               {[["150+", "Active sellers"], ["15k+", "Products listed"], ["4.7", "Average rating", true]].map(([val, lbl, rating]) => (
                 <div key={lbl}>
                   <p className="font-display font-bold text-2xl text-gray-900 dark:text-white">{val}{rating && <Star size={16} className="inline-block -mt-0.5 ml-1" />}</p>
-                  <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">{lbl}</p>
+                  <p className="text-gray-600 dark:text-slate-500 text-xs mt-0.5">{lbl}</p>
                 </div>
               ))}
             </div>
@@ -105,7 +105,7 @@ export default function ServicesPage() {
               <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
               <span className="w-2.5 h-2.5 rounded-full bg-yellow-300" />
               <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
-              <span className="flex-1 ml-2 h-5 rounded bg-gray-100 dark:bg-slate-800 text-xs text-gray-400 dark:text-slate-500 flex items-center px-2">saiisai.com</span>
+              <span className="flex-1 ml-2 h-5 rounded bg-gray-100 dark:bg-slate-800 text-xs text-gray-600 dark:text-slate-500 flex items-center px-2">saiisai.com</span>
             </div>
 
             {/* Mock top stats */}
@@ -113,7 +113,7 @@ export default function ServicesPage() {
               {[["150+", "Sellers", "#F5A623"], ["15k+", "Products", "#10b981"], ["4.7", "Rating", "#3b82f6", true]].map(([v, l, c, rating]) => (
                 <div key={l} className="rounded-xl p-3 text-center" style={{ background: `${c}10` }}>
                   <p className="font-bold text-gray-900 dark:text-white text-sm">{v}{rating && <Star size={12} className="inline-block -mt-0.5 ml-0.5" />}</p>
-                  <p className="text-gray-400 dark:text-slate-500 text-xs">{l}</p>
+                  <p className="text-gray-600 dark:text-slate-500 text-xs">{l}</p>
                 </div>
               ))}
             </div>
@@ -147,12 +147,12 @@ export default function ServicesPage() {
       {/* HELP SECTION */}
       <section className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Not Sure?</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Not Sure?</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-4">
             Not Sure Which Services You Need?
           </h2>
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-2">We can help.</p>
-          <p className="text-gray-400 dark:text-slate-500 mb-8 leading-relaxed">
+          <p className="text-gray-600 dark:text-slate-500 mb-8 leading-relaxed">
             Every business is different. Book a free 30-minute consultation and we&apos;ll listen to your goals, then recommend exactly what makes sense — no pressure, no jargon.
           </p>
           <Link

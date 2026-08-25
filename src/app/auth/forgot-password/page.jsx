@@ -1,12 +1,13 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { sanitizeEmail } from "@/lib/sanitize";
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -34,7 +35,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center mb-8">
           <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mt-6 mb-1">Reset your password</h1>
-          <p className="text-gray-400 dark:text-slate-500 text-sm">Enter your email and we&apos;ll send a reset link</p>
+          <p className="text-gray-600 dark:text-slate-500 text-sm">Enter your email and we&apos;ll send a reset link</p>
         </div>
 
         <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -58,7 +59,7 @@ export default function ForgotPasswordPage() {
           )}
 
           <div className="text-center mt-5">
-            <Link href="/auth/login" className="text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Back to Sign In</Link>
+            <Link href="/auth/login" className="text-sm text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Back to Sign In</Link>
           </div>
         </div>
       </div>

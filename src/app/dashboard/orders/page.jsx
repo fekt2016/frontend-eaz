@@ -24,7 +24,7 @@ export default function CustomerOrdersPage() {
         <h1 className="font-display font-bold text-xl text-gray-900 dark:text-white">
           {seesAll ? "Shop Orders" : "My Shop Orders"}
         </h1>
-        <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">
+        <p className="text-sm text-gray-600 dark:text-slate-500 mt-0.5">
           {seesAll
             ? "All customer orders."
             : "Orders matched by the phone or email you use at checkout."}
@@ -38,7 +38,7 @@ export default function CustomerOrdersPage() {
       ) : orders.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-10 text-center">
           <ShoppingBag size={28} className="text-gray-200 dark:text-slate-700 mx-auto mb-3" />
-          <p className="text-gray-400 dark:text-slate-500 text-sm mb-2">
+          <p className="text-gray-600 dark:text-slate-500 text-sm mb-2">
             {seesAll ? "No shop orders yet." : "No shop orders linked to your account."}
           </p>
           <p className="text-xs text-gray-300 dark:text-slate-600 mb-4">
@@ -55,7 +55,7 @@ export default function CustomerOrdersPage() {
           <div className="overflow-x-auto">
             <table className="min-w-[720px] w-full text-sm">
               <thead>
-                <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-slate-500">
                   <th className="px-4 py-3">{seesAll ? "Customer" : "Order"}</th>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Status</th>
@@ -71,11 +71,11 @@ export default function CustomerOrdersPage() {
                         {seesAll ? o.customer?.name || "—" : o.orderNumber}
                       </p>
                       {seesAll ? (
-                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate max-w-[200px] font-mono">
+                        <p className="text-xs text-gray-600 dark:text-slate-500 truncate max-w-[200px] font-mono">
                           {o.orderNumber}
                         </p>
                       ) : (
-                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate max-w-[200px]">
+                        <p className="text-xs text-gray-600 dark:text-slate-500 truncate max-w-[200px]">
                           {o.customer?.name}
                         </p>
                       )}

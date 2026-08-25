@@ -68,7 +68,7 @@ function Verify2FAInner() {
             </span>
           </div>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">Two-factor authentication</h1>
-          <p className="text-gray-400 dark:text-slate-500 text-sm">
+          <p className="text-gray-600 dark:text-slate-500 text-sm">
             We sent a code to <strong className="text-gray-700 dark:text-slate-300">{email}</strong>
           </p>
         </div>
@@ -95,7 +95,7 @@ function Verify2FAInner() {
               {loading ? "Verifying…" : "Verify & Sign in →"}
             </button>
           </form>
-          <p className="text-center text-sm text-gray-400 dark:text-slate-500 mt-5">
+          <p className="text-center text-sm text-gray-600 dark:text-slate-500 mt-5">
             <Link href="/auth/login" className="text-brand-500 font-medium hover:underline">← Back to login</Link>
           </p>
         </div>

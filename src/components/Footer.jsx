@@ -91,7 +91,7 @@ export default function Footer() {
                 key={label}
                 href={href}
                 aria-label={label}
-                className="w-9 h-9 rounded-full border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white hover:border-gray-400 dark:hover:border-slate-500 transition"
+                className="w-9 h-9 rounded-full border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white hover:border-gray-400 dark:hover:border-slate-500 transition"
               >
                 <Icon size={15} />
               </a>
@@ -101,7 +101,7 @@ export default function Footer() {
 
         {columns.map((col) => (
           <div key={col.title}>
-            <h3 className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400 mb-4">{col.title}</h3>
+            <h3 className="font-mono text-eyebrow font-bold uppercase text-gray-500 dark:text-slate-400 mb-4">{col.title}</h3>
             <ul className="space-y-2.5">
               {col.links.map((link) => (
                 <li key={link.label}>
@@ -118,7 +118,7 @@ export default function Footer() {
       <div className="border-t border-gray-100 dark:border-slate-800">
         {/* Our Network */}
         <div className="max-w-6xl mx-auto px-4 pt-5 pb-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-5 border-b border-gray-100 dark:border-slate-800">
-          <span className="text-xs text-gray-400 dark:text-slate-500 font-semibold uppercase tracking-wider whitespace-nowrap">Our Network:</span>
+          <span className="text-xs text-gray-600 dark:text-slate-500 font-semibold uppercase tracking-wider whitespace-nowrap">Our Network:</span>
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-5 gap-y-1">
             {[
               { href: "https://saiisai.com", label: "saiisai.com" },
@@ -131,7 +131,7 @@ export default function Footer() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-gray-400 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 transition"
+                className="text-xs text-gray-600 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 transition"
               >
                 {label}
               </a>
@@ -139,7 +139,7 @@ export default function Footer() {
           </div>
         </div>
         {/* Copyright */}
-        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-400 dark:text-slate-500">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-600 dark:text-slate-500">
           <span>© {new Date().getFullYear()} EazWorld. All rights reserved. Made in Accra, Ghana.</span>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-gray-700 dark:hover:text-slate-300 transition">Privacy Policy</Link>

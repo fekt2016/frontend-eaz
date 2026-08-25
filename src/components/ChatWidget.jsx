@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
+import { canHandleChats } from "@/lib/roles";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeMessage } from "@/lib/sanitize";
 import { getCookie, setCookie, removeCookie } from "@/lib/cookies";
 
@@ -70,7 +71,7 @@ function MessageBubble({ msg }) {
   if (msg.role === "user") {
     return (
       <div className="flex justify-end mb-3">
-        <div className="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-tr-sm text-sm leading-relaxed whitespace-pre-wrap bg-brand-500 text-white">
+        <div className="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-tr-sm text-sm leading-relaxed whitespace-pre-wrap bg-brand-500 text-gray-900">
           {renderText(msg.content)}
         </div>
       </div>
@@ -93,7 +94,7 @@ function MessageBubble({ msg }) {
   }
   return (
     <div className="flex justify-start mb-3">
-      <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mr-2 mt-1">E</div>
+      <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-gray-900 text-xs font-bold flex-shrink-0 mr-2 mt-1">E</div>
       <div className="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-tl-sm text-sm leading-relaxed whitespace-pre-wrap bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-100 dark:border-slate-700 shadow-sm">
         {renderText(msg.content)}
       </div>
@@ -104,7 +105,7 @@ function MessageBubble({ msg }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start mb-3">
-      <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mr-2 mt-1">E</div>
+      <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-gray-900 text-xs font-bold flex-shrink-0 mr-2 mt-1">E</div>
       <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
         <div className="flex gap-1 items-center">
           {[0, 150, 300].map((d) => (
@@ -147,7 +148,7 @@ function HumanRequestForm({ user, onSubmit, onCancel }) {
           <ShieldCheck size={13} className="text-indigo-500" />
           <p className="text-sm font-semibold text-gray-900 dark:text-white">Connect to live support</p>
         </div>
-        <button onClick={onCancel} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition">
+        <button onClick={onCancel} className="p-1 rounded-lg text-gray-600 hover:text-gray-600 dark:hover:text-slate-300 transition">
           <X size={12} />
         </button>
       </div>
@@ -162,12 +163,12 @@ function HumanRequestForm({ user, onSubmit, onCancel }) {
         )}
         {isLoggedIn && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-            <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center text-gray-900 text-[10px] font-bold flex-shrink-0">
               {user.name?.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>
-              <p className="text-[10px] text-gray-400 dark:text-slate-500 truncate">{user.email}</p>
+              <p className="text-[10px] text-gray-600 dark:text-slate-500 truncate">{user.email}</p>
             </div>
           </div>
         )}
@@ -491,7 +492,9 @@ export default function ChatWidget() {
   };
 
   if (authLoading) return null;
-  if (user?.role === "admin") return <AdminChatBadge />;
+  // Admins, superadmins, and staff are chat agents — show the console badge
+  // instead of the visitor widget.
+  if (canHandleChats(user?.role)) return <AdminChatBadge />;
 
   const isLoggedIn = !!user;
   const isPending  = chatState === "pending";
@@ -508,7 +511,7 @@ export default function ChatWidget() {
           <div className="bg-gray-900 dark:bg-slate-900 px-4 py-3.5 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-gray-900 font-bold text-sm">
                   {isLive || isPending ? <ShieldCheck size={14} /> : "E"}
                 </div>
                 <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-gray-900 ${
@@ -519,7 +522,7 @@ export default function ChatWidget() {
                 <p className="text-white font-semibold text-sm">
                   {isLive ? "EazWorld Team" : isPending ? "EazWorld Support" : "Eazy"}
                 </p>
-                <p className="text-gray-400 text-xs">
+                <p className="text-gray-600 text-xs">
                   {isLive    ? "Live · Replies arrive here automatically"
                   : isPending ? "Waiting for an agent to accept…"
                   : isEnded  ? "Conversation ended"
@@ -532,10 +535,10 @@ export default function ChatWidget() {
               <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer" title="WhatsApp" className="p-1.5 rounded-lg text-emerald-400 hover:bg-slate-800 transition">
                 <FaWhatsapp size={16} />
               </a>
-              <button onClick={handleReset} title="New conversation" className="p-1.5 rounded-lg text-gray-400 hover:bg-slate-800 transition">
+              <button onClick={handleReset} title="New conversation" className="p-1.5 rounded-lg text-gray-600 hover:bg-slate-800 transition">
                 <RotateCw size={12} />
               </button>
-              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-slate-800 transition">
+              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-gray-600 hover:bg-slate-800 transition">
                 <X size={14} />
               </button>
             </div>
@@ -573,7 +576,7 @@ export default function ChatWidget() {
           )}
           {isLoggedIn && isBot && (
             <div className="px-4 py-1.5 bg-brand-50 dark:bg-brand-900/10 border-b border-brand-100 dark:border-brand-900/20 flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-brand-500 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
+              <div className="w-4 h-4 rounded-full bg-brand-500 flex items-center justify-center text-gray-900 text-[9px] font-bold flex-shrink-0">
                 {user.name?.charAt(0).toUpperCase()}
               </div>
               <p className="text-[11px] text-brand-700 dark:text-brand-400 font-medium truncate">
@@ -591,7 +594,7 @@ export default function ChatWidget() {
             {typing && <TypingIndicator />}
             {isPending && (
               <div className="flex justify-start mb-3">
-                <div className="w-7 h-7 rounded-full bg-brand-400 flex items-center justify-center text-white flex-shrink-0 mr-2 mt-1">
+                <div className="w-7 h-7 rounded-full bg-brand-400 flex items-center justify-center text-gray-900 flex-shrink-0 mr-2 mt-1">
                   <Clock size={11} />
                 </div>
                 <div className="px-3.5 py-2.5 rounded-2xl rounded-tl-sm bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 text-xs text-brand-700 dark:text-brand-400">
@@ -644,7 +647,7 @@ export default function ChatWidget() {
           {/* ── Chat ended footer ── */}
           {isEnded && (
             <div className="flex-shrink-0 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 flex gap-2">
-              <button onClick={handleReset} className="flex-1 text-sm py-2 rounded-xl bg-brand-500 text-white font-semibold hover:bg-brand-400 transition">
+              <button onClick={handleReset} className="flex-1 text-sm py-2 rounded-xl bg-brand-500 text-gray-900 font-semibold hover:bg-brand-400 transition">
                 Start New Chat
               </button>
               <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer"
@@ -664,7 +667,7 @@ export default function ChatWidget() {
                   placeholder="Type a message…" disabled={typing}
                   className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition disabled:opacity-50" />
                 <button type="submit" disabled={!input.trim() || typing}
-                  className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
+                  className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-gray-900 hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
 <Send size={13} />
                 </button>
               </form>
@@ -689,7 +692,7 @@ export default function ChatWidget() {
                 placeholder="Message the team…"
                 className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition" />
               <button type="submit" disabled={!input.trim()}
-                className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-white hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
+                className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center text-gray-900 hover:bg-brand-400 transition disabled:opacity-40 flex-shrink-0">
                 <Send size={13} />
               </button>
             </form>
@@ -698,11 +701,11 @@ export default function ChatWidget() {
           {/* ── Pending: input locked ── */}
           {isPending && (
             <div className="flex items-center gap-2 px-3 py-3 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex-shrink-0">
-              <div className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-400 dark:text-slate-500 cursor-not-allowed select-none">
+              <div className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-500 cursor-not-allowed select-none">
                 Waiting for agent to accept…
               </div>
               <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
-                <Loader2 size={13} className="text-gray-400 animate-spin" />
+                <Loader2 size={13} className="text-gray-600 animate-spin" />
               </div>
             </div>
           )}
@@ -712,7 +715,7 @@ export default function ChatWidget() {
 
       {/* Floating button */}
       <button onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-5 right-4 sm:right-6 z-50 w-14 h-14 rounded-full bg-brand-500 hover:bg-brand-400 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+        className="fixed bottom-5 right-4 sm:right-6 z-50 w-14 h-14 rounded-full bg-brand-500 hover:bg-brand-400 text-gray-900 shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
         aria-label="Open chat">
         {open ? <X size={20} /> : <MessageSquare size={22} />}
         {!open && unread > 0 && (

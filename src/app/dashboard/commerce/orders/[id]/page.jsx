@@ -7,17 +7,25 @@ import { useRouter, useParams } from "next/navigation";
 import { Send } from "lucide-react";
 import { formatGhs } from "@/lib/shop";
 import { useOrder, useUpdateOrderStatus, useAddTrackingEvent } from "@/hooks/queries/useOrders";
+import {
+  Badge, Button, Card, EmptyState, Skeleton,
+} from "@/components/ui";
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 
 const STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
-const statusColors = {
-  pending: "bg-brand-50 text-brand-700",
-  paid: "bg-blue-50 text-blue-700",
-  processing: "bg-indigo-50 text-indigo-700",
-  shipped: "bg-purple-50 text-purple-700",
-  delivered: "bg-emerald-50 text-emerald-700",
-  cancelled: "bg-red-50 text-red-700",
+/* Same semantic mapping as the staff dashboard's RecentOrdersList so a status
+ * reads the same colour wherever it appears. */
+const STATUS_TONES = {
+  pending:    "brand",
+  paid:       "info",
+  processing: "info",
+  shipped:    "info",
+  delivered:  "success",
+  cancelled:  "neutral",
 };
+
+const fieldCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
 function formatDate(value) {
   if (!value) return "—";
@@ -79,8 +87,9 @@ export default function AdminOrderDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
-        <div className="mx-auto max-w-3xl flex justify-center py-12">
-          <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+        <div className="mx-auto max-w-3xl space-y-4 py-6">
+          <Skeleton className="h-8 w-56 rounded-xl" />
+          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
         </div>
       </div>
     );
@@ -89,13 +98,14 @@ export default function AdminOrderDetailPage() {
   if (!order) {
     return (
       <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
-      <div className="mx-auto max-w-3xl">
-        <div className="rounded-2xl border border-gray-100 bg-paper p-8 text-center">
-          <p className="text-gray-400 text-sm">Order not found.</p>
-            <Link href="/dashboard/pos/orders" className="text-sm text-gray-500 hover:text-gray-900 mt-2 inline-block">
-              ← Back to Orders
-            </Link>
-          </div>
+        <div className="mx-auto max-w-3xl">
+          <Card padding="none">
+            <EmptyState
+              title="Order not found."
+              description="The order may have been removed, or the link is out of date."
+              action={<Button variant="secondary" href="/dashboard/pos/orders">← Back to Orders</Button>}
+            />
+          </Card>
         </div>
       </div>
     );
@@ -119,22 +129,22 @@ export default function AdminOrderDetailPage() {
                     form below rather than to the customer's read-only view. */}
                 <Link
                   href="#tracking-update"
-                  className="font-mono font-semibold text-brand-600 hover:underline"
+                  className="font-mono font-semibold text-brand-ink hover:underline"
                 >
                   {order.trackingNumber}
                 </Link>{" "}
                 <Link
                   href={`/track/order/${order.trackingNumber}`}
-                  className="text-xs text-gray-400 hover:underline"
+                  className="text-xs text-gray-600 hover:underline"
                 >
                   (view as customer)
                 </Link>
               </p>
             )}
           </div>
-          <span className={`text-xs font-medium px-3 py-1.5 rounded-full capitalize ${statusColors[order.status] || "bg-gray-100 text-gray-600"}`}>
+          <Badge tone={STATUS_TONES[order.status] || "neutral"} className="capitalize">
             {order.status}
-          </span>
+          </Badge>
         </div>
 
         <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
@@ -153,7 +163,7 @@ export default function AdminOrderDetailPage() {
               <div key={item._id || i} className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-                  <p className="text-xs text-gray-400">Qty {item.qty} × {formatGhs(item.price)}</p>
+                  <p className="text-xs text-gray-600">Qty {item.qty} × {formatGhs(item.price)}</p>
                 </div>
                 <p className="text-sm font-semibold text-gray-900 shrink-0">
                   {formatGhs(item.price * item.qty)}
@@ -178,18 +188,16 @@ export default function AdminOrderDetailPage() {
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Update Status</h2>
           <div className="flex flex-wrap gap-2">
             {STATUSES.map((s) => (
-              <button
+              <Button
                 key={s}
+                size="sm"
+                variant={s === order.status ? "primary" : "secondary"}
                 onClick={() => handleStatus(s)}
                 disabled={updating || s === order.status}
-                className={`text-xs font-semibold px-3.5 py-2 rounded-full capitalize transition disabled:opacity-50 ${
-                  s === order.status
-                    ? "bg-gray-900 text-white"
-                    : "border border-gray-200 text-gray-600 hover:border-gray-400"
-                }`}
+                className="capitalize"
               >
-                {updating ? "..." : s}
-              </button>
+                {s}
+              </Button>
             ))}
           </div>
         </div>
@@ -203,7 +211,7 @@ export default function AdminOrderDetailPage() {
                 <select
                   value={trackStatus}
                   onChange={(e) => setTrackStatus(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400/40"
+                  className={`mt-1 w-full ${fieldCls}`}
                 >
                   {STATUSES.map((s) => (
                     <option key={s} value={s}>{s}</option>
@@ -217,7 +225,7 @@ export default function AdminOrderDetailPage() {
                   value={trackLocation}
                   onChange={(e) => setTrackLocation(e.target.value)}
                   placeholder="e.g. Accra depot"
-                  className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40"
+                  className={`mt-1 w-full ${fieldCls}`}
                 />
               </label>
             </div>
@@ -228,23 +236,19 @@ export default function AdminOrderDetailPage() {
                 onChange={(e) => setTrackNote(e.target.value)}
                 rows={2}
                 placeholder="e.g. Handed to courier for delivery"
-                className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40 resize-none"
+                className={`mt-1 w-full ${fieldCls} resize-none`}
               />
             </label>
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition disabled:opacity-50"
-            >
-              <Send size={10} /> {saving ? "Saving…" : "Add tracking update"}
-            </button>
+            <Button type="submit" size="sm" loading={saving}>
+              <Send size={10} aria-hidden="true" /> Add tracking update
+            </Button>
           </form>
         </div>
 
         <div className="rounded-2xl border border-gray-100 bg-paper p-5">
           <h2 className="font-semibold text-gray-900 text-sm mb-4">Tracking history</h2>
           {history.length === 0 ? (
-            <p className="text-sm text-gray-400">No tracking updates yet.</p>
+            <p className="text-sm text-gray-600">No tracking updates yet.</p>
           ) : (
             <ol className="relative border-l border-gray-200 ml-2 space-y-6">
               {[...history].reverse().map((h, i) => (
@@ -252,12 +256,12 @@ export default function AdminOrderDetailPage() {
                   <span className="absolute -left-[9px] mt-1 w-4 h-4 rounded-full border-2 border-white bg-brand-500" />
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-sm font-medium text-gray-900 capitalize">{h.status}</span>
-                    <span className="text-xs text-gray-400">{formatDate(h.timestamp)}</span>
+                    <span className="text-xs text-gray-600">{formatDate(h.timestamp)}</span>
                   </div>
                   {h.note && <p className="text-sm text-gray-600 mt-1">{h.note}</p>}
-                  {h.location && <p className="text-xs text-gray-400 mt-0.5">{h.location}</p>}
+                  {h.location && <p className="text-xs text-gray-600 mt-0.5">{h.location}</p>}
                   {h.updatedBy?.name && (
-                    <p className="text-xs text-gray-400 mt-0.5">by {h.updatedBy.name} ({h.updatedBy.role})</p>
+                    <p className="text-xs text-gray-600 mt-0.5">by {h.updatedBy.name} ({h.updatedBy.role})</p>
                   )}
                 </li>
               ))}

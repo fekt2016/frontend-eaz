@@ -299,12 +299,12 @@ export default function SellPage() {
     return (
       <div className="max-w-sm mx-auto space-y-4 pt-4">
         <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-5 text-center">
-          <CheckCircle2 size={32} className="text-green-600 dark:text-green-400 mx-auto mb-2" />
+          <CheckCircle2 size={32} className="text-success dark:text-success-dark mx-auto mb-2" />
           <p className="text-gray-900 dark:text-white font-bold text-lg">Sale Complete</p>
           <p className="text-gray-500 dark:text-gray-400 text-sm">{completedSale.saleNumber}</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{formatGhs(completedSale.total || 0)}</p>
           {completedSale.changeDue > 0 && (
-            <p className="text-green-600 dark:text-green-400 font-semibold mt-1">Change: {formatGhs(completedSale.changeDue || 0)}</p>
+            <p className="text-success dark:text-success-dark font-semibold mt-1">Change: {formatGhs(completedSale.changeDue || 0)}</p>
           )}
         </div>
 
@@ -322,7 +322,7 @@ export default function SellPage() {
           </button>
           <button
             onClick={newSale}
-            className="py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-bold transition"
+            className="py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-bold transition"
           >
             New Sale →
           </button>
@@ -347,7 +347,7 @@ export default function SellPage() {
         <div className="relative">
           <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-gray-500">
             {scanning
-              ? <Loader2 size={14} className="animate-spin text-brand-600 dark:text-brand-400" />
+              ? <Loader2 size={14} className="animate-spin text-brand-ink dark:text-brand-400" />
               : <Barcode size={14} />}
           </div>
           <input
@@ -374,7 +374,7 @@ export default function SellPage() {
 
         {/* Scan error / info */}
         {scanError && (
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm">
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-error-surface border border-error/20 dark:bg-error-surface-dark dark:border-error-dark/30 text-error dark:text-error-dark text-sm">
             <TriangleAlert size={12} className="flex-shrink-0" />
             {scanError}
           </div>
@@ -398,9 +398,9 @@ export default function SellPage() {
                 <ProductImage src={p.images?.[0]} alt={p.name} width={40} height={40} className="h-10 w-10 rounded-lg object-cover bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-900 dark:text-white font-medium truncate">{p.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{p.category} · Stock: <span className={p.quantity <= p.lowStockThreshold ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}>{p.quantity}</span></p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{p.category} · Stock: <span className={p.quantity <= p.lowStockThreshold ? "text-error dark:text-error-dark" : "text-gray-500 dark:text-gray-400"}>{p.quantity}</span></p>
                 </div>
-                <p className="text-sm font-bold text-brand-600 dark:text-brand-400 ml-4 flex-shrink-0">{formatGhs(Number(p.sellingPrice))}</p>
+                <p className="text-sm font-bold text-brand-ink dark:text-brand-400 ml-4 flex-shrink-0">{formatGhs(Number(p.sellingPrice))}</p>
               </button>
             ))}
             </div>
@@ -413,7 +413,7 @@ export default function SellPage() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Cart ({cart.length} item{cart.length !== 1 ? "s" : ""})</p>
             {cart.length > 0 && (
-              <button onClick={clearCart} className="text-xs text-red-600 dark:text-red-400 hover:underline flex items-center gap-1">
+              <button onClick={clearCart} className="text-xs text-error dark:text-error-dark hover:underline flex items-center gap-1">
                 <X size={10} /> Clear
               </button>
             )}
@@ -458,7 +458,7 @@ export default function SellPage() {
                   <p className="text-sm font-bold text-gray-900 dark:text-white w-20 text-right">{formatGhs(item.unitPrice * item.quantity)}</p>
 
                   {/* Remove */}
-                  <button onClick={() => removeFromCart(item.key)} className="text-gray-600 hover:text-red-400 transition ml-1">
+                  <button onClick={() => removeFromCart(item.key)} className="text-gray-600 hover:text-error dark:hover:text-error-dark transition ml-1">
                     <Trash2 size={11} />
                   </button>
                 </div>
@@ -501,7 +501,7 @@ export default function SellPage() {
 
           <div className="flex justify-between text-base font-bold border-t border-gray-200 dark:border-gray-800 pt-2.5">
             <span className="text-gray-900 dark:text-white">Total</span>
-            <span className="text-brand-600 dark:text-brand-400">{formatGhs(total)}</span>
+            <span className="text-brand-ink dark:text-brand-400">{formatGhs(total)}</span>
           </div>
         </div>
 
@@ -526,7 +526,7 @@ export default function SellPage() {
         {/* Payment panel (inline when open) */}
         {showPay && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-brand-500/30 p-5 space-y-3">
-            <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">Collect Payment</p>
+            <p className="text-xs font-semibold text-brand-ink dark:text-brand-400 uppercase tracking-wide">Collect Payment</p>
 
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Amount received (GH₵) *</label>
@@ -555,12 +555,12 @@ export default function SellPage() {
 
             {paid > 0 && paid >= total && (
               <div className="flex justify-between text-sm bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
-                <span className="text-green-600 dark:text-green-400 font-medium">Change due</span>
-                <span className="text-green-600 dark:text-green-400 font-bold">{formatGhs(changeDue)}</span>
+                <span className="text-success dark:text-success-dark font-medium">Change due</span>
+                <span className="text-success dark:text-success-dark font-bold">{formatGhs(changeDue)}</span>
               </div>
             )}
 
-            {payError && <p className="text-red-600 dark:text-red-400 text-sm">{payError}</p>}
+            {payError && <p className="text-error dark:text-error-dark text-sm">{payError}</p>}
 
             <button
               onClick={completeSale}
@@ -583,7 +583,7 @@ export default function SellPage() {
           <button
             onClick={openPayment}
             disabled={!canCheckout}
-            className="w-full py-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base transition disabled:opacity-30 flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold text-base transition disabled:opacity-30 flex items-center justify-center gap-2"
           >
             Checkout →  {formatGhs(total)}
           </button>

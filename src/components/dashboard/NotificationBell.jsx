@@ -65,7 +65,7 @@ export default function NotificationBell() {
               <button
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); markAllRead.mutate(); }}
-                className="text-xs text-brand-600 dark:text-brand-400 hover:underline"
+                className="text-xs text-brand-ink dark:text-brand-400 hover:underline"
               >
                 Mark all read
               </button>
@@ -92,7 +92,7 @@ export default function NotificationBell() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm text-gray-900 dark:text-white truncate">{n.title}</p>
                       {n.body && <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{n.body}</p>}
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{timeAgo(n.createdAt)}</p>
+                      <p className="text-[10px] text-gray-600 dark:text-gray-500 mt-1">{timeAgo(n.createdAt)}</p>
                     </div>
                   </div>
                 </button>
@@ -103,7 +103,7 @@ export default function NotificationBell() {
           <Link
             href="/dashboard/notifications"
             onMouseDown={() => setOpen(false)}
-            className="block text-center text-xs font-semibold text-brand-600 dark:text-brand-400 px-4 py-3 border-t border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            className="block text-center text-xs font-semibold text-brand-ink dark:text-brand-400 px-4 py-3 border-t border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
           >
             View all
           </Link>

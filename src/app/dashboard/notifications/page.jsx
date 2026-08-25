@@ -36,7 +36,7 @@ export default function NotificationsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-display font-bold text-xl text-gray-900 dark:text-white">Notifications</h1>
-          <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">Alerts relevant to you.</p>
+          <p className="text-sm text-gray-600 dark:text-slate-500 mt-0.5">Alerts relevant to you.</p>
         </div>
         <button
           type="button"
@@ -53,7 +53,7 @@ export default function NotificationsPage() {
           onClick={() => { setUnreadOnly(false); setPage(1); }}
           className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${
             !unreadOnly
-              ? "bg-brand-500/15 border-brand-500/30 text-brand-600 dark:text-brand-400"
+              ? "bg-brand-500/15 border-brand-500/30 text-brand-ink dark:text-brand-400"
               : "border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400"
           }`}
         >
@@ -64,7 +64,7 @@ export default function NotificationsPage() {
           onClick={() => { setUnreadOnly(true); setPage(1); }}
           className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${
             unreadOnly
-              ? "bg-brand-500/15 border-brand-500/30 text-brand-600 dark:text-brand-400"
+              ? "bg-brand-500/15 border-brand-500/30 text-brand-ink dark:text-brand-400"
               : "border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400"
           }`}
         >
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
               <div className={`min-w-0 flex-1 ${n.read ? "ml-5" : ""}`}>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">{n.title}</p>
                 {n.body && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{n.body}</p>}
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{fmtDateTime(n.createdAt)}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-500 mt-1">{fmtDateTime(n.createdAt)}</p>
               </div>
             </button>
           ))

@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
@@ -8,7 +9,7 @@ import { z } from "zod";
 import { api } from "@/lib/api";
 
 const schema = z.object({ password: z.string().min(8) });
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -44,7 +45,7 @@ export default function ResetPasswordPage() {
         <div className="text-center mb-8">
           <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mt-6 mb-1">Set new password</h1>
-          <p className="text-gray-400 dark:text-slate-500 text-sm">Choose a strong password for your account</p>
+          <p className="text-gray-600 dark:text-slate-500 text-sm">Choose a strong password for your account</p>
         </div>
 
         <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -60,7 +61,7 @@ export default function ResetPasswordPage() {
                 <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">New password</label>
                 <div className="relative">
                   <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" className={`${inputCls} pr-12`} required />
-                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
+                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
@@ -77,7 +78,7 @@ export default function ResetPasswordPage() {
           )}
 
           <div className="text-center mt-5">
-            <Link href="/auth/login" className="text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Back to Sign In</Link>
+            <Link href="/auth/login" className="text-sm text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Back to Sign In</Link>
           </div>
         </div>
       </div>

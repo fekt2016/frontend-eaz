@@ -132,7 +132,7 @@ export default function BlogArticle({ slug }) {
     <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       {/* BACK */}
       <div className="px-4 pt-28 pb-4 max-w-4xl mx-auto">
-        <Link href="/blog" className="inline-flex items-center gap-2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">
+        <Link href="/blog" className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">
           <ArrowLeft size={11} /> Back to Blog
         </Link>
       </div>
@@ -144,7 +144,7 @@ export default function BlogArticle({ slug }) {
             <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[post.category] || "bg-gray-100 text-gray-600"}`}>
               {post.category}
             </span>
-            <span className="text-gray-400 text-xs flex items-center gap-1">
+            <span className="text-gray-600 text-xs flex items-center gap-1">
               <Clock size={10} /> {post.readTime}
             </span>
           </div>
@@ -159,11 +159,11 @@ export default function BlogArticle({ slug }) {
               </div>
               <div>
                 <p className="text-gray-900 dark:text-white text-sm font-medium">{post.author}</p>
-                {date && <p className="text-gray-400 dark:text-slate-500 text-xs">{new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>}
+                {date && <p className="text-gray-600 dark:text-slate-500 text-xs">{new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 dark:text-slate-500 text-xs mr-1">Share:</span>
+              <span className="text-gray-600 dark:text-slate-500 text-xs mr-1">Share:</span>
               {[
                 { icon: FaFacebook,  href: `https://facebook.com/sharer/sharer.php?u=${shareUrl}` },
                 { icon: FaTwitter,   href: `https://twitter.com/intent/tweet?url=${shareUrl}&text=${encodeURIComponent(post.title)}` },
@@ -171,7 +171,7 @@ export default function BlogArticle({ slug }) {
                 { icon: FaWhatsapp,  href: `https://wa.me/?text=${encodeURIComponent(post.title + " " + shareUrl)}` },
               ].map(({ icon: Icon, href }, idx) => (
                 <a key={idx} href={href} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-white hover:border-gray-400 transition">
+                  className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-white hover:border-gray-400 transition">
                   <Icon size={13} />
                 </a>
               ))}
@@ -219,7 +219,7 @@ export default function BlogArticle({ slug }) {
                   className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition group">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mb-2 ${CATEGORY_COLORS[p.category] || "bg-gray-100 text-gray-600"}`}>{p.category}</span>
                   <h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-snug group-hover:text-brand-500 transition mb-2">{p.title}</h3>
-                  <span className="text-gray-400 dark:text-slate-500 text-xs flex items-center gap-1"><Clock size={10} /> {p.readTime}</span>
+                  <span className="text-gray-600 dark:text-slate-500 text-xs flex items-center gap-1"><Clock size={10} /> {p.readTime}</span>
                 </Link>
               ))}
             </div>

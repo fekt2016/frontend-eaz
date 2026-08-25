@@ -1,31 +1,46 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useId } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { Loader2, RotateCw, Trash2, ChevronDown, Mail, Phone, Building, CalendarDays, Target, MessageCircle, Inbox } from "lucide-react";
+import { api } from "@/lib/api";
+import {
+  RotateCw, Trash2, ChevronDown, Mail, Phone, Building,
+  CalendarDays, Target, MessageCircle, Inbox,
+} from "lucide-react";
 import { isAdminRole } from "@/lib/roles";
+import {
+  Badge, Button, Card, ConfirmDialog, EmptyState,
+  PageHeader, Skeleton, Textarea,
+} from "@/components/ui";
 
+/*
+ * Four statuses onto the measured tones. The old map's `archived` was
+ * gray-500 on gray-100 (3.9:1) and every pill carried a hand-picked border.
+ */
 const STATUS_CONFIG = {
-  new:      { label: "New",      cls: "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800/40",     dot: "bg-brand-400" },
-  read:     { label: "Read",     cls: "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40",           dot: "bg-blue-400" },
-  replied:  { label: "Replied",  cls: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40", dot: "bg-emerald-400" },
-  archived: { label: "Archived", cls: "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400 border border-gray-200 dark:border-slate-700",            dot: "bg-gray-400" },
+  new:      { label: "New",      tone: "brand" },
+  read:     { label: "Read",     tone: "info" },
+  replied:  { label: "Replied",  tone: "success" },
+  archived: { label: "Archived", tone: "neutral" },
 };
+
+const STATUS_KEYS = Object.keys(STATUS_CONFIG);
+
+const TYPE_FILTERS = [
+  { value: "consultation", label: "Consultations" },
+  { value: "general",      label: "General" },
+  { value: "all",          label: "All Types" },
+];
+
+const STATUS_FILTERS = [
+  { value: "all", label: "All" },
+  ...STATUS_KEYS.map((k) => ({ value: k, label: STATUS_CONFIG[k].label })),
+];
 
 function fmtDate(d) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-}
-
-function StatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.new;
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${cfg.cls}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-      {cfg.label}
-    </span>
-  );
 }
 
 function ConsultationCard({ item, onStatusChange, onDelete }) {
@@ -33,6 +48,9 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
   const [updating, setUpdating] = useState(false);
   const [note, setNote] = useState(item.adminNote || "");
   const [savingNote, setSavingNote] = useState(false);
+  const panelId = `consult-${useId()}`;
+
+  const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.new;
 
   const handleStatus = async (status) => {
     setUpdating(true);
@@ -47,132 +65,136 @@ function ConsultationCard({ item, onStatusChange, onDelete }) {
   };
 
   return (
-    <div className={`rounded-2xl border bg-white dark:bg-slate-900 overflow-hidden transition ${
-      item.status === "new" ? "border-brand-200 dark:border-brand-800/40" : "border-gray-100 dark:border-slate-800"
-    }`}>
-      {/* Header row */}
-      <div
-        className="flex items-start justify-between gap-4 px-5 py-4 cursor-pointer hover:bg-paper dark:hover:bg-slate-800/50 transition"
+    <Card
+      padding="none"
+      className={`overflow-hidden ${item.status === "new" ? "border-brand-200 dark:border-brand-800/40" : ""}`}
+    >
+      {/* The header used to be a <div onClick> — invisible to the keyboard. */}
+      <button
+        type="button"
         onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        className="flex w-full items-start justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-paper dark:hover:bg-slate-800/50"
       >
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm flex-shrink-0 mt-0.5">
+        <span className="flex min-w-0 items-start gap-3">
+          <span className="mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-body-sm font-bold text-brand-ink dark:bg-brand-900/30 dark:text-brand-400">
             {item.name?.charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-0">
-            <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{item.name}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 truncate">{item.email}</p>
+          </span>
+          <span className="min-w-0">
+            <span className="block text-body-sm font-semibold leading-tight text-gray-900 dark:text-white">{item.name}</span>
+            <span className="mt-0.5 block truncate text-caption text-gray-600 dark:text-slate-400">{item.email}</span>
             {item.service && (
-              <p className="text-xs font-medium text-brand-600 dark:text-brand-400 mt-1"><Target size={11} className="inline text-brand-600 dark:text-brand-400" /> {item.service}</p>
+              <span className="mt-1 flex items-center gap-1.5 text-caption font-medium text-brand-ink dark:text-brand-400">
+                <Target size={12} aria-hidden="true" /> {item.service}
+              </span>
             )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <StatusBadge status={item.status} />
-          <span className="text-xs text-gray-400 dark:text-slate-500 whitespace-nowrap hidden sm:block">{fmtDate(item.createdAt)}</span>
-          <ChevronDown size={12} className={`text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
-        </div>
-      </div>
+          </span>
+        </span>
+        <span className="flex flex-shrink-0 items-center gap-2">
+          <Badge tone={cfg.tone}>{cfg.label}</Badge>
+          <span className="hidden whitespace-nowrap text-caption text-gray-600 dark:text-slate-400 sm:block">
+            {fmtDate(item.createdAt)}
+          </span>
+          <ChevronDown
+            size={16}
+            aria-hidden="true"
+            className={`text-gray-600 transition-transform dark:text-slate-400 ${expanded ? "rotate-180" : ""}`}
+          />
+        </span>
+      </button>
 
-      {/* Expanded detail */}
       {expanded && (
-        <div className="px-5 pb-5 border-t border-gray-50 dark:border-slate-800">
-          <div className="pt-4 space-y-4">
-
-            {/* Contact info */}
-            <div className="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-slate-400">
-              <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 hover:text-brand-500 transition">
-                <Mail size={11} /> {item.email}
+        <div id={panelId} className="border-t border-gray-100 px-5 pb-5 dark:border-slate-800">
+          <div className="space-y-4 pt-4">
+            <div className="flex flex-wrap gap-4 text-caption text-gray-600 dark:text-slate-400">
+              <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 transition-colors hover:text-brand-ink dark:hover:text-brand-400">
+                <Mail size={13} aria-hidden="true" /> {item.email}
               </a>
               {item.phone && (
-                <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 hover:text-brand-500 transition">
-                  <Phone size={11} /> {item.phone}
+                <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 transition-colors hover:text-brand-ink dark:hover:text-brand-400">
+                  <Phone size={13} aria-hidden="true" /> {item.phone}
                 </a>
               )}
               {item.businessName && (
                 <span className="flex items-center gap-1.5">
-                  <Building size={11} /> {item.businessName}
+                  <Building size={13} aria-hidden="true" /> {item.businessName}
                 </span>
               )}
               <span className="flex items-center gap-1.5">
-                <CalendarDays size={11} /> {fmtDate(item.createdAt)}
+                <CalendarDays size={13} aria-hidden="true" /> {fmtDate(item.createdAt)}
               </span>
             </div>
 
-            {/* Message */}
             {item.message && (
-              <div className="bg-paper dark:bg-slate-800 rounded-xl p-4">
-                <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 mb-1.5 uppercase tracking-wide">Message</p>
-                <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{item.message}</p>
+              <div className="rounded-xl bg-paper p-4 dark:bg-slate-800">
+                <p className="mb-1.5 font-mono text-eyebrow font-bold uppercase text-gray-600 dark:text-slate-400">Message</p>
+                <p className="whitespace-pre-wrap text-body-sm leading-relaxed text-gray-700 dark:text-slate-300">{item.message}</p>
               </div>
             )}
 
-            {/* Admin note */}
             <div>
-              <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 mb-1.5 uppercase tracking-wide">Admin Note</p>
-              <textarea
+              <Textarea
+                label="Admin note"
+                hint="Private — only staff see this."
+                rows={2}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                rows={2}
-                placeholder="Add a private note (only visible to admin)…"
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-400 transition resize-none"
+                placeholder="Add a private note…"
               />
-              <button
-                onClick={handleSaveNote}
-                disabled={savingNote}
-                className="mt-1.5 text-xs font-semibold px-4 py-1.5 rounded-full bg-gray-900 dark:bg-slate-700 text-white hover:bg-gray-700 dark:hover:bg-slate-600 disabled:opacity-50 transition"
-              >
-                {savingNote ? "Saving…" : "Save Note"}
-              </button>
+              <Button size="sm" variant="secondary" className="mt-2" onClick={handleSaveNote} loading={savingNote}>
+                {savingNote ? "Saving…" : "Save note"}
+              </Button>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-between flex-wrap gap-3 pt-2">
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-                  <button
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Set status">
+                {STATUS_KEYS.map((key) => (
+                  <Button
                     key={key}
-                    onClick={() => handleStatus(key)}
+                    size="sm"
+                    variant={item.status === key ? "primary" : "secondary"}
+                    aria-pressed={item.status === key}
                     disabled={updating || item.status === key}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition disabled:opacity-40 ${
-                      item.status === key
-                        ? cfg.cls
-                        : "border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-400 dark:hover:border-slate-500 bg-white dark:bg-slate-800"
-                    }`}
+                    onClick={() => handleStatus(key)}
                   >
-                    {updating && item.status !== key ? <Loader2 className="animate-spin" size={10} /> : cfg.label}
-                  </button>
+                    {STATUS_CONFIG[key].label}
+                  </Button>
                 ))}
               </div>
-              <div className="flex gap-2">
-                <a
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="brand"
                   href={`mailto:${item.email}?subject=Re: ${encodeURIComponent(item.subject || "Your Consultation Request")}`}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-500 text-white hover:bg-brand-400 transition"
                 >
-                  <Mail size={10} /> Reply by Email
-                </a>
+                  <Mail size={14} aria-hidden="true" /> Reply by email
+                </Button>
                 {item.phone && (
-                  <a
+                  <Button
+                    size="sm"
+                    variant="secondary"
                     href={`https://wa.me/${item.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${item.name.split(" ")[0]}, thanks for booking a consultation with EazWorld!`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition"
                   >
-                    <MessageCircle size={10} /> WhatsApp
-                  </a>
+                    <MessageCircle size={14} aria-hidden="true" /> WhatsApp
+                  </Button>
                 )}
-                <button
-                  onClick={() => onDelete(item._id)}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="text-error dark:text-error-dark"
+                  onClick={() => onDelete(item)}
                 >
-                  <Trash2 size={10} /> Delete
-                </button>
+                  <Trash2 size={14} aria-hidden="true" /> Delete
+                </Button>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -183,6 +205,8 @@ export default function AdminConsultationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("consultation");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAdminRole(user?.role)) router.replace("/dashboard");
@@ -194,9 +218,8 @@ export default function AdminConsultationsPage() {
       const params = new URLSearchParams();
       if (typeFilter !== "all") params.set("type", typeFilter);
       if (filter !== "all") params.set("status", filter);
-      const res = await fetch(`/api/v1/contacts?${params}`);
-      const json = await res.json();
-      setItems(json.data || []);
+      const res = await api.get(`/contacts?${params}`);
+      setItems(res.data || []);
     } catch {
       setItems([]);
     } finally {
@@ -210,23 +233,21 @@ export default function AdminConsultationsPage() {
 
   const handleStatusChange = async (id, update) => {
     try {
-      const res = await fetch(`/api/v1/contacts/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(update),
-      });
-      if (res.ok) {
-        setItems((prev) => prev.map((c) => c._id === id ? { ...c, ...update } : c));
-      }
+      await api.patch(`/contacts/${id}`, update);
+      setItems((prev) => prev.map((c) => (c._id === id ? { ...c, ...update } : c)));
     } catch {}
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Delete this booking? This cannot be undone.")) return;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      const res = await fetch(`/api/v1/contacts/${id}`, { method: "DELETE" });
-      if (res.ok) setItems((prev) => prev.filter((c) => c._id !== id));
-    } catch {}
+      await api.delete(`/contacts/${deleteTarget._id}`);
+      setItems((prev) => prev.filter((c) => c._id !== deleteTarget._id));
+      setDeleteTarget(null);
+    } catch {} finally {
+      setDeleting(false);
+    }
   };
 
   if (authLoading || !isAdminRole(user?.role)) return null;
@@ -235,91 +256,96 @@ export default function AdminConsultationsPage() {
   const newCount = counts.new || 0;
 
   return (
-    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
+    <div className="px-4 pb-24 pt-6 sm:px-6">
       <div className="mx-auto max-w-4xl">
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">
-              Consultations
-              {newCount > 0 && (
-                <span className="ml-2 text-sm font-semibold px-2.5 py-1 rounded-full bg-brand-500 text-white">{newCount} new</span>
-              )}
-            </h1>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">Manage booking requests from the consultation form.</p>
-          </div>
-          <button
-            onClick={fetchData}
-            disabled={loading}
-            className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50"
-          >
-            <RotateCw size={11} className={loading ? "animate-spin" : ""} /> Refresh
-          </button>
-        </div>
+        <PageHeader
+          title="Consultations"
+          description="Manage booking requests from the consultation form."
+          actions={
+            <>
+              {newCount > 0 && <Badge tone="brand">{newCount} new</Badge>}
+              <Button size="sm" variant="secondary" onClick={fetchData} disabled={loading}>
+                <RotateCw size={15} aria-hidden="true" className={loading ? "animate-spin" : ""} /> Refresh
+              </Button>
+            </>
+          }
+        />
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {/* Type filter */}
-          <div className="flex gap-1 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-full p-1">
-            {[["consultation", "Consultations"], ["general", "General"], ["all", "All Types"]].map(([val, label]) => (
-              <button
-                key={val}
-                onClick={() => setTypeFilter(val)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
-                  typeFilter === val
-                    ? "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900"
-                    : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
-                }`}
+        <div className="mb-6 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by request type">
+            {TYPE_FILTERS.map((t) => (
+              <Button
+                key={t.value}
+                size="sm"
+                variant={typeFilter === t.value ? "primary" : "secondary"}
+                aria-pressed={typeFilter === t.value}
+                onClick={() => setTypeFilter(t.value)}
               >
-                {label}
-              </button>
+                {t.label}
+              </Button>
             ))}
           </div>
 
-          {/* Status filter */}
-          <div className="flex gap-1 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-full p-1">
-            {[["all", "All"], ["new", "New"], ["read", "Read"], ["replied", "Replied"], ["archived", "Archived"]].map(([val, label]) => (
-              <button
-                key={val}
-                onClick={() => setFilter(val)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
-                  filter === val
-                    ? "bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900"
-                    : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
-                }`}
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
+            {STATUS_FILTERS.map((s) => (
+              <Button
+                key={s.value}
+                size="sm"
+                variant={filter === s.value ? "primary" : "secondary"}
+                aria-pressed={filter === s.value}
+                onClick={() => setFilter(s.value)}
               >
-                {label}
-                {val !== "all" && counts[val] ? ` (${counts[val]})` : ""}
-              </button>
+                {s.label}{s.value !== "all" && counts[s.value] ? ` (${counts[s.value]})` : ""}
+              </Button>
             ))}
           </div>
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
-          {[["new", "New"], ["read", "Read"], ["replied", "Replied"], ["archived", "Archived"]].map(([key, label]) => (
-            <div key={key} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-4 text-center">
-              <p className={`text-2xl font-bold ${key === "new" && counts.new > 0 ? "text-brand-500" : "text-gray-900 dark:text-white"}`}>
+        <div className="mb-6 grid grid-cols-4 gap-3">
+          {STATUS_KEYS.map((key) => (
+            <Card key={key} padding="sm" className="text-center">
+              <p className={`text-2xl font-bold tabular-nums ${
+                key === "new" && counts.new > 0 ? "text-brand-ink dark:text-brand-400" : "text-gray-900 dark:text-white"
+              }`}>
                 {counts[key] || 0}
               </p>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
-            </div>
+              <p className="mt-1 text-caption text-gray-600 dark:text-slate-400">{STATUS_CONFIG[key].label}</p>
+            </Card>
           ))}
         </div>
 
-        {/* List */}
         {loading ? (
-          <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <Loader2 className="animate-spin text-brand-500" size={24} />
-            <span className="text-sm">Loading…</span>
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <div className="flex items-start gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+              </Card>
+            ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-24 text-gray-400 dark:text-slate-500">
-            <Inbox size={36} className="mb-4 mx-auto text-gray-400 dark:text-slate-500" />
-            <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">No bookings yet</p>
-            <p className="text-xs">Consultation requests will appear here once submitted.</p>
-          </div>
+          <Card padding="none">
+            <EmptyState
+              icon={Inbox}
+              title="No bookings yet"
+              description="Consultation requests submitted on the public site land here."
+              action={
+                filter !== "all" || typeFilter !== "consultation" ? (
+                  <Button variant="secondary" onClick={() => { setFilter("all"); setTypeFilter("consultation"); }}>
+                    Reset filters
+                  </Button>
+                ) : null
+              }
+            />
+          </Card>
         ) : (
           <div className="space-y-3">
             {items.map((item) => (
@@ -327,13 +353,27 @@ export default function AdminConsultationsPage() {
                 key={item._id}
                 item={item}
                 onStatusChange={handleStatusChange}
-                onDelete={handleDelete}
+                onDelete={setDeleteTarget}
               />
             ))}
           </div>
         )}
-
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        loading={deleting}
+        title="Delete this booking?"
+        description={deleteTarget ? `${deleteTarget.name} · ${deleteTarget.email}` : undefined}
+        confirmLabel="Delete booking"
+      >
+        <p className="text-body-sm text-gray-600 dark:text-slate-400">
+          The request and its admin note are removed permanently. To keep the record but clear
+          the queue, set it to Archived instead.
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }

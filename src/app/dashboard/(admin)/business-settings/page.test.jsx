@@ -61,7 +61,8 @@ describe("BusinessSettingsPage (T14)", () => {
     render(<BusinessSettingsPage />);
     expect(screen.queryByText("VAT rate (%)")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("switch", { name: "Toggle VAT registered" }));
+    // The switch's role already says "toggle" — the accessible name is the setting.
+    fireEvent.click(screen.getByRole("switch", { name: "VAT registered" }));
     expect(screen.getByText("VAT rate (%)")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /save tax settings/i }));
@@ -90,7 +91,9 @@ describe("BusinessSettingsPage (T14)", () => {
     fireEvent.click(screen.getByRole("button", { name: /add service/i }));
     expect(screen.getAllByPlaceholderText("Service name")).toHaveLength(2);
 
-    fireEvent.click(screen.getAllByRole("button", { name: /remove service/i })[0]);
+    // Each remove button names its own row, so this targets the row just added
+    // rather than whichever one happens to sort first.
+    fireEvent.click(screen.getByRole("button", { name: "Remove service 2" }));
     expect(screen.getAllByPlaceholderText("Service name")).toHaveLength(1);
   });
 });
