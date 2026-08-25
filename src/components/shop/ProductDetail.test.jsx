@@ -268,3 +268,55 @@ describe("ProductDetail — recording a view (T48)", () => {
     await waitFor(() => expect(screen.getByText(/7 views/)).toBeTruthy());
   });
 });
+
+// T45: an out-of-stock product marked for pre-order must be buyable, not a dead
+// "Out of Stock" button. The page mirrors the server rule — a product with stock
+// is never sold as a pre-order, however the flag is set.
+describe("ProductDetail — pre-order (T45)", () => {
+  const preorderProduct = (over = {}) => ({
+    ...PRODUCT,
+    stock: 0,
+    preorder: { enabled: true, availableFrom: "2026-10-01T00:00:00Z", note: "ships from abroad", maxQty: 2 },
+    ...over,
+  });
+
+  it("offers a Pre-order button instead of a disabled Out of Stock", async () => {
+    mockProduct.mockReturnValue(preorderProduct());
+
+    render(<ProductDetail slug="iphone-13" />);
+
+    const button = await screen.findByRole("button", { name: "Pre-order" });
+    expect(button).not.toBeDisabled();
+    expect(screen.queryByRole("button", { name: /out of stock/i })).toBeNull();
+  });
+
+  it("tells the shopper when it is expected and what the limit is", async () => {
+    mockProduct.mockReturnValue(preorderProduct());
+
+    render(<ProductDetail slug="iphone-13" />);
+
+    expect(await screen.findByText(/you pay now and we ship as soon as it arrives/i)).toBeInTheDocument();
+    expect(screen.getByText(/Expected 1 October 2026/)).toBeInTheDocument();
+    expect(screen.getByText(/ships from abroad/)).toBeInTheDocument();
+    expect(screen.getByText(/Limit 2 per order/)).toBeInTheDocument();
+  });
+
+  it("still blocks an out-of-stock product that is not marked for pre-order", async () => {
+    mockProduct.mockReturnValue({ ...PRODUCT, stock: 0 });
+
+    render(<ProductDetail slug="iphone-13" />);
+
+    const button = await screen.findByRole("button", { name: /out of stock/i });
+    expect(button).toBeDisabled();
+  });
+
+  it("sells an in-stock product normally even with the flag set", async () => {
+    // Enabling pre-order must not change anything while stock is on hand.
+    mockProduct.mockReturnValue({ ...PRODUCT, stock: 5, preorder: { enabled: true } });
+
+    render(<ProductDetail slug="iphone-13" />);
+
+    expect(await screen.findByRole("button", { name: "Add to Cart" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Pre-order" })).toBeNull();
+  });
+});

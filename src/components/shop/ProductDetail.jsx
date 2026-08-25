@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Eye, Minus, Package, Play, Plus, Search, ShoppingBag } from "lucide-react";
-import { formatCount, formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
+import { formatCount, formatGhs, stockBadge, placeholderToPng, canPreorder, preorderAvailability } from "@/lib/shop";
 import { api } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useProductBySlug } from "@/hooks/queries/useProducts";
@@ -152,9 +152,18 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   // a figure that includes the person reading it rather than a stale one.
   const viewCount = recordedViews ?? product.views;
   const displayStock = selectedVariant ? Number(selectedVariant.stock) || 0 : product.stock;
-  const badge = stockBadge(displayStock);
-  const maxQty = Math.min(displayStock, 10);
+  // T45: with no stock on hand, a product marked for pre-order is still orderable.
+  // `preorderable` is the only thing standing between "Out of Stock" and a sale.
+  const preorderable = canPreorder(product, displayStock);
+  const badge = stockBadge(displayStock, product.preorder?.enabled);
   const inStock = displayStock > 0;
+  // A pre-order draws on no stock, so the quantity ceiling is the product's own
+  // cap instead — the server enforces the same number at checkout.
+  const maxQty = preorderable
+    ? Math.min(product.preorder?.maxQty || 10, 10)
+    : Math.min(displayStock, 10);
+  const orderable = inStock || preorderable;
+  const availabilityCopy = preorderAvailability(product);
 
   const selectVariant = (variant) => {
     setSelectedSku(variant.sku);
@@ -301,7 +310,11 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                   units sold are product-wide. */}
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
                 <Package className="h-3.5 w-3.5" aria-hidden="true" />
-                {inStock ? `In stock: ${displayStock}` : "Out of stock"}
+                {inStock
+                  ? `In stock: ${displayStock}`
+                  : preorderable
+                    ? "Available to pre-order"
+                    : "Out of stock"}
               </span>
               {product.sold != null && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
@@ -394,7 +407,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                     <span className="text-sm font-semibold text-gray-900 dark:text-white w-6 text-center">{qty}</span>
                     <button
                       type="button"
-                      disabled={!inStock || qty >= maxQty}
+                      disabled={!orderable || qty >= maxQty}
                       onClick={() => setQty((v) => v + 1)}
                       className="text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
                       aria-label="Increase quantity"
@@ -405,24 +418,34 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                 </div>
                 <button
                   type="button"
-                  disabled={!inStock || (hasVariants && !selectedVariant)}
+                  disabled={!orderable || (hasVariants && !selectedVariant)}
                   onClick={handleAddToCart}
                   className={`rounded-full px-6 py-3 text-sm font-semibold transition ${
-                    inStock && (!hasVariants || selectedVariant)
+                    orderable && (!hasVariants || selectedVariant)
                       ? "bg-gray-900 text-white hover:bg-gray-700 dark:bg-brand-500 dark:text-gray-900 dark:hover:bg-brand-400"
                       : "bg-gray-900 text-white opacity-50 dark:bg-slate-700"
                   }`}
                 >
-                  {!inStock
+                  {!orderable
                     ? "Out of Stock"
                     : hasVariants && !selectedVariant
                       ? "Select an option"
-                      : "Add to Cart"}
+                      : preorderable
+                        ? "Pre-order"
+                        : "Add to Cart"}
                 </button>
               </div>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-3">
-                You&apos;ll choose a delivery zone at checkout — stock is confirmed at payment.
-              </p>
+              {preorderable ? (
+                <p className="text-xs text-blue-600 dark:text-blue-300 mt-3">
+                  Pre-order — you pay now and we ship as soon as it arrives.
+                  {availabilityCopy ? ` ${availabilityCopy}.` : ""}
+                  {product.preorder?.maxQty ? ` Limit ${product.preorder.maxQty} per order.` : ""}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-3">
+                  You&apos;ll choose a delivery zone at checkout — stock is confirmed at payment.
+                </p>
+              )}
             </div>
           </div>
         </div>

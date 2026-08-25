@@ -41,7 +41,7 @@ _None open._
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
 
-- [ ] **T45 · Pre-order support for products** — storefront side of the pre-order feature; the
+- [x] **T45 · Pre-order support for products** — ✅ done 2026-08-25 (both halves) — storefront side of the pre-order feature; the
   model/order/payment design lives in `backend-eaz/tasks.md` → T45. Currently the shop blocks
   add-to-cart / checkout on zero stock, so items that are out of stock or not yet available in
   Ghana can't be ordered at all.
@@ -49,8 +49,32 @@ _None open._
     expected-availability copy (from the backend `preorder.availableFrom`/`note` fields)
     instead of "Out of stock"; the add-to-cart button becomes "Pre-order" for those items;
     the cart/checkout surfaces that a line item is a pre-order.
-  - **Open questions (resolve with backend before building):** upfront payment vs. deposit
-    changes the checkout copy/flow; how a pre-order line renders in order history / track-order.
+  - **Decisions (2026-08-25):** paid in full up front, an optional per-product cap,
+    staff release the order manually once stock lands, email at release. See
+    `backend-eaz/tasks.md` → T45 for the reasoning.
+  - **Shipped:**
+    - `lib/shop.js` — `stockBadge(stock, preorderEnabled)` (the second argument is
+      optional, so every existing caller is unchanged), plus `canPreorder` and
+      `preorderAvailability`. `canPreorder` mirrors the server rule exactly: offering
+      what checkout would refuse, or refusing what it would allow, are both bugs the
+      customer sees.
+    - `ShopGrid.jsx` / `RecentProducts.jsx` — the card badge reads "Pre-order" rather
+      than a dead "Out of stock", and the shop card's line says "Available to pre-order".
+    - `ProductDetail.jsx` — the button becomes **Pre-order** and stays enabled; the
+      quantity ceiling switches to the product's cap; the copy says the shopper pays now
+      and gives the expected date, the note and the limit. An in-stock product is still
+      sold normally however the flag is set.
+    - `dashboard/commerce/preorders/page.jsx` (new) — the release queue: waiting orders
+      oldest-first, only the lines actually waiting, and a Release button that surfaces
+      the server's reason when the stock has not really arrived.
+    - `useOrders.js` — `usePreorders` + `useReleasePreorder`, invalidating the whole
+      `orders` prefix because a released order also appears in the order lists.
+    - `dashboardNav.js` — a Pre-orders entry, since releasing is a recurring job.
+  - **Tests:** `lib/preorder.test.js` (8), `ProductDetail.test.jsx` (+4),
+    `commerce/preorders/page.test.jsx` (6). Also re-pointed T24's nav test: it asserted
+    `marketplaceNav` had exactly **one** entry, which is not what T24 protects — the
+    point was that Inventory was merged away, not that the section can never grow.
+  - **Verified:** full frontend suite 45 files / 291 tests, exit 0; `next lint` clean.
   - **Backend:** `backend-eaz/tasks.md` → T45.
 
 ---

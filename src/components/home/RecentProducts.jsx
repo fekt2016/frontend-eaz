@@ -80,7 +80,7 @@ export default function RecentProducts() {
 }
 
 function RecentCard({ product }) {
-  const badge = stockBadge(product.stock);
+  const badge = stockBadge(product.stock, product.preorder?.enabled);
   const images = product.images?.length
     ? product.images
     : ["/images/product-placeholder.svg"];

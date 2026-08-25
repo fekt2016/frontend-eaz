@@ -9,6 +9,9 @@ export const qk = {
     mine: ["orders", "mine"],
     detail: (id) => ["orders", "detail", id],
     tracking: (trackingNumber) => ["orders", "tracking", trackingNumber],
+    // T45 — the pre-order release queue. Under "orders" so releasing one, which
+    // invalidates the prefix, refreshes the lists that show the same order.
+    preorders: ["orders", "preorders"],
   },
   // POS sales — scoped server-side: staff see only their own, admin sees all.
   posSales: {

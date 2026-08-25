@@ -2,7 +2,7 @@
 // sidenav (dashboard, commerce, POS) renders the same sections, role-gated.
 import {
   Barcode, BarChart3, CalendarDays, FileText, Gauge, Globe,
-  History, Mail, MessagesSquare, Receipt, Server, Settings, ShieldCheck,
+  History, Mail, MessagesSquare, PackageCheck, Receipt, Server, Settings, ShieldCheck,
   ShoppingBag, Star, Store, Truck, Users, Wrench,
 } from "lucide-react";
 
@@ -34,6 +34,9 @@ export const adminNav = [
 // Marketplace and Inventory merged into one page/one nav entry.
 export const marketplaceNav = [
   { href: "/dashboard/commerce", icon: Store, label: "Marketplace" },
+  // T45 — the pre-order release queue. Its own entry because releasing is a
+  // recurring job someone has to go looking for, not a detail of one order.
+  { href: "/dashboard/commerce/preorders", icon: PackageCheck, label: "Pre-orders" },
 ];
 
 // roles: if undefined, visible to all POS roles.

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, ChevronLeft, ChevronRight, Search, ShoppingBag } from "lucide-react";
-import { formatGhs, stockBadge } from "@/lib/shop";
+import { formatGhs, stockBadge, canPreorder } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useShopProducts } from "@/hooks/queries/useProducts";
 import StarRule from "@/components/common/StarRule";
@@ -206,7 +206,7 @@ export default function ShopGrid({ activeCategory = "" }) {
 }
 
 function ProductCard({ product }) {
-  const badge = stockBadge(product.stock);
+  const badge = stockBadge(product.stock, product.preorder?.enabled);
   const images = product.images?.length
     ? product.images
     : ["/images/product-placeholder.svg"];
@@ -245,7 +245,13 @@ function ProductCard({ product }) {
         <div className="flex items-center justify-between border-t border-gray-100 dark:border-slate-800 pt-3">
           <div>
             <p className="font-display font-bold text-lg text-gray-900 dark:text-white">{formatGhs(product.price)}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500">{product.stock > 0 ? "Available now" : "Sold out"}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">
+              {product.stock > 0
+                ? "Available now"
+                : canPreorder(product)
+                  ? "Available to pre-order"
+                  : "Sold out"}
+            </p>
           </div>
           <Link
             href={`/shop/${product.slug}`}
