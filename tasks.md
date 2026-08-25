@@ -801,7 +801,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Verified:** full suite 32 files/157 tests pass (up from 31/151); `npm run lint` 0
     errors; `next build` succeeds.
 
-- [ ] **T32 · Reports page: staff see only their own report; admin sees all staff + per-staff activity**
+- [x] **T32 · Reports page: staff see only their own report; admin sees all staff + per-staff activity** — ✅ done 2026-08-25
   - **Issue:** The POS Reports page (`/dashboard/pos/reports`) shows **shop-wide** analytics to
     every role (only technicians are blocked). Requirements:
     - **staff** → should see **only their own** report (their jobs, their POS sales, their
@@ -814,6 +814,16 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     request is scoped to `req.user._id` server-side (never trust a client id). Admin gets a
     staff selector + per-staff activity breakdown. Add a "My Report" view for staff.
   - **Backend part:** `backend-eaz/tasks.md` → T32.
+  - **Shipped:** `useReportsAnalytics(range, staffId, options)` gained a `staffId` param (only
+    caller updated). New `StaffPicker` component (admin/superadmin only, hidden entirely for
+    `staff`/`technician`) — its options come straight from `data.scope.staffList` in the
+    analytics response itself, so no separate request is needed to populate it. `Header` shows
+    "My Report" (staff, forced server-side) or "Report — {name}" (admin with a staff member
+    selected) instead of the generic "Reports & Analytics" title. Every section already had an
+    `EmptyState` fallback for zero data (verified before touching anything), so a staff-scoped
+    view with orders legitimately empty needed no extra empty-state work. 5 new tests
+    (`page.test.jsx`) covering the staff/admin/technician role branches and the picker's
+    re-query on selection. 37 files/175 tests pass, lint clean, `next build` succeeds.
 
 - [ ] **T31 · Sell page must sell products (accessories) as well as parts**
   - **Issue:** The POS Sell page is expected to sell **both** repair parts **and** shop

@@ -13,6 +13,7 @@ import {
 import Card from "@/components/reports/Card";
 import KpiCard from "@/components/reports/KpiCard";
 import DateRangeFilter from "@/components/reports/DateRangeFilter";
+import StaffPicker from "@/components/reports/StaffPicker";
 import DonutChart from "@/components/reports/DonutChart";
 import RevenueChart from "@/components/reports/RevenueChart";
 import DataTable from "@/components/reports/DataTable";
@@ -380,9 +381,14 @@ function defaultRange() {
 export default function ReportsPage() {
   const { user } = useAuth();
   const [range, setRange] = useState(defaultRange);
+  // Admin/superadmin only — a `staff` caller can never change their own
+  // scope (the backend forces it server-side regardless), so this stays
+  // unused for them.
+  const [staffId, setStaffId] = useState("");
 
   const isTech = user?.role === "technician";
-  const { data, isPending, isFetching, isError, error, refetch } = useReportsAnalytics(range, {
+  const canPickStaff = ["superadmin", "admin"].includes(user?.role);
+  const { data, isPending, isFetching, isError, error, refetch } = useReportsAnalytics(range, staffId, {
     enabled: !isTech,
   });
 
@@ -419,9 +425,16 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <Header refreshing={isFetching} />
+      <Header refreshing={isFetching} scope={data?.scope} />
 
-      <DateRangeFilter from={range.from} to={range.to} onChange={onRangeChange} onRefresh={() => refetch()} refreshing={isFetching} />
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <DateRangeFilter from={range.from} to={range.to} onChange={onRangeChange} onRefresh={() => refetch()} refreshing={isFetching} />
+        </div>
+        {canPickStaff && (
+          <StaffPicker staffId={staffId} onChange={setStaffId} staffList={data?.scope?.staffList} />
+        )}
+      </div>
 
       {/* KPI summary */}
       {isPending ? (
@@ -494,14 +507,23 @@ export default function ReportsPage() {
   );
 }
 
-function Header({ refreshing }) {
+function Header({ refreshing, scope }) {
+  const title = scope?.isOwnReport
+    ? "My Report"
+    : scope?.staffId
+      ? `Report — ${scope.staffName || "Staff member"}`
+      : "Reports & Analytics";
+  const subtitle = scope?.isOwnReport
+    ? "Your jobs, sales, repair payments and activity."
+    : scope?.staffId
+      ? `${scope.staffName || "This staff member"}'s jobs, sales, repair payments and activity.`
+      : "Monitor sales, orders, inventory, repairs, payments and shipping performance.";
+
   return (
     <div className="flex items-start justify-between flex-wrap gap-3">
       <div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Reports &amp; Analytics</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Monitor sales, orders, inventory, repairs, payments and shipping performance.
-        </p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
       </div>
       {refreshing && (
         <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
