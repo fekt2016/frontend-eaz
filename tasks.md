@@ -57,7 +57,7 @@ _None open._
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
-- [ ] **T43 · Money display bypasses the single `formatGhs` formatter**
+- [x] **T43 · Money display bypasses the single `formatGhs` formatter** — ✅ done 2026-08-25 (both halves)
   - **Issue:** The convention is to render money with `formatGhs(pesewas)` from `lib/shop.js`.
     These pages hand-roll `GH₵{...toFixed(2)}` / `GH₵{...toLocaleString()}` raw templates:
   - **Location:**
@@ -114,10 +114,38 @@ _None open._
       `src/components/pos/Receipt.test.jsx` (new, 4 tests): assert the fixed tiles/rows
       render via `formatGhs`'s exact output, and that the Receipt item-table cell stays
       prefix-free (no double "GH₵").
-  - **Remaining (not this pass):** items 4–7 above (cedis-state refactor across
-    `sell/page.jsx`, `jobs/new/page.jsx`, `jobs/[id]/page.jsx`, `JobInvoice.jsx`) would
-    need their own task if the codebase later wants full pesewas-throughout consistency;
-    `track/[token]/page.jsx:378,383` is T41's to fix, not T43's.
+  - **Completed 2026-08-25 — the cedis-state refactor (items 4–7) is done.** All four
+    files now hold **integer pesewas** in state and render through `formatGhs`. Only
+    genuinely typed values stay cedis strings (`amountPaid`, `discount`, `laborCost`,
+    `diagnosisFee`, `payAmount`) — converted once, where they are read.
+    - `sell/page.jsx` — cart `unitPrice` keeps the API's pesewas; `subtotal`/`total`/
+      `disc`/`paid`/`changeDue` are pesewas; the `×100` at submit is gone because the
+      values arrive already converted. Amount-box prefills convert the other way.
+    - `jobs/new/page.jsx` — `cost` and `totalParts` in pesewas (display-only here;
+      parts post as `{partId, quantity}` and the server re-prices). The
+      "covered by payment" check converts the typed side rather than comparing units.
+    - `jobs/[id]/page.jsx` — parts `cost`/`costAtTime`, `totalPaid`, and every derived
+      total in pesewas, with `laborCostPesewas`/`diagnosisFeePesewas` computed once.
+    - `JobInvoice.jsx` — takes pesewas and uses `formatGhs`; its doc-comment said the
+      opposite and is rewritten.
+  - **The dangerous find.** `useMomoCharge` / `useCardCharge` do
+    `Math.round(Number(amount) * 100)` themselves, so they need **cedis**. Handing them
+    the now-pesewas `balanceDue` would have charged a GH₵95 repair as **GH₵9,500** on a
+    real Mobile Money prompt. The call sites convert explicitly and say why. Two quieter
+    unit mixes were fixed alongside: `totalPaid < Number(diagnosisFee)` and a
+    `totalParts + Number(laborCost)` visibility guard, both comparing pesewas to cedis
+    after the change.
+  - **Left converting on purpose:** `printRepairReceipt` renders cedis and is not
+    T43's to rewrite, so `handlePrint` converts at that boundary — one place, commented.
+  - **Also confirmed fixed elsewhere:** `track/[token]/page.jsx` no longer has the
+    float-GHS cart at all (T41 shipped), so that item is closed too.
+  - **Tests:** 5 added to `sell/page.test.jsx` (a 9000-pesewas part reads GH₵90.00;
+    typed cedis reach the API as pesewas for `amountPaid` and `discount`; change due;
+    the underpayment guard at its exact boundary) and 3 to `jobs/[id]/page.test.jsx`
+    (invoice totals via `formatGhs`, including explicit "not 100x" assertions; the
+    charge hooks receive cedis; labour/diagnosis/part cost round-trip as pesewas).
+    The hook mocks now capture their arguments, since that argument is the unit boundary.
+  - **Verified:** full frontend suite 43 files / 271 tests, exit 0; `next lint` clean.
   - **Verified:** `PosOverview.test.jsx` + `Receipt.test.jsx` 5/5 pass; `next lint` 0
     warnings/errors; full suite `npm test` 13 files / 78 tests pass; `npm run build`
     compiles successfully, exit 0.

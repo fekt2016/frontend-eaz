@@ -92,7 +92,7 @@ export default function NewJobPage() {
     setSelectedParts(prev => {
       const exists = prev.find(p => p.id === part._id);
       if (exists) return prev.map(p => p.id === part._id ? { ...p, quantity: (p.quantity || 1) + 1 } : p);
-      return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: (Number(part.sellingPrice) || 0) / 100 }];
+      return [...prev, { id: part._id, name: part.name, sku: part.sku || "", quantity: 1, cost: Math.round(Number(part.sellingPrice) || 0) }];
     });
     setPartQuery(""); setShowPartDrop(false);
   };
@@ -100,6 +100,7 @@ export default function NewJobPage() {
   const removePart = (id) => setSelectedParts(prev => prev.filter(p => p.id !== id));
   const updatePart = (id, field, val) => setSelectedParts(prev => prev.map(p => p.id === id ? { ...p, [field]: val } : p));
 
+  // Integer pesewas (T43) — `cost` is now the price as the API sent it.
   const totalParts = selectedParts.reduce((s, p) => s + (p.cost || 0) * (p.quantity || 1), 0);
 
   // Close dropdown on outside click
@@ -445,20 +446,20 @@ export default function NewJobPage() {
                 <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-100/60 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-900 dark:text-white font-medium truncate">{p.name}</p>
-                    <p className="text-xs text-gray-500">GH₵{(p.cost || 0).toLocaleString()} each</p>
+                    <p className="text-xs text-gray-500">{formatGhs(p.cost || 0)} each</p>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button type="button" onClick={() => updatePart(p.id, "quantity", Math.max(1, (p.quantity || 1) - 1))} className="w-7 h-7 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm">−</button>
                     <span className="w-8 text-center text-sm font-semibold text-gray-900 dark:text-white">{p.quantity}</span>
                     <button type="button" onClick={() => updatePart(p.id, "quantity", (p.quantity || 1) + 1)} className="w-7 h-7 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm">+</button>
                   </div>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white w-20 text-right">GH₵{((p.cost || 0) * (p.quantity || 1)).toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white w-20 text-right">{formatGhs((p.cost || 0) * (p.quantity || 1))}</span>
                   <button type="button" onClick={() => removePart(p.id)} className="text-gray-400 hover:text-red-500 text-lg leading-none">×</button>
                 </div>
               ))}
               <div className="flex justify-between text-sm font-semibold pt-1">
                 <span className="text-gray-600 dark:text-gray-300">Parts total</span>
-                <span className="text-gray-900 dark:text-white">GH₵{totalParts.toLocaleString()}</span>
+                <span className="text-gray-900 dark:text-white">{formatGhs(totalParts)}</span>
               </div>
             </div>
           )}
@@ -472,7 +473,7 @@ export default function NewJobPage() {
                 <input
                   type="number" min="0" value={payAmount}
                   onChange={e => setPayAmount(e.target.value)}
-                  placeholder={totalParts ? String(totalParts) : "0"}
+                  placeholder={totalParts ? (totalParts / 100).toFixed(2) : "0"}
                   className={inputCls}
                 />
               </div>
@@ -494,7 +495,7 @@ export default function NewJobPage() {
                 className={inputCls}
               />
             </div>
-            {totalParts > 0 && Number(payAmount || 0) >= totalParts && (
+            {totalParts > 0 && Math.round((Number(payAmount) || 0) * 100) >= totalParts && (
               <p className="text-xs text-green-600 dark:text-green-400">Covered by payment — parts fully paid at intake.</p>
             )}
           </div>
