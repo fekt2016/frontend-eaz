@@ -20,20 +20,15 @@ export default function CustomerOrdersPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-20">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-display font-bold text-xl text-gray-900 dark:text-white">
-            {seesAll ? "Shop Orders" : "My Shop Orders"}
-          </h1>
-          <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">
-            {seesAll
-              ? "All customer orders."
-              : "Orders matched by the phone or email you use at checkout."}
-          </p>
-        </div>
-        <Link href="/shop" className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
-          Visit Shop
-        </Link>
+      <div className="mb-6">
+        <h1 className="font-display font-bold text-xl text-gray-900 dark:text-white">
+          {seesAll ? "Shop Orders" : "My Shop Orders"}
+        </h1>
+        <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">
+          {seesAll
+            ? "All customer orders."
+            : "Orders matched by the phone or email you use at checkout."}
+        </p>
       </div>
 
       {loading ? (

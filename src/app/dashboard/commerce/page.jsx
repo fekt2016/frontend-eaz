@@ -9,7 +9,7 @@ import ProductImage from "@/components/shop/ProductImage";
 import UploadButton from "@/components/common/UploadButton";
 import {
   Plus, Search, Pen, Trash2, TriangleAlert, Barcode, PackageOpen,
-  Wrench, Truck, ClipboardList, X,
+  Wrench, Truck, X,
 } from "lucide-react";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
@@ -620,7 +620,14 @@ export default function CommercePage() {
   ];
 
   return (
-    <div className="space-y-5">
+    // Padding lives here, not in DashboardShell: that shell renders a bare
+    // `<main className="flex-1 overflow-auto">`, so its pages each bring their own
+    // gutters — and the sibling commerce pages (orders, delivery-zones) already do,
+    // which is why only this page sat flush against the viewport edges. The values
+    // match PosShell's `p-5 lg:p-7`, so the marketplace lines up with every other
+    // POS screen. On the root, so the header, the tab switcher, and both tabs'
+    // content share the same gutters.
+    <div className="space-y-5 p-5 lg:p-7">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Inventory</h1>
@@ -637,12 +644,6 @@ export default function CommercePage() {
               <Truck size={13} /> Delivery Zones
             </Link>
           )}
-          <Link
-            href="/dashboard/commerce/orders"
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-400 dark:hover:border-gray-600 transition"
-          >
-            <ClipboardList size={13} /> Orders
-          </Link>
         </div>
       </div>
 

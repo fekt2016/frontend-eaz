@@ -371,8 +371,12 @@ export default function CustomerOrderDetailPage() {
           {order.trackingNumber && (
             <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">
               Tracking number{" "}
+              {/* Staff came here to work the order, so the number takes them to the
+                  update form on this page. /track/order/… is the customer's
+                  read-only view — following it dropped staff somewhere they could
+                  not do anything. They can still reach it, deliberately, below. */}
               <Link
-                href={`/track/order/${order.trackingNumber}`}
+                href={seesAll ? "#tracking-update" : `/track/order/${order.trackingNumber}`}
                 className="font-mono font-semibold text-brand-600 dark:text-brand-400 hover:underline"
               >
                 {order.trackingNumber}
@@ -384,7 +388,10 @@ export default function CustomerOrderDetailPage() {
       </div>
 
       {seesAll && (
-        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 mb-6">
+        <div
+          id="tracking-update"
+          className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 mb-6 scroll-mt-6"
+        >
           <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Add tracking update</h2>
           <form onSubmit={handleTrackingUpdate} className="space-y-3">
             <div className="grid sm:grid-cols-2 gap-3">
@@ -454,12 +461,22 @@ export default function CustomerOrderDetailPage() {
           </div>
         )}
         {order.trackingNumber && (
-          <Link
-            href={`/track/order/${order.trackingNumber}`}
-            className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
-          >
-            View full tracking details <ArrowRight size={10} />
-          </Link>
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+            {seesAll && (
+              <Link
+                href="#tracking-update"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+              >
+                Update tracking <ArrowRight size={10} />
+              </Link>
+            )}
+            <Link
+              href={`/track/order/${order.trackingNumber}`}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:underline"
+            >
+              {seesAll ? "View as customer" : "View full tracking details"} <ArrowRight size={10} />
+            </Link>
+          </div>
         )}
       </div>
 
