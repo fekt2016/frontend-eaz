@@ -132,11 +132,20 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     including the 999,999 → `1m` edge and junk input, both figures rendering, the
     absent-field and all-zero cases rendering nothing, one-sided rendering, and the
     "1 view" singular.
+  - **Follow-up (same day) — the view is recorded on opening the page, not on fetching
+    the product.** `ProductDetail` now POSTs to `/products/:slug/view` once after the
+    product renders (ref-guarded against React's development double-mount, skipped for
+    `part-` slugs), and displays the count the server returns so it includes the visit
+    being made. Counting used to happen inside the detail GET, which this route calls
+    three times per visit — `generateMetadata`, the server render, then this component —
+    and which Next also calls when it prefetches a `<Link>` on hover, so shop cards
+    accumulated views for products nobody opened. Backend half in
+    `backend-eaz/tasks.md` → T48.
   - **Follow-up (same day):** the cards rendered no counts at all on first run —
     the backend's list aggregation was not projecting the fields (see
     `backend-eaz/tasks.md` → T48). `RecentProducts.test.jsx` now covers the whole
     path from API payload to homepage card, so the wiring cannot rot silently.
-  - **Verified:** full frontend suite 43 files / 263 tests, exit 0; `next lint` clean.
+  - **Verified:** full frontend suite 43 files / 267 tests, exit 0; `next lint` clean.
     Confirmed against the running dev stack — a live product's view count moved
     0 → 3 through the homepage's own query.
   - **Backend part:** `backend-eaz/tasks.md` → T48 — done.

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Eye, Minus, Package, Play, Plus, Search, ShoppingBag } from "lucide-react";
 import { formatCount, formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
+import { api } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useProductBySlug } from "@/hooks/queries/useProducts";
 import { useProductReviews } from "@/hooks/queries/useProductReviews";
@@ -42,6 +43,38 @@ export default function ProductDetail({ slug }) {
   const [activeTab, setActiveTab] = useState(TABS.DESCRIPTION);
   const tabPanelRef = useRef(null);
   const { addItem, openCart } = useCart();
+
+  // T48: a view is a person opening this page, so it is recorded from the
+  // browser after the product renders — never from the fetch itself. The detail
+  // GET runs three times per visit (generateMetadata, the server render, then
+  // this component) and Next prefetches the route on link hover, so counting
+  // there tallied fetches, not visitors. A POST from here also means crawlers,
+  // which never run this script, cannot inflate the figure.
+  const [recordedViews, setRecordedViews] = useState(null);
+  const countedSlug = useRef(null);
+
+  useEffect(() => {
+    // Retail parts (`part-<id>` slugs) carry no view counter.
+    if (!product?._id || slug?.startsWith("part-")) return;
+    // Ref rather than state: React's development double-mount would otherwise
+    // count every page open twice.
+    if (countedSlug.current === slug) return;
+    countedSlug.current = slug;
+
+    let live = true;
+    api
+      .post(`/products/${encodeURIComponent(slug)}/view`)
+      .then((res) => {
+        if (live && res?.data?.views != null) setRecordedViews(res.data.views);
+      })
+      .catch(() => {}); // a missed count must never break the page
+
+    // The count is already recorded server-side; this only stops a late response
+    // setting state on a page the visitor has already left.
+    return () => {
+      live = false;
+    };
+  }, [slug, product?._id]);
 
   // Same query key as ProductReviews' own call, so react-query serves both from one
   // cache entry — this is for the "Reviews (n)" count, not a second network request.
@@ -115,6 +148,9 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   ];
   const activeMedia = media[Math.min(activeIndex, media.length - 1)] || media[0];
 
+  // The count the server returned when it recorded this visit, so the page shows
+  // a figure that includes the person reading it rather than a stale one.
+  const viewCount = recordedViews ?? product.views;
   const displayStock = selectedVariant ? Number(selectedVariant.stock) || 0 : product.stock;
   const badge = stockBadge(displayStock);
   const maxQty = Math.min(displayStock, 10);
@@ -273,10 +309,10 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                   {formatCount(product.sold)} sold
                 </span>
               )}
-              {product.views != null && (
+              {viewCount != null && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
                   <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-                  {formatCount(product.views)} {Number(product.views) === 1 ? "view" : "views"}
+                  {formatCount(viewCount)} {Number(viewCount) === 1 ? "view" : "views"}
                 </span>
               )}
             </div>
