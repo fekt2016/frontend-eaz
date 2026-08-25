@@ -699,7 +699,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     covers) — confirmed 5 of 6 fail without the fix (the "no specs" case correctly passes both
     ways). 39 files/194 tests pass, lint clean, `next build` succeeds.
 
-- [ ] **T38 · Cart overlay: fit all content within the viewport**
+- [x] **T38 · Cart overlay: fit all content within the viewport** — ✅ done 2026-08-25
   - **Issue:** The cart overlay that opens when clicking **Add to Cart** on a product detail
     page (`/shop/[slug]`) is a right-side drawer whose contents should fit **within one
     viewport**. On shorter screens the drawer is `w-full max-w-md` with `top-0 bottom-0` and
@@ -715,6 +715,22 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     so on small screens the footer buttons are always reachable. Verify at ~667px and ~800px
     tall viewports.
   - **Backend:** none needed (see `backend-eaz/tasks.md` → T38).
+  - **Shipped:** found the concrete root cause reading the code, not guessing — the items
+    container was `flex-1 overflow-y-auto` with **no `min-h-0`**. Flex items default to
+    `min-height: auto`, so without it the container never actually capped its height and
+    scrolled internally; it just grew past the drawer's fixed bounds with the items list,
+    pushing the subtotal/checkout footer off-screen — that's the exact mechanism behind the
+    reported symptom. Added `min-h-0` to the items container, `flex-shrink-0` on the header and
+    footer so they can never be compressed, and `max-h-[100dvh]` on the drawer (kept the
+    existing `top-0 bottom-0` as a fallback rather than removing it). `CartItems.jsx` needed no
+    change — its height is already purely content-driven, correctly deferring to the parent.
+    4 new tests (`CartDrawer.test.jsx`) — locks in the specific classes (className assertions,
+    since jsdom has no real layout engine to assert pixels stay on-screen); confirmed 2 of 4
+    fail without the fix (the other 2 are baseline structural checks, correctly fix-independent).
+    **Live browser verification not performed** — same hard environment limit hit during T30
+    (`npx playwright install` refuses every Chromium variant on this host's macOS 12);
+    documented rather than silently skipped. 40 files/198 tests pass, lint clean, `next build`
+    succeeds.
 
 - [x] **T37 · Sell page: show item images in search results and cart/summary** — ✅ done
   2026-08-23 (both halves; backend half added `images` to the product select, see
