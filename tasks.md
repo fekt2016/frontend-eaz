@@ -837,7 +837,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     don't surface (or the 500 from **T30** also hits products), fix and add tests.
   - **Backend part:** `backend-eaz/tasks.md` → T31. Relates to T30 (the 500 on Complete Sale).
 
-- [ ] **T30 · POS Sell page: "Complete Sale" returns Request failed (500) when selling parts**
+- [x] **T30 · POS Sell page: "Complete Sale" returns Request failed (500) when selling parts** — ✅ done 2026-08-25
   - **Symptom:** On the Sell page (`/dashboard/pos/sell`), clicking **Complete Sale** with
     parts in the cart fails with **"Request failed (500)"** — no friendly error, no sale recorded.
     The failure happens with **all payment options** (Cash, MoMo, Card).
@@ -851,6 +851,23 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
       stock `$inc`/transaction abort issues, or a `part` validation error.
     - Ensure the frontend surfaces a readable error instead of the raw 500.
   - **Backend part:** `backend-eaz/tasks.md` → T30.
+  - **Frontend half shipped:** the backend root-cause fix (2026-08-21) already made
+    `completeSale`'s existing `try/catch` → `setPayError(err.message)` correct — this half's real
+    gap was that path being completely untested. Added 3 regression tests (`page.test.jsx`): a
+    parts sale completes successfully with no crash (locks in the backend fix so it can't
+    silently regress), a real backend error message (e.g. insufficient stock) reaches the
+    cashier via the visible `payError` text instead of a blank/generic screen, and `lib/api.js`'s
+    own fallback message ("Request failed (500)") still renders readably if a future bug ever
+    strips the error body entirely. **Live-verified** the actual HTTP flow (login → search →
+    complete sale) against a genuinely disposable local MongoDB replica set (the repo's real
+    `MONGO_URL` points at what looks like the live/shared Atlas cluster backing
+    `www.eazworld.co` — deliberately not touched): real `createSale` controller returns `201`
+    with a real `saleNumber`, stock decrements correctly, and a real insufficient-stock case
+    returns a clean `400` with a readable message, not a 500. Browser-level (pixel) verification
+    was blocked by a hard environment limit — `npx playwright install` refuses on this host's
+    macOS 12 for every Chromium variant — documented rather than silently skipped, per this
+    tracker's existing convention for blocked live-verification items (see T3b/T3c/T3d). 37
+    files/178 tests pass, lint clean, `next build` succeeds.
 
 - [x] **T29 · Role-based landing pages after login** ✅ done 2026-08-21
   - **Issue:** After login, admin/superadmin are redirected **away** from the overview:
