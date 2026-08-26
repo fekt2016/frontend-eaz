@@ -104,23 +104,19 @@ _None open._
     domain prefill, server-refusal surface, empty state, customer role gate. Suite:
     50 files / 323 tests green; lint clean.
 
-- [ ] **T65 · Stop advertising `.com.gh` / `.gh` / `.africa` (or decide to sell them another way)**
+- [x] **T65 · Stop advertising `.com.gh` / `.gh` / `.africa`** — ✅ closed 2026-08-26
+  - **Product answer (user, 2026-08-26): we don't resell them** — customers register via a
+    ghNIC-accredited registrar; EazWorld connects the domain. The shipped copy work (commit
+    4a064a4: domains SEO copy, checkout suggestion, services FAQ) already implements exactly
+    that, so this closes. Full detail in `backend-eaz/tasks.md` → T65.
   - **Why:** the registrar is Spaceship now (backend T64) and its API returns `tldNotSupported`
-    for all three — verified live 2026-08-25. The storefront still promotes them, so a customer
-    can be pushed toward a domain that cannot be bought. Backend already rejects these before
-    any API call, so the failure is a clean error rather than a charge — but the copy is wrong.
-  - **Where:**
-    - `src/app/domains/page.jsx:7` — SEO description names `.com.gh` and `.africa`.
-    - `src/app/hosting/checkout/page.jsx:187` — actively *suggests* `.com.gh` when the chosen
-      domain is taken. This is the worst one: it steers people into a dead end.
-    - `src/data/serviceDetails.js:112` — FAQ answer lists `.gh` and `.africa` as supported.
-    - `backend-eaz/src/seedBlog.js` — a published post on registering a `.com.gh`, with
-      GH₵250–450/yr pricing claims. SEO traffic lands here.
-  - **Also:** `src/data/pricingData.js` (`domainPricing`, `getDomainPrice`) is **dead code** —
-    nothing imports it. It lists all three TLDs at USD prices, contradicting the GH₵ convention.
-    Delete it rather than update it.
-  - **Blocked on the business decision in `backend-eaz/tasks.md` → T65.** Don't rewrite the copy
-    until it's settled whether these are dropped or sold manually.
+    for all three — verified live 2026-08-25. Backend rejects them before any API call, so the
+    old copy steered people into a dead end.
+
+- [x] **T5 · Expenses open to admin (frontend half)** — ✅ done 2026-08-26
+  - Backend admitted `admin` to expense read+write (`routes/posRoutes.js`, backend T5). The
+    Expenses nav entry now includes `admin`, and `pos/expenses/page.jsx` gates manage actions
+    on superadmin+admin instead of superadmin alone.
 
 - [x] **T62 · Surface the tracking number, and mirror the transactional emails** — ✅ done (page in cb41a45; backend emails landed 2026-08-26)
   - **Why:** a customer pays and lands on the order-confirmation page, which shows the
