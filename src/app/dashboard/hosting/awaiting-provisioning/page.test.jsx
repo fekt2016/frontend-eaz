@@ -75,7 +75,7 @@ describe("Awaiting-provisioning queue (T68)", () => {
 
   it("surfaces the server's reason when a mark is refused", async () => {
     // The commonest case: someone clicked before the payment actually landed.
-    mockMark.mockImplementation(({ id }, { onError }) =>
+    mockMark.mockImplementation((_, { onError }) =>
       onError(new Error("Only a paid order can be marked provisioned.")));
 
     render(<AwaitingProvisioningPage />);
