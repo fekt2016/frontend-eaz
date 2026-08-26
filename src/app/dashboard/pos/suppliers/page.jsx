@@ -1,15 +1,14 @@
 "use client";
 
-import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Plus, Truck, Search, Check, X, Pen, Trash2, ChevronRight } from "lucide-react";
+import { Plus, Truck, Search, Check, X, Pen, Trash2, ChevronRight, Circle } from "lucide-react";
 import { FaWhatsapp, FaWeixin } from "react-icons/fa";
 import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier } from "@/hooks/queries/useSuppliers";
-
-const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
-const labelCls = "block text-body-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5";
+import {
+  Alert, Badge, Button, Card, ConfirmDialog, EmptyState,
+  Input, PageHeader, Skeleton,
+} from "@/components/ui";
 
 const EMPTY_FORM = { name: "", contactPerson: "", phone: "", whatsapp: "", wechat: "", email: "", address: "", notes: "" };
 
@@ -26,6 +25,7 @@ export default function SuppliersPage() {
 
   const [editId,    setEditId]    = useState(null);
   const [editForm,  setEditForm]  = useState(EMPTY_FORM);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const suppliersQ = useSuppliers({ q });
   const suppliers  = suppliersQ.data ?? [];
@@ -36,6 +36,9 @@ export default function SuppliersPage() {
   const deleteSupplier = useDeleteSupplier();
   const saving     = createSupplier.isPending;
   const editSaving = updateSupplier.isPending;
+
+  const setField    = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const setEditField = (key) => (e) => setEditForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleAdd = (e) => {
     e.preventDefault();
@@ -64,9 +67,12 @@ export default function SuppliersPage() {
     );
   };
 
-  const handleDelete = (id) => {
-    if (!confirm("Delete this supplier? Their parts will be unlinked.")) return;
-    deleteSupplier.mutate(id, { onError: (err) => setError(err.message || "Failed to delete.") });
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteSupplier.mutate(deleteTarget._id, {
+      onSettled: () => setDeleteTarget(null),
+      onError: (err) => setError(err.message || "Failed to delete."),
+    });
   };
 
   const toggleActive = (s) => {
@@ -78,195 +84,184 @@ export default function SuppliersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Truck className="text-brand-ink dark:text-brand-400" size={17} /> Suppliers
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">{suppliers.length} supplier{suppliers.length !== 1 ? "s" : ""}</p>
-        </div>
-        {isSuperAdmin && (
-          <button
-            onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition"
-          >
-            <Plus size={11} /> Add Supplier
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Suppliers"
+        description={`${suppliers.length} supplier${suppliers.length !== 1 ? "s" : ""}`}
+        actions={
+          isSuperAdmin ? (
+            <Button variant="brand" onClick={() => setShowForm(v => !v)} aria-expanded={showForm}>
+              <Plus size={15} aria-hidden="true" /> Add supplier
+            </Button>
+          ) : null
+        }
+      />
 
       {/* Add form */}
       {showForm && isSuperAdmin && (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5">
-          <p className="text-sm font-semibold text-gray-900 dark:text-white mb-4">New Supplier</p>
+        <Card>
+          <p className="mb-4 text-body-sm font-semibold text-gray-900 dark:text-white">New supplier</p>
           <form onSubmit={handleAdd} className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Supplier Name *</label>
-                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputCls} placeholder="e.g. Accra Mobile Parts Ltd" required />
-              </div>
-              <div>
-                <label className={labelCls}>Contact Person</label>
-                <input value={form.contactPerson} onChange={e => setForm(f => ({ ...f, contactPerson: e.target.value }))} className={inputCls} placeholder="Name of rep" />
-              </div>
-              <div>
-                <label className={labelCls}>Phone</label>
-                <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className={inputCls} placeholder="024 000 0000" />
-              </div>
-              <div>
-                <label className={labelCls}>Email</label>
-                <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className={inputCls} placeholder="supplier@example.com" />
-              </div>
-              <div>
-                <label className={labelCls}>WhatsApp</label>
-                <input value={form.whatsapp} onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))} className={inputCls} placeholder="+86 138 0013 8000" />
-              </div>
-              <div>
-                <label className={labelCls}>WeChat ID</label>
-                <input value={form.wechat} onChange={e => setForm(f => ({ ...f, wechat: e.target.value }))} className={inputCls} placeholder="e.g. sz_parts_2024" />
-              </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input label="Supplier name" required value={form.name} onChange={setField("name")} placeholder="e.g. Accra Mobile Parts Ltd" />
+              <Input label="Contact person" value={form.contactPerson} onChange={setField("contactPerson")} placeholder="Name of rep" />
+              <Input label="Phone" type="tel" value={form.phone} onChange={setField("phone")} placeholder="024 000 0000" />
+              <Input label="Email" type="email" value={form.email} onChange={setField("email")} placeholder="supplier@example.com" />
+              <Input label="WhatsApp" value={form.whatsapp} onChange={setField("whatsapp")} placeholder="+86 138 0013 8000" />
+              <Input label="WeChat ID" value={form.wechat} onChange={setField("wechat")} placeholder="e.g. sz_parts_2024" />
+              <Input label="Address" className="sm:col-span-2" value={form.address} onChange={setField("address")} placeholder="Physical address" />
               <div className="sm:col-span-2">
-                <label className={labelCls}>Address</label>
-                <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className={inputCls} placeholder="Physical address" />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls}>Notes</label>
-                <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className={inputCls} placeholder="Lead time, payment terms, etc." />
+                <Input label="Notes" value={form.notes} onChange={setField("notes")} placeholder="Lead time, payment terms, etc." />
               </div>
             </div>
-            {formError && <p className="text-error dark:text-error-dark text-xs" role="alert">{formError}</p>}
+            <Alert tone="error">{formError}</Alert>
             <div className="flex gap-3">
-              <button type="submit" disabled={saving} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition disabled:opacity-50">
-                <Check size={11} /> {saving ? "Saving…" : "Save Supplier"}
-              </button>
-              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition">
-                Cancel
-              </button>
+              <Button type="submit" variant="brand" loading={saving}>
+                {!saving && <Check size={15} aria-hidden="true" />} {saving ? "Saving…" : "Save supplier"}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>Cancel</Button>
             </div>
           </form>
-        </div>
+        </Card>
       )}
 
       {/* Search */}
       <div className="relative">
-        <Search size={11} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-        <input
+        <Search
+          size={16}
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-gray-600 dark:text-slate-400"
+        />
+        <Input
+          label="Search suppliers"
+          hideLabel
+          type="search"
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Search suppliers…"
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition"
+          className="pl-10"
         />
       </div>
 
-      {error && <p className="text-error dark:text-error-dark text-sm" role="alert">{error}</p>}
+      <Alert tone="error">{error}</Alert>
 
       {/* List */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <Card padding="none" className="overflow-hidden">
         {loading ? (
-          <div className="p-5 space-y-3">
-            {[...Array(4)].map((_, i) => <div key={i} className="h-16 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+          <div className="space-y-3 p-5">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
           </div>
         ) : suppliers.length === 0 ? (
-          <div className="py-16 text-center">
-            <Truck size={24} className="text-gray-700 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400 font-medium">No suppliers yet</p>
-            {isSuperAdmin && <p className="text-gray-600 text-sm mt-1">Add your first supplier to get started.</p>}
-          </div>
+          <EmptyState
+            icon={Truck}
+            title="No suppliers yet"
+            description={
+              isSuperAdmin
+                ? "Add your first supplier so parts can be linked to where they came from."
+                : "A superadmin can add suppliers here."
+            }
+            action={
+              isSuperAdmin ? (
+                <Button variant="brand" onClick={() => setShowForm(true)}>
+                  <Plus size={15} aria-hidden="true" /> Add supplier
+                </Button>
+              ) : null
+            }
+          />
         ) : (
-          <div className="divide-y divide-gray-200 dark:divide-gray-800">
+          <div className="divide-y divide-gray-100 dark:divide-slate-800">
             {suppliers.map(s => (
               <div key={s._id}>
                 {editId === s._id ? (
                   /* Inline edit */
-                  <div className="p-5 space-y-4">
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className={labelCls}>Name</label>
-                        <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} className={inputCls} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>Contact Person</label>
-                        <input value={editForm.contactPerson} onChange={e => setEditForm(f => ({ ...f, contactPerson: e.target.value }))} className={inputCls} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>Phone</label>
-                        <input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} className={inputCls} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>Email</label>
-                        <input value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} className={inputCls} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>WhatsApp</label>
-                        <input value={editForm.whatsapp} onChange={e => setEditForm(f => ({ ...f, whatsapp: e.target.value }))} className={inputCls} placeholder="+86 138 0013 8000" />
-                      </div>
-                      <div>
-                        <label className={labelCls}>WeChat ID</label>
-                        <input value={editForm.wechat} onChange={e => setEditForm(f => ({ ...f, wechat: e.target.value }))} className={inputCls} />
-                      </div>
+                  <div className="space-y-4 p-5">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Input label="Name" value={editForm.name} onChange={setEditField("name")} />
+                      <Input label="Contact person" value={editForm.contactPerson} onChange={setEditField("contactPerson")} />
+                      <Input label="Phone" type="tel" value={editForm.phone} onChange={setEditField("phone")} />
+                      <Input label="Email" type="email" value={editForm.email} onChange={setEditField("email")} />
+                      <Input label="WhatsApp" value={editForm.whatsapp} onChange={setEditField("whatsapp")} placeholder="+86 138 0013 8000" />
+                      <Input label="WeChat ID" value={editForm.wechat} onChange={setEditField("wechat")} />
                       <div className="sm:col-span-2">
-                        <label className={labelCls}>Notes</label>
-                        <input value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} className={inputCls} />
+                        <Input label="Notes" value={editForm.notes} onChange={setEditField("notes")} />
                       </div>
                     </div>
                     <div className="flex gap-3">
-                      <button onClick={() => handleEdit(s._id)} disabled={editSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition disabled:opacity-50">
-                        <Check size={11} /> {editSaving ? "Saving…" : "Save"}
-                      </button>
-                      <button onClick={() => setEditId(null)} className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition">
-                        <X size={11} />
-                      </button>
+                      <Button variant="brand" onClick={() => handleEdit(s._id)} loading={editSaving}>
+                        {!editSaving && <Check size={15} aria-hidden="true" />} {editSaving ? "Saving…" : "Save"}
+                      </Button>
+                      <Button variant="secondary" onClick={() => setEditId(null)}>
+                        <X size={15} aria-hidden="true" /> Cancel
+                      </Button>
                     </div>
                   </div>
                 ) : (
                   /* Normal row */
                   <div className="flex items-center gap-4 px-5 py-4">
-                    <div className="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center flex-shrink-0">
-                      <Truck size={13} className="text-brand-ink dark:text-brand-400" />
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-brand-500/20 bg-brand-500/10">
+                      <Truck size={16} aria-hidden="true" className="text-brand-ink dark:text-brand-400" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{s.name}</p>
-                        {!s.isActive && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">Inactive</span>
-                        )}
+                        <p className="truncate text-body-sm font-semibold text-gray-900 dark:text-white">{s.name}</p>
+                        {!s.isActive && <Badge tone="neutral">Inactive</Badge>}
                       </div>
-                      <div className="flex flex-wrap gap-x-3 text-xs text-gray-500 mt-0.5">
+                      <div className="mt-0.5 flex flex-wrap gap-x-3 text-caption text-gray-600 dark:text-slate-400">
                         {s.contactPerson && <span>{s.contactPerson}</span>}
-                        {s.phone  && <a href={`tel:${s.phone}`}  className="hover:text-brand-400 transition">{s.phone}</a>}
-                        {s.email  && <a href={`mailto:${s.email}`} className="hover:text-brand-400 transition">{s.email}</a>}
+                        {s.phone && <a href={`tel:${s.phone}`} className="transition-colors hover:text-brand-ink dark:hover:text-brand-400">{s.phone}</a>}
+                        {s.email && <a href={`mailto:${s.email}`} className="transition-colors hover:text-brand-ink dark:hover:text-brand-400">{s.email}</a>}
                         {s.whatsapp && (
-                          <a href={`https://wa.me/${s.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-emerald-400 transition">
-                            <FaWhatsapp className="text-emerald-500" size={11} /> {s.whatsapp}
+                          <a
+                            href={`https://wa.me/${s.whatsapp.replace(/\D/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 transition-colors hover:text-success dark:hover:text-success-dark"
+                          >
+                            <FaWhatsapp aria-hidden="true" className="text-success dark:text-success-dark" size={12} /> {s.whatsapp}
                           </a>
                         )}
                         {s.wechat && (
                           <span className="flex items-center gap-1">
-                            <FaWeixin className="text-green-500" size={11} /> {s.wechat}
+                            <FaWeixin aria-hidden="true" className="text-success dark:text-success-dark" size={12} /> {s.wechat}
                           </span>
                         )}
                       </div>
-                      {s.notes && <p className="text-xs text-gray-600 truncate mt-0.5">{s.notes}</p>}
+                      {s.notes && <p className="mt-0.5 truncate text-caption text-gray-600 dark:text-slate-400">{s.notes}</p>}
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Link
-                        href={`/dashboard/pos/suppliers/${s._id}`}
-                        className="flex items-center gap-1.5 text-xs text-brand-ink dark:text-brand-400 hover:text-brand-300 transition"
-                      >
-                        Parts <ChevronRight size={9} />
-                      </Link>
+                    <div className="flex flex-shrink-0 items-center gap-1">
+                      <Button size="sm" variant="ghost" href={`/dashboard/pos/suppliers/${s._id}`}>
+                        Parts <ChevronRight size={14} aria-hidden="true" />
+                      </Button>
                       {isSuperAdmin && (
                         <>
-                          <button onClick={() => toggleActive(s)} className={`w-8 h-8 rounded-lg border flex items-center justify-center transition text-xs ${s.isActive ? "border-success/30 text-success dark:text-success-dark hover:bg-success/10" : "border-gray-300 dark:border-gray-700 text-gray-500 hover:text-gray-900 dark:hover:text-white"}`} title={s.isActive ? "Deactivate" : "Activate"}>
-                            {s.isActive ? <Check size={11} /> : "○"}
-                          </button>
-                          <button onClick={() => startEdit(s)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-brand-400 hover:border-brand-500/50 flex items-center justify-center transition">
-                            <Pen size={11} />
-                          </button>
-                          <button onClick={() => handleDelete(s._id)} className="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-error dark:hover:text-error-dark hover:border-error/50 flex items-center justify-center transition">
-                            <Trash2 size={11} />
-                          </button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className={`px-2 ${s.isActive ? "text-success dark:text-success-dark" : ""}`}
+                            onClick={() => toggleActive(s)}
+                            aria-label={s.isActive ? `Deactivate ${s.name}` : `Activate ${s.name}`}
+                          >
+                            {s.isActive
+                              ? <Check size={15} aria-hidden="true" />
+                              : <Circle size={15} aria-hidden="true" />}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="px-2"
+                            onClick={() => startEdit(s)}
+                            aria-label={`Edit ${s.name}`}
+                          >
+                            <Pen size={15} aria-hidden="true" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="px-2 text-error dark:text-error-dark"
+                            onClick={() => setDeleteTarget(s)}
+                            aria-label={`Delete ${s.name}`}
+                          >
+                            <Trash2 size={15} aria-hidden="true" />
+                          </Button>
                         </>
                       )}
                     </div>
@@ -276,7 +271,22 @@ export default function SuppliersPage() {
             ))}
           </div>
         )}
-      </div>
+      </Card>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        loading={deleteSupplier.isPending}
+        title="Delete this supplier?"
+        description={deleteTarget?.name}
+        confirmLabel="Delete supplier"
+      >
+        <p className="text-body-sm text-gray-600 dark:text-slate-400">
+          Every part linked to them is unlinked — the parts themselves stay in stock, but you lose
+          the record of where they came from. To stop using them without losing that, deactivate instead.
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }

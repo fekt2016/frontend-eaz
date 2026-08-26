@@ -141,12 +141,13 @@ export default function WarrantyPage() {
             <p className="text-body-sm font-semibold text-brand-ink dark:text-brand-400">
               {expiringSoon.length} warranty{expiringSoon.length !== 1 ? "s" : ""} expiring within 7 days
             </p>
+            {/* These chips were text-brand-300 on a pale gold fill — 1.5:1, so
+                effectively invisible in light mode. */}
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {expiringSoon.map(j => (
                 <Link
                   key={j._id}
                   href={`/dashboard/pos/jobs/${j._id}`}
-                  // Was text-brand-300 on a pale gold chip — 1.5:1, effectively invisible in light mode.
                   className="rounded-lg bg-brand-500/15 px-2.5 py-1 font-mono text-caption font-semibold text-brand-ink transition-colors hover:bg-brand-500/30 dark:text-brand-400"
                 >
                   {j.jobNumber} · {daysLeft(j.warrantyExpires)}d
