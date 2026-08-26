@@ -109,7 +109,8 @@ export const serviceDetails = [
     timeline: "Active within minutes",
     faqs: [
       { q: "Can I transfer an existing domain?", a: "Yes — we manage transfers from any registrar." },
-      { q: "What extensions do you support?", a: ".com, .net, .org, .gh, .africa, .store, .io, and many more." },
+      // T65: listed .gh and .africa, which our registrar returns tldNotSupported for.
+      { q: "What extensions do you support?", a: ".com, .net, .org, .store, .io, .shop, .online, and many more. Ghanaian extensions (.com.gh, .gh) and .africa need local accreditation we don't hold — you register those through a ghNIC-accredited registrar, and we'll connect the domain to your hosting for you." },
       { q: "Is WHOIS privacy free?", a: "Yes, WHOIS privacy protection is included at no extra cost." },
     ],
     saiisaiExample: "We secured and manage multiple domain assets for the Saiisai brand including primary and country-specific extensions.",

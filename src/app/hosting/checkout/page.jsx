@@ -185,7 +185,9 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
           {status === "taken" && (
             <div className="rounded-xl border border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 p-3 text-xs text-red-600 dark:text-red-400">
               <p className="font-semibold mb-1">This domain is taken.</p>
-              <p>Try a variation like <span className="font-mono">{query.split(".")[0]}-gh.com</span> or use a different extension like <span className="font-mono">.net</span> or <span className="font-mono">.com.gh</span></p>
+              {/* T65: used to suggest .com.gh — which our registrar can't sell,
+                  so the suggestion sent customers straight into a dead end. */}
+              <p>Try a variation like <span className="font-mono">{query.split(".")[0]}-gh.com</span> or use a different extension like <span className="font-mono">.net</span> or <span className="font-mono">.org</span></p>
             </div>
           )}
 
