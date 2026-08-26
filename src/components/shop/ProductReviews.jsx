@@ -201,12 +201,12 @@ export default function ProductReviews({ product }) {
                 <span className="text-sm font-semibold text-gray-900 dark:text-white">
                   {summary.average}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-slate-500">
+                <span className="text-xs text-gray-600 dark:text-slate-500">
                   · {summary.count} review{summary.count === 1 ? "" : "s"}
                 </span>
               </>
             ) : (
-              <span className="text-xs text-gray-400 dark:text-slate-500">No reviews yet</span>
+              <span className="text-xs text-gray-600 dark:text-slate-500">No reviews yet</span>
             )}
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function ProductReviews({ product }) {
         {/* Review list */}
         <div>
           {reviewsQ.isLoading ? (
-            <div className="flex items-center gap-3 text-gray-400 text-sm py-8">
+            <div className="flex items-center gap-3 text-gray-600 text-sm py-8">
               <Loader2 size={16} className="animate-spin text-brand-500" /> Loading reviews…
             </div>
           ) : reviews.length === 0 ? (
@@ -227,7 +227,7 @@ export default function ProductReviews({ product }) {
               <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
                 No reviews yet
               </p>
-              <p className="text-gray-400 dark:text-slate-500 text-xs">
+              <p className="text-gray-600 dark:text-slate-500 text-xs">
                 Be the first to review this product.
               </p>
             </div>
@@ -240,14 +240,14 @@ export default function ProductReviews({ product }) {
                 >
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center font-display font-bold text-brand-600 dark:text-brand-400 text-xs flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center font-display font-bold text-brand-ink dark:text-brand-400 text-xs flex-shrink-0">
                         {(r.userName || "?").charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 dark:text-white text-sm">
                           {r.userName}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-slate-500">{fmtDate(r.createdAt)}</p>
+                        <p className="text-xs text-gray-600 dark:text-slate-500">{fmtDate(r.createdAt)}</p>
                       </div>
                     </div>
                     <StarRating rating={r.rating} size={13} />
@@ -258,7 +258,7 @@ export default function ProductReviews({ product }) {
                 </div>
               ))}
               {total > reviews.length && (
-                <p className="text-xs text-gray-400 dark:text-slate-500">
+                <p className="text-xs text-gray-600 dark:text-slate-500">
                   Showing first {reviews.length} of {total} reviews.
                 </p>
               )}
@@ -270,7 +270,7 @@ export default function ProductReviews({ product }) {
         <div className="lg:sticky lg:top-24 h-fit">
           <div className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
             {authLoading ? (
-              <div className="flex items-center justify-center py-10 text-gray-400">
+              <div className="flex items-center justify-center py-10 text-gray-600">
                 <Loader2 size={18} className="animate-spin text-brand-500" />
               </div>
             ) : !user ? (
@@ -321,7 +321,7 @@ export default function ProductReviews({ product }) {
                 />
               </div>
             ) : checkingEligibility ? (
-              <div className="flex items-center justify-center py-10 text-gray-400">
+              <div className="flex items-center justify-center py-10 text-gray-600">
                 <Loader2 size={18} className="animate-spin text-brand-500" />
               </div>
             ) : !canReview ? (

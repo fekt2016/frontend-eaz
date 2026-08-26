@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { canHandleChats } from "@/lib/roles";
 import { useInventory } from "@/hooks/queries/useInventory";
-import { Gauge, LogOut, X } from "lucide-react";
-import { baseNav, adminNav, marketplaceNav, posNav } from "./dashboardNav";
+import { LogOut, X } from "lucide-react";
+import { baseNav, chatNav, adminNav, marketplaceNav, posNav } from "./dashboardNav";
 
 const POS_ROLES = ["superadmin", "admin", "staff", "technician"];
 
@@ -16,8 +18,8 @@ function SidebarLink({ href, icon: Icon, label, active, onClick, badge }) {
       onClick={onClick}
       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
         active
-          ? "bg-brand-500/15 text-brand-600 dark:text-brand-400"
-          : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+          ? "bg-brand-500/15 text-brand-ink dark:text-brand-400"
+          : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800"
       }`}
     >
       <Icon size={14} className="flex-shrink-0" />
@@ -52,16 +54,21 @@ export default function Sidebar({ open, onClose }) {
 
   return (
     <aside className={`
-      fixed top-0 left-0 h-screen w-60 z-40 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-transform duration-200
+      fixed top-0 left-0 h-screen w-60 z-40 flex flex-col bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 transition-transform duration-200
       ${open ? "translate-x-0" : "-translate-x-full"}
       lg:translate-x-0 lg:static lg:z-auto
     `}>
       {/* Logo */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-            <Gauge size={13} className="text-gray-900 dark:text-white" />
-          </div>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-slate-800">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="EazWorld home">
+          <Image
+            src="/logo.png"
+            alt=""
+            width={512}
+            height={440}
+            className="h-8 w-auto"
+            priority
+          />
           <div>
             <p className="font-bold text-gray-900 dark:text-white text-sm leading-none">EazWorld</p>
             <p className="text-gray-500 text-xs">Dashboard</p>
@@ -83,7 +90,7 @@ export default function Sidebar({ open, onClose }) {
 
         {isPosRole && visiblePosNav.length > 0 && (
           <>
-            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Repair Shop POS</p>
+            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Repair Shop POS</p>
             {visiblePosNav.map((item) => (
               <SidebarLink
                 key={item.href}
@@ -97,7 +104,7 @@ export default function Sidebar({ open, onClose }) {
 
         {["admin", "superadmin", "staff"].includes(user?.role) && (
           <>
-            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Marketplace</p>
+            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Marketplace</p>
             {marketplaceNav.map((item) => (
               <SidebarLink
                 key={item.href}
@@ -105,7 +112,7 @@ export default function Sidebar({ open, onClose }) {
                 active={isActive(item.href)}
                 onClick={onClose}
                 badge={item.href === "/dashboard/commerce" && lowStockCount > 0 ? (
-                  <span className="ml-auto text-xs bg-red-500 text-white font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  <span className="ml-auto text-xs bg-error text-white dark:bg-error-dark dark:text-gray-900 font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                     {lowStockCount}
                   </span>
                 ) : undefined}
@@ -114,9 +121,18 @@ export default function Sidebar({ open, onClose }) {
           </>
         )}
 
+        {canHandleChats(user?.role) && (
+          <>
+            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Support</p>
+            {chatNav.map((item) => (
+              <SidebarLink key={item.href} {...item} active={isActive(item.href)} onClick={onClose} />
+            ))}
+          </>
+        )}
+
         {isAdmin && (
           <>
-            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Admin</p>
+            <p className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800 px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">Admin</p>
             {adminNav.map((item) => (
               <SidebarLink key={item.href} {...item} active={isActive(item.href)} onClick={onClose} />
             ))}
@@ -125,10 +141,10 @@ export default function Sidebar({ open, onClose }) {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="px-3 py-4 border-t border-gray-200 dark:border-slate-800">
         <button
           onClick={() => { logout(); router.push("/auth/login"); }}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition"
         >
           <LogOut size={13} />
           Sign out

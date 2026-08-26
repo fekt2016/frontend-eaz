@@ -1,4 +1,5 @@
-import { STATUS_COLORS, statusLabel } from "./jobStatus";
+import { statusBadgeProps, statusLabel } from "./jobStatus";
+import { Badge } from "@/components/ui";
 import { formatGhs } from "@/lib/shop";
 
 /**
@@ -20,15 +21,13 @@ export function JobInvoice({
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
       <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-800/50 flex items-center justify-between">
         <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Invoice</p>
-        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-          {statusLabel(status)}
-        </span>
+        <Badge {...statusBadgeProps(status)}>{statusLabel(status)}</Badge>
       </div>
 
       {/* Repair work description — what teller tells the customer */}
       {(repairWork || job?.repairWork) && (
         <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-brand-500/5">
-          <p className="text-xs text-brand-600 dark:text-brand-400 font-medium mb-1">Repair work</p>
+          <p className="text-xs text-brand-ink dark:text-brand-400 font-medium mb-1">Repair work</p>
           <p className="text-sm text-gray-700 dark:text-gray-200">{repairWork || job?.repairWork}</p>
         </div>
       )}
@@ -49,7 +48,7 @@ export function JobInvoice({
       <div className="px-5 py-4 space-y-2.5">
         {job?.requiresDiagnosis && (
           <div className="flex justify-between text-sm">
-            <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+            <span className="text-brand-ink dark:text-brand-400 flex items-center gap-1.5">
               Diagnosis fee
               <span className="text-xs bg-purple-500/15 border border-purple-500/20 px-1.5 py-0.5 rounded-full">upfront</span>
             </span>
@@ -70,9 +69,9 @@ export function JobInvoice({
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">Paid</span>
-          <span className="text-green-600 dark:text-green-400">{formatGhs(totalPaid)}</span>
+          <span className="text-success dark:text-success-dark">{formatGhs(totalPaid)}</span>
         </div>
-        <div className={`flex justify-between text-base font-bold border-t border-gray-200 dark:border-gray-800 pt-2.5 ${balanceDue > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
+        <div className={`flex justify-between text-base font-bold border-t border-gray-200 dark:border-gray-800 pt-2.5 ${balanceDue > 0 ? "text-error dark:text-error-dark" : "text-success dark:text-success-dark"}`}>
           <span>Balance due</span>
           <span>{formatGhs(balanceDue)}</span>
         </div>
@@ -89,7 +88,7 @@ export function JobInvoice({
               <span className="text-gray-500">Revenue</span>
               <span className="text-gray-600 dark:text-gray-300">{formatGhs(totalAmount)}</span>
             </div>
-            <div className={`flex justify-between text-sm font-bold pt-1 ${grossProfit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+            <div className={`flex justify-between text-sm font-bold pt-1 ${grossProfit >= 0 ? "text-success dark:text-success-dark" : "text-error dark:text-error-dark"}`}>
               <span>Gross Profit</span>
               <span>{formatGhs(grossProfit)} ({marginPct}%)</span>
             </div>

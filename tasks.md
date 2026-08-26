@@ -41,114 +41,98 @@ _None open._
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
 
-- [ ] **T45 · Pre-order support for products** — storefront side of the pre-order feature; the
-  model/order/payment design lives in `backend-eaz/tasks.md` → T45. Currently the shop blocks
-  add-to-cart / checkout on zero stock, so items that are out of stock or not yet available in
-  Ghana can't be ordered at all.
-  - **What this needs here:** product card + detail page show a "Pre-order" badge and
-    expected-availability copy (from the backend `preorder.availableFrom`/`note` fields)
-    instead of "Out of stock"; the add-to-cart button becomes "Pre-order" for those items;
-    the cart/checkout surfaces that a line item is a pre-order.
-  - **Open questions (resolve with backend before building):** upfront payment vs. deposit
-    changes the checkout copy/flow; how a pre-order line renders in order history / track-order.
-  - **Backend:** `backend-eaz/tasks.md` → T45.
-
 ---
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
-- [x] **T43 · Money display bypasses the single `formatGhs` formatter** — ✅ done 2026-08-25 (both halves)
-  - **Issue:** The convention is to render money with `formatGhs(pesewas)` from `lib/shop.js`.
-    These pages hand-roll `GH₵{...toFixed(2)}` / `GH₵{...toLocaleString()}` raw templates:
-  - **Location:**
-    - `src/app/dashboard/pos/sell/page.jsx` (~lines 416, 435, 462, 481, 536, 565)
-    - `src/app/dashboard/pos/jobs/new/page.jsx` (~lines 456, 463, 469)
-    - `src/app/dashboard/pos/jobs/[id]/page.jsx` (~lines 426, 435, 540, 546, 552)
-    - `src/app/dashboard/pos/jobs/[id]/_components/JobInvoice.jsx` (~lines 38–89)
-    - `src/components/pos/PosOverview.jsx` (~lines 69, 70, 77, 95)
-    - `src/app/dashboard/page.jsx` (~lines 242–243)
-    - `src/app/track/[token]/page.jsx` (~lines 378, 383)
-    - `src/components/pos/Receipt.jsx` (~lines 100–108)
-  - **Fix:** Replace with `formatGhs(value)` where `value` is integer pesewas (POS/shop). For
-    the float-GHS hosting/domain/service pages, either convert to pesewas or keep raw — see
-    T44 for that decision. Track both together.
-  - **Status: POS/shop portion partially shipped 2026-08-21 — the fix note's premise
-    ("value is integer pesewas") turned out to be false for most of the listed locations.
-    User asked to verify before touching anything; audit below, then scoped to the safe
-    subset.**
-  - **Audit of all 8 locations (confirmed before any fix, per user's request):**
-    - **Genuine bugs — shipped:** `PosOverview.jsx:69,70,77` (`stats.totalRevenue`/
-      `todayRevenue`/`totalExpenses` hand-rolled `/100`+`toLocaleString()`, while
-      `stats.netProfit` right below correctly used `formatGhs` on the same object);
-      `dashboard/page.jsx:242,243` (same pattern; `o.total` elsewhere in the file
-      correctly used `formatGhs`); `Receipt.jsx:100,103,105,106,108` (a local `c(n)`
-      helper duplicated `formatGhs`'s own `/100`+`toFixed(2)` logic).
-    - **NOT bugs — left alone:** `sell/page.jsx`, `jobs/new/page.jsx`,
-      `jobs/[id]/page.jsx`, and `JobInvoice.jsx` all deliberately convert
-      pesewas→cedis the moment an item enters cart/form state (e.g.
-      `jobs/[id]/page.jsx` has explicit `// pesewas → cedis` comments; `JobInvoice.jsx`
-      has a file-header doc-comment saying exactly this), then convert back to
-      pesewas only at the API-submission boundary. The flagged `toFixed(2)`/
-      `toLocaleString()` lines are correct today *because* of this — wrapping them in
-      `formatGhs` as-is would silently divide every number by 100 twice (a 100x-too-small
-      display bug). Fixing this properly means refactoring 4 files' state to hold
-      pesewas throughout, a materially bigger change than a display-formatter swap;
-      user declined that scope for now, keeping T43 as a display fix only.
-    - **Judgment call — left alone:** `PosOverview.jsx:95` is a compact "1.2k"-style
-      chart-bar-label abbreviation for large pesewas totals — a different formatting
-      job than `formatGhs`'s always-full-precision output, not an omission.
-    - **Out of scope — belongs to T41:** `track/[token]/page.jsx:378,383`
-      (`unitPriceGhs`/`partsSubtotalGhs`) is T41's documented float-GHS-cart issue, whose
-      own fix note explicitly says the real fix is a cart-unit refactor there, not a
-      display swap here. Every *other* money display in that file (11 other call sites)
-      already correctly uses `formatGhs` — confirmed no bug there.
-  - **Shipped:**
-    - `src/components/pos/PosOverview.jsx` — 3 stat tiles switched to `formatGhs`.
-    - `src/app/dashboard/page.jsx` — 2 stat tiles switched to `formatGhs`.
-    - `src/components/pos/Receipt.jsx` — totals section (`Subtotal`/`Discount`/`TOTAL`/
-      `Paid`/`Change`) switched to `formatGhs`; kept the local `c(n)` helper narrowly for
-      the item-table cells, which intentionally omit the "GH₵" prefix per row (the
-      column header already carries it, and the receipt is print-width constrained) —
-      not the same bug, so not folded into the formatGhs swap.
-    - `src/components/pos/PosOverview.test.jsx` (new, 1 test) and
-      `src/components/pos/Receipt.test.jsx` (new, 4 tests): assert the fixed tiles/rows
-      render via `formatGhs`'s exact output, and that the Receipt item-table cell stays
-      prefix-free (no double "GH₵").
-  - **Completed 2026-08-25 — the cedis-state refactor (items 4–7) is done.** All four
-    files now hold **integer pesewas** in state and render through `formatGhs`. Only
-    genuinely typed values stay cedis strings (`amountPaid`, `discount`, `laborCost`,
-    `diagnosisFee`, `payAmount`) — converted once, where they are read.
-    - `sell/page.jsx` — cart `unitPrice` keeps the API's pesewas; `subtotal`/`total`/
-      `disc`/`paid`/`changeDue` are pesewas; the `×100` at submit is gone because the
-      values arrive already converted. Amount-box prefills convert the other way.
-    - `jobs/new/page.jsx` — `cost` and `totalParts` in pesewas (display-only here;
-      parts post as `{partId, quantity}` and the server re-prices). The
-      "covered by payment" check converts the typed side rather than comparing units.
-    - `jobs/[id]/page.jsx` — parts `cost`/`costAtTime`, `totalPaid`, and every derived
-      total in pesewas, with `laborCostPesewas`/`diagnosisFeePesewas` computed once.
-    - `JobInvoice.jsx` — takes pesewas and uses `formatGhs`; its doc-comment said the
-      opposite and is rewritten.
-  - **The dangerous find.** `useMomoCharge` / `useCardCharge` do
-    `Math.round(Number(amount) * 100)` themselves, so they need **cedis**. Handing them
-    the now-pesewas `balanceDue` would have charged a GH₵95 repair as **GH₵9,500** on a
-    real Mobile Money prompt. The call sites convert explicitly and say why. Two quieter
-    unit mixes were fixed alongside: `totalPaid < Number(diagnosisFee)` and a
-    `totalParts + Number(laborCost)` visibility guard, both comparing pesewas to cedis
-    after the change.
-  - **Left converting on purpose:** `printRepairReceipt` renders cedis and is not
-    T43's to rewrite, so `handlePrint` converts at that boundary — one place, commented.
-  - **Also confirmed fixed elsewhere:** `track/[token]/page.jsx` no longer has the
-    float-GHS cart at all (T41 shipped), so that item is closed too.
-  - **Tests:** 5 added to `sell/page.test.jsx` (a 9000-pesewas part reads GH₵90.00;
-    typed cedis reach the API as pesewas for `amountPaid` and `discount`; change due;
-    the underpayment guard at its exact boundary) and 3 to `jobs/[id]/page.test.jsx`
-    (invoice totals via `formatGhs`, including explicit "not 100x" assertions; the
-    charge hooks receive cedis; labour/diagnosis/part cost round-trip as pesewas).
-    The hook mocks now capture their arguments, since that argument is the unit boundary.
-  - **Verified:** full frontend suite 43 files / 271 tests, exit 0; `next lint` clean.
-  - **Verified:** `PosOverview.test.jsx` + `Receipt.test.jsx` 5/5 pass; `next lint` 0
-    warnings/errors; full suite `npm test` 13 files / 78 tests pass; `npm run build`
-    compiles successfully, exit 0.
+- [x] **T69 · Chat monitoring UI — staff attribution, supervisor view, metrics** — ✅ done 2026-08-26
+  - **Frontend half of `backend-eaz/tasks.md` → T69.** Admin/superadmin want to monitor the
+    quality of staff↔customer chats. Backend phases 0–4 landed in the same pass, so this is no
+    longer blocked.
+  - **Attribution — ✅** agent bubbles in `/dashboard/chats` name the sender: "You" for your own
+    replies, the staff member's name otherwise, and a generic "EazWorld team" for messages stored
+    before `senderName` existed. Every bubble used to read **"You (Admin)"** regardless of who
+    typed it — which is precisely what made quality unmeasurable by eye.
+  - **Supervisor mode — ✅** replying now requires owning the conversation. A chat someone else
+    holds shows "*Ama* is handling this chat" with a **Take over**; an unclaimed one shows
+    "watching — claim it to reply" with a **Claim chat**; both `POST …/claim` and unlock the reply
+    box in place. Pending requests are unchanged — **Accept** claims as it connects. The session
+    list carries an owner line so a supervisor can see at a glance which chats are covered.
+    Also removed a hardcoded **"Watching"** pill that sat on every session and meant nothing.
+  - **Metrics — ✅** `QualityMetrics.jsx` (a `SectionCard` beside the console, admin-only, opened
+    from a **Quality** toggle so the admin-only endpoint doesn't fire on every front-desk page
+    load): sessions, live chats accepted, resolution rate, median first reply, median time to
+    close, 7/30/90-day range, plus a per-agent table. CSAT included now that backend phase 4
+    landed: a "Customer rating" card (`x / 5`, with rated-count + response-rate as the hint so
+    the denominator is never a mystery) and a ★ column per agent.
+  - **Customer rating (T69 phase 4) — ✅** `ChatWidget.jsx` asks for stars once a chat a *person*
+    handled has closed (bot-only conversations are never asked), submits optimistically to
+    `POST /chat/sessions/:id/rating`, and on later visits shows the saved score instead of
+    asking again (`meta.rating` from polling). The console surfaces each session's score as
+    tinted ★★☆☆☆ badges in both the list and the transcript header.
+  - **Tests:** `src/app/dashboard/chats/page.test.jsx` (11) covers attribution, the claim/take-over
+    gating, the panel's admin-only visibility, and the rating display; `ChatWidget.test.jsx` (new,
+    5) covers ask-once-after-close, submit, restore-instead-of-re-ask, and bot-only chats never
+    being asked. Suite: 49 files / 317 tests green; lint clean.
+
+- [~] **T67 · "Save GH₵0" was shown on every annual hosting plan** — ✅ frontend fix done 2026-08-25
+  - **Was:** `saving = plan.monthlyPrice * 12 - plan.annualPrice`, rendered unguarded. Every tier in
+    `config/hostingPlans.js` has `annualPrice === monthlyPrice * 12`, so the saving is always 0 and
+    customers picking Annual saw a green **"Save GH₵ 0"** plus a tab reading **"Annual (Save GH₵ 0)"**.
+  - **Fixed:** all three render sites now require `saving > 0` —
+    `src/app/hosting/page.jsx:310`, `src/app/hosting/checkout/page.jsx:351` and `:362`
+    (the tab falls back to a plain "Annual"). Suite green: 47 files / 301 tests.
+  - **Still open in `backend-eaz/tasks.md` → T67:** whether annual should carry a real discount.
+    If it should, set `annualPrice` per tier and the saving line reappears with no further UI work.
+
+- [~] **T68 · Dashboard queue for hosting orders that need manual provisioning** — ✅ done 2026-08-26 (backend + frontend; purchase-confirmation email folds into T62)
+  - **Frontend half of `backend-eaz/tasks.md` → T68.** VPS, Cloud and Email orders are paid but
+    never provisioned; staff only see a count on the admin dashboard, with no list to act on.
+  - **Shipped — `dashboard/hosting/awaiting-provisioning`**, mirroring
+    `dashboard/commerce/preorders`: paid skipped orders oldest first, each card showing plan,
+    customer, whole-cedi amount (`GH₵{amount}` raw — hosting money is the T44 exception, not
+    pesewas) and a credentials form. Entering the username/password created by hand in Starlight
+    Manager calls `PATCH …/mark-provisioned`, which activates the order and emails the same
+    credentials email auto-provisioned accounts get. The password goes to the email once and is
+    never stored.
+  - **Nav:** "Awaiting Provisioning" in the admin+staff section beside Pre-orders/Shipments —
+    same reasoning as T45: a recurring job someone has to go looking for, not a detail of one
+    order. Title mapping added so the topbar `<h1>` matches.
+  - **Hooks:** `useAwaitingProvisioning` / `useMarkProvisioned` in `useHosting.js`, invalidating
+    the whole hosting domain so the order leaves the queue and the admin lists refresh.
+  - **Tests:** `page.test.jsx` (6) — listing with whole-cedi rendering, credential submit,
+    domain prefill, server-refusal surface, empty state, customer role gate. Suite:
+    50 files / 323 tests green; lint clean.
+
+- [x] **T65 · Stop advertising `.com.gh` / `.gh` / `.africa`** — ✅ closed 2026-08-26
+  - **Product answer (user, 2026-08-26): we don't resell them** — customers register via a
+    ghNIC-accredited registrar; EazWorld connects the domain. The shipped copy work (commit
+    4a064a4: domains SEO copy, checkout suggestion, services FAQ) already implements exactly
+    that, so this closes. Full detail in `backend-eaz/tasks.md` → T65.
+  - **Why:** the registrar is Spaceship now (backend T64) and its API returns `tldNotSupported`
+    for all three — verified live 2026-08-25. Backend rejects them before any API call, so the
+    old copy steered people into a dead end.
+
+- [x] **T5 · Expenses open to admin (frontend half)** — ✅ done 2026-08-26
+  - Backend admitted `admin` to expense read+write (`routes/posRoutes.js`, backend T5). The
+    Expenses nav entry now includes `admin`, and `pos/expenses/page.jsx` gates manage actions
+    on superadmin+admin instead of superadmin alone.
+
+- [x] **T62 · Surface the tracking number, and mirror the transactional emails** — ✅ done (page in cb41a45; backend emails landed 2026-08-26)
+  - **Why:** a customer pays and lands on the order-confirmation page, which shows the
+    order number but **not the tracking number** — even though the order already has one
+    from the moment it is created. For a pre-order they will check on for weeks, that is
+    the difference between the T45 tracking journey being reachable and not.
+  - **Shipped here (cb41a45):** the confirmation page shows the tracking number with a
+    direct `/track/order/<number>` link instead of only offering the lookup form, and a
+    pre-order line sets the expectation ("you'll be emailed when it reaches our shop").
+  - **Backend half done 2026-08-26:** the emails this page promised now exist — shop
+    receipt with the same tracking link (`order_confirmation`), status moves
+    (`shop_status_update`), refund outcomes, domain and service confirmations. Full
+    detail in `backend-eaz/tasks.md` → T62. No further frontend work needed: every new
+    template points at existing routes.
+  - **Backend:** `backend-eaz/tasks.md` → T62 has the full audit of which areas send
+    email today and which send nothing.
 
 ---
 

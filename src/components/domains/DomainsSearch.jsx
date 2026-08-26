@@ -16,7 +16,7 @@ function ResultRow({ result, onSelect }) {
       <div>
         <p className="text-sm font-semibold text-gray-900 dark:text-white">{result.domain}</p>
         {result.available && (
-          <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+          <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">
             {result.price ? <>GH₵{result.price}<span className="ml-1">/yr</span></> : "—"}
           </p>
         )}
@@ -30,7 +30,7 @@ function ResultRow({ result, onSelect }) {
           Register
         </button>
       ) : (
-        <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">Taken</span>
+        <span className="text-xs text-gray-600 dark:text-slate-500 font-medium">Taken</span>
       )}
     </div>
   );
@@ -98,7 +98,7 @@ function DomainsContentInner() {
   return (
     <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white min-h-screen">
       <div className="max-w-3xl mx-auto px-4 pt-28 pb-24">
-        <Link href="/" className="text-gray-400 dark:text-slate-500 text-sm hover:text-gray-700 dark:hover:text-slate-300 transition mb-8 inline-block">← Home</Link>
+        <Link href="/" className="text-gray-600 dark:text-slate-500 text-sm hover:text-gray-700 dark:hover:text-slate-300 transition mb-8 inline-block">← Home</Link>
 
         <h1 className="font-display font-bold text-4xl text-gray-900 dark:text-white mb-2">Domain Search</h1>
         <p className="text-gray-500 dark:text-slate-400 mb-10">Find and register the perfect domain for your business.</p>
@@ -136,13 +136,13 @@ function DomainsContentInner() {
 
         {!loading && searched && results.length === 0 && !error && (
           <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
-            <p className="text-gray-400 dark:text-slate-500 text-sm">No results found. Try a different name.</p>
+            <p className="text-gray-600 dark:text-slate-500 text-sm">No results found. Try a different name.</p>
           </div>
         )}
 
         {!searched && !loading && (
           <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
-            <p className="text-gray-400 dark:text-slate-500 text-sm">Enter a domain name above to check availability.</p>
+            <p className="text-gray-600 dark:text-slate-500 text-sm">Enter a domain name above to check availability.</p>
           </div>
         )}
       </div>

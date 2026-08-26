@@ -51,7 +51,7 @@ export default function Home() {
           {stats.map(({ value, label, rating }) => (
             <div key={label}>
 <p className="font-mono font-bold text-3xl text-brand-500">{value}{rating && <Star size={20} className="inline-block -mt-1 ml-1" />}</p>
-              <p className="font-mono text-[11px] uppercase tracking-widest text-gray-400 dark:text-slate-500 mt-1">{label}</p>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-gray-600 dark:text-slate-500 mt-1">{label}</p>
             </div>
           ))}
         </div>
@@ -63,7 +63,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-white dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto">
           <div className="max-w-xl mb-12">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Why EazWorld</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Why EazWorld</p>
             <StarRule className="mb-4" />
             <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white">
               A Digital Partner You Can Trust
@@ -74,7 +74,7 @@ export default function Home() {
               <div key={title} className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-ink">
                 <Icon size={28} className="mb-4 text-brand-500" />
                 <p className="font-semibold text-gray-900 dark:text-white text-sm mb-2">{title}</p>
-                <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed">{desc}</p>
+                <p className="text-gray-600 dark:text-slate-500 text-xs leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -85,7 +85,7 @@ export default function Home() {
       <section className="py-24 px-4 bg-paper dark:bg-ink">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
           <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Featured Work</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Featured Work</p>
             <StarRule className="mb-5" />
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-5 leading-tight">
               All Services Working Together: Saiisai
@@ -104,7 +104,7 @@ export default function Home() {
               {[["150+", "Sellers"], ["15k+", "Products"], ["4.7", "Rating", true], ["500+", "Daily Transactions"]].map(([val, label, rating]) => (
                 <div key={label}>
 <p className="font-mono font-bold text-2xl text-gray-900 dark:text-white">{val}{rating && <Star size={16} className="inline-block -mt-0.5 ml-1" />}</p>
-                  <p className="font-mono text-[11px] uppercase tracking-widest text-gray-400 dark:text-slate-500">{label}</p>
+                  <p className="font-mono text-[11px] uppercase tracking-widest text-gray-600 dark:text-slate-500">{label}</p>
                 </div>
               ))}
             </div>
@@ -129,7 +129,7 @@ export default function Home() {
               ].map((m) => (
                 <div key={m.label} className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-slate-800 last:border-0">
                   <div>
-                    <p className="text-xs text-gray-400 dark:text-slate-500">{m.label}</p>
+                    <p className="text-xs text-gray-600 dark:text-slate-500">{m.label}</p>
                     <p className="font-mono text-sm font-bold text-gray-900 dark:text-white">{m.value}</p>
                   </div>
                   <span className="text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-full">
@@ -138,7 +138,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <p className="text-gray-400 dark:text-slate-500 text-xs mt-4 text-center">Live platform metrics</p>
+            <p className="text-gray-600 dark:text-slate-500 text-xs mt-4 text-center">Live platform metrics</p>
           </div>
         </div>
       </section>

@@ -33,7 +33,7 @@ export default function BankTransferPage() {
   return (
     <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">
       <div className="mx-auto max-w-xl">
-        <Link href="/hosting" className="mb-6 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
+        <Link href="/hosting" className="mb-6 inline-block text-sm text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           ← Back to Hosting
         </Link>
         <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-2">Pay by Bank Transfer</h1>
@@ -61,7 +61,7 @@ export default function BankTransferPage() {
               <span className="font-mono text-brand-500">{orderId}</span>
             </div>
           </div>
-          <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">Use your order reference when making the transfer so we can match your payment.</p>
+          <p className="mt-4 text-xs text-gray-600 dark:text-slate-500">Use your order reference when making the transfer so we can match your payment.</p>
         </div>
 
         {/* Nameserver card — only for own-domain orders */}
@@ -75,11 +75,11 @@ export default function BankTransferPage() {
             </p>
             <div className="space-y-2 text-sm font-mono">
               <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-brand-100">
-                <span className="text-gray-400 font-sans text-xs">Nameserver 1</span>
+                <span className="text-gray-600 font-sans text-xs">Nameserver 1</span>
                 <span className="font-semibold text-gray-900">{NS1}</span>
               </div>
               <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-brand-100">
-                <span className="text-gray-400 font-sans text-xs">Nameserver 2</span>
+                <span className="text-gray-600 font-sans text-xs">Nameserver 2</span>
                 <span className="font-semibold text-gray-900">{NS2}</span>
               </div>
             </div>

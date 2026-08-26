@@ -10,7 +10,7 @@ export default function CtaSection() {
       </div>
 
       <div className="relative max-w-3xl mx-auto text-center">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">
+        <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">
           Let&apos;s Work Together
         </p>
         <StarRule className="mb-5 justify-center" />
@@ -23,7 +23,7 @@ export default function CtaSection() {
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
             href="/book-consultation"
-            className="px-6 py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition text-sm shadow-lg shadow-gray-900/10 dark:shadow-brand-500/20"
+            className="px-6 py-3 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 transition text-sm shadow-lg shadow-gray-900/10 dark:shadow-brand-500/20"
           >
             Schedule Free Consultation
           </Link>
@@ -34,7 +34,7 @@ export default function CtaSection() {
             Visit Our Office
           </Link>
         </div>
-        <p className="text-gray-400 dark:text-slate-600 text-xs mt-6">
+        <p className="text-gray-600 dark:text-slate-600 text-xs mt-6">
           Or email us at{" "}
           <a
             href="mailto:info@eazworld.co"

@@ -266,7 +266,7 @@ export default function PortfolioDetail({ slug }) {
             ["Live", project.liveUrl && project.liveUrl !== "#" ? <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">Visit ↗</a> : "Coming soon"],
           ].map(([label, value]) => (
             <div key={label} className="px-4 py-2 first:pl-0 last:pr-0">
-              <p className="text-xs text-gray-400 dark:text-slate-500 mb-0.5">{label}</p>
+              <p className="text-xs text-gray-600 dark:text-slate-500 mb-0.5">{label}</p>
               <p className="text-sm font-semibold text-gray-900 dark:text-white">{value}</p>
             </div>
           ))}
@@ -276,7 +276,7 @@ export default function PortfolioDetail({ slug }) {
       {/* IMPACT METRICS */}
       <section className="py-16 px-4 bg-white dark:bg-slate-900">
         <div className="max-w-6xl mx-auto text-center mb-10">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Project Impact</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">Project Impact</p>
           <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">Measurable Results That Matter</h2>
         </div>
         <div className="max-w-3xl mx-auto grid grid-cols-3 gap-5">
@@ -307,14 +307,14 @@ export default function PortfolioDetail({ slug }) {
           <div className="space-y-12">
             {/* Overview */}
             <div>
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">01 — Overview</p>
+              <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">01 — Overview</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">About This Project</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{project.caseStudy?.overview}</p>
             </div>
 
             {/* Challenge */}
             <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">02 — The Challenge</p>
+              <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">02 — The Challenge</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">The Problem We Solved</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4">{project.caseStudy?.challenge}</p>
               <ul className="space-y-2">
@@ -329,7 +329,7 @@ export default function PortfolioDetail({ slug }) {
 
             {/* Solution */}
             <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">03 — Our Solution</p>
+              <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">03 — Our Solution</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">How We Approached It</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-4">{project.caseStudy?.solution}</p>
               <ul className="space-y-2">
@@ -344,7 +344,7 @@ export default function PortfolioDetail({ slug }) {
 
             {/* Process timeline */}
             <div>
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">04 — Our Process</p>
+              <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">04 — Our Process</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">Step by Step</h2>
               <div ref={timelineRef} className="space-y-4">
                 {(project.caseStudy?.process || []).slice(0, 4).map((step, i) => (
@@ -359,9 +359,9 @@ export default function PortfolioDetail({ slug }) {
                       {i + 1}
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 dark:text-slate-500 mb-0.5">Step {i + 1}</p>
+                      <p className="text-xs text-gray-600 dark:text-slate-500 mb-0.5">Step {i + 1}</p>
                       <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{step}</h4>
-                      <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed">{describeProcessStep(step)}</p>
+                      <p className="text-gray-600 dark:text-slate-500 text-xs leading-relaxed">{describeProcessStep(step)}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -370,7 +370,7 @@ export default function PortfolioDetail({ slug }) {
 
             {/* Outcome */}
             <div>
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">05 — The Outcome</p>
+              <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">05 — The Outcome</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">What We Achieved Together</h2>
               <p className="text-gray-600 dark:text-slate-400 leading-relaxed mb-5">{project.caseStudy?.outcome}</p>
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
@@ -393,7 +393,7 @@ export default function PortfolioDetail({ slug }) {
               <p className="font-semibold text-gray-900 dark:text-white text-sm mb-4">Project Details</p>
               {[["Client", project.client], ["Category", project.category], ["Year", project.year], ["Duration", project.duration]].map(([l, v]) => (
                 <div key={l} className="flex justify-between text-sm py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
-                  <span className="text-gray-400 dark:text-slate-500">{l}</span>
+                  <span className="text-gray-600 dark:text-slate-500">{l}</span>
                   <span className="font-medium text-gray-900 dark:text-white">{v}</span>
                 </div>
               ))}
@@ -419,7 +419,7 @@ export default function PortfolioDetail({ slug }) {
               {(project.results || []).slice(0, 3).map((r) => (
                 <div key={r.label} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
                   <span className="font-display font-bold text-gray-900 dark:text-white">{r.value}</span>
-                  <span className="text-gray-400 dark:text-slate-500 text-xs">{r.label}</span>
+                  <span className="text-gray-600 dark:text-slate-500 text-xs">{r.label}</span>
                 </div>
               ))}
             </div>
@@ -435,7 +435,7 @@ export default function PortfolioDetail({ slug }) {
               >
                 Start Your Project →
               </button>
-              <p className="text-gray-400 text-xs mt-2">Free consultation · No obligation</p>
+              <p className="text-gray-600 text-xs mt-2">Free consultation · No obligation</p>
             </div>
           </div>
         </div>
@@ -445,9 +445,9 @@ export default function PortfolioDetail({ slug }) {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Project Gallery</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">Project Gallery</p>
             <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">Behind the Screens</h2>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mt-2 max-w-md mx-auto">A closer look at how the experience comes together across key screens.</p>
+            <p className="text-gray-600 dark:text-slate-500 text-sm mt-2 max-w-md mx-auto">A closer look at how the experience comes together across key screens.</p>
           </div>
           <div
             className="relative rounded-2xl overflow-hidden cursor-pointer aspect-[16/8] mb-4 group"
@@ -523,7 +523,7 @@ export default function PortfolioDetail({ slug }) {
             </div>
             <div className="text-left">
               <p className="font-semibold text-gray-900 dark:text-white text-sm">{project.testimonial?.author}</p>
-              <p className="text-gray-400 dark:text-slate-500 text-xs">{project.testimonial?.role}</p>
+              <p className="text-gray-600 dark:text-slate-500 text-xs">{project.testimonial?.role}</p>
               <div className="flex items-center gap-0.5 text-brand-400 mt-0.5">
                 {[0, 1, 2, 3, 4].map((i) => <Star key={i} size={14} />)}
               </div>
@@ -540,7 +540,7 @@ export default function PortfolioDetail({ slug }) {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Technologies Used</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">Technologies Used</p>
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Built With</h2>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
@@ -562,39 +562,39 @@ export default function PortfolioDetail({ slug }) {
         <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">More Work</p>
+              <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">More Work</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Continue Exploring</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-5">
               {prevProject && (
                 <button type="button" onClick={() => router.push(`/portfolio/${prevProject.slug}`)} className="group text-left p-4 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition">
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mb-2">← Previous Project</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-500 mb-2">← Previous Project</p>
                   <div className="flex gap-3">
                     <Image src={prevProject.thumbnail} alt={prevProject.title} width={64} height={64} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                     <div>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-1 ${CATEGORY_COLORS[prevProject.category] || "bg-gray-100 text-gray-600"}`}>{prevProject.category}</span>
                       <p className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-brand-500 transition">{prevProject.title}</p>
-                      <p className="text-gray-400 dark:text-slate-500 text-xs">{prevProject.client}</p>
+                      <p className="text-gray-600 dark:text-slate-500 text-xs">{prevProject.client}</p>
                     </div>
                   </div>
                 </button>
               )}
               {nextProject && (
                 <button type="button" onClick={() => router.push(`/portfolio/${nextProject.slug}`)} className="group text-left p-4 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm transition">
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mb-2 text-right">Next Project →</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-500 mb-2 text-right">Next Project →</p>
                   <div className="flex gap-3">
                     <Image src={nextProject.thumbnail} alt={nextProject.title} width={64} height={64} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                     <div>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-1 ${CATEGORY_COLORS[nextProject.category] || "bg-gray-100 text-gray-600"}`}>{nextProject.category}</span>
                       <p className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-brand-500 transition">{nextProject.title}</p>
-                      <p className="text-gray-400 dark:text-slate-500 text-xs">{nextProject.client}</p>
+                      <p className="text-gray-600 dark:text-slate-500 text-xs">{nextProject.client}</p>
                     </div>
                   </div>
                 </button>
               )}
             </div>
             <div className="text-center mt-6">
-              <button type="button" onClick={() => router.push("/portfolio")} className="text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
+              <button type="button" onClick={() => router.push("/portfolio")} className="text-sm text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
                 ← View All Portfolio
               </button>
             </div>
@@ -605,11 +605,11 @@ export default function PortfolioDetail({ slug }) {
       {/* BOTTOM CTA */}
       <section className="py-20 px-4 bg-gray-900">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Let&apos;s Work Together</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Let&apos;s Work Together</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-white mb-4 leading-tight">
             Ready to Build<br />Something Like This?
           </h2>
-          <p className="text-gray-400 mb-8">
+          <p className="text-gray-600 mb-8">
             Every great project starts with a conversation. Tell us about your vision and we&apos;ll make it real.
           </p>
           <div className="flex flex-wrap justify-center gap-4 mb-8">

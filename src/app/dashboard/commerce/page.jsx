@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -12,12 +13,13 @@ import {
   Wrench, Truck, X,
 } from "lucide-react";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
+import { Alert, Badge, Button } from "@/components/ui";
 
 const CATEGORIES = ["Screen", "Battery", "Charging Port", "Speaker", "Camera", "Button", "Housing", "Board", "Accessory", "Cable", "IC / Chip", "Other"];
 
-const inputCls  = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 const selectCls = `${inputCls} cursor-pointer`;
-const labelCls  = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
+const labelCls = "block text-body-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5";
 
 function PartModal({ part, onClose, onSave, suppliers = [] }) {
   const editing    = Boolean(part?._id);
@@ -97,7 +99,7 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
           <div>
             <label className={labelCls}>
               <span className="flex items-center gap-1.5">
-                <Barcode size={11} className="text-brand-600 dark:text-brand-400" />
+                <Barcode size={11} className="text-brand-ink dark:text-brand-400" />
                 Barcode
                 {!editing && <span className="text-brand-500 font-normal normal-case tracking-normal ml-1">— scan now or type</span>}
               </span>
@@ -120,7 +122,7 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
                 <button
                   type="button"
                   onClick={() => setImages([])}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300 hover:border-red-400 hover:text-red-500 transition"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300 hover:border-error hover:text-error dark:hover:border-error-dark dark:hover:text-error-dark transition"
                 >
                   <X size={11} /> Remove
                 </button>
@@ -201,11 +203,11 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className={`${inputCls} resize-none`} />
           </div>
 
-          {error && <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>}
+          {error && <Alert tone="error">{error}</Alert>}
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50"
+            className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition disabled:opacity-50"
           >
             {saving ? "Saving…" : editing ? "Update Part" : "Add Part"}
           </button>
@@ -308,33 +310,34 @@ function PartsTab() {
           {modal === null && (
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-300 ${
               scanFlash
-                ? "bg-brand-500/20 border-brand-500/50 text-brand-300"
+                ? "bg-brand-500/20 border-brand-500/50 text-brand-ink dark:text-brand-400"
                 : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500"
             }`}>
-              <Barcode size={11} className={scanFlash ? "text-brand-600 dark:text-brand-400" : ""} />
+              <Barcode size={11} className={scanFlash ? "text-brand-ink dark:text-brand-400" : ""} />
               {scanFlash ? "Scanned!" : "Scan ready"}
             </div>
           )}
           <button
             onClick={() => openNew()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition"
           >
             <Plus size={11} /> Add Part
           </button>
         </div>
       </div>
 
-      {/* Low stock alert banner */}
+      {/* Low stock alert banner — warning-level, not alarm-red: items can
+          still be sold, they just need reordering soon. */}
       {lowStockItems.length > 0 && (
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
+        <div className="rounded-2xl border border-warning/30 bg-warning-surface dark:bg-warning-surface-dark p-4">
           <div className="flex items-center gap-2 mb-3">
-            <TriangleAlert size={13} className="text-red-600 dark:text-red-400 flex-shrink-0" />
-            <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+            <TriangleAlert size={13} className="text-warning dark:text-warning-dark flex-shrink-0" />
+            <p className="text-sm font-semibold text-warning dark:text-warning-dark">
               {lowStockItems.length} item{lowStockItems.length > 1 ? "s" : ""} low on stock
             </p>
             <button
               onClick={() => { setLowStock(true); setPage(1); }}
-              className="ml-auto text-xs text-red-600 dark:text-red-400 hover:text-red-300 underline underline-offset-2 transition"
+              className="ml-auto text-xs text-warning dark:text-warning-dark hover:text-warning-dark dark:hover:text-warning underline underline-offset-2 transition"
             >
               View all
             </button>
@@ -344,11 +347,11 @@ function PartsTab() {
               <div
                 key={p._id}
                 onClick={() => setModal(p)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 border border-red-500/20 cursor-pointer hover:border-red-500/40 transition"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-warning/20 cursor-pointer hover:border-warning/40 transition"
               >
-                <PackageOpen size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+                <PackageOpen size={10} className="text-warning dark:text-warning-dark flex-shrink-0" />
                 <span className="text-xs text-gray-900 dark:text-white truncate max-w-[120px]">{p.name}</span>
-                <span className={`text-xs font-bold ml-1 ${p.quantity === 0 ? "text-red-500" : "text-orange-600 dark:text-orange-400"}`}>
+                <span className={`text-xs font-bold ml-1 ${p.quantity === 0 ? "text-error dark:text-error-dark" : "text-warning dark:text-warning-dark"}`}>
                   {p.quantity === 0 ? "Out" : `${p.quantity} left`}
                 </span>
               </div>
@@ -384,7 +387,7 @@ function PartsTab() {
         <button
           onClick={() => { setLowStock(v => !v); setPage(1); }}
           className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm font-medium border transition ${
-            lowStock ? "bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-400" : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            lowStock ? "bg-warning-surface border-warning/30 text-warning dark:bg-warning-surface-dark dark:text-warning-dark" : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
           }`}
         >
           <TriangleAlert size={11} /> Low stock
@@ -394,9 +397,9 @@ function PartsTab() {
       {/* Scan hint */}
       {modal === null && parts.length === 0 && !loading && !q && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
-          <Barcode size={18} className="text-brand-600 dark:text-brand-400 flex-shrink-0" />
+          <Barcode size={18} className="text-brand-ink dark:text-brand-400 flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium text-brand-300">Scanner ready</p>
+            <p className="text-sm font-medium text-brand-ink dark:text-brand-400">Scanner ready</p>
             <p className="text-xs text-gray-500 mt-0.5">Point your barcode scanner at any part to add it to inventory &mdash; or click &ldquo;Add Part&rdquo; to enter manually.</p>
           </div>
         </div>
@@ -433,8 +436,8 @@ function PartsTab() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
-                          {lowStockFlag && <TriangleAlert size={10} className="text-red-600 dark:text-red-400 flex-shrink-0" />}
-                          {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400 flex-shrink-0">Retail</span>}
+                          {lowStockFlag && <TriangleAlert size={10} aria-hidden="true" className="text-warning dark:text-warning-dark flex-shrink-0" />}
+                          {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-ink dark:text-brand-400 flex-shrink-0">Retail</span>}
                         </div>
                         {p.sku && <p className="text-xs text-gray-500">SKU: {p.sku}</p>}
                         {p.compatibleWith?.length > 0 && (
@@ -444,12 +447,12 @@ function PartsTab() {
                     </div>
                     <span className="text-xs font-mono text-gray-500 hidden sm:block">{p.barcode || "—"}</span>
                     <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{p.category}</span>
-                    <span className={`text-sm font-semibold hidden sm:block ${lowStockFlag ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
+                    <span className={`text-sm font-semibold hidden sm:block ${lowStockFlag ? (p.quantity === 0 ? "text-error dark:text-error-dark" : "text-warning dark:text-warning-dark") : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
                     <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">{formatGhs(p.costPrice)}</span>
-                    <span className="text-sm text-brand-600 dark:text-brand-400 font-medium hidden sm:block">{formatGhs(p.sellingPrice)}</span>
+                    <span className="text-sm text-brand-ink dark:text-brand-400 font-medium hidden sm:block">{formatGhs(p.sellingPrice)}</span>
                     <div className="flex items-center gap-2 ml-auto sm:ml-0">
                       <button onClick={() => setModal(p)} className="text-gray-500 hover:text-brand-400 transition"><Pen size={13} /></button>
-                      <button onClick={() => handleDelete(p._id)} className="text-gray-500 hover:text-red-400 transition"><Trash2 size={12} /></button>
+                      <button onClick={() => handleDelete(p._id)} className="text-gray-500 hover:text-error dark:hover:text-error-dark transition"><Trash2 size={12} /></button>
                     </div>
                   </div>
                 );
@@ -538,7 +541,7 @@ function ProductsTab() {
         </div>
         <Link
           href="/dashboard/commerce/products/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition"
         >
           <Plus size={11} /> Add Product
         </Link>
@@ -564,7 +567,7 @@ function ProductsTab() {
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{product.name}</p>
                       {!product.isActive && (
-                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-600 flex-shrink-0">Archived</span>
+                        <Badge tone="neutral">Archived</Badge>
                       )}
                     </div>
                     <p className="text-xs text-gray-500">
@@ -577,23 +580,21 @@ function ProductsTab() {
                     <p className={`text-xs font-medium mt-0.5 ${badge.classes}`}>{badge.label}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Link
+                    <Button
                       href={`/dashboard/commerce/products/${product._id}/edit`}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-gray-400 transition"
+                      variant="secondary"
+                      size="sm"
                     >
                       Edit
-                    </Link>
-                    <button
+                    </Button>
+                    <Button
+                      variant={product.isActive ? "danger" : "primary"}
+                      size="sm"
                       onClick={() => handleToggle(product)}
-                      disabled={updating === product._id}
-                      className={`text-xs font-semibold px-3 py-1.5 rounded-full transition disabled:opacity-60 ${
-                        product.isActive
-                          ? "border border-red-200 text-red-500 hover:bg-red-50"
-                          : "bg-emerald-600 text-white hover:bg-emerald-700"
-                      }`}
+                      loading={updating === product._id}
                     >
-                      {updating === product._id ? "..." : product.isActive ? "Archive" : "Activate"}
-                    </button>
+                      {product.isActive ? "Archive" : "Activate"}
+                    </Button>
                   </div>
                 </div>
               );

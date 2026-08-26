@@ -133,7 +133,7 @@ function VerifyPageInner() {
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">
             {phoneFromQuery ? "Check your phone" : "Check your email"}
           </h1>
-          <p className="text-gray-400 dark:text-slate-500 text-sm">
+          <p className="text-gray-600 dark:text-slate-500 text-sm">
             We sent a 6-digit code to{" "}
             {prefilled ? <strong className="text-gray-700 dark:text-slate-300">{prefilled}</strong> : "your email or phone number"}
           </p>
@@ -193,7 +193,7 @@ function VerifyPageInner() {
 
             {/* Resend */}
             <div className="text-center">
-              <p className="text-sm text-gray-400 dark:text-slate-500 mb-2">Didn&apos;t receive the code?</p>
+              <p className="text-sm text-gray-600 dark:text-slate-500 mb-2">Didn&apos;t receive the code?</p>
               <button
                 type="button"
                 onClick={handleResend}
@@ -205,7 +205,7 @@ function VerifyPageInner() {
             </div>
           </form>
 
-          <p className="text-center text-sm text-gray-400 dark:text-slate-500 mt-5">
+          <p className="text-center text-sm text-gray-600 dark:text-slate-500 mt-5">
             Wrong account?{" "}
             <Link href="/auth/register" className="text-brand-500 font-medium hover:underline">Register again</Link>
           </p>

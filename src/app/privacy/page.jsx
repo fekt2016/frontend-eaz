@@ -135,10 +135,10 @@ export default function Privacy() {
     <div className="bg-paper dark:bg-ink text-gray-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-4 pt-28 pb-24">
         <div className="mb-10">
-          <Link href="/" className="text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">← Back to Home</Link>
+          <Link href="/" className="text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition text-sm">← Back to Home</Link>
         </div>
         <h1 className="font-display font-bold text-4xl text-gray-900 dark:text-white mb-2">Privacy Policy</h1>
-        <p className="text-gray-400 dark:text-slate-500 text-sm mb-2">Last updated: 1 May 2025</p>
+        <p className="text-gray-600 dark:text-slate-500 text-sm mb-2">Last updated: 1 May 2025</p>
         <p className="text-gray-500 dark:text-slate-400 mb-10 leading-relaxed">
           EazWorld (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard data when you use our website at eazworld.com and our services.
         </p>

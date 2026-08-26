@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -10,9 +11,9 @@ import { sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useInventorySearch } from "@/hooks/queries/useInventory";
 
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 const selectCls = `${inputCls} cursor-pointer`;
-const labelCls = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
+const labelCls = "block text-body-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5";
 
 const DEVICE_TYPES = ["Phone", "Tablet", "Laptop", "Smartwatch", "Other"];
 const BRANDS = ["Apple", "Samsung", "Tecno", "Infinix", "Itel", "Huawei", "Nokia", "Oppo", "Xiaomi", "OnePlus", "Other"];
@@ -189,7 +190,7 @@ export default function NewJobPage() {
               <button
                 type="button"
                 onClick={() => { setSelectedCustomer(null); setCustPhone(""); setCustEmail(""); setCustAccountVia("none"); }}
-                className="text-xs text-gray-500 hover:text-red-400 transition"
+                className="text-xs text-gray-500 hover:text-error dark:hover:text-error-dark transition"
               >
                 Change
               </button>
@@ -222,7 +223,7 @@ export default function NewJobPage() {
                       onMouseDown={e => { e.preventDefault(); setSelectedCustomer(c); setShowDropdown(false); }}
                       className="w-full text-left px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-3"
                     >
-                      <div className="w-7 h-7 rounded-full bg-brand-500/15 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-brand-500/15 flex items-center justify-center text-brand-ink dark:text-brand-400 font-bold text-xs flex-shrink-0">
                         {c.phone.charAt(0)}
                       </div>
                       <div className="min-w-0">
@@ -427,8 +428,8 @@ export default function NewJobPage() {
                       {p.sku && <p className="text-xs text-gray-500 truncate">{p.sku}</p>}
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold">{formatGhs(Number(p.sellingPrice) || 0)}</p>
-                      <p className={`text-xs ${Number(p.quantity) <= 0 ? "text-red-500" : "text-gray-500"}`}>Stock: {p.quantity}</p>
+                      <p className="text-sm text-brand-ink dark:text-brand-400 font-semibold">{formatGhs(Number(p.sellingPrice) || 0)}</p>
+                      <p className={`text-xs ${Number(p.quantity) <= 0 ? "text-error dark:text-error-dark" : "text-gray-500 dark:text-gray-400"}`}>Stock: {p.quantity}</p>
                     </div>
                   </button>
                 ))}
@@ -454,7 +455,7 @@ export default function NewJobPage() {
                     <button type="button" onClick={() => updatePart(p.id, "quantity", (p.quantity || 1) + 1)} className="w-7 h-7 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm">+</button>
                   </div>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white w-20 text-right">{formatGhs((p.cost || 0) * (p.quantity || 1))}</span>
-                  <button type="button" onClick={() => removePart(p.id)} className="text-gray-400 hover:text-red-500 text-lg leading-none">×</button>
+                  <button type="button" onClick={() => removePart(p.id)} className="text-gray-600 hover:text-error dark:hover:text-error-dark text-lg leading-none">×</button>
                 </div>
               ))}
               <div className="flex justify-between text-sm font-semibold pt-1">
@@ -496,17 +497,17 @@ export default function NewJobPage() {
               />
             </div>
             {totalParts > 0 && Math.round((Number(payAmount) || 0) * 100) >= totalParts && (
-              <p className="text-xs text-green-600 dark:text-green-400">Covered by payment — parts fully paid at intake.</p>
+              <p className="text-xs text-success dark:text-success-dark">Covered by payment — parts fully paid at intake.</p>
             )}
           </div>
         </div>
 
-        {error && <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-error dark:text-error-dark text-sm" role="alert">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 font-semibold text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? "Creating…" : <><Plus size={11} /> Create Job Ticket</>}
         </button>

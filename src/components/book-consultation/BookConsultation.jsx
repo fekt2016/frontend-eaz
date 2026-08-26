@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { z } from "zod";
@@ -42,7 +43,7 @@ const steps = [
 ];
 
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 transition bg-white dark:bg-slate-800";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
 export default function BookConsultation() {
   const [fields, setFields] = useState({ firstName: "", lastName: "", email: "", phone: "", company: "", service: "", message: "" });
@@ -113,7 +114,7 @@ export default function BookConsultation() {
             We&apos;ve received your request. Expect a reply within 24 hours with 2–3 available time slots.
           </p>
           <div className="bg-brand-50 dark:bg-brand-900/10 border border-brand-100 dark:border-brand-800/30 rounded-xl p-4 mb-6 text-left">
-            <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 mb-2">What happens next?</p>
+            <p className="text-xs font-semibold text-brand-ink dark:text-brand-400 mb-2">What happens next?</p>
             <ul className="space-y-1.5">
               {["Check your email for our reply", "Pick a time slot that suits you", "Join the 30-min video or phone call", "Leave with a clear plan & estimate"].map((s) => (
                 <li key={s} className="flex items-center gap-2 text-xs text-gray-600 dark:text-slate-400">
@@ -143,7 +144,7 @@ export default function BookConsultation() {
       {/* HERO ─────────────────────────────────────────────────── */}
       <section className="pt-28 pb-16 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <span className="inline-block font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
+          <span className="inline-block font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
             Free · 30 Minutes · No Obligation
           </span>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
@@ -160,7 +161,7 @@ export default function BookConsultation() {
                 <span className="text-base">{icon}</span>
                 <div className="text-left">
                   <p className="font-bold text-gray-900 dark:text-white text-sm leading-none">{value}</p>
-                  <p className="text-xs text-gray-400 dark:text-slate-500">{label}</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-500">{label}</p>
                 </div>
               </div>
             ))}
@@ -175,7 +176,7 @@ export default function BookConsultation() {
           {/* FORM CARD */}
           <div className="p-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
             <h2 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-1">Tell Us About Your Project</h2>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mb-7">Takes 2 minutes. No spam, ever.</p>
+            <p className="text-gray-600 dark:text-slate-500 text-sm mb-7">Takes 2 minutes. No spam, ever.</p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -229,7 +230,7 @@ export default function BookConsultation() {
                     >
                       <s.icon size={20} className="shrink-0" />
                       <span className="font-semibold">{s.label}</span>
-                      <span className="text-gray-400 dark:text-slate-500 text-[10px] leading-tight font-normal">{s.desc}</span>
+                      <span className="text-gray-600 dark:text-slate-500 text-[10px] leading-tight font-normal">{s.desc}</span>
                     </button>
                   ))}
                 </div>
@@ -271,8 +272,8 @@ export default function BookConsultation() {
                 </p>
               )}
 
-              <p className="text-gray-400 dark:text-slate-500 text-xs text-center">
-                <Lock size={11} className="inline-block align-text-bottom text-gray-400 dark:text-slate-500" /> Your info is never shared. We respond within 24 hours.
+              <p className="text-gray-600 dark:text-slate-500 text-xs text-center">
+                <Lock size={11} className="inline-block align-text-bottom text-gray-600 dark:text-slate-500" /> Your info is never shared. We respond within 24 hours.
               </p>
             </form>
           </div>
@@ -282,14 +283,14 @@ export default function BookConsultation() {
 
             {/* What to expect */}
             <div className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400 mb-4">What to Expect</p>
+              <p className="font-mono text-eyebrow font-bold uppercase text-gray-500 dark:text-slate-400 mb-4">What to Expect</p>
               <div className="space-y-4">
                 {steps.map(({ n, t, d }) => (
                   <div key={n} className="flex gap-3">
                     <span className="font-display font-bold text-gray-100 dark:text-slate-800 text-lg w-7 flex-shrink-0 leading-none mt-0.5">{n}</span>
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{t}</p>
-                      <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5 leading-relaxed">{d}</p>
+                      <p className="text-gray-600 dark:text-slate-500 text-xs mt-0.5 leading-relaxed">{d}</p>
                     </div>
                   </div>
                 ))}
@@ -306,12 +307,12 @@ export default function BookConsultation() {
                     </div>
                     <p className="text-gray-600 dark:text-slate-300 text-xs italic leading-relaxed mb-3">&ldquo;{r.review}&rdquo;</p>
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-ink dark:text-brand-400 font-bold text-xs flex-shrink-0">
                         {r.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-gray-900 dark:text-white leading-tight">{r.name}</p>
-                        <p className="text-[11px] text-gray-400 dark:text-slate-500">{r.service}</p>
+                        <p className="text-[11px] text-gray-600 dark:text-slate-500">{r.service}</p>
                       </div>
                     </div>
                   </blockquote>
@@ -324,12 +325,12 @@ export default function BookConsultation() {
 
             {/* Direct contact */}
             <div className="p-5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 mb-3">Prefer to reach us directly?</p>
+              <p className="text-xs font-semibold text-gray-600 dark:text-slate-500 mb-3">Prefer to reach us directly?</p>
               <a href="mailto:info@eazworld.co" className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition mb-2">
-                <Mail size={14} className="text-gray-400 dark:text-slate-500 flex-shrink-0" /> info@eazworld.co
+                <Mail size={14} className="text-gray-600 dark:text-slate-500 flex-shrink-0" /> info@eazworld.co
               </a>
               <a href="tel:+233244388190" className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition mb-3">
-                <Phone size={14} className="text-gray-400 dark:text-slate-500 flex-shrink-0" /> +233 24 438 8190
+                <Phone size={14} className="text-gray-600 dark:text-slate-500 flex-shrink-0" /> +233 24 438 8190
               </a>
               <a
                 href="https://wa.me/233244388190"

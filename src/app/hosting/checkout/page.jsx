@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { Suspense, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,7 +10,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Check, CheckCircle2, CreditCard, Landmark, SmartphoneNfc, X } from "lucide-react";
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-800";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
 const ADDONS = [
   { id: "ssl", name: "SSL Certificate Upgrade", price: 0 },
@@ -101,11 +102,11 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
   };
 
   const statusBadge = () => {
-    if (status === "checking") return <span className="flex items-center gap-1.5 text-xs text-gray-400"><span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />Checking availability…</span>;
+    if (status === "checking") return <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />Checking availability…</span>;
     if (status === "available") return <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600"><Check size={12} className="shrink-0" /> Available{domainInfo?.price ? ` — GH₵${domainInfo.price}/yr` : ""}</span>;
     if (status === "taken") return <span className="flex items-center gap-1.5 text-xs font-semibold text-red-500"><X size={12} className="shrink-0" /> Already registered — try a different name or TLD</span>;
-    if (status === "owned") return <span className="flex items-center gap-1.5 text-xs font-semibold text-brand-600"><CheckCircle2 size={12} className="shrink-0" /> You already ordered this domain</span>;
-    if (status === "error") return <span className="text-xs text-gray-400">Could not check — enter manually or skip</span>;
+    if (status === "owned") return <span className="flex items-center gap-1.5 text-xs font-semibold text-brand-ink"><CheckCircle2 size={12} className="shrink-0" /> You already ordered this domain</span>;
+    if (status === "error") return <span className="text-xs text-gray-600">Could not check — enter manually or skip</span>;
     return null;
   };
 
@@ -184,14 +185,16 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
           {status === "taken" && (
             <div className="rounded-xl border border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 p-3 text-xs text-red-600 dark:text-red-400">
               <p className="font-semibold mb-1">This domain is taken.</p>
-              <p>Try a variation like <span className="font-mono">{query.split(".")[0]}-gh.com</span> or use a different extension like <span className="font-mono">.net</span> or <span className="font-mono">.com.gh</span></p>
+              {/* T65: used to suggest .com.gh — which our registrar can't sell,
+                  so the suggestion sent customers straight into a dead end. */}
+              <p>Try a variation like <span className="font-mono">{query.split(".")[0]}-gh.com</span> or use a different extension like <span className="font-mono">.net</span> or <span className="font-mono">.org</span></p>
             </div>
           )}
 
           {status === "owned" && (
             <div className="rounded-xl border border-brand-200 dark:border-brand-900/40 bg-brand-50 dark:bg-brand-900/20 p-3 text-xs text-brand-700 dark:text-brand-400">
               <p className="font-semibold">You already ordered this domain through EazWorld.</p>
-              <p className="mt-0.5 text-brand-600 dark:text-brand-500">It will be linked to this hosting account automatically.</p>
+              <p className="mt-0.5 text-brand-ink dark:text-brand-500">It will be linked to this hosting account automatically.</p>
             </div>
           )}
         </div>
@@ -228,11 +231,11 @@ function StepIndicator({ step }) {
       {steps.map((label, i) => (
         <div key={label} className="flex items-center">
           <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
-            i + 1 < step ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900" : i + 1 === step ? "border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white" : "border border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-500"
+            i + 1 < step ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900" : i + 1 === step ? "border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white" : "border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-500"
           }`}>
             {i + 1 < step ? <Check size={16} /> : i + 1}
           </div>
-          <span className={`ml-2 hidden text-sm sm:inline ${i + 1 <= step ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-slate-500"}`}>{label}</span>
+          <span className={`ml-2 hidden text-sm sm:inline ${i + 1 <= step ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-slate-500"}`}>{label}</span>
           {i < steps.length - 1 && <span className="mx-2 h-px w-6 bg-gray-200 dark:bg-slate-700 sm:w-12" />}
         </div>
       ))}
@@ -327,7 +330,7 @@ function HostingCheckoutPageInner() {
   return (
     <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">
       <div className="mx-auto max-w-4xl">
-        <Link href="/hosting" className="mb-6 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
+        <Link href="/hosting" className="mb-6 inline-block text-sm text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           ← Back to Hosting
         </Link>
         <h1 className="font-display text-3xl font-bold text-gray-900 dark:text-white mb-2">Checkout</h1>
@@ -346,9 +349,9 @@ function HostingCheckoutPageInner() {
                   <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">{plan.name} · {billingCycle === "annual" ? "Billed annually" : "Monthly"}</p>
                   <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-3xl font-bold text-brand-500">GH₵ {billingCycle === "annual" ? plan.annualPrice : `${plan.monthlyPrice}.00`}</span>
-                    <span className="text-xs text-gray-400 dark:text-slate-500">{billingCycle === "annual" ? "/yr" : "/mo"}</span>
+                    <span className="text-xs text-gray-600 dark:text-slate-500">{billingCycle === "annual" ? "/yr" : "/mo"}</span>
                   </div>
-                  {billingCycle === "annual" && <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-4">Save GH₵ {saving}</p>}
+                  {billingCycle === "annual" && saving > 0 && <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-4">Save GH₵ {saving}</p>}
                   <ul className="space-y-1 text-sm text-gray-500 dark:text-slate-400 mb-6">
                     {plan.features.slice(0, 6).map((f) => (
                       <li key={f} className="flex items-center gap-2">
@@ -359,7 +362,7 @@ function HostingCheckoutPageInner() {
                   </ul>
                   <div className="flex gap-2 rounded-xl bg-gray-100 dark:bg-slate-800 p-1">
                     <button type="button" onClick={() => setBillingCycle("monthly")} className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${billingCycle === "monthly" ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white"}`}>Monthly</button>
-                    <button type="button" onClick={() => setBillingCycle("annual")} className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${billingCycle === "annual" ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white"}`}>Annual (Save GH₵ {saving})</button>
+                    <button type="button" onClick={() => setBillingCycle("annual")} className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${billingCycle === "annual" ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white"}`}>{saving > 0 ? `Annual (Save GH₵ ${saving})` : "Annual"}</button>
                   </div>
                 </div>
 
@@ -372,7 +375,7 @@ function HostingCheckoutPageInner() {
                           <input type="checkbox" checked={addons.includes(a.id)} onChange={() => toggleAddon(a.id)} className="rounded border-gray-300 accent-gray-900" />
                           <span className="text-sm text-gray-700 dark:text-slate-300">{a.name}</span>
                         </span>
-                        <span className="text-sm text-gray-400 dark:text-slate-500">{a.price === 0 ? "Free" : `+GH₵${a.price}/mo`}</span>
+                        <span className="text-sm text-gray-600 dark:text-slate-500">{a.price === 0 ? "Free" : `+GH₵${a.price}/mo`}</span>
                       </label>
                     ))}
                   </ul>
@@ -416,7 +419,7 @@ function HostingCheckoutPageInner() {
                 {/* Domain Checker */}
                 <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
                   <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-1">Domain Name</h2>
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mb-4">Link a domain to your hosting account. You can also do this later from the dashboard.</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-500 mb-4">Link a domain to your hosting account. You can also do this later from the dashboard.</p>
                   <DomainChecker
                     domain={domain}
                     setDomain={setDomain}
@@ -498,7 +501,7 @@ function HostingCheckoutPageInner() {
                     {loading ? "Processing…" : paymentMethod === "bank_transfer" ? "Place Order — Pay via Bank Transfer" : `Pay GH₵ ${total} Securely`}
                   </button>
                 </div>
-                <div className="flex flex-wrap gap-4 pt-2 text-xs text-gray-400 dark:text-slate-500">
+                <div className="flex flex-wrap gap-4 pt-2 text-xs text-gray-600 dark:text-slate-500">
                   <span>🔒 256-bit SSL Secured</span>
                   <span className="inline-flex items-center gap-1"><Check size={12} /> Instant Activation (card/MM)</span>
                   <span>📋 Invoice Emailed</span>
@@ -511,7 +514,7 @@ function HostingCheckoutPageInner() {
           {/* Order summary sidebar */}
           <div className="lg:sticky lg:top-24 h-fit space-y-4">
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
-              <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
+              <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500 dark:text-slate-400">Plan</span><span className="text-gray-900 dark:text-white">{plan.name}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500 dark:text-slate-400">Type</span><span className="text-gray-900 dark:text-white capitalize">{type}</span></div>
@@ -539,7 +542,7 @@ function HostingCheckoutPageInner() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-xs text-gray-400 dark:text-slate-500 space-y-1.5">
+            <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-xs text-gray-600 dark:text-slate-500 space-y-1.5">
               <p className="flex items-center gap-1.5"><Check size={12} className="shrink-0" /> 30-day money-back guarantee</p>
               <p className="flex items-center gap-1.5"><Check size={12} className="shrink-0" /> Free SSL on all plans</p>
               <p className="flex items-center gap-1.5"><Check size={12} className="shrink-0" /> 24/7 expert support</p>

@@ -29,12 +29,12 @@ const ORDER_HEX = {
 };
 
 const ORDER_BADGE = {
-  pending: "bg-brand-500/15 text-brand-600 dark:text-brand-400",
-  paid: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  processing: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
-  shipped: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
-  delivered: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  cancelled: "bg-red-500/15 text-red-600 dark:text-red-400",
+  pending: "bg-brand-500/15 text-brand-ink dark:text-brand-400",
+  paid: "bg-info-surface text-info dark:bg-info-surface-dark dark:text-info-dark",
+  processing: "bg-info-surface text-info dark:bg-info-surface-dark dark:text-info-dark",
+  shipped: "bg-info-surface text-info dark:bg-info-surface-dark dark:text-info-dark",
+  delivered: "bg-success-surface text-success dark:bg-success-surface-dark dark:text-success-dark",
+  cancelled: "bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300",
 };
 
 const JOB_HEX = {
@@ -134,7 +134,7 @@ function OrdersSection({ data }) {
                   <Link href={`/dashboard/commerce/orders/${o._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-brand-600 font-mono text-xs">
                     {o.orderNumber}
                   </Link>
-                  {o.trackingNumber && <span className="block text-[11px] text-gray-400 font-mono mt-0.5">{o.trackingNumber}</span>}
+                  {o.trackingNumber && <span className="block text-[11px] text-gray-600 font-mono mt-0.5">{o.trackingNumber}</span>}
                 </div>
               ),
             },
@@ -178,7 +178,7 @@ function InventorySection({ data, canSeeCosts }) {
         {tiles.map((t) => (
           <div key={t.label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{t.label}</p>
-            <p className={`mt-1.5 text-xl font-bold ${t.alert ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{t.value ?? "—"}</p>
+            <p className={`mt-1.5 text-xl font-bold ${t.alert ? "text-error dark:text-error-dark" : "text-gray-900 dark:text-white"}`}>{t.value ?? "—"}</p>
           </div>
         ))}
       </div>
@@ -196,7 +196,7 @@ function InventorySection({ data, canSeeCosts }) {
             {
               header: "Status",
               render: (p) => (
-                <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium ${p.quantity <= 0 ? "bg-red-500/15 text-red-600 dark:text-red-400" : "bg-brand-500/15 text-brand-600 dark:text-brand-400"}`}>
+                <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium ${p.quantity <= 0 ? "bg-error-surface text-error dark:bg-error-surface-dark dark:text-error-dark" : "bg-brand-500/15 text-brand-ink dark:text-brand-400"}`}>
                   {p.quantity <= 0 ? "Out of stock" : "Low stock"}
                 </span>
               ),
@@ -242,7 +242,7 @@ function RepairSection({ data }) {
               render: (p) => {
                 const margin = p.revenue > 0 ? Math.round(((p.revenue - (p.cost || 0)) / p.revenue) * 100) : 0;
                 return (
-                  <span className={`text-xs font-semibold ${margin >= 40 ? "text-emerald-600 dark:text-emerald-400" : margin >= 20 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>
+                  <span className={`text-xs font-semibold ${margin >= 40 ? "text-success dark:text-success-dark" : margin >= 20 ? "text-brand-ink dark:text-brand-400" : "text-error dark:text-error-dark"}`}>
                     {margin}%
                   </span>
                 );
@@ -358,7 +358,7 @@ function ExpensesSection({ data }) {
           </div>
           <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-800 flex justify-between text-sm">
             <span className="text-gray-500 dark:text-gray-400">Total Expenses</span>
-            <span className="font-semibold text-red-600 dark:text-red-400">{formatGhs(totalExp)}</span>
+            <span className="font-semibold text-error dark:text-error-dark">{formatGhs(totalExp)}</span>
           </div>
         </>
       )}

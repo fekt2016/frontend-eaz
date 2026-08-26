@@ -31,7 +31,7 @@ export default function PortfolioListing() {
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[1fr_auto] gap-10 items-start">
           <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Our Work</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Our Work</p>
             <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
               Projects That<br />Speak for Themselves.
             </h1>
@@ -42,7 +42,7 @@ export default function PortfolioListing() {
               {stats.map((s) => (
                 <div key={s.label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3">
                   <div className="font-display font-bold text-xl text-brand-500">{s.value}</div>
-                  <div className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{s.label}</div>
+                  <div className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -97,7 +97,7 @@ export default function PortfolioListing() {
           </div>
           <div className="flex items-center gap-3">
             <div className="relative w-full sm:w-52">
-              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" />
               <input
                 type="text"
                 placeholder="Search projects..."
@@ -109,13 +109,13 @@ export default function PortfolioListing() {
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-xs"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs"
                 >
                   ×
                 </button>
               )}
             </div>
-            <p className="hidden sm:block text-xs text-gray-400 dark:text-slate-500 whitespace-nowrap">{resultCount} projects</p>
+            <p className="hidden sm:block text-xs text-gray-600 dark:text-slate-500 whitespace-nowrap">{resultCount} projects</p>
           </div>
         </div>
       </div>
@@ -125,17 +125,17 @@ export default function PortfolioListing() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-1">All Projects</p>
+              <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-1">All Projects</p>
               <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white">Complete Portfolio</h2>
             </div>
-            <p className="sm:hidden text-xs text-gray-400 dark:text-slate-500">{resultCount} projects</p>
+            <p className="sm:hidden text-xs text-gray-600 dark:text-slate-500">{resultCount} projects</p>
           </div>
 
           {filteredProjects.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-16 text-center">
-              <Search size={24} className="mb-3 text-gray-400" />
+              <Search size={24} className="mb-3 text-gray-600" />
               <p className="font-semibold text-gray-900 dark:text-white mb-2">No projects found</p>
-              <p className="text-gray-400 dark:text-slate-500 text-sm mb-5 max-w-sm">Try a different category or search term.</p>
+              <p className="text-gray-600 dark:text-slate-500 text-sm mb-5 max-w-sm">Try a different category or search term.</p>
               <button
                 type="button"
                 onClick={() => { setCategory("All"); setSearch(""); }}
@@ -174,13 +174,13 @@ export default function PortfolioListing() {
                   <div className="flex flex-1 flex-col p-5">
                     <p className="text-xs font-semibold uppercase tracking-wide text-brand-500 mb-0.5">{project.client}</p>
                     <h3 className="font-display font-bold text-base text-gray-900 dark:text-white group-hover:text-brand-500 transition mb-1 line-clamp-2">{project.title}</h3>
-                    <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed line-clamp-3 mb-4 flex-1">{project.shortDesc}</p>
+                    <p className="text-gray-600 dark:text-slate-500 text-xs leading-relaxed line-clamp-3 mb-4 flex-1">{project.shortDesc}</p>
                     <div className="flex items-center justify-between border-t border-gray-100 dark:border-slate-800 pt-3">
                       <div>
                         {project.results?.[0] && (
                           <>
                             <p className="font-display font-bold text-sm text-gray-900 dark:text-white">{project.results[0].value}</p>
-                            <p className="text-xs text-gray-400 dark:text-slate-500">{project.results[0].label}</p>
+                            <p className="text-xs text-gray-600 dark:text-slate-500">{project.results[0].label}</p>
                           </>
                         )}
                       </div>
@@ -203,7 +203,7 @@ export default function PortfolioListing() {
       <section className="py-16 px-4 bg-gray-900">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="font-display font-bold text-2xl md:text-3xl text-white mb-3">Have a Project in Mind?</h2>
-          <p className="text-gray-400 mb-7">
+          <p className="text-gray-600 mb-7">
             Join the businesses that trusted EazWorld to bring their vision to life.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">

@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { z } from "zod";
@@ -125,7 +126,7 @@ function DownloadModal({ resource, onClose }) {
     setStatus("success");
   };
 
-  const inputCls = "w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-gray-400 transition";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
   return (
     <motion.div
@@ -142,7 +143,7 @@ function DownloadModal({ resource, onClose }) {
         className="relative w-full max-w-md p-8 rounded-3xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
+        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           <X size={16} />
         </button>
         {status === "success" ? (
@@ -152,7 +153,7 @@ function DownloadModal({ resource, onClose }) {
             <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
               We&apos;ve sent <strong className="text-gray-900 dark:text-white">{resource.title}</strong> to <strong className="text-brand-500">{email}</strong>.
             </p>
-            <p className="text-gray-400 dark:text-slate-500 text-xs">Can&apos;t find it? Check your spam folder.</p>
+            <p className="text-gray-600 dark:text-slate-500 text-xs">Can&apos;t find it? Check your spam folder.</p>
           </div>
         ) : (
           <>
@@ -180,7 +181,7 @@ function DownloadModal({ resource, onClose }) {
                 <Download size={14} />
                 {status === "loading" ? "Sending..." : "Send to My Email"}
               </button>
-              <p className="text-gray-400 dark:text-slate-500 text-xs text-center">Free, no spam. We&apos;ll send it straight to your inbox.</p>
+              <p className="text-gray-600 dark:text-slate-500 text-xs text-center">Free, no spam. We&apos;ll send it straight to your inbox.</p>
             </form>
           </>
         )}
@@ -200,7 +201,7 @@ export default function ResourcesListing() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Free Resources</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Free Resources</p>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4">
             Free Guides, Templates & Tools
           </h1>
@@ -252,12 +253,12 @@ export default function ResourcesListing() {
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${TYPE_COLORS[resource.type]}`}>
                         <Icon size={12} /> {resource.type}
                       </span>
-                      <span className="text-gray-400 dark:text-slate-500 text-xs">{resource.format}</span>
+                      <span className="text-gray-600 dark:text-slate-500 text-xs">{resource.format}</span>
                     </div>
                     <h3 className="font-semibold text-gray-900 dark:text-white text-base mb-2 flex-1">{resource.title}</h3>
                     <p className="text-gray-500 dark:text-slate-400 text-xs leading-relaxed mb-4">{resource.desc}</p>
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-slate-800">
-                      <span className="text-gray-400 dark:text-slate-500 text-xs">{resource.pages}</span>
+                      <span className="text-gray-600 dark:text-slate-500 text-xs">{resource.pages}</span>
                       <button
                         type="button"
                         onClick={() => setSelected(resource)}

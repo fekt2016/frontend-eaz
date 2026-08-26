@@ -28,7 +28,7 @@ export function CustomerDeviceCard({ job }) {
         {job.dropoff && (
           <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20">
             <div>
-              <p className="text-xs font-semibold text-brand-600 dark:text-brand-400">
+              <p className="text-xs font-semibold text-brand-ink dark:text-brand-400">
                 {job.status !== "received"
                   ? "Device received"
                   : job.dropoff === "rider" ? "Rider pickup requested" : "Customer will bring device in"}
@@ -41,8 +41,8 @@ export function CustomerDeviceCard({ job }) {
         )}
         {job.requiresDiagnosis && (
           <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
-            <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Diagnosis required</span>
-            <span className="text-xs text-purple-300">· {formatGhs(job.diagnosisFee || 0)} charged upfront</span>
+            <span className="text-xs text-brand-ink dark:text-brand-400 font-medium">Diagnosis required</span>
+            <span className="text-xs text-gray-600 dark:text-slate-400">· {formatGhs(job.diagnosisFee || 0)} charged upfront</span>
           </div>
         )}
         {job.repairWork && (
@@ -53,16 +53,16 @@ export function CustomerDeviceCard({ job }) {
         )}
         {job.estimatedCompletion && (
           <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Est. completion:</span>
-            <span className="text-xs text-blue-300">
+            <span className="text-xs text-info dark:text-info-dark font-medium">Est. completion:</span>
+            <span className="text-xs text-gray-600 dark:text-slate-400">
               {new Date(job.estimatedCompletion).toLocaleString("en-GH", { dateStyle: "medium", timeStyle: "short" })}
             </span>
           </div>
         )}
         {job.warrantyDays > 0 && (
           <div className={`mt-3 flex items-center justify-between px-3 py-2 rounded-lg border text-xs ${
-            job.warrantyStatus === "active"        ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400" :
-            job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-600 dark:text-brand-400" :
+            job.warrantyStatus === "active"        ? "bg-success-surface border-success/20 text-success dark:bg-success-surface-dark dark:border-success-dark/30 dark:text-success-dark" :
+            job.warrantyStatus === "expiring_soon" ? "bg-brand-500/10 border-brand-500/20 text-brand-ink dark:text-brand-400" :
             job.warrantyStatus === "expired"       ? "bg-gray-500/10 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400" :
             "bg-teal-500/10 border-teal-500/20 text-teal-400"
           }`}>

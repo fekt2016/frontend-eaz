@@ -7,19 +7,22 @@ import { Download, Upload, CheckCircle2, ExternalLink, Trash2, RotateCw, Key } f
 import { api } from "@/lib/api";
 import { isAdminRole } from "@/lib/roles";
 import { useAuth } from "@/context/AuthContext";
+import { Badge, Button } from "@/components/ui";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 const NS1 = process.env.NEXT_PUBLIC_NAMESERVER_1 || "ns1.eazworld.com";
 const NS2 = process.env.NEXT_PUBLIC_NAMESERVER_2 || "ns2.eazworld.com";
 
-const statusColors = {
-  pending: "bg-brand-50 text-brand-700 border-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-900/30",
-  paid: "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-900/30",
-  active: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-900/30",
-  cancelled: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",
-  failed: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",
-  suspended: "bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-900/30",
-  terminated: "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/30",
+/* Same mapping as the staff Hosting Orders queue, so a status reads the same
+ * colour on both sides of the counter. */
+const statusTones = {
+  pending:    "warning",
+  paid:       "info",
+  active:     "success",
+  suspended:  "warning",
+  cancelled:  "neutral",
+  failed:     "error",
+  terminated: "error",
 };
 
 export default function HostingOrderDetailPage() {
@@ -166,7 +169,7 @@ export default function HostingOrderDetailPage() {
   if (!order) {
     return (
       <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24 text-center">
-        <p className="text-gray-400 dark:text-slate-500">Order not found.</p>
+        <p className="text-gray-600 dark:text-slate-500">Order not found.</p>
         <Link href="/dashboard" className="mt-4 inline-block text-sm text-brand-500 hover:underline">← Back to Dashboard</Link>
       </div>
     );
@@ -188,7 +191,7 @@ export default function HostingOrderDetailPage() {
   return (
     <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
       <div className="mx-auto max-w-2xl">
-        <Link href="/dashboard" className="mb-6 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
+        <Link href="/dashboard" className="mb-6 inline-block text-sm text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">
           ← Back to Dashboard
         </Link>
 
@@ -197,11 +200,11 @@ export default function HostingOrderDetailPage() {
             <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white capitalize">
               {order.planType} — {order.tier}
             </h1>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mt-1 capitalize">{order.billingCycle} plan</p>
+            <p className="text-gray-600 dark:text-slate-500 text-sm mt-1 capitalize">{order.billingCycle} plan</p>
           </div>
-          <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border capitalize ${statusColors[order.status] || "bg-paper text-gray-600 border-gray-100"}`}>
+          <Badge tone={statusTones[order.status] || "neutral"} className="capitalize">
             {order.status}
-          </span>
+          </Badge>
         </div>
 
         {/* Order details */}
@@ -209,39 +212,39 @@ export default function HostingOrderDetailPage() {
           <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-4">Order Details</h2>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <dt className="text-gray-400 dark:text-slate-500">Amount</dt>
+              <dt className="text-gray-600 dark:text-slate-500">Amount</dt>
               <dd className="font-medium text-gray-900 dark:text-white">GH₵{order.amount}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-gray-400 dark:text-slate-500">Payment method</dt>
+              <dt className="text-gray-600 dark:text-slate-500">Payment method</dt>
               <dd className="font-medium text-gray-900 dark:text-white capitalize">{order.paymentMethod.replace("_", " ")}</dd>
             </div>
             {order.domain && (
               <div className="flex justify-between">
-                <dt className="text-gray-400 dark:text-slate-500">Domain</dt>
+                <dt className="text-gray-600 dark:text-slate-500">Domain</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{order.domain}</dd>
               </div>
             )}
             {order.cpanelUsername && (
               <div className="flex justify-between">
-                <dt className="text-gray-400 dark:text-slate-500">cPanel username</dt>
+                <dt className="text-gray-600 dark:text-slate-500">cPanel username</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{order.cpanelUsername}</dd>
               </div>
             )}
             <div className="flex justify-between">
-              <dt className="text-gray-400 dark:text-slate-500">Order date</dt>
+              <dt className="text-gray-600 dark:text-slate-500">Order date</dt>
               <dd className="font-medium text-gray-900 dark:text-white">{new Date(order.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</dd>
             </div>
             {order.paidAt && (
               <div className="flex justify-between">
-                <dt className="text-gray-400 dark:text-slate-500">Paid on</dt>
+                <dt className="text-gray-600 dark:text-slate-500">Paid on</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{new Date(order.paidAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</dd>
               </div>
             )}
             {expiresAt && (
               <div className="flex justify-between">
-                <dt className="text-gray-400 dark:text-slate-500">Expires</dt>
-                <dd className={`font-medium ${isExpired ? "text-red-600 dark:text-red-400" : isExpiringSoon ? "text-brand-600 dark:text-brand-400" : "text-gray-900 dark:text-white"}`}>
+                <dt className="text-gray-600 dark:text-slate-500">Expires</dt>
+                <dd className={`font-medium ${isExpired ? "text-red-600 dark:text-red-400" : isExpiringSoon ? "text-brand-ink dark:text-brand-400" : "text-gray-900 dark:text-white"}`}>
                   {expiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   {isExpired && " — Expired"}
                   {isExpiringSoon && !isExpired && ` — ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`}
@@ -250,7 +253,7 @@ export default function HostingOrderDetailPage() {
             )}
             {order.renewedAt && (
               <div className="flex justify-between">
-                <dt className="text-gray-400 dark:text-slate-500">Last renewed</dt>
+                <dt className="text-gray-600 dark:text-slate-500">Last renewed</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{new Date(order.renewedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</dd>
               </div>
             )}
@@ -266,11 +269,11 @@ export default function HostingOrderDetailPage() {
             </p>
             <div className="space-y-2 text-sm font-mono">
               <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-brand-100">
-                <span className="text-gray-400 font-sans text-xs">NS1</span>
+                <span className="text-gray-600 font-sans text-xs">NS1</span>
                 <span className="font-semibold text-gray-900">{NS1}</span>
               </div>
               <div className="flex justify-between bg-white rounded-xl px-4 py-2.5 border border-brand-100">
-                <span className="text-gray-400 font-sans text-xs">NS2</span>
+                <span className="text-gray-600 font-sans text-xs">NS2</span>
                 <span className="font-semibold text-gray-900">{NS2}</span>
               </div>
             </div>
@@ -283,104 +286,73 @@ export default function HostingOrderDetailPage() {
 
           {/* Expired warning */}
           {isExpired && (
-            <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
-              <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Your hosting has expired</p>
-              <p className="text-xs text-red-600 dark:text-red-500">Your account has been suspended. Renew now to restore it instantly — your data is safe for 30 days.</p>
+            <div className="p-4 rounded-2xl bg-error-surface dark:bg-error-surface-dark border border-error/20 dark:border-error-dark/30">
+              <p className="text-sm font-semibold text-error dark:text-error-dark mb-1">Your hosting has expired</p>
+              <p className="text-xs text-gray-600 dark:text-slate-400">Your account has been suspended. Renew now to restore it instantly — your data is safe for 30 days.</p>
             </div>
           )}
 
           {/* Expiring soon warning */}
           {isExpiringSoon && !isExpired && (
-            <div className="p-4 rounded-2xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-900/30">
-              <p className="text-sm font-semibold text-brand-700 dark:text-brand-400 mb-1">Expiring in {daysLeft} day{daysLeft === 1 ? "" : "s"}</p>
-              <p className="text-xs text-brand-600 dark:text-brand-500">Renew now to avoid any interruption to your website.</p>
+            <div className="p-4 rounded-2xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-900/40">
+              <p className="text-sm font-semibold text-brand-ink dark:text-brand-400 mb-1">Expiring in {daysLeft} day{daysLeft === 1 ? "" : "s"}</p>
+              <p className="text-xs text-gray-600 dark:text-slate-400">Renew now to avoid any interruption to your website.</p>
             </div>
           )}
 
           {/* Renew button */}
           {canRenew && (
-            <button
+            <Button
               onClick={handleRenew}
-              disabled={renewLoading}
-              className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-sm font-bold transition disabled:opacity-60 ${
-                isExpired
-                  ? "bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-100"
-                  : isExpiringSoon
-                    ? "bg-brand-500 text-white hover:bg-brand-600 shadow-lg shadow-brand-100"
-                    : "border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500"
-              }`}
+              loading={renewLoading}
+              fullWidth
+              size="lg"
+              variant={isExpired ? "danger" : isExpiringSoon ? "brand" : "secondary"}
             >
-              {renewLoading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <RotateCw size={12} />
-              )}
+              <RotateCw size={12} aria-hidden="true" />
               {isExpired ? "Renew & Restore Hosting" : "Renew Subscription"}
-            </button>
+            </Button>
           )}
 
           {/* Manage Hosting — only for active hosting */}
           {order.status === "active" && order.cpanelUsername && (
-            <button
-              onClick={handleCpanelLogin}
-              disabled={loginLoading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-brand-500 text-white text-sm font-bold hover:bg-brand-600 transition disabled:opacity-60 shadow-lg shadow-brand-100"
-            >
-              {loginLoading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <ExternalLink size={12} />
-              )}
+            <Button onClick={handleCpanelLogin} loading={loginLoading} fullWidth size="lg" variant="brand">
+              <ExternalLink size={12} aria-hidden="true" />
               Manage Hosting (cPanel)
-            </button>
+            </Button>
           )}
 
           {/* Reset cPanel password — active hosting only */}
           {order.status === "active" && order.cpanelUsername && (
-            <button
-              onClick={handleResetPassword}
-              disabled={pwLoading}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-60"
-            >
-              {pwLoading ? (
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
-              ) : (
-                <Key size={12} />
-              )}
+            <Button onClick={handleResetPassword} loading={pwLoading} fullWidth size="lg" variant="secondary">
+              <Key size={12} aria-hidden="true" />
               Reset cPanel Password
-            </button>
+            </Button>
           )}
 
           {/* Newly generated credentials — shown once */}
           {newCreds && (
-            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30">
-              <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300 mb-2">New cPanel credentials</p>
+            <div className="p-4 rounded-2xl bg-success-surface dark:bg-success-surface-dark border border-success/20 dark:border-success-dark/30">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">New cPanel credentials</p>
               <div className="space-y-1 text-sm font-mono">
-                <div className="flex justify-between"><span className="text-gray-500 font-sans text-xs">Username</span><span className="font-semibold text-gray-900 dark:text-white">{newCreds.username}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500 font-sans text-xs">Password</span><span className="font-semibold text-gray-900 dark:text-white break-all">{newCreds.password}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500 dark:text-slate-400 font-sans text-xs">Username</span><span className="font-semibold text-gray-900 dark:text-white">{newCreds.username}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500 dark:text-slate-400 font-sans text-xs">Password</span><span className="font-semibold text-gray-900 dark:text-white break-all">{newCreds.password}</span></div>
               </div>
-              <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-400">Save these now — for your security this password won&apos;t be shown again.</p>
+              <p className="mt-2 text-xs text-success dark:text-success-dark">Save these now — for your security this password won&apos;t be shown again.</p>
             </div>
           )}
 
           {/* Provisioning status — paid but not active yet */}
           {order.status === "paid" && (
-            <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
-              <p className="text-sm text-blue-700 dark:text-blue-400">
+            <div className="p-4 rounded-2xl bg-info-surface dark:bg-info-surface-dark border border-info/20 dark:border-info-dark/30">
+              <p className="text-sm text-info dark:text-info-dark">
                 {order.provisioningStatus === "failed"
                   ? "Provisioning failed. Please contact support or try again later."
                   : "Your payment is confirmed. We’re provisioning your hosting account now."}
               </p>
-              <button
-                onClick={handleRefreshStatus}
-                disabled={refreshing}
-                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-blue-200 dark:border-blue-900/40 text-sm font-semibold text-blue-700 dark:text-blue-400 hover:border-blue-300 transition disabled:opacity-60"
-              >
-                {refreshing ? (
-                  <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin" />
-                ) : null}
+              <Button onClick={handleRefreshStatus} loading={refreshing} variant="secondary" size="sm" fullWidth className="mt-3">
                 Refresh status
-              </button>
+              </Button>
             </div>
           )}
 

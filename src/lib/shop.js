@@ -23,7 +23,13 @@ export function formatCount(value) {
   return `${scaled.toFixed(digits)}${millions ? "m" : "k"}`;
 }
 
-export function stockBadge(stock) {
+// T45: a product marked for pre-order is orderable with no stock on hand, so the
+// storefront must offer it rather than showing a dead "Out of stock". Passing the
+// flag is optional — every existing caller keeps its exact behaviour.
+export function stockBadge(stock, preorderEnabled = false) {
+  if (stock <= 0 && preorderEnabled) {
+    return { label: "Pre-order", classes: "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300" };
+  }
   if (stock <= 0) {
     return { label: "Out of stock", classes: "bg-gray-100 text-gray-500" };
   }
@@ -47,4 +53,28 @@ export function placeholderToPng(url) {
   } catch {
     return url;
   }
+}
+
+// When a shopper can pre-order: the product is marked for it and the stock they
+// would draw on isn't there. An in-stock product is never a pre-order, which
+// mirrors the server's own rule — the storefront must not offer what checkout
+// would then refuse, or promise what it would silently allow.
+export function canPreorder(product, stock) {
+  const available = Number(stock ?? product?.stock) || 0;
+  return Boolean(product?.preorder?.enabled) && available <= 0;
+}
+
+// Human copy for when a pre-ordered item is expected. Returns "" when there is
+// nothing honest to say, so callers can render nothing rather than "expected null".
+export function preorderAvailability(product) {
+  const { availableFrom, note } = product?.preorder || {};
+  const parts = [];
+  if (availableFrom) {
+    const when = new Date(availableFrom);
+    if (!Number.isNaN(when.getTime())) {
+      parts.push(`Expected ${when.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`);
+    }
+  }
+  if (note) parts.push(note);
+  return parts.join(" — ");
 }

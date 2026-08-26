@@ -6,8 +6,11 @@ import { useAuth } from "@/context/AuthContext";
 import {
   Server, Globe, Clock, ChevronRight, CircleUser,
   Wrench, CheckCircle2, TriangleAlert, Boxes, ShoppingBag,
-  Loader2,
 } from "lucide-react";
+import {
+  Alert, Badge, Button, Card, EmptyState, Input, PageHeader,
+  Skeleton, SkeletonText, Switch, Textarea,
+} from "@/components/ui";
 import {
   StatCard, HostingCard, DomainCard, ShopOrderCard, RepairCard,
 } from "@/components/dashboard/customer/CustomerCards";
@@ -20,13 +23,18 @@ import { useSettings, useUpdateSettings } from "@/hooks/queries/useSettings";
 import { useMyOverview, useOverview, usePartOrders } from "@/hooks/queries/usePosDashboard";
 import PosOverview from "@/components/pos/PosOverview";
 
-const ORDER_STATUS_COLORS = {
-  pending:    "bg-brand-500/15 text-brand-600 dark:text-brand-400",
-  paid:       "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  processing: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
-  shipped:    "bg-purple-500/15 text-purple-600 dark:text-purple-400",
-  delivered:  "bg-green-500/15 text-green-600 dark:text-green-400",
-  cancelled:  "bg-red-500/15 text-red-600 dark:text-red-400",
+/*
+ * Status pills use the semantic tones (see components/ui/Badge.jsx) instead of
+ * per-status rainbow chips: paid/processing/shipped are all "in flight" and
+ * share info, delivered succeeds, cancelled goes quiet, pending reads brand.
+ */
+const ORDER_STATUS_TONES = {
+  pending:    "brand",
+  paid:       "info",
+  processing: "info",
+  shipped:    "info",
+  delivered:  "success",
+  cancelled:  "neutral",
 };
 
 function fmtShortDate(value) {
@@ -39,41 +47,39 @@ function fmtShortDate(value) {
 export function RecentOrdersList({ shopOrders, partOrders, loading }) {
   const isEmpty = !loading && shopOrders.length === 0 && partOrders.length === 0;
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+    <Card padding="none" className="overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-slate-800">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
-        <Link href="/dashboard/pos/orders" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">View all →</Link>
+        <Link href="/dashboard/pos/orders" className="text-xs text-brand-ink dark:text-brand-400 hover:underline">View all →</Link>
       </div>
       {loading ? (
         <div className="p-5 space-y-3">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 rounded-xl" />)}
         </div>
       ) : isEmpty ? (
-        <div className="p-8 text-center text-gray-500 text-sm">No orders yet.</div>
+        <EmptyState title="No orders yet." />
       ) : (
-        <div className="divide-y divide-gray-200 dark:divide-gray-800">
+        <div className="divide-y divide-gray-200 dark:divide-slate-800">
           {shopOrders.map(o => (
             <Link
               key={o._id}
               href={`/dashboard/commerce/orders/${o._id}`}
-              className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition"
+              className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
-                  <ShoppingBag size={11} className="text-brand-600 dark:text-brand-400" />
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
+                  <ShoppingBag size={11} aria-hidden="true" className="text-brand-ink dark:text-brand-400" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate font-mono">{o.orderNumber}</p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-600 dark:text-slate-400 truncate">
                     Shop · {(o.items || []).reduce((n, i) => n + (i.qty || 0), 0)} item(s) · {fmtShortDate(o.createdAt)}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0 ml-3">
-                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{formatGhs(o.total)}</span>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${ORDER_STATUS_COLORS[o.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-                  {o.status}
-                </span>
+                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300">{formatGhs(o.total)}</span>
+                <Badge tone={ORDER_STATUS_TONES[o.status] || "neutral"} className="capitalize">{o.status}</Badge>
               </div>
             </Link>
           ))}
@@ -81,105 +87,113 @@ export function RecentOrdersList({ shopOrders, partOrders, loading }) {
             <Link
               key={o._id}
               href="/dashboard/pos/orders"
-              className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition"
+              className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
-                  <Boxes size={11} className="text-brand-600 dark:text-brand-400" />
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
+                  <Boxes size={11} aria-hidden="true" className="text-brand-ink dark:text-brand-400" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{o.partName || "Part order"}</p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-600 dark:text-slate-400 truncate">
                     Repair part · {o.job?.jobNumber || "—"} · {fmtShortDate(o.createdAt)}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0 ml-3">
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${ORDER_STATUS_COLORS[o.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-                  {o.status}
-                </span>
+                <Badge tone={ORDER_STATUS_TONES[o.status] || "neutral"} className="capitalize">{o.status}</Badge>
               </div>
             </Link>
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
-const STATUS_COLORS = {
-  received:   "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  diagnosing: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
-  repairing:  "bg-brand-500/15 text-brand-600 dark:text-brand-400",
-  ready:      "bg-green-500/15 text-green-600 dark:text-green-400",
-  collected:  "bg-gray-500/15 text-gray-500 dark:text-gray-400",
-  cancelled:  "bg-red-500/15 text-red-600 dark:text-red-400",
+const JOB_STATUS_TONES = {
+  received:   "info",
+  diagnosing: "info",
+  repairing:  "brand",
+  ready:      "success",
+  collected:  "neutral",
+  cancelled:  "neutral",
 };
 
-const STATUS_LABEL = {
+const JOB_STATUS_LABEL = {
   received: "Received", diagnosing: "Diagnosing", repairing: "Repairing",
   ready: "Ready", collected: "Collected", cancelled: "Cancelled",
 };
 
-function PosStatCard({ label, value, icon: Icon, color = "text-brand-600 dark:text-brand-400", sub }) {
+/* Icon colours come straight from PosOverview's measured STAT_TONES set:
+ * every value clears WCAG AA on paper, white, ink and slate-900 alike. */
+const POS_ICON_TONES = {
+  brand:   "text-brand-ink dark:text-brand-400",
+  success: "text-success dark:text-success-dark",
+  error:   "text-error dark:text-error-dark",
+  info:    "text-info dark:text-info-dark",
+  muted:   "text-gray-500 dark:text-slate-400",
+};
+
+function PosStatCard({ label, value, icon: Icon, tone = "brand", sub }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5">
+    <Card>
       <div className="flex items-start justify-between mb-3">
-        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</p>
-        <Icon size={14} className={color} />
+        <p className="font-mono text-eyebrow font-bold uppercase text-gray-600 dark:text-slate-400">{label}</p>
+        <Icon size={14} aria-hidden="true" className={POS_ICON_TONES[tone] || POS_ICON_TONES.brand} />
       </div>
-      <p className={`text-3xl font-bold text-gray-900 dark:text-white mb-0.5`}>{value ?? "—"}</p>
-      {sub && <p className="text-xs text-gray-500">{sub}</p>}
-    </div>
+      <p className="text-3xl font-bold tabular-nums text-gray-900 dark:text-white mb-0.5">{value ?? "—"}</p>
+      {sub && <p className="text-xs text-gray-600 dark:text-slate-400">{sub}</p>}
+    </Card>
   );
 }
 
 // Shared recent-jobs list — each row links to the job so it can be updated.
 export function RecentJobsList({ jobs, loading }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+    <Card padding="none" className="overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-slate-800">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Recent Jobs</h2>
-        <Link href="/dashboard/pos/jobs" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">View all →</Link>
+        <Link href="/dashboard/pos/jobs" className="text-xs text-brand-ink dark:text-brand-400 hover:underline">View all →</Link>
       </div>
       {loading ? (
         <div className="p-5 space-y-3">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 rounded-xl" />)}
         </div>
       ) : !jobs || jobs.length === 0 ? (
-        <div className="p-8 text-center text-gray-500 text-sm">No jobs yet.</div>
+        <EmptyState icon={Wrench} title="No jobs yet." />
       ) : (
-        <div className="divide-y divide-gray-200 dark:divide-gray-800">
+        <div className="divide-y divide-gray-200 dark:divide-slate-800">
           {jobs.map(job => (
             <Link
               key={job._id}
               href={`/dashboard/pos/jobs/${job._id}`}
-              className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition"
+              className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
-                  <Wrench size={11} className="text-brand-600 dark:text-brand-400" />
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
+                  <Wrench size={11} aria-hidden="true" className="text-brand-ink dark:text-brand-400" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{job.jobNumber}</p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-600 dark:text-slate-400 truncate">
                     {job.customer?.name} · {job.deviceBrand} {job.deviceModel}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0 ml-3">
                 {job.priority === "urgent" && (
-                  <TriangleAlert size={11} className="text-red-600 dark:text-red-400" />
+                  <TriangleAlert size={11} aria-hidden="true" className="text-error dark:text-error-dark" />
                 )}
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[job.status] || "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
-                  {STATUS_LABEL[job.status] || job.status}
-                </span>
+                <Badge tone={JOB_STATUS_TONES[job.status] || "neutral"} className="capitalize">
+                  {JOB_STATUS_LABEL[job.status] || job.status}
+                </Badge>
               </div>
             </Link>
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -197,43 +211,51 @@ function MyDashboard({ user }) {
   const partOrders    = (partOrdersQ.data ?? []).slice(0, 5);
   const ordersLoading = !isTech && (recentOrdersQ.isLoading || partOrdersQ.isLoading);
 
-  const stats  = data?.stats;
+  const stats = data?.stats;
 
-  if (error) return <p className="text-red-600 dark:text-red-400 text-sm p-5">{error.message || "Failed to load dashboard."}</p>;
+  if (error) {
+    return (
+      <div className="p-5">
+        <Alert tone="error">{error.message || "Failed to load dashboard."}</Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">My Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          {isTech ? "Jobs assigned to you" : "Your jobs & sales"} ·{" "}
-          {new Date().toLocaleDateString("en-GH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-        </p>
-      </div>
+      <PageHeader
+        title="My Dashboard"
+        description={`${isTech ? "Jobs assigned to you" : "Your jobs & sales"} · ${
+          new Date().toLocaleDateString("en-GH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+        }`}
+      />
 
       {/* Stats grid */}
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(isTech ? 4 : 8)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 h-28 animate-pulse" />
-          ))}
+          {[...Array(isTech ? 4 : 8)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <PosStatCard label={isTech ? "My Jobs" : "Jobs I Created"} value={stats?.myTotalJobs}     icon={Wrench}      color="text-blue-600 dark:text-blue-400" sub="All time" />
-          <PosStatCard label="Pending"                                value={stats?.myPendingJobs}   icon={Clock}       color="text-brand-600 dark:text-brand-400" sub="In progress" />
-          <PosStatCard label="Ready"                                  value={stats?.myReadyJobs}     icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub="Waiting for collection" />
-          <PosStatCard label="Completed"                              value={stats?.myCompletedJobs} icon={CheckCircle2} sub="Collected" />
+          <PosStatCard label={isTech ? "My Jobs" : "Jobs I Created"} value={stats?.myTotalJobs} icon={Wrench} tone="info" sub="All time" />
+          <PosStatCard label="Pending" value={stats?.myPendingJobs} icon={Clock} tone="brand" sub="In progress" />
+          <PosStatCard label="Ready" value={stats?.myReadyJobs} icon={CheckCircle2} tone="success" sub="Waiting for collection" />
+          <PosStatCard label="Completed" value={stats?.myCompletedJobs} icon={CheckCircle2} tone="muted" sub="Collected" />
 
           {isTech ? (
-            <PosStatCard label="Assigned Today" value={stats?.myTodayJobs} icon={Wrench} sub="New today" />
+            <PosStatCard label="Assigned Today" value={stats?.myTodayJobs} icon={Wrench} tone="brand" sub="New today" />
           ) : (
             <>
-<PosStatCard label="My Sales"      value={stats?.mySalesCount}                                     icon={ShoppingBag} color="text-purple-600 dark:text-purple-400" sub="Products sold (all time)" />
-              <PosStatCard label="Sales Revenue" value={formatGhs(stats?.mySalesRevenue || 0)}   icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub="From my sales" />
-              <PosStatCard label="Today's Sales" value={formatGhs(stats?.myTodaySalesRevenue || 0)} icon={CheckCircle2} color="text-green-600 dark:text-green-400" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
-              <PosStatCard label="Low Stock"     value={stats?.lowStockCount}                                    icon={Boxes}       color={stats?.lowStockCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-500"} sub="Parts below threshold" />
+              <PosStatCard label="My Sales" value={stats?.mySalesCount} icon={ShoppingBag} tone="info" sub="Products sold (all time)" />
+              <PosStatCard label="Sales Revenue" value={formatGhs(stats?.mySalesRevenue || 0)} icon={CheckCircle2} tone="success" sub="From my sales" />
+              <PosStatCard label="Today's Sales" value={formatGhs(stats?.myTodaySalesRevenue || 0)} icon={CheckCircle2} tone="success" sub={`${stats?.myTodaySalesCount || 0} sale(s) today`} />
+              <PosStatCard
+                label="Low Stock"
+                value={stats?.lowStockCount}
+                icon={Boxes}
+                tone={stats?.lowStockCount > 0 ? "error" : "muted"}
+                sub="Parts below threshold"
+              />
             </>
           )}
         </div>
@@ -254,17 +276,20 @@ function MyDashboard({ user }) {
 function FullDashboard() {
   const { data, isLoading: loading, error } = useOverview();
 
-  if (error) return <p className="text-red-600 dark:text-red-400 text-sm p-5">{error.message || "Failed to load dashboard."}</p>;
+  if (error) {
+    return (
+      <div className="p-5">
+        <Alert tone="error">{error.message || "Failed to load dashboard."}</Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          {new Date().toLocaleDateString("en-GH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description={new Date().toLocaleDateString("en-GH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+      />
 
       {/* Full shop-wide overview — same blocks as the Reports page */}
       <PosOverview data={data} loading={loading} />
@@ -317,29 +342,33 @@ function MaintenanceCard() {
   if (!maint) return null;
 
   return (
+    /* A plain div rather than Card: the active state tints the whole surface,
+     * which Card's fixed white/slate fill would fight. */
     <div className={`rounded-2xl border overflow-hidden ${
       maint.maintenanceActive
-        ? "border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/10"
-        : "border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900"
+        ? "border-error/30 bg-error-surface dark:border-error-dark/30 dark:bg-error-surface-dark"
+        : "border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900"
     }`}>
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-            maint.maintenanceActive ? "bg-red-500" : "bg-slate-200 dark:bg-slate-700"
+            maint.maintenanceActive
+              ? "bg-error text-white dark:bg-error-dark dark:text-gray-900"
+              : "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400"
           }`}>
-            <Wrench size={14} className={maint.maintenanceActive ? "text-white" : "text-gray-500 dark:text-slate-400"} />
+            <Wrench size={14} aria-hidden="true" />
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               Maintenance Mode
               {maint.maintenanceActive && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white animate-pulse">ACTIVE</span>
+                <Badge tone="error">Active</Badge>
               )}
               {maint.maintenanceScheduledStart && !maint.maintenanceActive && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-400 text-white">SCHEDULED</span>
+                <Badge tone="brand">Scheduled</Badge>
               )}
             </p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+            <p className="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
               {maint.maintenanceActive
                 ? "Site is in maintenance — visitors see the maintenance page"
                 : "Site is live — toggle to put it in maintenance mode"}
@@ -347,90 +376,59 @@ function MaintenanceCard() {
           </div>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
-          <button
-            onClick={() => setMaintExpanded((v) => !v)}
-            className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-slate-200 transition font-medium"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setMaintExpanded((v) => !v)}>
             {maintExpanded ? "Hide settings ↑" : "Schedule / message ↓"}
-          </button>
-          <button
-            onClick={toggleMaintenance}
+          </Button>
+          <Switch
+            checked={!!maint.maintenanceMode}
+            onChange={toggleMaintenance}
             disabled={maintSaving}
-            className={`relative inline-flex w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0 ${
-              maint.maintenanceMode ? "bg-red-500" : "bg-gray-200 dark:bg-slate-700"
-            } disabled:opacity-50`}
-          >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-              maint.maintenanceMode ? "translate-x-6" : "translate-x-0"
-            }`} />
-          </button>
+            aria-label="Maintenance mode"
+          />
         </div>
       </div>
 
       {maintExpanded && (
         <form onSubmit={saveMaintSchedule} className="px-5 pb-5 border-t border-gray-100 dark:border-slate-800 pt-4 space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-gray-600 dark:text-slate-400 block mb-1">
-              Maintenance message (shown to visitors)
-            </label>
-            <textarea
-              value={maintMsg}
-              onChange={(e) => setMaintMsg(e.target.value)}
-              rows={2}
-              className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-brand-400 transition resize-none"
-              placeholder="We're performing scheduled maintenance. We'll be back shortly!"
+          <Textarea
+            label="Maintenance message (shown to visitors)"
+            value={maintMsg}
+            onChange={(e) => setMaintMsg(e.target.value)}
+            rows={2}
+            className="resize-none"
+            placeholder="We're performing scheduled maintenance. We'll be back shortly!"
+          />
+
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Input
+              label="Start (auto-activate)"
+              type="datetime-local"
+              value={maintStart}
+              onChange={(e) => setMaintStart(e.target.value)}
+            />
+            <Input
+              label="End (auto-deactivate + countdown)"
+              type="datetime-local"
+              value={maintEnd}
+              onChange={(e) => setMaintEnd(e.target.value)}
             />
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-gray-600 dark:text-slate-400 block mb-1">Start (auto-activate)</label>
-              <input
-                type="datetime-local"
-                value={maintStart}
-                onChange={(e) => setMaintStart(e.target.value)}
-                className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-600 dark:text-slate-400 block mb-1">End (auto-deactivate + countdown)</label>
-              <input
-                type="datetime-local"
-                value={maintEnd}
-                onChange={(e) => setMaintEnd(e.target.value)}
-                className="w-full text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:border-brand-400 transition"
-              />
-            </div>
-          </div>
-
           {maintStart && !maintEnd && (
-            <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800">
-              <TriangleAlert size={12} className="text-brand-500 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-brand-700 dark:text-brand-400">
-                <strong>No end time set.</strong> Once the start time passes, maintenance will stay active indefinitely until you turn it off manually.
-              </p>
-            </div>
+            <Alert tone="warning">
+              <strong>No end time set.</strong> Once the start time passes, maintenance will stay active indefinitely until you turn it off manually.
+            </Alert>
           )}
 
           <div className="flex items-center gap-2 justify-end">
             {(maint.maintenanceScheduledStart || maint.maintenanceScheduledEnd) && (
-              <button
-                type="button"
-                onClick={clearSchedule}
-                disabled={maintSaving}
-                className="text-xs font-semibold px-3 py-2 rounded-full border border-red-200 dark:border-red-800 text-red-500 hover:border-red-400 transition disabled:opacity-50"
-              >
+              <Button variant="secondary" size="sm" onClick={clearSchedule} disabled={maintSaving}>
                 Clear schedule
-              </button>
+              </Button>
             )}
-            <button
-              type="submit"
-              disabled={maintSaving}
-              className="text-xs font-bold px-4 py-2 rounded-full bg-brand-500 hover:bg-brand-400 text-white transition disabled:opacity-50 flex items-center gap-1.5"
-            >
-              {maintSaving ? <Loader2 size={10} className="animate-spin" /> : null}
+            <Button type="submit" size="sm" loading={maintSaving}>
               Save settings
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -466,18 +464,18 @@ function CustomerOverview() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center">
-            <CircleUser size={24} className="text-brand-500" />
+            <CircleUser size={24} aria-hidden="true" className="text-brand-ink dark:text-brand-400" />
           </div>
           <div>
             <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white">
               {user?.name ? `Hey, ${user.name.split(" ")[0]} 👋` : "Dashboard"}
             </h1>
-            <p className="text-sm text-gray-400 dark:text-slate-500">{user?.email}</p>
+            <p className="text-sm text-gray-600 dark:text-slate-400">{user?.email}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href="/dashboard/settings" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-500 transition">
-            <CircleUser size={12} /> Settings
+          <Link href="/dashboard/settings" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition">
+            <CircleUser size={12} aria-hidden="true" /> Settings
           </Link>
         </div>
       </div>
@@ -485,7 +483,7 @@ function CustomerOverview() {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <StatCard icon={Server} label="Active Hosting" value={activeHosting} color="bg-brand-400" />
-        <StatCard icon={Globe} label="Active Domains" value={activeDomains} color="bg-blue-500" />
+        <StatCard icon={Globe} label="Active Domains" value={activeDomains} color="bg-info" />
         <StatCard icon={Clock} label="Pending Orders" value={pendingOrders} color="bg-gray-400" />
       </div>
 
@@ -495,21 +493,20 @@ function CustomerOverview() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 dark:text-white">Recent Hosting</h2>
-            <Link href="/dashboard/hosting" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
-              View all <ChevronRight size={9} />
+            <Link href="/dashboard/hosting" className="text-xs font-semibold text-brand-ink dark:text-brand-400 hover:underline flex items-center gap-1">
+              View all <ChevronRight size={9} aria-hidden="true" />
             </Link>
           </div>
           {loadingHosting ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 flex justify-center">
-              <div className="w-5 h-5 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
-            </div>
+            <Card padding="md"><SkeletonText lines={3} /></Card>
           ) : hosting.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 text-center">
-              <p className="text-gray-400 dark:text-slate-500 text-sm mb-3">No hosting orders yet.</p>
-              <Link href="/hosting" className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition">
-                Browse Plans
-              </Link>
-            </div>
+            <Card padding="md" className="text-center">
+              <EmptyState
+                title="No hosting orders yet."
+                description="Pick a plan and your site can be live today."
+                action={<Button href="/hosting" size="sm">Browse Plans</Button>}
+              />
+            </Card>
           ) : (
             <div className="space-y-3">
               {hosting.slice(0, 2).map(o => <HostingCard key={o._id} order={o} />)}
@@ -521,21 +518,20 @@ function CustomerOverview() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 dark:text-white">Recent Domains</h2>
-            <Link href="/dashboard/domains" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
-              View all <ChevronRight size={9} />
+            <Link href="/dashboard/domains" className="text-xs font-semibold text-brand-ink dark:text-brand-400 hover:underline flex items-center gap-1">
+              View all <ChevronRight size={9} aria-hidden="true" />
             </Link>
           </div>
           {loadingDomains ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 flex justify-center">
-              <div className="w-5 h-5 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
-            </div>
+            <Card padding="md"><SkeletonText lines={3} /></Card>
           ) : domains.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 text-center">
-              <p className="text-gray-400 dark:text-slate-500 text-sm mb-3">No domains registered yet.</p>
-              <Link href="/domains" className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition">
-                Search Domains
-              </Link>
-            </div>
+            <Card padding="md" className="text-center">
+              <EmptyState
+                title="No domains registered yet."
+                description="Search for a name and register it in minutes."
+                action={<Button href="/domains" size="sm">Search Domains</Button>}
+              />
+            </Card>
           ) : (
             <div className="space-y-3">
               {domains.slice(0, 3).map(o => <DomainCard key={o._id} order={o} />)}
@@ -547,21 +543,20 @@ function CustomerOverview() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
-            <Link href="/dashboard/orders" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
-              View all <ChevronRight size={9} />
+            <Link href="/dashboard/orders" className="text-xs font-semibold text-brand-ink dark:text-brand-400 hover:underline flex items-center gap-1">
+              View all <ChevronRight size={9} aria-hidden="true" />
             </Link>
           </div>
           {loadingOrders ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 flex justify-center">
-              <div className="w-5 h-5 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
-            </div>
+            <Card padding="md"><SkeletonText lines={3} /></Card>
           ) : orders.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 text-center">
-              <p className="text-gray-400 dark:text-slate-500 text-sm mb-3">No shop orders yet.</p>
-              <Link href="/shop" className="text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
-                Visit the Shop
-              </Link>
-            </div>
+            <Card padding="md" className="text-center">
+              <EmptyState
+                title="No shop orders yet."
+                description="Browse the shop — checkout takes under a minute."
+                action={<Button href="/shop" size="sm">Visit the Shop</Button>}
+              />
+            </Card>
           ) : (
             <div className="space-y-3">
               {orders.slice(0, 2).map(o => <ShopOrderCard key={o._id} order={o} />)}
@@ -573,22 +568,20 @@ function CustomerOverview() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 dark:text-white">Recent Repairs</h2>
-            <Link href="/dashboard/repairs" className="text-xs text-brand-500 hover:underline flex items-center gap-1">
-              View all <ChevronRight size={9} />
+            <Link href="/dashboard/repairs" className="text-xs font-semibold text-brand-ink dark:text-brand-400 hover:underline flex items-center gap-1">
+              View all <ChevronRight size={9} aria-hidden="true" />
             </Link>
           </div>
           {loadingRepairs ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 flex justify-center">
-              <div className="w-5 h-5 border-2 border-gray-200 dark:border-slate-700 border-t-gray-900 dark:border-t-white rounded-full animate-spin" />
-            </div>
+            <Card padding="md"><SkeletonText lines={3} /></Card>
           ) : repairs.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 text-center">
-              <p className="text-gray-400 dark:text-slate-500 text-sm">No repairs on file.</p>
-              <p className="text-xs text-gray-300 dark:text-slate-600 mt-1 mb-3">Create one online — bring it in or send a rider.</p>
-              <Link href="/repair" className="inline-block text-xs font-semibold px-4 py-2 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition">
-                Create a Repair Job
-              </Link>
-            </div>
+            <Card padding="md" className="text-center">
+              <EmptyState
+                title="No repairs on file."
+                description="Create one online — bring it in or send a rider."
+                action={<Button href="/repair" size="sm">Create a Repair Job</Button>}
+              />
+            </Card>
           ) : (
             <div className="space-y-3">
               {repairs.slice(0, 2).map(j => <RepairCard key={j._id} job={j} />)}

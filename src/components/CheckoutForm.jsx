@@ -1,12 +1,13 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState } from "react";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 transition bg-white dark:bg-slate-800";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
 const schema = z.object({
   firstName: z.string().min(1),
@@ -117,7 +118,7 @@ export default function CheckoutForm({ domain, price }) {
         {loading ? "Redirecting to payment..." : "Pay with Paystack"}
       </button>
 
-      <p className="text-center text-xs text-gray-400 dark:text-slate-500">Secured by Paystack · MTN MoMo · Vodafone Cash · Card</p>
+      <p className="text-center text-xs text-gray-600 dark:text-slate-500">Secured by Paystack · MTN MoMo · Vodafone Cash · Card</p>
     </form>
   );
 }

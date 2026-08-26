@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import DashboardShell from "../DashboardShell";
+import { titleForPath } from "../dashboardNav";
 
 export default function CommerceLayout({ children }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   // Staff use the marketplace for shop orders; admin-only subpages are
   // gated server-side in middleware.js and self-gated in their pages.
   const isAllowed = ["admin", "superadmin", "staff"].includes(user?.role);
@@ -18,5 +20,7 @@ export default function CommerceLayout({ children }) {
 
   if (loading || !isAllowed) return null;
 
-  return <DashboardShell title="Marketplace">{children}</DashboardShell>;
+  // Subpages (Pre-orders, Shipments, Products…) get their own name rather
+  // than all reporting as "Marketplace".
+  return <DashboardShell title={titleForPath(pathname)}>{children}</DashboardShell>;
 }

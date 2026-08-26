@@ -18,7 +18,7 @@ function FAQ({ items }) {
             className="w-full flex items-center justify-between px-6 py-4 text-left text-gray-900 dark:text-white font-medium text-sm hover:bg-paper dark:hover:bg-slate-800 transition"
           >
             {item.q}
-            {open === i ? <ChevronUp className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" size={12} /> : <ChevronDown className="text-gray-400 dark:text-slate-500 flex-shrink-0 ml-3" size={12} />}
+            {open === i ? <ChevronUp className="text-gray-600 dark:text-slate-500 flex-shrink-0 ml-3" size={12} /> : <ChevronDown className="text-gray-600 dark:text-slate-500 flex-shrink-0 ml-3" size={12} />}
           </button>
           {open === i && (
             <div className="px-6 pb-4 text-gray-500 dark:text-slate-400 text-sm leading-relaxed bg-white dark:bg-slate-900">
@@ -41,7 +41,7 @@ export default function ServiceDetail({ slug }) {
       {/* HERO */}
       <section className="pt-28 pb-16 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <Link href="/services" className="text-xs text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition mb-6 inline-block">← All Services</Link>
+          <Link href="/services" className="text-xs text-gray-600 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition mb-6 inline-block">← All Services</Link>
           <div className="grid md:grid-cols-[1fr_300px] gap-10 items-start">
             <div>
               <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center mb-5">
@@ -52,8 +52,8 @@ export default function ServiceDetail({ slug }) {
             </div>
             <div className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
               <div className="flex justify-between text-sm border-b border-gray-100 dark:border-slate-700 pb-3">
-                <div><p className="text-gray-400 dark:text-slate-500 text-xs mb-1">Investment</p><p className="font-semibold text-gray-900 dark:text-white">{service.investment}</p></div>
-                <div className="text-right"><p className="text-gray-400 dark:text-slate-500 text-xs mb-1">Timeline</p><p className="font-semibold text-gray-900 dark:text-white">{service.timeline}</p></div>
+                <div><p className="text-gray-600 dark:text-slate-500 text-xs mb-1">Investment</p><p className="font-semibold text-gray-900 dark:text-white">{service.investment}</p></div>
+                <div className="text-right"><p className="text-gray-600 dark:text-slate-500 text-xs mb-1">Timeline</p><p className="font-semibold text-gray-900 dark:text-white">{service.timeline}</p></div>
               </div>
               <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed">{service.description}</p>
               <Link href="/contact" className="block text-center py-3 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition">
@@ -67,7 +67,7 @@ export default function ServiceDetail({ slug }) {
       {/* CHALLENGE */}
       <section className="py-16 px-4 bg-paper dark:bg-ink border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">The Problem</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">The Problem</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">The Challenge</h2>
           <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{service.challenge}</p>
         </div>
@@ -77,7 +77,7 @@ export default function ServiceDetail({ slug }) {
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
           <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Our Approach</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Our Approach</p>
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-4">How We Solve It</h2>
             <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{service.solution}</p>
           </div>
@@ -99,7 +99,7 @@ export default function ServiceDetail({ slug }) {
       <section className="py-16 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
           <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">What You Get</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">What You Get</p>
             <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">Deliverables</h2>
             <ul className="space-y-2.5">
               {service.deliverables.map((d) => (
@@ -111,12 +111,12 @@ export default function ServiceDetail({ slug }) {
             </ul>
           </div>
           <div className="p-7 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Real Example</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Real Example</p>
             <h3 className="font-display font-bold text-xl text-gray-900 dark:text-white mb-3">Saiisai Marketplace</h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-5">{service.saiisaiExample}</p>
             <div className="flex gap-5 mb-5">
               {[["150+", "Sellers"], ["15k+", "Products"], ["4.7", "Rating", true]].map(([val, label, rating]) => (
-                <div key={label}><p className="font-bold text-gray-900 dark:text-white">{val}{rating && <Star size={13} className="inline-block -mt-0.5 ml-1" />}</p><p className="text-gray-400 dark:text-slate-500 text-xs">{label}</p></div>
+                <div key={label}><p className="font-bold text-gray-900 dark:text-white">{val}{rating && <Star size={13} className="inline-block -mt-0.5 ml-1" />}</p><p className="text-gray-600 dark:text-slate-500 text-xs">{label}</p></div>
               ))}
             </div>
             <Link href="/portfolio/saiisai" className="text-brand-500 text-sm font-medium hover:underline">Read the full case study →</Link>
@@ -127,7 +127,7 @@ export default function ServiceDetail({ slug }) {
       {/* FAQ */}
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Questions</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Questions</p>
           <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-6">Frequently Asked</h2>
           <FAQ items={service.faqs} />
         </div>

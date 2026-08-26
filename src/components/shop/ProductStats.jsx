@@ -19,7 +19,7 @@ export default function ProductStats({ views, sold, className = "" }) {
 
   return (
     <div
-      className={`flex items-center gap-3 text-[11px] text-gray-400 dark:text-slate-500 ${className}`}
+      className={`flex items-center gap-3 text-[11px] text-gray-600 dark:text-slate-500 ${className}`}
     >
       {showViews && (
         <span className="inline-flex items-center gap-1">

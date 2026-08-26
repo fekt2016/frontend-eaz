@@ -1,11 +1,13 @@
 "use client";
 
+import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Server } from "lucide-react";
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { FaServer, FaArrowLeft, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaCopy } from "react-icons/fa";
 import { useHostingPlans, useStaffCreateHostingAccount } from "@/hooks/queries/useHosting";
+import { Alert, Button } from "@/components/ui";
 
 const EMPTY_PLANS = {};
 const STAFF_ROLES = ["admin", "staff", "superadmin"];
@@ -85,17 +87,17 @@ export default function StaffCreateHostingAccountPage() {
 
   const inputCls =
     "w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-brand-400";
-  const labelCls = "block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1";
+const labelCls = "block text-body-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5";
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
         <Link href="/dashboard/hosting" className="w-8 h-8 rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white">
-          <FaArrowLeft size={12} />
+          <ArrowLeft size={12} />
         </Link>
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FaServer className="text-brand-500" size={16} /> Create Hosting Account
+            <Server className="text-brand-500" size={16} /> Create Hosting Account
           </h1>
           <p className="text-sm text-gray-500 dark:text-slate-400">Set up a cPanel account for a customer in-store.</p>
         </div>
@@ -105,11 +107,7 @@ export default function StaffCreateHostingAccountPage() {
         <ResultCard data={result.data} onReset={() => setResult(null)} />
       ) : (
         <form onSubmit={submit} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 space-y-5">
-          {result && !result.ok && (
-            <p className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-              <FaExclamationTriangle size={12} /> {result.error}
-            </p>
-          )}
+          {result && !result.ok && <Alert tone="error">{result.error}</Alert>}
 
           {/* Customer */}
           <div>
@@ -150,7 +148,7 @@ export default function StaffCreateHostingAccountPage() {
               <span className="font-semibold text-gray-900 dark:text-white">{price != null ? `GH₵${price.toLocaleString()}` : "—"}</span>
             </div>
             {!isCpanel && (
-              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              <p className="mt-1 text-xs text-warning dark:text-warning-dark">
                 Note: only <b>shared</b> and <b>wordpress</b> plans auto-create a cPanel account. This order will be recorded but not provisioned.
               </p>
             )}
@@ -198,17 +196,16 @@ export default function StaffCreateHostingAccountPage() {
                 </>
               )}
             </div>
-            <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">
+            <p className="mt-2 text-xs text-gray-600 dark:text-slate-500">
               {form.paymentMethod === "cash"
                 ? "Cash: the cPanel account is created immediately and credentials are emailed to the customer."
                 : "Paystack: a payment link is generated — the account is created once payment succeeds."}
             </p>
           </div>
 
-          <button type="submit" disabled={createAccount.isPending}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition disabled:opacity-50">
-            {createAccount.isPending ? <><FaSpinner className="animate-spin" size={13} /> Creating…</> : "Create account"}
-          </button>
+          <Button type="submit" variant="brand" loading={createAccount.isPending} fullWidth>
+            {createAccount.isPending ? "Creating…" : "Create account"}
+          </Button>
         </form>
       )}
     </div>
@@ -224,8 +221,8 @@ function ResultCard({ data, onReset }) {
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 space-y-4">
       <div className="flex items-center gap-2">
         {paystack || provisioned
-          ? <FaCheckCircle className="text-emerald-500" size={18} />
-          : <FaExclamationTriangle className="text-amber-500" size={18} />}
+          ? <CheckCircle2 className="text-success dark:text-success-dark" size={18} aria-hidden="true" />
+          : <AlertTriangle className="text-warning dark:text-warning-dark" size={18} aria-hidden="true" />}
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
           {paystack ? "Payment link ready" : provisioned ? "Account created" : "Order created"}
         </h2>
@@ -236,8 +233,8 @@ function ResultCard({ data, onReset }) {
           <p className="text-sm text-gray-500 dark:text-slate-400">Share this Paystack link with the customer. The cPanel account is created automatically once they pay.</p>
           <div className="flex items-center gap-2">
             <input readOnly value={data.authorizationUrl} className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-xs text-gray-700 dark:text-slate-300" />
-            <button onClick={copy} type="button" className="px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-300"><FaCopy size={12} /></button>
-            <a href={data.authorizationUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-brand-500 text-white text-xs font-semibold hover:bg-brand-600">Open</a>
+            <button onClick={copy} type="button" className="px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-300"><Copy size={12} /></button>
+            <a href={data.authorizationUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-brand-500 text-gray-900 text-xs font-semibold hover:bg-brand-600">Open</a>
           </div>
         </div>
       ) : (
@@ -247,13 +244,13 @@ function ResultCard({ data, onReset }) {
           {data?.cpanelUsername && <Row label="cPanel username" value={data.cpanelUsername} />}
           {data?.domain && <Row label="Domain" value={data.domain} />}
           {data?.provisioningError && <Row label="Error" value={data.provisioningError} danger />}
-          {provisioned && <p className="text-xs text-emerald-600 dark:text-emerald-400 pt-1">Login credentials have been emailed to the customer.</p>}
-          {data?.provisioningStatus === "skipped" && <p className="text-xs text-amber-600 dark:text-amber-400 pt-1">This plan type doesn’t auto-provision cPanel — provision manually if needed.</p>}
+          {provisioned && <p className="text-xs text-success dark:text-success-dark pt-1">Login credentials have been emailed to the customer.</p>}
+          {data?.provisioningStatus === "skipped" && <p className="text-xs text-warning dark:text-warning-dark pt-1">This plan type doesn’t auto-provision cPanel — provision manually if needed.</p>}
         </dl>
       )}
 
       <div className="flex gap-2 pt-1">
-        <button onClick={onReset} type="button" className="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600">Create another</button>
+        <button onClick={onReset} type="button" className="px-4 py-2 rounded-xl bg-brand-500 text-gray-900 text-sm font-semibold hover:bg-brand-600">Create another</button>
         <Link href="/dashboard/hosting" className="px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 text-sm font-semibold hover:border-gray-300">Done</Link>
       </div>
     </div>
@@ -264,7 +261,7 @@ function Row({ label, value, danger }) {
   return (
     <div className="flex items-center justify-between">
       <dt className="text-gray-500 dark:text-slate-400">{label}</dt>
-      <dd className={`font-medium ${danger ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"} capitalize`}>{value || "—"}</dd>
+      <dd className={`font-medium ${danger ? "text-error dark:text-error-dark" : "text-gray-900 dark:text-white"} capitalize`}>{value || "—"}</dd>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export default function RecentProducts() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-2">Just Added</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-2">Just Added</p>
             <StarRule className="mb-4" />
             <h2 className="font-display font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">
               Recent Products
@@ -80,7 +80,7 @@ export default function RecentProducts() {
 }
 
 function RecentCard({ product }) {
-  const badge = stockBadge(product.stock);
+  const badge = stockBadge(product.stock, product.preorder?.enabled);
   const images = product.images?.length
     ? product.images
     : ["/images/product-placeholder.svg"];
@@ -110,7 +110,7 @@ function RecentCard({ product }) {
         </span>
       </Link>
       <div className="flex flex-1 flex-col p-4">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-400 mb-0.5 truncate">{product.category}</p>
+        <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-0.5 truncate">{product.category}</p>
         <h3 className="font-display font-bold text-sm text-gray-900 dark:text-white group-hover:text-brand-500 transition mb-2 line-clamp-2">
           {product.name}
         </h3>

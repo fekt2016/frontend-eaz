@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import { CheckCircle2 } from "lucide-react";
+import { Button, Input, Textarea } from "@/components/ui";
 import { sanitizeName, sanitizeEmail, sanitizeText, sanitizeMessage } from "@/lib/sanitize";
 
 const schema = z.object({
@@ -11,8 +12,6 @@ const schema = z.object({
   subject: z.string().optional(),
   message: z.string().min(10, "Please write at least 10 characters"),
 });
-
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 transition bg-white dark:bg-slate-800";
 
 export default function ContactForm() {
   const [fields, setFields] = useState({ name: "", email: "", subject: "", message: "" });
@@ -60,60 +59,79 @@ export default function ContactForm() {
 
   if (status === "success") {
     return (
-      <div className="text-center py-10">
-        <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 size={24} className="text-emerald-500" />
+      // role="status" so the confirmation is announced; the form it replaces
+      // disappears, which a screen reader would otherwise report as nothing.
+      <div className="text-center py-10" role="status">
+        <div className="w-14 h-14 rounded-full bg-success-surface dark:bg-success-surface-dark flex items-center justify-center mx-auto mb-4">
+          <CheckCircle2 size={24} aria-hidden="true" className="text-success dark:text-success-dark" />
         </div>
-        <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-2">Message Sent!</h3>
-        <p className="text-gray-500 dark:text-slate-400 text-sm mb-5">We&apos;ll get back to you within 24 hours.</p>
-        <button
-          onClick={() => setStatus("idle")}
-          className="px-5 py-2.5 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold hover:bg-gray-700 dark:hover:bg-gray-100 transition"
-        >
-          Send Another Message
-        </button>
+        <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-2">Message sent</h3>
+        <p className="text-body-sm text-gray-600 dark:text-slate-400 mb-5">
+          We&apos;ll reply within 24 hours.
+        </p>
+        <Button variant="secondary" onClick={() => setStatus("idle")}>
+          Send another message
+        </Button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <input type="text" value={fields.name} onChange={set("name")} placeholder="Your name" className={inputCls} />
-          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-        </div>
-        <div>
-          <input type="email" value={fields.email} onChange={set("email")} placeholder="Email address" className={inputCls} />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label="Your name"
+          required
+          type="text"
+          value={fields.name}
+          onChange={set("name")}
+          error={errors.name}
+          autoComplete="name"
+          placeholder="Kwame Mensah"
+        />
+        <Input
+          label="Email address"
+          required
+          type="email"
+          value={fields.email}
+          onChange={set("email")}
+          error={errors.email}
+          autoComplete="email"
+          placeholder="you@example.com"
+        />
       </div>
 
-      <div>
-        <input type="text" value={fields.subject} onChange={set("subject")} placeholder="Subject (optional)" className={inputCls} />
-      </div>
+      <Input
+        label="Subject"
+        type="text"
+        value={fields.subject}
+        onChange={set("subject")}
+        hint="Optional — helps us route your message."
+        placeholder="Website redesign"
+      />
 
-      <div>
-        <textarea value={fields.message} onChange={set("message")} placeholder="How can we help you?" rows={5} className={inputCls} />
-        {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
-      </div>
+      <Textarea
+        label="How can we help?"
+        required
+        rows={5}
+        value={fields.message}
+        onChange={set("message")}
+        error={errors.message}
+        placeholder="Tell us what you're trying to build or fix."
+      />
 
-      <button
-        type="submit"
-        disabled={status === "loading"}
-        className="w-full py-3.5 rounded-full bg-gray-900 dark:bg-brand-500 text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-brand-400 disabled:opacity-50 transition text-sm"
-      >
-        {status === "loading" ? "Sending…" : "Send Message →"}
-      </button>
+      <Button type="submit" size="lg" fullWidth loading={status === "loading"}>
+        {status === "loading" ? "Sending…" : "Send message"}
+      </Button>
 
       {status === "error" && (
-        <p className="text-red-500 text-xs text-center">
-          Something went wrong. Email us at{" "}
+        <p role="alert" className="text-body-sm font-medium text-error dark:text-error-dark text-center">
+          That didn&apos;t send. Email us at{" "}
           <a href="mailto:info@eazworld.co" className="underline">info@eazworld.co</a>
         </p>
       )}
 
-      <p className="text-gray-400 dark:text-slate-500 text-xs text-center">
+      <p className="text-caption text-gray-600 dark:text-slate-400 text-center">
         We respond within 24 hours. Your info is never shared.
       </p>
     </form>

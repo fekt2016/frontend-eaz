@@ -70,7 +70,7 @@ export default function ServicesGrid() {
     <section className="py-24 px-4 bg-white dark:bg-ink">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">What We Do</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">What We Do</p>
           <StarRule className="mb-4" />
           <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mb-4">
             Everything Your Business Needs Online

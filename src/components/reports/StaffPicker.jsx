@@ -11,7 +11,7 @@ const ALL_STAFF = "";
 export default function StaffPicker({ staffId, onChange, staffList }) {
   return (
     <div className="flex items-center gap-2">
-      <Users size={12} className="text-gray-400 hidden sm:block" aria-hidden="true" />
+      <Users size={12} className="text-gray-600 hidden sm:block" aria-hidden="true" />
       <label className="sr-only" htmlFor="reports-staff">Staff member</label>
       <select
         id="reports-staff"

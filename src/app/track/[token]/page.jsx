@@ -168,7 +168,7 @@ export default function TrackRepairPage() {
   if (loading) {
     return (
 <div className="min-h-screen bg-white dark:bg-ink flex items-center justify-center px-4 pt-28 pb-24">
-        <Loader2 size={20} className="animate-spin text-gray-400 dark:text-slate-500" />
+        <Loader2 size={20} className="animate-spin text-gray-600 dark:text-slate-500" />
       </div>
     );
   }
@@ -195,7 +195,7 @@ export default function TrackRepairPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
       <div className="mx-auto max-w-3xl">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Repair Tracking</p>
+        <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Repair Tracking</p>
         <h1 className="font-display font-bold text-3xl md:text-4xl mb-2">Track Your Repair</h1>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-10">
           {job.customerName ? `Hi ${job.customerName}, here's the status of your device repair.` : "Here's the status of your device repair."}
@@ -212,7 +212,7 @@ export default function TrackRepairPage() {
         <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800 pb-4">
             <div>
-              <p className="text-xs text-gray-400 dark:text-slate-500">Job Number</p>
+              <p className="text-xs text-gray-600 dark:text-slate-500">Job Number</p>
               <p className="font-display font-bold text-lg">{job.jobNumber}</p>
             </div>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${jobBadge.classes}`}>{jobBadge.label}</span>
@@ -220,34 +220,34 @@ export default function TrackRepairPage() {
 
           <dl className="my-5 space-y-3 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-gray-400 dark:text-slate-500">Device</dt>
+              <dt className="text-gray-600 dark:text-slate-500">Device</dt>
               <dd className="font-medium text-right">{job.device}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-gray-400 dark:text-slate-500">Fault</dt>
+              <dt className="text-gray-600 dark:text-slate-500">Fault</dt>
               <dd className="font-medium text-right max-w-[70%]">{job.faultDescription}</dd>
             </div>
             {job.repairWork && (
               <div className="flex justify-between gap-4">
-                <dt className="text-gray-400 dark:text-slate-500">Repair</dt>
+                <dt className="text-gray-600 dark:text-slate-500">Repair</dt>
                 <dd className="font-medium text-right max-w-[70%]">{job.repairWork}</dd>
               </div>
             )}
             {job.dropoff === "rider" && (
               <div className="flex justify-between gap-4">
-                <dt className="text-gray-400 dark:text-slate-500">Pickup</dt>
+                <dt className="text-gray-600 dark:text-slate-500">Pickup</dt>
                 <dd className="font-medium text-right max-w-[70%]">{job.pickupAddress || "Rider pickup arranged"}</dd>
               </div>
             )}
             {job.estimatedCompletion && (
               <div className="flex justify-between gap-4">
-                <dt className="text-gray-400 dark:text-slate-500">Estimated completion</dt>
+                <dt className="text-gray-600 dark:text-slate-500">Estimated completion</dt>
                 <dd className="font-medium">{new Date(job.estimatedCompletion).toLocaleDateString("en-GH")}</dd>
               </div>
             )}
             {job.completedAt && (
               <div className="flex justify-between gap-4">
-                <dt className="text-gray-400 dark:text-slate-500">Completed</dt>
+                <dt className="text-gray-600 dark:text-slate-500">Completed</dt>
                 <dd className="font-medium">{new Date(job.completedAt).toLocaleDateString("en-GH")}</dd>
               </div>
             )}
@@ -270,7 +270,7 @@ export default function TrackRepairPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white">{part.name}</p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{part.quantity} × {formatGhs(part.pricePesewas)}</p>
+                      <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">{part.quantity} × {formatGhs(part.pricePesewas)}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-display font-bold text-lg text-brand-500">{formatGhs(part.pricePesewas * part.quantity)}</p>
@@ -301,7 +301,7 @@ export default function TrackRepairPage() {
             {/* Catalogue */}
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
               <div className="relative">
-                <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+                <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-slate-500" />
                 <input
                   value={catQuery}
                   onChange={(e) => setCatQuery(e.target.value)}
@@ -311,13 +311,13 @@ export default function TrackRepairPage() {
               </div>
 
               {catQuery.trim().length === 0 ? (
-                <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
+                <p className="mt-4 text-sm text-gray-600 dark:text-slate-500">
                   Search for a part to see it below and add it to your order.
                 </p>
               ) : catalogueLoading ? (
-                <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">Searching parts…</p>
+                <p className="mt-4 text-sm text-gray-600 dark:text-slate-500">Searching parts…</p>
               ) : catalogue.length === 0 ? (
-                <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
+                <p className="mt-4 text-sm text-gray-600 dark:text-slate-500">
                   No parts match your search right now. Call us on 024 438 8190 and we&apos;ll sort it out.
                 </p>
               ) : (
@@ -344,12 +344,12 @@ export default function TrackRepairPage() {
                           <p className="text-xs font-semibold uppercase tracking-wide text-brand-500 mb-0.5">{p.category}</p>
                           <h3 className="font-display font-bold text-base text-gray-900 dark:text-white line-clamp-2">{p.name}</h3>
                           {p.sku && (
-                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 font-mono">{p.sku}</p>
+                            <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5 font-mono">{p.sku}</p>
                           )}
                           {(p.compatibleWith || []).length > 0 && (
-                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Fits: {p.compatibleWith.join(", ")}</p>
+                            <p className="text-xs text-gray-600 dark:text-slate-500 mt-1">Fits: {p.compatibleWith.join(", ")}</p>
                           )}
-                          <p className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed line-clamp-3 mt-2 flex-1">
+                          <p className="text-gray-600 dark:text-slate-500 text-xs leading-relaxed line-clamp-3 mt-2 flex-1">
                             {p.description || "Genuine replacement part — fitted and tested by our technicians."}
                           </p>
                           <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 dark:border-slate-800 pt-3">
@@ -377,7 +377,7 @@ export default function TrackRepairPage() {
                 <div className="rounded-xl bg-paper dark:bg-ink p-4 space-y-2">
                   {cart.map((i) => (
                     <div key={i.partId} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700 dark:text-slate-300">{i.name} <span className="text-gray-400 dark:text-slate-500">× {i.quantity}</span></span>
+                      <span className="text-gray-700 dark:text-slate-300">{i.name} <span className="text-gray-600 dark:text-slate-500">× {i.quantity}</span></span>
                       <span className="font-semibold">{formatGhs(i.unitPricePesewas * i.quantity)}</span>
                     </div>
                   ))}
@@ -430,10 +430,10 @@ export default function TrackRepairPage() {
                   className={inputCls}
                   required
                 />
-                <p className="mt-1.5 text-xs text-gray-400 dark:text-slate-500">Must match the phone number on your repair receipt.</p>
+                <p className="mt-1.5 text-xs text-gray-600 dark:text-slate-500">Must match the phone number on your repair receipt.</p>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Email <span className="font-normal text-gray-400 dark:text-slate-500">(optional — for faster updates)</span></label>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">Email <span className="font-normal text-gray-600 dark:text-slate-500">(optional — for faster updates)</span></label>
                 <input
                   type="email"
                   value={email}
@@ -482,7 +482,7 @@ export default function TrackRepairPage() {
                   className={inputCls}
                   required
                 />
-                <p className="mt-1.5 text-xs text-gray-400 dark:text-slate-500">Must match the phone number on your repair receipt.</p>
+                <p className="mt-1.5 text-xs text-gray-600 dark:text-slate-500">Must match the phone number on your repair receipt.</p>
               </div>
               {balanceError && <p className="text-sm text-red-600 dark:text-red-400">{balanceError}</p>}
               <button
@@ -502,7 +502,7 @@ export default function TrackRepairPage() {
           <div className="mt-8 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
             <div className="px-6 pt-5">
               <h2 className="font-display font-bold text-lg">Orders &amp; payments</h2>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Payments you&apos;ve made for this repair.</p>
+              <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">Payments you&apos;ve made for this repair.</p>
             </div>
             <ul className="divide-y divide-gray-100 dark:divide-slate-800 mt-3">
               {(job.repairOrders || []).map((o) => {
@@ -512,7 +512,7 @@ export default function TrackRepairPage() {
                   <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-4 text-sm">
                     <div className="min-w-0">
                       <p className="font-medium text-gray-900 dark:text-white truncate">{names}</p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500">
+                      <p className="text-xs text-gray-600 dark:text-slate-500">
                         {o.shippingFeePesewas > 0 ? "Parts + rider shipping · " : ""}
                         {new Date(o.createdAt).toLocaleDateString("en-GH")}
                       </p>
@@ -529,8 +529,8 @@ export default function TrackRepairPage() {
                 return (
                   <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-4 text-sm">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{o.partName} <span className="text-gray-400 dark:text-slate-500">× {o.quantity}</span></p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500">{new Date(o.createdAt).toLocaleDateString("en-GH")}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{o.partName} <span className="text-gray-600 dark:text-slate-500">× {o.quantity}</span></p>
+                      <p className="text-xs text-gray-600 dark:text-slate-500">{new Date(o.createdAt).toLocaleDateString("en-GH")}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>{badge.label}</span>
@@ -544,7 +544,7 @@ export default function TrackRepairPage() {
         ) : null}
 
         <div className="mt-10 text-center">
-          <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">Questions about your repair? Call us on <span className="font-medium text-gray-600 dark:text-slate-300">024 438 8190</span></p>
+          <p className="text-sm text-gray-600 dark:text-slate-500 mb-4">Questions about your repair? Call us on <span className="font-medium text-gray-600 dark:text-slate-300">024 438 8190</span></p>
           <Link href="/" className="inline-block rounded-full border border-gray-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-paper dark:hover:bg-slate-800 transition">
             Back to EazWorld
           </Link>

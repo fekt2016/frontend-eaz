@@ -216,9 +216,9 @@ export default function CheckoutPage() {
     return (
 <div className="min-h-screen bg-white dark:bg-ink px-4 pt-28 pb-24">
         <div className="mx-auto max-w-md flex flex-col items-center rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-900 px-6 py-16 text-center">
-          <p className="text-3xl mb-3"><ShoppingCart size={30} className="inline text-gray-400 dark:text-slate-500" /></p>
+          <p className="text-3xl mb-3"><ShoppingCart size={30} className="inline text-gray-600 dark:text-slate-500" /></p>
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Your cart is empty</p>
-          <p className="text-gray-400 dark:text-slate-500 text-sm mb-6">Add a product to the cart before checking out.</p>
+          <p className="text-gray-600 dark:text-slate-500 text-sm mb-6">Add a product to the cart before checking out.</p>
           <Link
             href="/shop"
             className="rounded-full bg-gray-900 dark:bg-brand-500 px-5 py-2 text-xs font-semibold text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-brand-400 transition"
@@ -308,7 +308,7 @@ export default function CheckoutPage() {
                         />
                         <span className="flex-1 text-left">
                           <span className="text-sm text-gray-700 dark:text-slate-300 break-words block">{line}</span>
-                          {addr.label && <span className="text-xs font-medium text-gray-400 dark:text-slate-500 mt-0.5 block">{addr.label}</span>}
+                          {addr.label && <span className="text-xs font-medium text-gray-600 dark:text-slate-500 mt-0.5 block">{addr.label}</span>}
                         </span>
                         {addr._id && (
                           <button
@@ -323,7 +323,7 @@ export default function CheckoutPage() {
                               }
                             }}
                             aria-label="Delete this address"
-                            className="mt-0.5 p-1.5 text-gray-400 hover:text-red-500 transition"
+                            className="mt-0.5 p-1.5 text-gray-600 hover:text-red-500 transition"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -332,7 +332,7 @@ export default function CheckoutPage() {
                     );
                   })}
                   {savedAddresses.length >= 3 && (
-                    <p className="pt-1 text-xs text-gray-400 dark:text-slate-500">
+                    <p className="pt-1 text-xs text-gray-600 dark:text-slate-500">
                       Maximum of 3 saved addresses — delete one to add another.
                     </p>
                   )}
@@ -353,7 +353,7 @@ export default function CheckoutPage() {
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 p-6">
               <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-4">Delivery Zone</h2>
               {zones.length === 0 ? (
-                <p className="text-sm text-gray-400 dark:text-slate-500">
+                <p className="text-sm text-gray-600 dark:text-slate-500">
                   Delivery zones are loading... (or no zones configured — no delivery fee applies.)
                 </p>
               ) : (
@@ -375,7 +375,7 @@ export default function CheckoutPage() {
                           {zone.fee === 0 ? "Free" : formatGhs(zone.fee)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-slate-500 mt-1">
                         {zone.estimatedDays} {zone.estimatedDays === 1 ? "day" : "days"} estimated delivery
                       </p>
                     </button>
@@ -388,7 +388,7 @@ export default function CheckoutPage() {
           {/* RIGHT: order summary */}
           <div className="lg:sticky lg:top-24 h-fit">
             <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-900 p-6">
-              <h3 className="text-sm font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
+              <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-4">Order Summary</h3>
               <ul className="divide-y divide-gray-100 dark:divide-slate-800 border-b border-gray-100 dark:border-slate-800 mb-4">
                 {items.map((item) => (
                   <li key={item.lineId} className="flex justify-between gap-3 py-3 text-sm">
@@ -396,11 +396,11 @@ export default function CheckoutPage() {
                       {item.name}{" "}
                       {item.variant?.attributes &&
                         Object.values(item.variant.attributes).length > 0 && (
-                          <span className="text-gray-400 dark:text-slate-500">
+                          <span className="text-gray-600 dark:text-slate-500">
                             ({Object.values(item.variant.attributes).join(" ")})
                           </span>
                         )}{" "}
-                      <span className="text-gray-400 dark:text-slate-500">× {item.qty}</span>
+                      <span className="text-gray-600 dark:text-slate-500">× {item.qty}</span>
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">{formatGhs(item.price * item.qty)}</span>
                   </li>
@@ -428,7 +428,7 @@ export default function CheckoutPage() {
               >
                 {loading ? "Processing..." : `Pay ${formatGhs(total)} Securely`}
               </button>
-              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-gray-400 dark:text-slate-500">
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-gray-600 dark:text-slate-500">
                 <Lock size={10} /> Secured by Paystack — card &amp; mobile money
               </p>
             </div>
@@ -447,7 +447,7 @@ export default function CheckoutPage() {
                 type="button"
                 onClick={() => setModalOpen(false)}
                 aria-label="Close"
-                className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
+                className="p-1.5 text-gray-600 hover:text-gray-900 dark:hover:text-white transition"
               >
                 <X size={14} />
               </button>
@@ -456,7 +456,7 @@ export default function CheckoutPage() {
             <div className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-slate-300">
-                  Label <span className="text-gray-400 dark:text-slate-500">(optional)</span>
+                  Label <span className="text-gray-600 dark:text-slate-500">(optional)</span>
                 </label>
                 <input
                   type="text"

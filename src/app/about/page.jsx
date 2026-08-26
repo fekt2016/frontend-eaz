@@ -46,7 +46,7 @@ export default function About() {
       {/* HERO */}
       <section className="pt-28 pb-20 px-4 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">Our Story</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-4">Our Story</p>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-5">
             Built in Accra, Built for Africa.
           </h1>
@@ -70,11 +70,11 @@ export default function About() {
       <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
           <div className="p-8 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Mission</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Mission</p>
             <p className="text-gray-700 dark:text-slate-300 leading-relaxed">To empower Ghanaian and African businesses with world-class digital solutions — making cutting-edge web design, marketing, and technology accessible and impactful.</p>
           </div>
           <div className="p-8 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">Vision</p>
+            <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">Vision</p>
             <p className="text-gray-700 dark:text-slate-300 leading-relaxed">A thriving African digital ecosystem where innovation creates opportunity — where every local business can compete on a global stage.</p>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function About() {
       {/* VALUES */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">What We Stand For</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">What We Stand For</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">Our Core Values</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {values.map((v) => (
@@ -99,13 +99,13 @@ export default function About() {
       {/* STATS */}
       <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">By the Numbers</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">By the Numbers</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">The Work Speaks</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
             {stats.map((s) => (
               <div key={s.label} className="text-center p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
                 <p className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-1">{s.value}</p>
-                <p className="text-gray-400 dark:text-slate-500 text-xs">{s.label}</p>
+                <p className="text-gray-600 dark:text-slate-500 text-xs">{s.label}</p>
               </div>
             ))}
           </div>
@@ -115,12 +115,12 @@ export default function About() {
       {/* TEAM */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">The Team</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">The Team</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">The People Behind the Work</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {team.map((m) => (
               <div key={m.name} className="p-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-                <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center font-bold text-brand-600 mb-4">{m.initials}</div>
+                <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center font-bold text-brand-ink mb-4">{m.initials}</div>
                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-0.5">{m.name}</h3>
                 <p className="text-brand-500 text-xs font-medium mb-3">{m.title}</p>
                 <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed">{m.bio}</p>
@@ -133,7 +133,7 @@ export default function About() {
       {/* APPROACH */}
       <section className="py-20 px-4 bg-paper dark:bg-ink border-y border-gray-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-3">How We Work</p>
+          <p className="font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 mb-3">How We Work</p>
           <h2 className="font-display font-bold text-3xl text-gray-900 dark:text-white mb-10">Our Approach</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {approach.map((s) => (

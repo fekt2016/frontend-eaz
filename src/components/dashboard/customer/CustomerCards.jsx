@@ -48,7 +48,7 @@ export function StatCard({ icon: Icon, label, value, sub, color }) {
       </div>
       <div>
         <p className="text-2xl font-bold text-gray-900 dark:text-white leading-none">{value}</p>
-        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{label}</p>
+        <p className="text-xs text-gray-600 dark:text-slate-500 mt-1">{label}</p>
         {sub && <p className="text-xs text-gray-300 dark:text-slate-600 mt-0.5">{sub}</p>}
       </div>
     </div>
@@ -66,7 +66,7 @@ export function HostingCard({ order }) {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{order.planType} — {order.tier}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 capitalize">{order.billingCycle} · GH₵{order.amount}</p>
+            <p className="text-xs text-gray-600 dark:text-slate-500 capitalize">{order.billingCycle} · GH₵{order.amount}</p>
           </div>
         </div>
         <StatusBadge status={order.status} />
@@ -74,7 +74,7 @@ export function HostingCard({ order }) {
 
       {order.domain && (
 <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-paper dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-          <Globe size={12} className="text-gray-400 dark:text-slate-500" />
+          <Globe size={12} className="text-gray-600 dark:text-slate-500" />
           <span className="text-xs text-gray-600 dark:text-slate-300 font-mono">{order.domain}</span>
         </div>
       )}
@@ -117,7 +117,7 @@ export function DomainCard({ order }) {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white font-mono">{order.domain}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500">{order.years} year{order.years > 1 ? "s" : ""} · GH₵{order.price}</p>
+            <p className="text-xs text-gray-600 dark:text-slate-500">{order.years} year{order.years > 1 ? "s" : ""} · GH₵{order.price}</p>
           </div>
         </div>
         <StatusBadge status={order.status} />
@@ -145,7 +145,7 @@ export function RegisteredDomainCard({ domain }) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white font-mono truncate">{domain.domain}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500">
+            <p className="text-xs text-gray-600 dark:text-slate-500">
               {expiresAt
                 ? isExpired
                   ? `Expired ${fmtDate(expiresAt)}`
@@ -192,7 +192,7 @@ export function ShopOrderCard({ order }) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{order.orderNumber}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500">{fmtDate(order.createdAt)} · {items} item{items !== 1 ? "s" : ""}</p>
+            <p className="text-xs text-gray-600 dark:text-slate-500">{fmtDate(order.createdAt)} · {items} item{items !== 1 ? "s" : ""}</p>
           </div>
         </div>
         <div className="text-right flex-shrink-0">
@@ -227,7 +227,7 @@ export function RepairCard({ job }) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{device}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 font-mono truncate">{job.jobNumber} · {fmtDate(job.createdAt)}</p>
+            <p className="text-xs text-gray-600 dark:text-slate-500 font-mono truncate">{job.jobNumber} · {fmtDate(job.createdAt)}</p>
           </div>
         </div>
         <span className={`inline-flex text-xs font-medium px-2.5 py-1 rounded-full capitalize flex-shrink-0 ${badge.cls}`}>{badge.label}</span>

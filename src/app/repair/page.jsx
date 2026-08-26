@@ -1,5 +1,6 @@
 "use client";
 
+import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { z } from "zod";
@@ -23,7 +24,7 @@ const schema = z.object({
   pickupAddress: z.string().optional(),
 });
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 transition bg-white dark:bg-slate-800";
+const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 const selectCls = `${inputCls} cursor-pointer`;
 
 const SHOP_ADDRESS = "E1/12 Nima, Alwaleed bin Talal Highway, Nima, Accra";
@@ -122,7 +123,7 @@ export default function BookRepairPage() {
           </div>
 
           <div className="bg-brand-50 dark:bg-brand-900/10 border border-brand-100 dark:border-brand-800/30 rounded-xl p-4 mb-2 text-left">
-            <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 mb-2">What happens next?</p>
+            <p className="text-xs font-semibold text-brand-ink dark:text-brand-400 mb-2">What happens next?</p>
             <ul className="space-y-1.5">
               {result.dropoff === "rider" ? (
                 <>
@@ -164,7 +165,7 @@ export default function BookRepairPage() {
       {/* HERO */}
       <section className="pt-28 pb-14 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <span className="inline-block font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
+          <span className="inline-block font-mono text-eyebrow font-bold uppercase text-brand-ink dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 px-3 py-1 rounded-full mb-5">
             Phone Repair · Accra · 30-Day Warranty
           </span>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 leading-tight">
@@ -173,7 +174,7 @@ export default function BookRepairPage() {
           <p className="text-gray-500 dark:text-slate-400 text-lg mb-2 max-w-lg mx-auto">
             Bring your device to the shop, or send a rider to collect it — the choice is yours.
           </p>
-          <p className="text-gray-400 dark:text-slate-500 text-sm max-w-md mx-auto">
+          <p className="text-gray-600 dark:text-slate-500 text-sm max-w-md mx-auto">
             Free honest assessment. You approve the quote before any work starts.
           </p>
         </div>
@@ -267,9 +268,9 @@ export default function BookRepairPage() {
                         : "border-gray-100 dark:border-slate-700 bg-paper dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-500"
                     }`}
                   >
-                    <Store className={`mb-2 ${fields.dropoff === "bring" ? "text-brand-500" : "text-gray-400"}`} />
+                    <Store className={`mb-2 ${fields.dropoff === "bring" ? "text-brand-500" : "text-gray-600"}`} />
                     <p className="font-semibold text-sm text-gray-900 dark:text-white">Bring it to the shop</p>
-                    <p className="text-gray-400 dark:text-slate-500 text-xs mt-1 leading-relaxed">Walk in — free assessment in minutes.</p>
+                    <p className="text-gray-600 dark:text-slate-500 text-xs mt-1 leading-relaxed">Walk in — free assessment in minutes.</p>
                   </button>
                   <button
                     type="button"
@@ -280,9 +281,9 @@ export default function BookRepairPage() {
                         : "border-gray-100 dark:border-slate-700 bg-paper dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-500"
                     }`}
                   >
-                    <Bike className={`mb-2 ${fields.dropoff === "rider" ? "text-brand-500" : "text-gray-400"}`} />
+                    <Bike className={`mb-2 ${fields.dropoff === "rider" ? "text-brand-500" : "text-gray-600"}`} />
                     <p className="font-semibold text-sm text-gray-900 dark:text-white">Send a rider to pick it up</p>
-                    <p className="text-gray-400 dark:text-slate-500 text-xs mt-1 leading-relaxed">We&apos;ll call you to arrange collection.</p>
+                    <p className="text-gray-600 dark:text-slate-500 text-xs mt-1 leading-relaxed">We&apos;ll call you to arrange collection.</p>
                   </button>
                 </div>
 
@@ -316,8 +317,8 @@ export default function BookRepairPage() {
                 )}
               </button>
 
-              <p className="text-gray-400 dark:text-slate-500 text-xs text-center">
-                <Lock size={11} className="inline-block align-text-bottom text-gray-400 dark:text-slate-500" /> Your details are only used for this repair. You&apos;ll get a tracking link by SMS/email.
+              <p className="text-gray-600 dark:text-slate-500 text-xs text-center">
+                <Lock size={11} className="inline-block align-text-bottom text-gray-600 dark:text-slate-500" /> Your details are only used for this repair. You&apos;ll get a tracking link by SMS/email.
               </p>
             </form>
           </div>

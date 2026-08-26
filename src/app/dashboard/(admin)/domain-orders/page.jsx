@@ -4,15 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { FaRedo, FaSpinner } from "react-icons/fa";
-import { Globe, Search, RotateCw, Loader2, ExternalLink } from "lucide-react";
+import { ExternalLink, Globe, RotateCw, Search, CheckCircle2, Clock, Wallet } from "lucide-react";
 import { useAdminDomainOrders, useUpdateDomainOrderStatus, useRetryDomainRegistration } from "@/hooks/queries/useDomains";
 import { isAdminRole } from "@/lib/roles";
+import KpiCard from "@/components/reports/KpiCard";
+import {
+  Badge, Button, Card, EmptyState, Input, PageHeader,
+  Skeleton, Table, TableWrap, Td, Th,
+} from "@/components/ui";
 
-const statusColors = {
-  pending:   "bg-brand-50 text-brand-700 ring-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:ring-brand-900/30",
-  completed: "bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:ring-emerald-900/30",
-  failed:    "bg-red-50 text-red-700 ring-red-100 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-900/30",
+const statusTones = {
+  pending:   "warning",
+  completed: "success",
+  failed:    "error",
 };
 
 const FILTERS = [
@@ -32,6 +36,7 @@ export default function AdminDomainOrdersPage() {
   const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [notice, setNotice] = useState(null);
 
   const isAdmin = isAdminRole(user?.role);
 
@@ -57,159 +62,223 @@ export default function AdminDomainOrdersPage() {
 
   if (authLoading || !isAdmin) return null;
 
+  // These used to be window.alert(), which blocks the tab and reads as a
+  // browser error rather than a result from this page.
   const handleStatusUpdate = (orderId, status) => {
-    updateStatus.mutate({ id: orderId, status }, { onError: (err) => alert(err.message || "Update failed") });
+    setNotice(null);
+    updateStatus.mutate(
+      { id: orderId, status },
+      { onError: (err) => setNotice({ tone: "error", text: err.message || "Update failed." }) },
+    );
   };
 
   const handleRetryRegistration = (orderId) => {
+    setNotice(null);
     retryReg.mutate(orderId, {
-      onSuccess: () => alert("Domain registered successfully."),
-      onError: (err) => alert(err.message || "Registration retry failed."),
+      onSuccess: () => setNotice({ tone: "success", text: "Domain registered successfully." }),
+      onError: (err) => setNotice({ tone: "error", text: err.message || "Registration retry failed." }),
     });
   };
 
-  const totalRevenue = orders.filter(o => o.status === "completed").reduce((s, o) => s + (o.price || 0), 0);
+  const completed = orders.filter((o) => o.status === "completed");
+  // Domain order prices are still whole GH₵, not pesewas — see T44.
+  const totalRevenue = completed.reduce((s, o) => s + (o.price || 0), 0);
 
   return (
-    <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-6 pb-24">
+    <div className="px-4 pb-24 pt-6 sm:px-6">
       <div className="mx-auto max-w-6xl">
+        <Link
+          href="/dashboard"
+          className="mb-4 inline-block text-body-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-slate-400 dark:hover:text-white"
+        >
+          ← Dashboard
+        </Link>
 
-        {/* Header */}
-        <div className="mb-8">
-          <Link href="/dashboard" className="mb-4 inline-block text-sm text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition">← Dashboard</Link>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="w-11 h-11 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-              <Globe size={18} className="text-violet-600 dark:text-violet-400" />
+        <PageHeader
+          title="Domain Orders"
+          description="Manage domain registrations and payments."
+          actions={
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 dark:bg-brand-900/30">
+              <Globe size={18} aria-hidden="true" className="text-brand-ink dark:text-brand-400" />
             </span>
-            <div>
-              <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">Domain Orders</h1>
-              <p className="text-gray-400 dark:text-slate-500 text-sm">Manage domain registrations and payments.</p>
-            </div>
+          }
+        />
+
+        {notice && (
+          <div
+            role="status"
+            className={`mb-4 rounded-xl border px-4 py-3 text-body-sm font-medium ${
+              notice.tone === "success"
+                ? "border-success/20 bg-success-surface text-success dark:border-success-dark/30 dark:bg-success-surface-dark dark:text-success-dark"
+                : "border-error/20 bg-error-surface text-error dark:border-error-dark/30 dark:bg-error-surface-dark dark:text-error-dark"
+            }`}
+          >
+            {notice.text}
           </div>
-        </div>
+        )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          {[
-            { label: "Total orders", value: orders.length },
-            { label: "Completed", value: orders.filter(o => o.status === "completed").length, accent: "text-emerald-700" },
-            { label: "Pending", value: orders.filter(o => o.status === "pending").length, accent: "text-brand-700" },
-            { label: "Revenue", value: `GH₵${totalRevenue.toLocaleString()}`, accent: "text-gray-900" },
-          ].map(({ label, value, accent }) => (
-            <div key={label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{label}</p>
-              <p className={`mt-2 text-2xl font-bold tabular-nums ${accent || "text-gray-900 dark:text-white"}`}>{value}</p>
-            </div>
-          ))}
+        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <KpiCard label="Total orders" value={orders.length} icon={Globe} tone="brand" />
+          <KpiCard label="Completed" value={completed.length} icon={CheckCircle2} tone="green" />
+          <KpiCard label="Pending" value={orders.filter((o) => o.status === "pending").length} icon={Clock} tone="gray" />
+          <KpiCard label="Revenue" value={`GH₵${totalRevenue.toLocaleString()}`} icon={Wallet} tone="brand" />
         </div>
 
         {/* Toolbar */}
-        <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm mb-4">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+        <Card padding="sm" className="mb-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={12} />
-              <input
+              <Search
+                size={16}
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-gray-600 dark:text-slate-400"
+              />
+              <Input
+                label="Search domain orders"
+                hideLabel
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search domain, email, customer name…"
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-300"
+                className="pl-10"
               />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
               {FILTERS.map((f) => (
-                <button key={f.value} type="button" onClick={() => setFilter(f.value)}
-                  className={`text-xs font-semibold px-3 py-2 rounded-full border transition ${filter === f.value ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white" : "bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500"}`}>
+                <Button
+                  key={f.value}
+                  size="sm"
+                  variant={filter === f.value ? "primary" : "secondary"}
+                  aria-pressed={filter === f.value}
+                  onClick={() => setFilter(f.value)}
+                >
                   {f.label}
-                </button>
+                </Button>
               ))}
-              <button type="button" onClick={fetchOrders} disabled={loading}
-className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-paper dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 transition disabled:opacity-50">
-                <RotateCw size={10} className={loading ? "animate-spin" : ""} /> Refresh
-              </button>
+              <Button size="sm" variant="secondary" onClick={fetchOrders} disabled={loading}>
+                <RotateCw size={14} aria-hidden="true" className={loading ? "animate-spin" : ""} /> Refresh
+              </Button>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Table */}
         {loading ? (
-          <div className="flex items-center justify-center py-20 gap-3 text-gray-400 dark:text-slate-500">
-            <Loader2 className="animate-spin text-brand-500" size={24} />
-            <span className="text-sm">Loading orders…</span>
-          </div>
+          <Card padding="none">
+            <div className="space-y-3 p-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-3.5 w-40" />
+                  <Skeleton className="h-3.5 flex-1" />
+                  <Skeleton className="h-3.5 w-20" />
+                </div>
+              ))}
+            </div>
+          </Card>
         ) : orders.length === 0 ? (
-          <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-sm">
-            <p className="text-gray-400 dark:text-slate-500 text-sm">No domain orders found.</p>
-          </div>
+          <Card padding="none">
+            <EmptyState
+              icon={Globe}
+              title={q || filter !== "all" ? "No domain orders match" : "No domain orders yet"}
+              description={
+                q || filter !== "all"
+                  ? "Try a different search, or switch the status filter back to All."
+                  : "Orders appear here as customers register domains through the storefront."
+              }
+              action={
+                q || filter !== "all" ? (
+                  <Button variant="secondary" onClick={() => { setSearch(""); setFilter("all"); }}>
+                    Clear filters
+                  </Button>
+                ) : null
+              }
+            />
+          </Card>
         ) : (
-          <div className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-[700px] w-full text-sm">
+          <Card padding="none" className="overflow-hidden">
+            <TableWrap>
+              <Table className="min-w-[760px]">
                 <thead>
-                  <tr className="text-left border-b border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
-                    <th className="px-4 py-3">Domain</th>
-                    <th className="px-4 py-3">Customer</th>
-                    <th className="px-4 py-3">Price</th>
-                    <th className="px-4 py-3">Years</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Date</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
+                  <tr className="bg-paper dark:bg-slate-800">
+                    <Th>Domain</Th>
+                    <Th>Customer</Th>
+                    <Th>Price</Th>
+                    <Th>Years</Th>
+                    <Th>Status</Th>
+                    <Th>Date</Th>
+                    <Th className="text-right">Actions</Th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
+                <tbody>
                   {orders.map((o) => (
-                    <tr key={o._id} className="hover:bg-paper/80 dark:hover:bg-slate-800/50">
-                      <td className="px-4 py-3">
+                    <tr key={o._id} className="transition-colors hover:bg-paper/80 dark:hover:bg-slate-800/50">
+                      <Td>
                         <span className="font-mono font-semibold text-gray-900 dark:text-white">{o.domain}</span>
                         {o.registrationError && (
-                          <p className="text-xs text-red-500 mt-0.5 truncate max-w-[200px]" title={o.registrationError}>{o.registrationError}</p>
+                          <p
+                            className="mt-0.5 max-w-[200px] truncate text-caption text-error dark:text-error-dark"
+                            title={o.registrationError}
+                          >
+                            {o.registrationError}
+                          </p>
                         )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900 dark:text-white truncate max-w-[180px]">{o.customerName || "—"}</p>
-                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate max-w-[180px]">{o.email}</p>
-                      </td>
-                      <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white whitespace-nowrap">GH₵{o.price}</td>
-                      <td className="px-4 py-3 text-gray-600 dark:text-slate-400">{o.years || 1}yr</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 capitalize ${statusColors[o.status] || "bg-paper text-gray-600 ring-gray-100 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700"}`}>
+                      </Td>
+                      <Td>
+                        <p className="max-w-[180px] truncate font-medium text-gray-900 dark:text-white">
+                          {o.customerName || "—"}
+                        </p>
+                        <p className="max-w-[180px] truncate text-caption text-gray-600 dark:text-slate-400">{o.email}</p>
+                      </Td>
+                      <Td className="whitespace-nowrap font-semibold text-gray-900 dark:text-white">GH₵{o.price}</Td>
+                      <Td>{o.years || 1}yr</Td>
+                      <Td>
+                        <Badge tone={statusTones[o.status] || "neutral"} className="capitalize">
                           {o.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-gray-500 dark:text-slate-500 whitespace-nowrap">{fmtDate(o.createdAt)}</td>
-                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        </Badge>
+                      </Td>
+                      <Td className="whitespace-nowrap">{fmtDate(o.createdAt)}</Td>
+                      <Td className="whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {o.status === "pending" && (
-                            <button type="button" onClick={() => handleStatusUpdate(o._id, "completed")}
-                              disabled={updating === o._id}
-                              className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
-                              {updating === o._id ? "…" : "Mark done"}
-                            </button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleStatusUpdate(o._id, "completed")}
+                              loading={updating === o._id}
+                            >
+                              Mark done
+                            </Button>
                           )}
                           {o.status === "completed" && o.registrationError && (
-                            <button type="button" onClick={() => handleRetryRegistration(o._id)}
-                              disabled={retrying === o._id}
-                              title="Re-attempt Namecheap registration for this paid order"
-                              className="text-xs font-semibold px-2.5 py-1.5 rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 inline-flex items-center gap-1">
-                              {retrying === o._id
-                                ? <><FaSpinner className="animate-spin" size={9} /> Retrying…</>
-                                : <><FaRedo size={9} /> Retry registration</>}
-                            </button>
+                            <Button
+                              size="sm"
+                              variant="brand"
+                              onClick={() => handleRetryRegistration(o._id)}
+                              loading={retrying === o._id}
+                              title="Re-attempt registration with the registrar for this paid order"
+                            >
+                              {retrying !== o._id && <RotateCw size={14} aria-hidden="true" />}
+                              {retrying === o._id ? "Retrying…" : "Retry registration"}
+                            </Button>
                           )}
                           {o.paystackReference && (
-                            <a href={`https://dashboard.paystack.com/#/transactions`} target="_blank" rel="noopener noreferrer"
-                              className="text-xs font-semibold px-2.5 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500 inline-flex items-center gap-1">
-                              Paystack <ExternalLink size={9} />
-                            </a>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              href="https://dashboard.paystack.com/#/transactions"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Paystack <ExternalLink size={13} aria-hidden="true" />
+                            </Button>
                           )}
                         </div>
-                      </td>
+                      </Td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
-          </div>
+              </Table>
+            </TableWrap>
+          </Card>
         )}
       </div>
     </div>

@@ -27,6 +27,28 @@ export function useRecentOrders(limit = 5, options = {}) {
   });
 }
 
+// T45 — paid orders with a pre-order line still waiting on stock. Server-sorted
+// oldest-first, so the longest-waiting customer is at the top.
+export function usePreorders(options = {}) {
+  return useQuery({
+    queryKey: qk.orders.preorders,
+    queryFn: () => api.get("/orders/preorders").then((r) => r.data ?? []),
+    staleTime: 15_000,
+    ...options,
+  });
+}
+
+// Release a pre-order once its stock has landed: moves stock, counts the sale,
+// and emails the customer. Invalidating the whole "orders" prefix is deliberate —
+// the released order also appears in the order lists and on its own detail page.
+export function useReleasePreorder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.patch(`/orders/${id}/preorder-release`).then((r) => r),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.orders.all }),
+  });
+}
+
 // The logged-in customer's own shop orders (matched by phone/email server-side).
 export function useMyOrders(options = {}) {
   return useQuery({
