@@ -183,7 +183,11 @@ export default function ProductReviews({ product }) {
 
   const myReview = myReviewQ.data ?? null;
   const checkingEligibility = !myReview && (myReviewQ.isLoading || eligibilityQ.isLoading);
-  const canReview = eligibilityQ.data?.canReview ?? true;
+  // Fail closed: if the eligibility check errors out (network issue, 500,
+  // etc.) there's no confirmed verified purchase, so hide the form rather
+  // than default to showing it. The backend re-verifies at submit time
+  // regardless, but the UI shouldn't invite a submission it knows will 403.
+  const canReview = eligibilityQ.data?.canReview ?? false;
 
   if (!productId) return null;
 
