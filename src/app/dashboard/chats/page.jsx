@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { canHandleChats } from "@/lib/roles";
+import { canHandleChats, isAdminRole } from "@/lib/roles";
 import {
   RotateCw, CheckCircle2, Trash2,
   Mail, MessagesSquare, Send, UserShield, Bell,
-  Handshake,
+  Handshake, Eye, BarChart3,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import {
   Badge, Button, Card, ConfirmDialog, EmptyState,
   Input, PageHeader, Skeleton,
 } from "@/components/ui";
+import QualityMetrics from "./QualityMetrics";
 
 function fmtDate(d) {
   if (!d) return "—";
@@ -41,8 +43,22 @@ const STATE_BADGE = {
   closed:  { tone: "neutral", label: "Closed" },
 };
 
+/** T69 — the agent who owns a session, or null while nobody has claimed it. */
+function ownerOf(s) {
+  return s?.acceptedBy ? { id: String(s.acceptedBy), name: s.acceptedByName || "another agent" } : null;
+}
+
+/** T69 phase 4 — the customer's star rating, e.g. "★★★★☆". */
+function stars(rating) {
+  return "★★★★★".slice(0, rating) + "☆☆☆☆☆".slice(0, 5 - rating);
+}
+
 export default function AdminChatsPage() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  // /auth/me returns the raw user document, so the id arrives as `_id`; the `id`
+  // fallback covers the trimmed shape the login/profile responses send.
+  const myId = String(user?._id || user?.id || "");
   const [sessions, setSessions]       = useState([]);
   const [loading, setLoading]         = useState(true);
   const [filter, setFilter]           = useState("all");
@@ -52,6 +68,7 @@ export default function AdminChatsPage() {
   const [newAlert, setNewAlert]       = useState(false); // flashes when a new pending arrives
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting]       = useState(false);
+  const [showMetrics, setShowMetrics] = useState(false);
   const messagesEndRef                 = useRef(null);
   const prevPendingCount               = useRef(0);
 
@@ -74,6 +91,14 @@ export default function AdminChatsPage() {
     finally  { if (!silent) setLoading(false); }
   }, []);
 
+  // This page moved out of the "(admin)" route group so staff could reach it, which
+  // also dropped that layout's role redirect. Re-assert it here, or a technician or
+  // customer hitting the URL directly gets the full console shell with empty data
+  // instead of being sent back.
+  useEffect(() => {
+    if (!authLoading && !canHandleChats(user?.role)) router.replace("/dashboard");
+  }, [authLoading, user?.role, router]);
+
   // Initial load
   useEffect(() => {
     if (!authLoading && canHandleChats(user?.role)) refreshSessions(false);
@@ -86,11 +111,32 @@ export default function AdminChatsPage() {
     return () => clearInterval(id);
   }, [authLoading, user?.role, refreshSessions]);
 
+  // Both actions below take ownership; accept additionally connects a waiting
+  // customer. `patch` is merged into the list and the open session so the reply
+  // box unlocks without waiting for the next 5 s poll.
+  const applyToSession = (sessionId, patch) => {
+    setSessions((prev) => prev.map((s) => (s.sessionId === sessionId ? { ...s, ...patch } : s)));
+    if (active?.sessionId === sessionId) setActive((a) => (a ? { ...a, ...patch } : a));
+  };
+
   const acceptChat = async (sessionId) => {
     try {
-      await api.post(`/chat/sessions/${sessionId}/accept`);
-      setSessions((prev) => prev.map((s) => s.sessionId === sessionId ? { ...s, humanAccepted: true } : s));
-      if (active?.sessionId === sessionId) setActive((a) => a ? { ...a, humanAccepted: true } : a);
+      const json = await api.post(`/chat/sessions/${sessionId}/accept`);
+      applyToSession(sessionId, {
+        humanAccepted:  true,
+        acceptedBy:     json.data?.acceptedBy ?? myId,
+        acceptedByName: json.data?.acceptedByName ?? user?.name,
+      });
+    } catch {}
+  };
+
+  const claimChat = async (sessionId) => {
+    try {
+      const json = await api.post(`/chat/sessions/${sessionId}/claim`);
+      applyToSession(sessionId, {
+        acceptedBy:     json.data?.acceptedBy ?? myId,
+        acceptedByName: json.data?.acceptedByName ?? user?.name,
+      });
     } catch {}
   };
 
@@ -129,7 +175,13 @@ export default function AdminChatsPage() {
     try {
       const json = await api.post(`/chat/sessions/${active.sessionId}/reply`, { message: reply.trim() });
       if (json.success) {
-        const newMsg = { role: "admin", content: reply.trim(), createdAt: new Date().toISOString() };
+        const newMsg = {
+          role:       "admin",
+          content:    reply.trim(),
+          createdAt:  new Date().toISOString(),
+          senderId:   json.data?.senderId ?? myId,
+          senderName: json.data?.senderName ?? user?.name,
+        };
         setActive((a) => ({
           ...a,
           resolved: false,
@@ -171,7 +223,12 @@ export default function AdminChatsPage() {
         setActive((prev) => {
           if (!prev || prev.sessionId !== id) return prev;
           const hasNewMessages = (fresh.messages?.length ?? 0) > (prev.messages?.length ?? 0);
-          const stateChanged   = fresh.resolved !== prev.resolved || fresh.humanAccepted !== prev.humanAccepted;
+          // Ownership counts as a state change (T69): if another agent claims the
+          // chat while you're watching it, the reply box has to lock without
+          // waiting for the next message to arrive.
+          const stateChanged   = fresh.resolved !== prev.resolved
+            || fresh.humanAccepted !== prev.humanAccepted
+            || String(fresh.acceptedBy || "") !== String(prev.acceptedBy || "");
           if (!hasNewMessages && !stateChanged) return prev;
           return fresh; // new messages or state change — refresh
         });
@@ -185,7 +242,7 @@ export default function AdminChatsPage() {
     return () => clearInterval(interval);
   }, [active?.sessionId]);
 
-  if (authLoading) return null;
+  if (authLoading || !canHandleChats(user?.role)) return null;
 
   const totalOpen     = sessions.filter((s) => !s.resolved).length;
   const totalResolved = sessions.filter((s) =>  s.resolved).length;
@@ -213,6 +270,12 @@ export default function AdminChatsPage() {
   ];
 
   const activeState = active ? sessionState(active) : null;
+  // T69 supervisor mode: reading a transcript is free, answering is not. You may
+  // only reply to a session you own, so a supervisor watching a chat can't
+  // silently double-reply over the agent already handling it.
+  const activeOwner = ownerOf(active);
+  const iOwnActive  = !!activeOwner && activeOwner.id === myId;
+  const canReply    = iOwnActive && !active?.resolved;
 
   return (
     <div className="px-4 pb-24 pt-6 sm:px-6">
@@ -231,12 +294,26 @@ export default function AdminChatsPage() {
                   {liveCount} live
                 </Badge>
               )}
+              {/* Admin-only: the metrics endpoint is restrictTo('admin') so staff
+                  don't read the scoreboard they're measured on. */}
+              {isAdminRole(user?.role) && (
+                <Button
+                  size="sm"
+                  variant={showMetrics ? "primary" : "secondary"}
+                  aria-pressed={showMetrics}
+                  onClick={() => setShowMetrics((v) => !v)}
+                >
+                  <BarChart3 size={15} aria-hidden="true" /> Quality
+                </Button>
+              )}
               <Button size="sm" variant="secondary" onClick={() => refreshSessions(false)} disabled={loading}>
                 <RotateCw size={15} aria-hidden="true" className={loading ? "animate-spin" : ""} /> Refresh
               </Button>
             </>
           }
         />
+
+        {isAdminRole(user?.role) && showMetrics && <QualityMetrics />}
 
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -397,6 +474,26 @@ export default function AdminChatsPage() {
                       <span>{s.messages?.length || 0} messages</span>
                       <span>{fmtDate(s.lastActivity)}</span>
                     </span>
+                    {/* Who's on it (T69) — so a supervisor scanning the list can
+                        see at a glance which chats already have an owner. */}
+                    {(ownerOf(s) || s.rating) && (
+                      <span className="mt-1.5 flex items-center justify-between gap-2 text-caption text-gray-600 dark:text-slate-400">
+                        {ownerOf(s) ? (
+                          <span className="flex min-w-0 items-center gap-1">
+                            <UserShield size={11} aria-hidden="true" className="flex-shrink-0" />
+                            <span className="truncate">{ownerOf(s).id === myId ? "You" : ownerOf(s).name}</span>
+                          </span>
+                        ) : <span />}
+                        {s.rating && (
+                          <span
+                            className="flex-shrink-0 text-brand-ink dark:text-brand-400"
+                            title={`Customer rated this ${s.rating} out of 5`}
+                          >
+                            {stars(s.rating)}
+                          </span>
+                        )}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -451,7 +548,11 @@ export default function AdminChatsPage() {
                           Live chat in progress
                         </p>
                         <p className="mt-0.5 text-caption text-gray-700 dark:text-slate-300">
-                          You are connected with this user. Reply below — messages appear instantly.
+                          {canReply
+                            ? "You are connected with this user. Reply below — messages appear instantly."
+                            : activeOwner
+                              ? `${activeOwner.name} is answering this customer. Take over below if you need to step in.`
+                              : "Nobody has claimed this chat yet — claim it below to reply."}
                         </p>
                       </div>
                     </div>
@@ -464,12 +565,32 @@ export default function AdminChatsPage() {
                         <p className="text-body-sm font-semibold text-gray-900 dark:text-white">
                           {active.name || "Anonymous"}
                         </p>
-                        <span className="flex items-center gap-1 text-caption font-semibold text-success dark:text-success-dark">
-                          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-success dark:bg-success-dark" />
-                          Watching
-                        </span>
+                        {/* Was a hardcoded "Watching" on every session. It now says
+                            what's actually true: who owns this conversation. */}
+                        {iOwnActive ? (
+                          <span className="flex items-center gap-1 text-caption font-semibold text-success dark:text-success-dark">
+                            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-success dark:bg-success-dark" />
+                            You&apos;re handling this
+                          </span>
+                        ) : activeOwner ? (
+                          <span className="flex items-center gap-1 text-caption font-semibold text-gray-700 dark:text-slate-300">
+                            <UserShield size={12} aria-hidden="true" />
+                            {activeOwner.name} is handling this
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-caption font-semibold text-gray-600 dark:text-slate-400">
+                            <Eye size={12} aria-hidden="true" />
+                            Watching — read-only
+                          </span>
+                        )}
                         {STATE_BADGE[activeState] && activeState !== "closed" && (
                           <Badge tone={STATE_BADGE[activeState].tone}>{STATE_BADGE[activeState].label}</Badge>
+                        )}
+                        {/* T69 phase 4 — what the customer thought of it. */}
+                        {active.rating && (
+                          <Badge tone={active.rating >= 4 ? "success" : active.rating <= 2 ? "error" : "warning"}>
+                            {stars(active.rating)} {active.rating}/5
+                          </Badge>
                         )}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-3">
@@ -511,15 +632,21 @@ export default function AdminChatsPage() {
                         <CheckCircle2 size={14} aria-hidden="true" />
                         {active.resolved ? "Reopen" : activeState === "live" ? "End chat" : "Resolve"}
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="px-2 text-error dark:text-error-dark"
-                        onClick={() => setDeleteTarget(active)}
-                        aria-label={`Delete chat session with ${active.name || "this user"}`}
-                      >
-                        <Trash2 size={15} aria-hidden="true" />
-                      </Button>
+                      {/* Admin-only: the backend keeps DELETE at restrictTo('admin') so the
+                          people measured on chat quality (T69) can't delete the transcript.
+                          Hidden rather than left to 403 silently — confirmDelete swallows
+                          errors, so staff would click and see nothing happen. */}
+                      {isAdminRole(user?.role) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="px-2 text-error dark:text-error-dark"
+                          onClick={() => setDeleteTarget(active)}
+                          aria-label={`Delete chat session with ${active.name || "this user"}`}
+                        >
+                          <Trash2 size={15} aria-hidden="true" />
+                        </Button>
+                      )}
                     </div>
                   </div>
 
@@ -539,6 +666,15 @@ export default function AdminChatsPage() {
                           </div>
                         );
                       }
+                      // T69 — attribution. Every agent bubble used to read
+                      // "You (Admin)" no matter who typed it, which is exactly
+                      // what made chat quality unmeasurable by eye. Messages
+                      // sent before senderName existed keep the generic label.
+                      const senderLabel = !isAdmin
+                        ? null
+                        : msg.senderId && String(msg.senderId) === myId
+                          ? "You"
+                          : msg.senderName || "EazWorld team";
                       return (
                         <div key={i} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                           {isAdmin && (
@@ -549,7 +685,7 @@ export default function AdminChatsPage() {
                           <div>
                             {isAdmin && (
                               <p className="mb-1 ml-0.5 text-caption font-semibold text-info dark:text-info-dark">
-                                You (Admin)
+                                {senderLabel}
                               </p>
                             )}
                             {/* The user bubble was white on brand-500 — 1.95:1. Ink on gold is 8.47:1. */}
@@ -585,7 +721,8 @@ export default function AdminChatsPage() {
                     </div>
                   )}
 
-                  {/* Reply box — locked until admin accepts the chat */}
+                  {/* Reply box — locked until this agent accepts (pending) or
+                      claims (T69) the conversation. */}
                   {activeState === "pending" ? (
                     <div className="border-t border-brand-100 bg-brand-50/40 p-4 dark:border-brand-900/30 dark:bg-brand-900/5">
                       <div className="flex flex-wrap items-center justify-center gap-3 py-2">
@@ -596,6 +733,32 @@ export default function AdminChatsPage() {
                         <Button size="sm" variant="brand" onClick={() => acceptChat(active.sessionId)}>
                           <Handshake size={14} aria-hidden="true" /> Accept
                         </Button>
+                      </div>
+                    </div>
+                  ) : !canReply && !active.resolved ? (
+                    <div className="border-t border-gray-100 bg-paper/60 p-4 dark:border-slate-800 dark:bg-slate-800/30">
+                      <div className="flex flex-wrap items-center justify-center gap-3 py-2 text-center">
+                        {activeOwner ? (
+                          <>
+                            <UserShield size={15} aria-hidden="true" className="text-gray-600 dark:text-slate-400" />
+                            <p className="text-body-sm font-medium text-gray-700 dark:text-slate-300">
+                              {activeOwner.name} is handling this chat — take over to reply
+                            </p>
+                            <Button size="sm" variant="secondary" onClick={() => claimChat(active.sessionId)}>
+                              <Handshake size={14} aria-hidden="true" /> Take over
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Eye size={15} aria-hidden="true" className="text-gray-600 dark:text-slate-400" />
+                            <p className="text-body-sm font-medium text-gray-700 dark:text-slate-300">
+                              You&apos;re watching this chat — claim it to reply
+                            </p>
+                            <Button size="sm" variant="primary" onClick={() => claimChat(active.sessionId)}>
+                              <Handshake size={14} aria-hidden="true" /> Claim chat
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ) : (

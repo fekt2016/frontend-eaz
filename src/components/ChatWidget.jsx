@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   MessageSquare, X, Send, RotateCw,
-  ShieldCheck, Loader2, Clock, Headset,
+  ShieldCheck, Loader2, Clock, Headset, Star,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
@@ -214,6 +214,13 @@ export default function ChatWidget() {
   const [confirmEnd, setConfirmEnd]   = useState(false);
   const [showHumanForm, setShowHumanForm] = useState(false);
 
+  // ── CSAT (T69 phase 4) ──────────────────────────────────────────────────────
+  // Only asked after a conversation a *person* handled: rating the bot would
+  // dilute the score the front desk is actually measured on.
+  const [rating, setRating]           = useState(null);
+  const [ratingBusy, setRatingBusy]   = useState(false);
+  const [everLive, setEverLive]       = useState(false);
+
   const bottomRef       = useRef(null);
   const inputRef        = useRef(null);
   const sessionId       = useRef("");
@@ -244,8 +251,13 @@ export default function ChatWidget() {
       })
       .then((json) => {
         if (!json || !json.success) return;
-        const { humanRequested, humanAccepted, resolved } = json.meta || {};
+        const { humanRequested, humanAccepted, resolved, rating: savedRating } = json.meta || {};
         const stored = getChatState(id);
+
+        // T69 — restore any rating already given, so a returning visitor sees
+        // their score instead of being asked twice.
+        if (savedRating) setRating(savedRating);
+        if (humanAccepted) setEverLive(true);
 
         let restored = "bot";
         if (resolved)                restored = "ended";
@@ -307,6 +319,7 @@ export default function ChatWidget() {
       const { humanAccepted, resolved } = json.meta || {};
 
       if (chatState === "pending" && humanAccepted) {
+        setEverLive(true); // T69 — this chat is now rateable when it closes
         transitionTo("live");
         lastPollTime.current = new Date().toISOString();
         setMessages((prev) => [
@@ -457,6 +470,24 @@ export default function ChatWidget() {
   }, [transitionTo]);
 
   // ── Reset ──────────────────────────────────────────────────────────────────
+  // T69 phase 4 — send the customer's star rating. Optimistic: the stars stay on
+  // what they tapped even if the request fails, because nagging someone who has
+  // already closed a conversation buys us nothing.
+  const submitRating = async (stars) => {
+    if (ratingBusy) return;
+    setRatingBusy(true);
+    setRating(stars);
+    try {
+      await fetch(`/api/v1/chat/sessions/${sessionId.current}/rating`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating: stars }),
+      });
+    } catch { /* silent — the score is a nicety, not the conversation */ }
+    finally { setRatingBusy(false); }
+  };
+
   const handleReset = () => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     const oldId = sessionId.current;
@@ -470,6 +501,8 @@ export default function ChatWidget() {
     setEndedBy(null);
     setConfirmEnd(false);
     setShowHumanForm(false);
+    setRating(null);
+    setEverLive(false);
 
     const w = buildWelcome(user);
     setMessages([w]);
@@ -641,6 +674,46 @@ export default function ChatWidget() {
                   Yes, End Chat
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ── Rating prompt (T69) — only for chats a person actually handled ── */}
+          {isEnded && everLive && (
+            <div className="flex-shrink-0 border-t border-gray-100 dark:border-slate-800 bg-paper dark:bg-slate-800/40 px-4 py-3">
+              {rating ? (
+                <p className="flex items-center justify-center gap-2 text-xs font-medium text-gray-700 dark:text-slate-300">
+                  <span className="flex" aria-hidden="true">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        size={13}
+                        className={n <= rating ? "text-brand-500 fill-brand-500" : "text-gray-300 dark:text-slate-600"}
+                      />
+                    ))}
+                  </span>
+                  Thanks for the feedback!
+                </p>
+              ) : (
+                <>
+                  <p className="mb-2 text-center text-xs font-medium text-gray-700 dark:text-slate-300">
+                    How did we do?
+                  </p>
+                  <div className="flex items-center justify-center gap-1" role="group" aria-label="Rate this conversation">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => submitRating(n)}
+                        disabled={ratingBusy}
+                        aria-label={`${n} star${n > 1 ? "s" : ""}`}
+                        className="p-1 text-gray-300 transition hover:scale-110 hover:text-brand-500 disabled:opacity-50 dark:text-slate-600"
+                      >
+                        <Star size={18} aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
