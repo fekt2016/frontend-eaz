@@ -45,16 +45,35 @@ _None open._
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
-- [ ] **T69 · Chat monitoring UI — staff attribution, supervisor view, metrics**
+- [x] **T69 · Chat monitoring UI — staff attribution, supervisor view, metrics** — ✅ done 2026-08-26
   - **Frontend half of `backend-eaz/tasks.md` → T69.** Admin/superadmin want to monitor the
-    quality of staff↔customer chats; the data model and endpoints land on the backend first.
-  - **Attribution:** staff bubbles in `/dashboard/chats` show *which* staff member replied
-    (currently a bare "admin"/"Eazy" label) once messages carry `senderName`.
-  - **Supervisor mode:** admins read transcripts read-only until they explicitly Claim a session —
-    ends silent double-replies and makes "watching" distinct from "answering".
-  - **Metrics:** quality cards + per-staff table on the chats page (ui-kit `SectionCard`/`Badge`,
-    date filters) fed by the backend Phase 3 endpoint; CSAT display if that phase lands too.
-  - **Blocked on backend phases 1–3 landing first.**
+    quality of staff↔customer chats. Backend phases 0–4 landed in the same pass, so this is no
+    longer blocked.
+  - **Attribution — ✅** agent bubbles in `/dashboard/chats` name the sender: "You" for your own
+    replies, the staff member's name otherwise, and a generic "EazWorld team" for messages stored
+    before `senderName` existed. Every bubble used to read **"You (Admin)"** regardless of who
+    typed it — which is precisely what made quality unmeasurable by eye.
+  - **Supervisor mode — ✅** replying now requires owning the conversation. A chat someone else
+    holds shows "*Ama* is handling this chat" with a **Take over**; an unclaimed one shows
+    "watching — claim it to reply" with a **Claim chat**; both `POST …/claim` and unlock the reply
+    box in place. Pending requests are unchanged — **Accept** claims as it connects. The session
+    list carries an owner line so a supervisor can see at a glance which chats are covered.
+    Also removed a hardcoded **"Watching"** pill that sat on every session and meant nothing.
+  - **Metrics — ✅** `QualityMetrics.jsx` (a `SectionCard` beside the console, admin-only, opened
+    from a **Quality** toggle so the admin-only endpoint doesn't fire on every front-desk page
+    load): sessions, live chats accepted, resolution rate, median first reply, median time to
+    close, 7/30/90-day range, plus a per-agent table. CSAT included now that backend phase 4
+    landed: a "Customer rating" card (`x / 5`, with rated-count + response-rate as the hint so
+    the denominator is never a mystery) and a ★ column per agent.
+  - **Customer rating (T69 phase 4) — ✅** `ChatWidget.jsx` asks for stars once a chat a *person*
+    handled has closed (bot-only conversations are never asked), submits optimistically to
+    `POST /chat/sessions/:id/rating`, and on later visits shows the saved score instead of
+    asking again (`meta.rating` from polling). The console surfaces each session's score as
+    tinted ★★☆☆☆ badges in both the list and the transcript header.
+  - **Tests:** `src/app/dashboard/chats/page.test.jsx` (11) covers attribution, the claim/take-over
+    gating, the panel's admin-only visibility, and the rating display; `ChatWidget.test.jsx` (new,
+    5) covers ask-once-after-close, submit, restore-instead-of-re-ask, and bot-only chats never
+    being asked. Suite: 49 files / 317 tests green; lint clean.
 
 - [~] **T67 · "Save GH₵0" was shown on every annual hosting plan** — ✅ frontend fix done 2026-08-25
   - **Was:** `saving = plan.monthlyPrice * 12 - plan.annualPrice`, rendered unguarded. Every tier in
@@ -66,14 +85,24 @@ _None open._
   - **Still open in `backend-eaz/tasks.md` → T67:** whether annual should carry a real discount.
     If it should, set `annualPrice` per tier and the saving line reappears with no further UI work.
 
-- [ ] **T68 · Dashboard queue for hosting orders that need manual provisioning**
+- [~] **T68 · Dashboard queue for hosting orders that need manual provisioning** — ✅ done 2026-08-26 (backend + frontend; purchase-confirmation email folds into T62)
   - **Frontend half of `backend-eaz/tasks.md` → T68.** VPS, Cloud and Email orders are paid but
     never provisioned; staff only see a count on the admin dashboard, with no list to act on.
-  - **What this needs here:** a page mirroring `dashboard/commerce/preorders` — waiting orders
-    oldest first, and a form to enter the cPanel/VM credentials created by hand in Starlight
-    Manager, which marks the order active and triggers the credentials email. Plus a nav entry,
-    since this becomes a recurring job the moment VPS tiers sell.
-  - **Blocked on the backend endpoints landing first.**
+  - **Shipped — `dashboard/hosting/awaiting-provisioning`**, mirroring
+    `dashboard/commerce/preorders`: paid skipped orders oldest first, each card showing plan,
+    customer, whole-cedi amount (`GH₵{amount}` raw — hosting money is the T44 exception, not
+    pesewas) and a credentials form. Entering the username/password created by hand in Starlight
+    Manager calls `PATCH …/mark-provisioned`, which activates the order and emails the same
+    credentials email auto-provisioned accounts get. The password goes to the email once and is
+    never stored.
+  - **Nav:** "Awaiting Provisioning" in the admin+staff section beside Pre-orders/Shipments —
+    same reasoning as T45: a recurring job someone has to go looking for, not a detail of one
+    order. Title mapping added so the topbar `<h1>` matches.
+  - **Hooks:** `useAwaitingProvisioning` / `useMarkProvisioned` in `useHosting.js`, invalidating
+    the whole hosting domain so the order leaves the queue and the admin lists refresh.
+  - **Tests:** `page.test.jsx` (6) — listing with whole-cedi rendering, credential submit,
+    domain prefill, server-refusal surface, empty state, customer role gate. Suite:
+    50 files / 323 tests green; lint clean.
 
 - [ ] **T65 · Stop advertising `.com.gh` / `.gh` / `.africa` (or decide to sell them another way)**
   - **Why:** the registrar is Spaceship now (backend T64) and its API returns `tldNotSupported`
@@ -93,20 +122,19 @@ _None open._
   - **Blocked on the business decision in `backend-eaz/tasks.md` → T65.** Don't rewrite the copy
     until it's settled whether these are dropped or sold manually.
 
-- [ ] **T62 · Surface the tracking number, and mirror the transactional emails**
+- [x] **T62 · Surface the tracking number, and mirror the transactional emails** — ✅ done (page in cb41a45; backend emails landed 2026-08-26)
   - **Why:** a customer pays and lands on the order-confirmation page, which shows the
     order number but **not the tracking number** — even though the order already has one
     from the moment it is created. For a pre-order they will check on for weeks, that is
     the difference between the T45 tracking journey being reachable and not.
-  - **What this needs here:**
-    - `src/app/order-confirmation/[reference]/page.jsx` — show the tracking number and
-      link straight to `/track/order/<number>`, rather than only linking to the
-      `/track-order` lookup form. The API already returns the field on this lookup; it
-      is simply not rendered.
-    - Where a pre-order is involved, say so on the confirmation page and set the
-      expectation ("you'll be emailed when it reaches our shop").
-    - Any new email template that needs a matching page/link should point at existing
-      routes — `/track/order/:trackingNumber` already renders the full journey.
+  - **Shipped here (cb41a45):** the confirmation page shows the tracking number with a
+    direct `/track/order/<number>` link instead of only offering the lookup form, and a
+    pre-order line sets the expectation ("you'll be emailed when it reaches our shop").
+  - **Backend half done 2026-08-26:** the emails this page promised now exist — shop
+    receipt with the same tracking link (`order_confirmation`), status moves
+    (`shop_status_update`), refund outcomes, domain and service confirmations. Full
+    detail in `backend-eaz/tasks.md` → T62. No further frontend work needed: every new
+    template points at existing routes.
   - **Backend:** `backend-eaz/tasks.md` → T62 has the full audit of which areas send
     email today and which send nothing.
 
