@@ -56,7 +56,7 @@ export const posNav = [
   { label: "My Jobs",    href: "/dashboard/pos",           icon: Wrench,   roles: ["technician"] },
   { label: "Orders",     href: "/dashboard/pos/orders",    icon: ShoppingBag, roles: ["superadmin","admin","staff"] },
   { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: Truck,    roles: ["superadmin","staff"] },
-  { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: Receipt,  roles: ["superadmin","staff"] },
+  { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: Receipt,  roles: ["superadmin","admin","staff"] },
   { label: "Warranty",   href: "/dashboard/pos/warranty",  icon: ShieldCheck, roles: ["superadmin","staff"] },
   { label: "Reports",    href: "/dashboard/pos/reports",   icon: BarChart3, roles: ["superadmin","admin","staff"] },
 ];

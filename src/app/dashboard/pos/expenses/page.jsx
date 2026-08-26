@@ -48,7 +48,7 @@ function today() {
 
 export default function ExpensesPage() {
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === "superadmin";
+  const canManageExpenses = ["superadmin", "admin"].includes(user?.role);
 
   const [error, setError] = useState("");
 
@@ -144,7 +144,7 @@ export default function ExpensesPage() {
         title="Expenses"
         description="Track shop running costs and see true profit."
         actions={
-          isSuperAdmin ? (
+          canManageExpenses ? (
             <Button variant="brand" onClick={() => setShowForm(v => !v)} aria-expanded={showForm}>
               <Plus size={15} aria-hidden="true" /> Add expense
             </Button>
@@ -153,7 +153,7 @@ export default function ExpensesPage() {
       />
 
       {/* Add form */}
-      {showForm && isSuperAdmin && (
+      {showForm && canManageExpenses && (
         <Card>
           <p className="mb-4 text-body-sm font-semibold text-gray-900 dark:text-white">New expense</p>
           <form onSubmit={handleAdd} className="space-y-4">
@@ -302,7 +302,7 @@ export default function ExpensesPage() {
             description={
               hasFilters
                 ? "Nothing matches these filters."
-                : isSuperAdmin
+                : canManageExpenses
                   ? "Log the shop's running costs here so profit reflects what it really costs to trade."
                   : "A superadmin logs the shop's running costs here."
             }
@@ -311,7 +311,7 @@ export default function ExpensesPage() {
                 <Button variant="secondary" onClick={() => { setFilterCat("all"); setFilterFrom(""); setFilterTo(""); setPage(1); }}>
                   Clear filters
                 </Button>
-              ) : isSuperAdmin ? (
+              ) : canManageExpenses ? (
                 <Button variant="brand" onClick={() => setShowForm(true)}>
                   <Plus size={15} aria-hidden="true" /> Add expense
                 </Button>
@@ -366,7 +366,7 @@ export default function ExpensesPage() {
                       <p className="flex-shrink-0 text-base font-bold tabular-nums text-error dark:text-error-dark">
                         {formatGhs(exp.amount)}
                       </p>
-                      {isSuperAdmin && (
+                      {canManageExpenses && (
                         <div className="flex flex-shrink-0 gap-1">
                           <Button
                             size="sm"
