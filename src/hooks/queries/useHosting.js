@@ -83,3 +83,22 @@ export function useStaffCreateHostingAccount() {
   return useHostingMutation((payload) =>
     api.post("/hosting/orders/staff-create", payload).then((r) => r.data));
 }
+
+// T68 — paid VPS/Cloud/Email orders auto-provisioning skipped, oldest first.
+// Somebody has to build those servers by hand; this is the work list.
+export function useAwaitingProvisioning(options = {}) {
+  return useQuery({
+    queryKey: qk.hosting.awaitingProvisioning,
+    queryFn: () => api.get("/hosting/orders/awaiting-provisioning").then((r) => r.data ?? []),
+    staleTime: 15_000,
+    ...options,
+  });
+}
+
+// Mark a manually built order provisioned: activates it, stamps expiry and
+// emails the credentials. Invalidating the whole hosting domain also refreshes
+// the queue (the order leaves it) and the admin lists (its status changed).
+export function useMarkProvisioned() {
+  return useHostingMutation(({ id, ...body }) =>
+    api.patch(`/hosting/orders/${id}/mark-provisioned`, body).then((r) => r));
+}

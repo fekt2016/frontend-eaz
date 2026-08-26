@@ -57,6 +57,7 @@ export const qk = {
     adminSummary: ["hosting", "admin-summary"],
     plans: ["hosting", "plans"],
     adminList: (params = {}) => ["hosting", "admin-list", params],
+    awaitingProvisioning: ["hosting", "awaiting-provisioning"],
     detail: (id) => ["hosting", "detail", id],
   },
   consultations: {

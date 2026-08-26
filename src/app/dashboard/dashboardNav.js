@@ -2,7 +2,7 @@
 // sidenav (dashboard, commerce, POS) renders the same sections, role-gated.
 import {
   Barcode, BarChart3, CalendarDays, FileText, Gauge, Globe,
-  History, Mail, MessagesSquare, PackageCheck, Receipt, Server, Settings, ShieldCheck,
+  History, Mail, MessagesSquare, PackageCheck, Receipt, Server, ServerCog, Settings, ShieldCheck,
   Ship, ShoppingBag, Star, Store, Truck, Users, Wrench,
 } from "lucide-react";
 
@@ -44,6 +44,9 @@ export const marketplaceNav = [
   // recurring job someone has to go looking for, not a detail of one order.
   { href: "/dashboard/commerce/preorders", icon: PackageCheck, label: "Pre-orders" },
   { href: "/dashboard/commerce/shipments", icon: Ship, label: "Shipments" },
+  // T68 — same class of recurring job for hosting: paid VPS/Cloud/Email orders
+  // nobody has built yet. Backend mirrors via restrictTo('admin', 'staff').
+  { href: "/dashboard/hosting/awaiting-provisioning", icon: ServerCog, label: "Awaiting Provisioning" },
 ];
 
 // roles: if undefined, visible to all POS roles.
@@ -78,6 +81,7 @@ const extraTitles = {
   "/dashboard/commerce/products/new": "New Product",
   "/dashboard/commerce/delivery-zones": "Delivery Zones",
   "/dashboard/hosting/new-account": "New Hosting Account",
+  "/dashboard/hosting/awaiting-provisioning": "Awaiting Provisioning",
 };
 
 /**
