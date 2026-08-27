@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import {
-  Badge, Button, Card, ConfirmDialog, EmptyState,
+  Alert, Badge, Button, Card, ConfirmDialog, EmptyState,
   Input, PageHeader, Skeleton,
 } from "@/components/ui";
 import QualityMetrics from "./QualityMetrics";
@@ -69,6 +69,7 @@ export default function AdminChatsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting]       = useState(false);
   const [showMetrics, setShowMetrics] = useState(false);
+  const [chatError, setChatError]     = useState(null);
   const messagesEndRef                 = useRef(null);
   const prevPendingCount               = useRef(0);
 
@@ -120,24 +121,50 @@ export default function AdminChatsPage() {
   };
 
   const acceptChat = async (sessionId) => {
+    setChatError(null);
     try {
       const json = await api.post(`/chat/sessions/${sessionId}/accept`);
+      if (!json.success) {
+        setChatError(json.error || "Failed to accept chat — please try again.");
+        return refreshSessions(true);
+      }
       applyToSession(sessionId, {
         humanAccepted:  true,
-        acceptedBy:     json.data?.acceptedBy ?? myId,
-        acceptedByName: json.data?.acceptedByName ?? user?.name,
+        acceptedBy:     json.data?.acceptedBy,
+        acceptedByName: json.data?.acceptedByName,
       });
-    } catch {}
+    } catch (e) {
+      const msg = e.response?.data?.error || e.message;
+      if (e.response?.status === 409) {
+        setChatError(msg);
+        return refreshSessions(true);
+      }
+      console.error("acceptChat failed:", e);
+      setChatError("Failed to accept chat — please try again.");
+    }
   };
 
   const claimChat = async (sessionId) => {
+    setChatError(null);
     try {
       const json = await api.post(`/chat/sessions/${sessionId}/claim`);
+      if (!json.success) {
+        setChatError(json.error || "Failed to claim chat — please try again.");
+        return refreshSessions(true);
+      }
       applyToSession(sessionId, {
-        acceptedBy:     json.data?.acceptedBy ?? myId,
-        acceptedByName: json.data?.acceptedByName ?? user?.name,
+        acceptedBy:     json.data?.acceptedBy,
+        acceptedByName: json.data?.acceptedByName,
       });
-    } catch {}
+    } catch (e) {
+      const msg = e.response?.data?.error || e.message;
+      if (e.response?.status === 409) {
+        setChatError(msg);
+        return refreshSessions(true);
+      }
+      console.error("claimChat failed:", e);
+      setChatError("Failed to claim chat — please try again.");
+    }
   };
 
   const toggleResolved = async (sessionId, current) => {
@@ -153,7 +180,9 @@ export default function AdminChatsPage() {
       if (active?.sessionId === sessionId) {
         setActive((a) => ({ ...a, resolved: !current, humanRequested: !current ? false : a.humanRequested }));
       }
-    } catch {}
+    } catch (e) {
+      console.error("toggleResolved failed:", e);
+    }
   };
 
   const confirmDelete = async () => {
@@ -165,7 +194,9 @@ export default function AdminChatsPage() {
       setSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
       if (active?.sessionId === sessionId) setActive(null);
       setDeleteTarget(null);
-    } catch {} finally { setDeleting(false); }
+    } catch (e) {
+      console.error("confirmDelete failed:", e);
+    } finally { setDeleting(false); }
   };
 
   const sendReply = async (e) => {
@@ -201,7 +232,9 @@ export default function AdminChatsPage() {
         );
         setReply("");
       }
-    } catch {}
+    } catch (e) {
+      console.error("sendReply failed:", e);
+    }
     finally { setSending(false); }
   };
 
@@ -235,7 +268,7 @@ export default function AdminChatsPage() {
         setSessions((prev) =>
           prev.map((s) => (s.sessionId === id ? { ...s, ...fresh } : s))
         );
-      } catch { /* ignore */ }
+      } catch (e) { console.error("pollSession failed:", e); }
     };
 
     const interval = setInterval(poll, 5000);
@@ -314,6 +347,19 @@ export default function AdminChatsPage() {
         />
 
         {isAdminRole(user?.role) && showMetrics && <QualityMetrics />}
+
+        {chatError && (
+          <Alert tone="error" className="mb-4">
+            {chatError}
+            <button
+              type="button"
+              onClick={() => setChatError(null)}
+              className="ml-2 underline hover:no-underline"
+            >
+              Dismiss
+            </button>
+          </Alert>
+        )}
 
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
