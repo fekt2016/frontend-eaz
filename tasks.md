@@ -30,7 +30,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## P1 — Important
 
-- [ ] **T97 · `FRONTEND_URL` falls back to localhost, silently breaking every canonical URL** (audit ref EZ-006)
+- [~] **T97 · `FRONTEND_URL` falls back to localhost, silently breaking every canonical URL** (audit ref EZ-006)
   - **Issue:** `export const SITE_URL = process.env.FRONTEND_URL || "http://localhost:3000";`
     (`src/lib/seo.js:1`) — a silent localhost default. `SITE_URL` feeds canonicals, `metadataBase`,
     Open Graph URLs, `sitemap.xml` and `robots.txt`. `amplify.yml` does not set the variable.
@@ -45,10 +45,10 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     localhost default for development. Set the variable in the Amplify environment.
   - **Location:** `src/lib/seo.js:1`; `amplify.yml`
   - **Acceptance:**
-    - [ ] Production build fails with a clear message when `FRONTEND_URL` is missing
-    - [ ] Development still works with no configuration
-    - [ ] Deployed `sitemap.xml`, canonicals and OG URLs use the real domain
-    - [ ] The variable is set in the deployment environment
+    - [x] Production build fails with a clear message when `FRONTEND_URL` is missing
+    - [x] Development still works with no configuration
+    - [ ] Deployed `sitemap.xml`, canonicals and OG URLs use the real domain  ← verified in a local production build; NOT verified on the deployed site
+    - [ ] The variable is set in the deployment environment  ← must be set in the Docker env (build arg + runtime)
 
   ### Implementation Notes (2026-08-29 — awaiting review)
 
@@ -87,7 +87,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## P2 — Improvements
 
-- [ ] **T98 · Six public pages ship with no metadata** (audit ref EZ-013)
+- [~] **T98 · Six public pages ship with no metadata** (audit ref EZ-013)
   - **Issue:** No `export const metadata` and no `generateMetadata` on `src/app/hosting/page.jsx`,
     `seo/page.jsx`, `repair/page.jsx`, `reviews/page.jsx`, `services/web-design/page.jsx`,
     `track-order/page.jsx`. They inherit only the root defaults — no page title, description, canonical
@@ -102,10 +102,10 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     over marketing metadata.
   - **Location:** the six files above
   - **Acceptance:**
-    - [ ] Each listed page has a unique title and description
-    - [ ] Canonical URLs derive from `SITE_URL`
-    - [ ] Transactional pages are marked noindex rather than given marketing metadata
-    - [ ] Build and lint stay clean
+    - [ ] Each listed page has a unique title and description  ← 5 of 6 done; /seo is a redirect shim, see T103
+    - [x] Canonical URLs derive from `SITE_URL`
+    - [x] Transactional pages are marked noindex rather than given marketing metadata
+    - [x] Build and lint stay clean
 
   ### Implementation Notes (2026-08-29 — awaiting review)
 
@@ -143,7 +143,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Known gap:** `/track-order`'s `og:url` still inherits the root. Harmless while the page is
     noindex, and adding OG copy would contradict the acceptance criterion above.
 
-- [ ] **T99 · Plan the Next.js 16 upgrade to clear two high-severity PostCSS advisories** (audit ref EZ-014)
+- [~] **T99 · Plan the Next.js 16 upgrade to clear two high-severity PostCSS advisories** (audit ref EZ-014)
   - **Issue:** `npm audit --omit=dev` reports 2 high-severity PostCSS advisories (arbitrary `.map` file
     read / information disclosure via attacker-controlled `sourceMappingURL`; XSS via unescaped
     `</style>`), reaching the app transitively through `next`
@@ -156,10 +156,10 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     frontend sits on.
   - **Location:** `package.json`; transitive via `next`
   - **Acceptance:**
-    - [ ] Upgrade path assessed and scheduled
-    - [ ] After upgrade, `npm audit --omit=dev` is clean
-    - [ ] Build, lint and all frontend tests pass
-    - [ ] Middleware auth/maintenance behaviour verified after the upgrade
+    - [x] Upgrade path assessed and scheduled
+    - [ ] After upgrade, `npm audit --omit=dev` is clean  ← requires the upgrade itself
+    - [ ] Build, lint and all frontend tests pass  ← requires the upgrade itself
+    - [ ] Middleware auth/maintenance behaviour verified after the upgrade  ← requires the upgrade itself
 
   ### Assessment (2026-08-29 — planning only, no upgrade performed)
 
@@ -230,7 +230,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   criteria 2-4 ("audit clean", "build/lint/tests pass", "middleware verified") can only be
   ticked once the upgrade itself is executed as its own scheduled piece of work.
 
-- [ ] **T100 · Checkout shows "Validation failed" and discards the field detail it already has** (audit ref EZ-018)
+- [x] **T100 · Checkout shows "Validation failed" and discards the field detail it already has** (audit ref EZ-018)
   - **Issue:** Zod failures return `{ error: "Validation failed", errors: [{ field, message }] }`
     (`backend-eaz/middleware/errorHandler.js:16`). `src/lib/api.js:24` already attaches `errors` to the
     thrown Error — but checkout renders only `err.message`.
@@ -243,9 +243,9 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     Applies to any form using `lib/api.js`, not just checkout.
   - **Location:** `src/app/checkout/page.jsx` (quote + submit error handling); `src/lib/api.js:24`
   - **Acceptance:**
-    - [ ] Validation failures show a specific, actionable message
-    - [ ] Non-validation errors still show their message
-    - [ ] No raw internal detail is shown to users
+    - [x] Validation failures show a specific, actionable message
+    - [x] Non-validation errors still show their message
+    - [x] No raw internal detail is shown to users
 
   ### Implementation Notes (2026-08-29 — awaiting review)
 
