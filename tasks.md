@@ -287,7 +287,7 @@
 
 ## Final production re-audit (2026-08-29) — new findings
 
-- [ ] **T129 · READY TO APPLY — delete confirmed-dead frontend code** (2026-08-29)
+- [x] **T129 · APPLIED 2026-08-29 — deleted confirmed-dead frontend code**
   - > **To run this task, say: "apply T129".** Nothing here is done yet. Everything below has been
     > verified as unused; the work is only the deletion, with lint, tests and a build in between.
     > Roughly 15 lines and 2 packages. Reversible — it is all in git history.
@@ -297,19 +297,23 @@
     2. Two Playwright test packages — the project has no Playwright tests at all.
   - **Full evidence:** `docs/DEAD-CODE-REPORT.md`. Audit branch `chore/dead-code-audit`.
   - **Fix — each as its own commit, with `npm run lint`, `npx vitest run` and `next build` between:**
-    - [ ] **1. Delete `src/hooks/queries/useContacts.js`.** Its only export, `useConsultations`, has
+    - [x] **1. Delete `src/hooks/queries/useContacts.js`.** Its only export, `useConsultations`, has
       **0 references** anywhere — the admin consultations page calls `api.get("/contacts?…")`
       directly instead. Also remove `qk.consultations` from `src/lib/queryKeys.js` if nothing else
       uses it (check before removing).
-    - [ ] **2. Drop `@playwright/test` and `playwright`** from devDependencies, then `npm install`.
+    - [x] **2. Drop `@playwright/test` and `playwright`** from devDependencies, then `npm install`.
       There is no `playwright.config.*`, no `*.spec.js` and no `e2e/` directory in the repo. They
       also pull browser binaries on install.
   - **Do NOT re-flag these** — they look unreferenced to a naive scan but are wired via config:
     `@testing-library/jest-dom` (`vitest.setup.js`), `eslint-config-next` (`.eslintrc.json`).
   - **Acceptance:**
-    - [ ] Lint, 357+ tests and `next build` all pass after each step
-    - [ ] The admin consultations page still loads and lists bookings
-    - [ ] `grep -rn "useConsultations" src` returns nothing
+    - [x] Lint clean, 357/357 tests, `next build` compiles and generates all 78 pages after each step
+    - [x] `grep -rn "useConsultations" src` returns nothing
+    - [~] The admin consultations page was **not** opened in a browser — it fetches with
+          `api.get("/contacts?…")` and never referenced the deleted hook, so nothing it uses changed.
+          Worth one manual click before release all the same.
+  - `qk.consultations` was removed from `src/lib/queryKeys.js` too — the deleted hook was its only
+    consumer. Applied in two commits on `chore/dead-code-phase-b`.
 
 - [ ] **T133 · Migrate the remaining direct `api.*` page calls to react-query hooks** (dead-code audit 2026-08-29)
   - **Issue:** two data-fetching patterns coexist, as CLAUDE.md documents. Measured: **50** files use
