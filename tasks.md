@@ -295,6 +295,28 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Final production re-audit (2026-08-29) — new findings
 
+- [ ] **T127 · Checkout submits customer details without sanitising, against the project's own convention** (input-sanitisation sweep 2026-08-29) — **CONFIRMED**
+  - **Issue:** `STYLE_GUIDE.md` and `CLAUDE.md` both state "sanitize form input on submit with
+    `lib/sanitize.js`". `src/app/checkout/page.jsx` does not import it at all — it posts
+    `customer.name`, `phone`, `email` and `street` straight from state. Same for
+    `src/app/hosting/checkout/page.jsx`. Counted across the app: **44 components post data, 14 call a
+    sanitiser.** The public-facing files with none are:
+    `checkout/page.jsx`, `hosting/checkout/page.jsx`, `track/[token]/page.jsx`,
+    `auth/verify/page.jsx`, `auth/verify-2fa/page.jsx`, `auth/reset-password/[token]/page.jsx`.
+  - **Impact:** **not** an XSS hole — the backend's global `xss-clean` escapes nested body values,
+    verified directly. The cost is that the shop's highest-value form is the one place the convention
+    is skipped, so unbounded and malformed values reach the server, where `Order.customer` has no
+    length cap or email validator either (**`backend-eaz/tasks.md` T125**). The two gaps line up:
+    neither layer bounds the input.
+  - **Lower priority within this task:** the three `auth/*` files submit PINs and tokens, and
+    `sanitizePin` exists for exactly that; `track/[token]` submits a lookup token. Real but minor
+    next to checkout.
+  - **Repro:** `grep -L "sanitize[A-Z]" $(grep -rl "api\.\(post\|patch\|put\)(" src/app --include "*.jsx" | grep -v test)`
+  - **Fix:** apply `sanitizeName` / `sanitizeEmail` / `sanitizePhone` / `sanitizeText` in checkout's
+    submit handler, as `CheckoutForm.jsx` and the auth register/login pages already do. Sanitise on
+    submit, never on keystroke — that is the documented rule and the reason typing is not disrupted.
+  - **Location:** `src/app/checkout/page.jsx`; `src/app/hosting/checkout/page.jsx`; the four listed above
+
 - [ ] **T123 · The `FRONTEND_URL` fail-fast stops at the frontend — the backend still degrades silently** (final re-audit 2026-08-29) — **CONFIRMED, cross-app**
   - **Issue:** T97 is genuinely fixed on this side: `src/lib/seo.js` throws when
     `NODE_ENV === "production"` and `FRONTEND_URL` is unset, verified by build (`exit 1` with the
