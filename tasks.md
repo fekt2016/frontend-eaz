@@ -287,9 +287,15 @@
 
 ## Final production re-audit (2026-08-29) — new findings
 
-- [ ] **T129 · Remove confirmed-dead frontend code (dead-code audit Phase A)** (2026-08-29)
+- [ ] **T129 · READY TO APPLY — delete confirmed-dead frontend code** (2026-08-29)
+  - > **To run this task, say: "apply T129".** Nothing here is done yet. Everything below has been
+    > verified as unused; the work is only the deletion, with lint, tests and a build in between.
+    > Roughly 15 lines and 2 packages. Reversible — it is all in git history.
+  - **What gets deleted, in one sentence each:**
+    1. `src/hooks/queries/useContacts.js` — nothing imports it; the consultations page fetches
+       directly instead.
+    2. Two Playwright test packages — the project has no Playwright tests at all.
   - **Full evidence:** `docs/DEAD-CODE-REPORT.md`. Audit branch `chore/dead-code-audit`.
-    Phase A is complete and nothing has been deleted; this task is the deletion work.
   - **Fix — each as its own commit, with `npm run lint`, `npx vitest run` and `next build` between:**
     - [ ] **1. Delete `src/hooks/queries/useContacts.js`.** Its only export, `useConsultations`, has
       **0 references** anywhere — the admin consultations page calls `api.get("/contacts?…")`
