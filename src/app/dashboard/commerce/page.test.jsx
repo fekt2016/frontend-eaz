@@ -27,8 +27,11 @@ vi.mock("@/lib/api", () => ({
     post: (...args) => mockPost(...args),
     upload: (...args) => mockUpload(...args),
   },
+  // page.jsx imports this alongside `api` (T100).
+  errorMessage: (err, fallback) => err?.message || fallback,
 }));
 
+import { api } from "@/lib/api";
 import CommercePage from "./page";
 
 // Waits for PartsTab's initial fetches to settle (loading skeleton gone)
@@ -168,5 +171,48 @@ describe("Commerce page — content gutters", () => {
     await waitFor(() => expect(screen.getByText("Marketplace")).toBeInTheDocument());
     expect(container.firstChild).toBe(root);
     expect(root.className).toMatch(/\bp-5\b/);
+  });
+});
+
+// T110: the bench-vs-shop distinction the removed tabs implied is now a filter
+// over the one collection.
+describe("Marketplace — kind filter (T110)", () => {
+  // A prior describe leaves stock in `inventoryData`, so settle on the list
+  // heading rather than the empty state.
+  beforeEach(() => {
+    inventoryData = [];
+    vi.clearAllMocks();
+  });
+
+  async function renderList() {
+    render(<CommercePage />);
+    await waitFor(() => expect(screen.getByText("All stock")).toBeInTheDocument());
+  }
+
+  it("offers All / Parts / Accessories / Other instead of tabs", async () => {
+    mockUser.mockReturnValue({ role: "admin" });
+    await renderList();
+
+    const group = screen.getByRole("group", { name: /stock kind/i });
+    expect(group).toBeInTheDocument();
+    for (const label of ["All", "Parts", "Accessories", "Other"]) {
+      expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
+    }
+  });
+
+  it("sends kind to the API and leaves it off when All is selected", async () => {
+    mockUser.mockReturnValue({ role: "admin" });
+    await renderList();
+
+    const calls = () => api.get.mock.calls.map(([url]) => url).filter((u) => u.startsWith("/pos/inventory?"));
+    expect(calls().some((u) => u.includes("kind="))).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Accessories" }));
+    await waitFor(() => expect(calls().some((u) => u.includes("kind=accessories"))).toBe(true));
+
+    fireEvent.click(screen.getByRole("button", { name: "All" }));
+    await waitFor(() =>
+      expect(calls().at(-1).includes("kind=")).toBe(false),
+    );
   });
 });

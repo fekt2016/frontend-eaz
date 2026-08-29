@@ -17,6 +17,15 @@ import { Alert, Badge } from "@/components/ui";
 
 const CATEGORIES = ["Screen", "Battery", "Charging Port", "Speaker", "Camera", "Button", "Housing", "Board", "Accessory", "Cable", "IC / Chip", "Other"];
 
+// T110 — mirrors INVENTORY_KINDS in the backend's controllers/pos/common.js.
+// "" means no filter; the server treats an unknown value as no filter too.
+const KINDS = [
+  { value: "",            label: "All" },
+  { value: "parts",       label: "Parts" },
+  { value: "accessories", label: "Accessories" },
+  { value: "other",       label: "Other" },
+];
+
 const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 const selectCls = `${inputCls} cursor-pointer`;
 const labelCls = "block text-body-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5";
@@ -228,6 +237,8 @@ function ProductsList() {
   const [loading,     setLoading]     = useState(true);
   const [q,           setQ]           = useState("");
   const [category,    setCategory]    = useState("");
+  // T110 — parts / accessories / other. "" is all stock.
+  const [kind,        setKind]        = useState("");
   const [lowStock,    setLowStock]    = useState(false);
   const [modal,       setModal]       = useState(null);
   const [page,        setPage]        = useState(1);
@@ -243,6 +254,7 @@ function ProductsList() {
       const params = new URLSearchParams({ page, limit });
       if (q.trim())  params.set("q", q.trim());
       if (category)  params.set("category", category);
+      if (kind)      params.set("kind", kind);
       if (lowStock)  params.set("lowStock", "true");
       const [res, lowRes] = await Promise.all([
         api.get(`/pos/inventory?${params}`),
@@ -253,7 +265,7 @@ function ProductsList() {
       setLowStockItems(lowRes.data || []);
     } catch (err) { setLowStockItems([]); console.warn("Inventory load error:", err.message); }
     finally { setLoading(false); }
-  }, [q, category, lowStock, page]);
+  }, [q, category, kind, lowStock, page]);
 
   useEffect(() => { fetchParts(); }, [fetchParts]);
 
@@ -394,9 +406,28 @@ function ProductsList() {
           <input
             value={q}
             onChange={e => { setQ(e.target.value); setPage(1); }}
-            placeholder="Search parts, barcodes, SKUs…"
+            placeholder="Search stock, barcodes, SKUs…"
             className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition"
           />
+        </div>
+        {/* T110: bench vs shop is a property of the item now, not a separate
+            table, so it belongs here rather than in the tabs this page used to have. */}
+        <div className="flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-gray-900" role="group" aria-label="Stock kind">
+          {KINDS.map(({ value, label }) => (
+            <button
+              key={value || "all"}
+              type="button"
+              aria-pressed={kind === value}
+              onClick={() => { setKind(value); setPage(1); }}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                kind === value
+                  ? "bg-gray-900 text-white dark:bg-brand-500 dark:text-gray-900"
+                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
         <select
           value={category}
