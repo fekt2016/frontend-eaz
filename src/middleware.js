@@ -133,6 +133,23 @@ export async function middleware(request) {
     }
   }
 
+  // POS management surfaces — admin + superadmin only. T83 (owner, 2026-08-29):
+  // staff are the counter (sales, jobs, payments); reports, suppliers and warranty
+  // are management. The backend gates the matching APIs
+  // (/pos/reports/analytics, /pos/suppliers, /pos/warranty) — this stops the page
+  // itself from rendering, so a bookmarked URL bounces instead of loading a shell
+  // that then fails its fetches.
+  const ADMIN_POS_PATHS = [
+    "/dashboard/pos/reports",
+    "/dashboard/pos/suppliers",
+    "/dashboard/pos/warranty",
+  ];
+  if (token && ADMIN_POS_PATHS.some((p) => pathname.startsWith(p))) {
+    if (!ADMIN_ROLES.includes(userRole)) {
+      return NextResponse.redirect(new URL("/dashboard/pos", request.url));
+    }
+  }
+
   // ── POS auth guard ───────────────────────────────────────────────────────────
   if (pathname.startsWith("/dashboard/pos")) {
     if (!token) {
