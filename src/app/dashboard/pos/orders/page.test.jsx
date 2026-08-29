@@ -1,10 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
-// T28: this page rendered shop/part orders as cards; rebuilt as a table
-// like the other admin order lists. The inline status <select> stays here
-// (unlike the other two order lists) since there's no per-order detail page
-// to move it to.
+// T28: this page rendered shop/part orders as cards; rebuilt as a table like the
+// other admin order lists.
+// T112 (owner, 2026-08-29): the Part Orders tab is gone, and the list no longer
+// mutates anything — every row links to /dashboard/commerce/orders/:id, which
+// already owns status changes and tracking events. The inline <select> that used
+// to live here is removed, so the list and the detail page cannot disagree.
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }) => <a href={href} {...rest}>{children}</a>,
 }));
@@ -51,22 +53,21 @@ describe("POS orders page — table layout (T28)", () => {
     expect(screen.getByText("GH₵150.00")).toBeInTheDocument();
   });
 
-  it("still allows updating a shop order's status inline", () => {
+  it("shows the status read-only and links out to the detail page", () => {
     render(<PosOrdersPage />);
 
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "shipped" } });
-    expect(mockUpdateShop).toHaveBeenCalledWith(
-      { id: "so1", status: "shipped" },
-      expect.any(Object),
-    );
+    // No inline control — the detail page owns updates now.
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+    expect(screen.getByText("paid")).toBeInTheDocument();
+
+    const view = screen.getByRole("link", { name: /view/i });
+    expect(view).toHaveAttribute("href", "/dashboard/commerce/orders/so1");
   });
 
-  it("switches to the Part Orders tab and renders that table too", () => {
+  it("no longer offers a Part Orders tab", () => {
     render(<PosOrdersPage />);
 
-    fireEvent.click(screen.getByText("Part Orders"));
-    expect(screen.getByRole("table")).toBeInTheDocument();
-    expect(screen.getByText("Screen")).toBeInTheDocument();
-    expect(screen.getByText("GH₵50.00")).toBeInTheDocument();
+    expect(screen.queryByText("Part Orders")).not.toBeInTheDocument();
+    expect(screen.queryByText("Shop Orders")).not.toBeInTheDocument();
   });
 });
