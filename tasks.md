@@ -19,14 +19,6 @@
 > Vite/React SPA with no auth). Its "critical" items are already resolved in the current
 > code — see the reconciliation note at the bottom. Do **not** re-open those tasks.
 
----
-
-## P0 — Critical / Blocking
-
-_None. The app builds, all tests pass, no broken or insecure feature blocks use._
-(Verification tasks that gate a production release are tracked under P1 below.)
-
----
 
 ## P1 — Important
 
@@ -294,6 +286,33 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 ---
 
 ## Final production re-audit (2026-08-29) — new findings
+
+- [ ] **T129 · Dead code audit — frontend findings (Phase A complete, deletions awaiting sign-off)** (dead-code audit 2026-08-29)
+  - **Full report:** `docs/DEAD-CODE-REPORT.md`. Branch `chore/dead-code-audit`. **Nothing deleted yet.**
+  - **Confirmed dead (3):**
+    - `src/hooks/queries/useContacts.js` — the whole module. Its only export, `useConsultations`, has
+      **0 references**; the admin consultations page calls `api.get("/contacts?…")` directly instead.
+    - `@playwright/test` and `playwright` (dev) — **no `playwright.config.*`, no `*.spec.js`, no
+      `e2e/` directory** anywhere in the repo. Also pulls browser binaries on install.
+  - **Not dead, despite looking it:** `@testing-library/jest-dom` (wired in `vitest.setup.js`) and
+    `eslint-config-next` (wired in `.eslintrc.json`). Recorded so a future scan does not re-flag them.
+  - **Duplicate implementations — the live one is both.** 50 files use `@/hooks/queries/*`, 21 call
+    `api.*` directly, and **5 do both in the same file**. CLAUDE.md documents the coexistence and
+    prefers react-query for new work. The dead `useContacts.js` above is a symptom: the hook was
+    written, the page kept the old pattern. Migrate page-by-page when files are touched — not a
+    deletion task, and not something to sweep in one pass.
+  - **Env drift:** `NEXT_PUBLIC_CPANEL_URL` and `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` are documented in
+    `.env.local.example` but **never read**. The Paystack public key is unused because checkout
+    redirects via the server-created authorization URL rather than Paystack inline JS — scaffolding
+    if inline checkout is planned, otherwise documentation for a variable nobody sets.
+  - **Debug artifacts: none.** Zero `console.log` and zero `debugger` in `src/`. 5 TODO/FIXME markers,
+    low priority.
+  - **Methodology note worth keeping:** two of three detection passes were wrong before being caught
+    by sanity checks — one flagged 118 files, another 274, including the entire `ui/` component
+    library. Both were tooling bugs (a zsh glob failure silencing grep, then a quoting error), not
+    findings. **Any future scan claiming `ui/` or `lib/api.js` is unused is broken** — validate the
+    detector against a known-live module before trusting its output.
+  - **Scope if approved:** 1 file (~15 LoC), 2 dev dependencies.
 
 - [ ] **T127 · Checkout submits customer details without sanitising, against the project's own convention** (input-sanitisation sweep 2026-08-29) — **CONFIRMED**
   - **Issue:** `STYLE_GUIDE.md` and `CLAUDE.md` both state "sanitize form input on submit with
