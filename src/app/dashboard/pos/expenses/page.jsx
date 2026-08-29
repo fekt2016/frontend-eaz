@@ -48,6 +48,11 @@ function today() {
 
 export default function ExpensesPage() {
   const { user } = useAuth();
+  // T113: staff record their own spending but do not revise it, so adding and
+  // managing are separate permissions. The server enforces both, and scopes the
+  // list itself — staff see only their own, admin theirs plus every staff
+  // member's, superadmin everything.
+  const canAddExpense     = ["superadmin", "admin", "staff"].includes(user?.role);
   const canManageExpenses = ["superadmin", "admin"].includes(user?.role);
 
   const [error, setError] = useState("");
@@ -144,7 +149,7 @@ export default function ExpensesPage() {
         title="Expenses"
         description="Track shop running costs and see true profit."
         actions={
-          canManageExpenses ? (
+          canAddExpense ? (
             <Button variant="brand" onClick={() => setShowForm(v => !v)} aria-expanded={showForm}>
               <Plus size={15} aria-hidden="true" /> Add expense
             </Button>
@@ -153,7 +158,7 @@ export default function ExpensesPage() {
       />
 
       {/* Add form */}
-      {showForm && canManageExpenses && (
+      {showForm && canAddExpense && (
         <Card>
           <p className="mb-4 text-body-sm font-semibold text-gray-900 dark:text-white">New expense</p>
           <form onSubmit={handleAdd} className="space-y-4">
@@ -302,16 +307,16 @@ export default function ExpensesPage() {
             description={
               hasFilters
                 ? "Nothing matches these filters."
-                : canManageExpenses
+                : canAddExpense
                   ? "Log the shop's running costs here so profit reflects what it really costs to trade."
-                  : "A superadmin logs the shop's running costs here."
+                  : "An admin logs the shop's running costs here."
             }
             action={
               hasFilters ? (
                 <Button variant="secondary" onClick={() => { setFilterCat("all"); setFilterFrom(""); setFilterTo(""); setPage(1); }}>
                   Clear filters
                 </Button>
-              ) : canManageExpenses ? (
+              ) : canAddExpense ? (
                 <Button variant="brand" onClick={() => setShowForm(true)}>
                   <Plus size={15} aria-hidden="true" /> Add expense
                 </Button>
