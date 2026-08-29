@@ -293,6 +293,37 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ---
 
+## Final production re-audit (2026-08-29) — new findings
+
+- [ ] **T123 · The `FRONTEND_URL` fail-fast stops at the frontend — the backend still degrades silently** (final re-audit 2026-08-29) — **CONFIRMED, cross-app**
+  - **Issue:** T97 is genuinely fixed on this side: `src/lib/seo.js` throws when
+    `NODE_ENV === "production"` and `FRONTEND_URL` is unset, verified by build (`exit 1` with the
+    configuration error) and by `src/lib/seo.test.js`. But the backend's `utils/frontendUrl.js`
+    returns an **empty string** in the same situation, with no throw.
+  - **Impact:** the customer-visible half of the problem T97 set out to solve is still live, and it
+    reaches payments rather than SEO — Paystack `callback_url` and SMS tracking links are built from
+    the backend value. See **`backend-eaz/tasks.md` T119** for the detail and the fix.
+  - **Why it is logged here too:** T97's acceptance reads as satisfied from this repo alone, which is
+    how the backend half stayed invisible. Anyone re-checking T97 should read both.
+  - **Location:** `src/lib/seo.js` (fixed); `backend-eaz/utils/frontendUrl.js` (not fixed)
+
+- [ ] **T124 · Two high-severity PostCSS advisories remain in the shipped dependency tree** (final re-audit 2026-08-29) — **CONFIRMED, unchanged**
+  - **Issue:** `npm audit --omit=dev` still reports **2 high severity** in `frontend-eaz`, reaching
+    the app transitively through `next@14.2.35`. The backend is clean — `npm audit` and
+    `npm audit --omit=dev` both report **0 vulnerabilities**.
+  - **Impact:** unchanged from T99's assessment. PostCSS runs at build time, so the two PostCSS
+    advisories are not a live request path. The `next` advisories bundled in the same fix **are**
+    runtime, and the image-optimizer ones remain reachable via
+    `next.config.mjs` `remotePatterns: [{ hostname: "**" }]`.
+  - **Not a duplicate of T99:** T99 is the *plan* for the Next 16 upgrade and is assessed. This
+    records that as of the final audit nothing has changed, so the risk ships as-is unless the
+    upgrade is scheduled first.
+  - **Repro:** `cd frontend-eaz && npm audit --omit=dev`
+  - **Decision needed before deploy:** accept the risk explicitly, or narrow `remotePatterns` to the
+    supplier hosts actually used — which shrinks the reachable surface without the framework upgrade.
+
+---
+
 ## Ad-hoc fixes (found during work, outside the original audit)
 
 - [x] **T101 · Four `business-settings` tests fail on `main` — ambiguous "Shop Profile" text** (found during T97, 2026-08-29)
