@@ -6,6 +6,7 @@ import { z } from "zod";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
+import { formatGhsMajor } from "@/lib/shop";
 
 const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
@@ -102,14 +103,14 @@ export default function CheckoutForm({ domain, price }) {
         <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Registration period</label>
         <select value={years} onChange={(e) => setYears(Number(e.target.value))} className={inputCls}>
           {[1, 2, 3, 4, 5].map((y) => (
-            <option key={y} value={y}>{y} year{y > 1 ? "s" : ""} — GH₵{(price * y).toFixed(0)}</option>
+            <option key={y} value={y}>{y} year{y > 1 ? "s" : ""} — {formatGhsMajor(price * y)}</option>
           ))}
         </select>
       </div>
 
       <div className="flex items-center justify-between pt-2">
         <span className="text-sm text-gray-500 dark:text-slate-400">Total</span>
-        <span className="text-lg font-bold text-brand-500">GH₵{total.toFixed(0)}</span>
+        <span className="text-lg font-bold text-brand-500">{formatGhsMajor(total)}</span>
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}

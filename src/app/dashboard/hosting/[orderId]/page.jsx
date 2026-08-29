@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Download, Upload, CheckCircle2, ExternalLink, Trash2, RotateCw, Key } from "lucide-react";
 import { api } from "@/lib/api";
 import { isAdminRole } from "@/lib/roles";
+import { formatGhsMajor } from "@/lib/shop";
 import { useAuth } from "@/context/AuthContext";
 import { Badge, Button } from "@/components/ui";
 
@@ -213,7 +214,7 @@ export default function HostingOrderDetailPage() {
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-gray-600 dark:text-slate-500">Amount</dt>
-              <dd className="font-medium text-gray-900 dark:text-white">GH₵{order.amount}</dd>
+              <dd className="font-medium text-gray-900 dark:text-white">{formatGhsMajor(order.amount)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-600 dark:text-slate-500">Payment method</dt>

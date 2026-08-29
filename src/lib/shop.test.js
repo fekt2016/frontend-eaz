@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatGhs, stockBadge, placeholderToPng } from "./shop";
+import { formatGhs, formatGhsMajor, stockBadge, placeholderToPng } from "./shop";
 
 describe("formatGhs", () => {
   it("renders integer pesewas as GH₵ cedis with 2 decimals and thousands separators", () => {
@@ -15,6 +15,32 @@ describe("formatGhs", () => {
     expect(formatGhs(undefined)).toBe("GH₵0.00");
     expect(formatGhs(null)).toBe("GH₵0.00");
     expect(formatGhs("nope")).toBe("GH₵0.00");
+  });
+});
+
+// T43/T44: hosting/domain/service order money is an intentional, permanent
+// major-GHS-float exception (DECISION 1) — formatGhsMajor is the sibling
+// formatter for those fields, same output as formatGhs but WITHOUT the
+// pesewas->cedis division (the value is already in cedis).
+describe("formatGhsMajor", () => {
+  it("renders a major-GHS value with 2 decimals and thousands separators, no /100 division", () => {
+    expect(formatGhsMajor(0)).toBe("GH₵0.00");
+    expect(formatGhsMajor(1)).toBe("GH₵1.00");
+    expect(formatGhsMajor(45.5)).toBe("GH₵45.50");
+    expect(formatGhsMajor(650)).toBe("GH₵650.00");
+    expect(formatGhsMajor(1234.56)).toBe("GH₵1,234.56");
+    expect(formatGhsMajor(12500)).toBe("GH₵12,500.00");
+  });
+
+  it("is null/NaN-safe", () => {
+    expect(formatGhsMajor(undefined)).toBe("GH₵0.00");
+    expect(formatGhsMajor(null)).toBe("GH₵0.00");
+    expect(formatGhsMajor("nope")).toBe("GH₵0.00");
+  });
+
+  it("does NOT divide by 100 — the same numeric input formats 100x higher than formatGhs", () => {
+    expect(formatGhsMajor(150)).toBe("GH₵150.00");
+    expect(formatGhs(150)).toBe("GH₵1.50"); // pesewas interpretation, for contrast
   });
 });
 

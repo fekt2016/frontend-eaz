@@ -54,9 +54,9 @@ describe("CheckoutForm", () => {
     api.post.mockResolvedValueOnce({ data: { authorizationUrl: "https://checkout.paystack.com/xyz" } });
     render(<CheckoutForm domain="eazworld.com" price={100} />);
     fillRequiredFields();
-    fireEvent.change(screen.getByDisplayValue("1 year — GH₵100"), { target: { value: "3" } });
+    fireEvent.change(screen.getByDisplayValue("1 year — GH₵100.00"), { target: { value: "3" } });
 
-    expect(screen.getByText("GH₵300")).toBeInTheDocument(); // total updates live
+    expect(screen.getByText("GH₵300.00")).toBeInTheDocument(); // total updates live
 
     fireEvent.click(screen.getByRole("button", { name: /pay with paystack/i }));
     await waitFor(() => expect(api.post).toHaveBeenCalledWith("/domain/payment", expect.objectContaining({ amount: 300, years: 3 })));

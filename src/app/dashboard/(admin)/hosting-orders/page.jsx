@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { isAdminRole } from "@/lib/roles";
+import { formatGhsMajor } from "@/lib/shop";
 import {
   Trash2, Search, RotateCw, ExternalLink, ClipboardList,
   TriangleAlert, Server, CheckCircle2,
@@ -468,7 +469,7 @@ export default function AdminHostingOrdersPage() {
                         </Td>
                         {/* Hosting amounts are still whole GH₵, not pesewas — see T44. */}
                         <Td className="whitespace-nowrap align-top font-medium text-gray-900 dark:text-white">
-                          GH₵{order.amount}
+                          {formatGhsMajor(order.amount)}
                         </Td>
                         <Td className="align-top capitalize">{(order.paymentMethod || "").replace(/_/g, " ")}</Td>
                         <Td className="align-middle">

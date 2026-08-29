@@ -6,6 +6,7 @@ import { Check, X, Lock, Loader2, Eye, EyeOff, User } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText, getPasswordRules, validatePassword } from "@/lib/sanitize";
+import { formatGhsMajor } from "@/lib/shop";
 
 const WEBSITE_TYPES = [
   "Business / Corporate",
@@ -121,11 +122,11 @@ const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
         <div className="mx-5 mt-4 p-3 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/30 flex items-center justify-between">
           <div>
             <p className="text-xs text-brand-700 dark:text-brand-400 font-medium">Deposit (50% upfront)</p>
-            <p className="text-xl font-bold text-brand-ink dark:text-brand-400">GH₵{pkg.deposit.toLocaleString()}</p>
+            <p className="text-xl font-bold text-brand-ink dark:text-brand-400">{formatGhsMajor(pkg.deposit)}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-600 dark:text-slate-500">Project total starts from</p>
-            <p className="text-sm font-semibold text-gray-600 dark:text-slate-300">GH₵{pkg.total.toLocaleString()}</p>
+            <p className="text-sm font-semibold text-gray-600 dark:text-slate-300">{formatGhsMajor(pkg.total)}</p>
           </div>
         </div>
 
@@ -250,7 +251,7 @@ const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
             {loading ? (
               <><Loader2 className="animate-spin" size={13} /> Redirecting to payment…</>
             ) : (
-              <><Lock size={11} /> Pay GH₵{pkg.deposit.toLocaleString()} Deposit</>
+              <><Lock size={11} /> Pay {formatGhsMajor(pkg.deposit)} Deposit</>
             )}
           </button>
 

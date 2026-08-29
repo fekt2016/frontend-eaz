@@ -2,8 +2,16 @@
 // integer pesewas (GH₵1.00 === 100); divide by 100 only here, at the edge.
 // Output: `GH₵1,234.56` — thousands separators, always 2 decimals.
 export function formatGhs(pesewas) {
-  const cedis = (Number(pesewas) || 0) / 100;
-  return `GH₵${cedis.toLocaleString("en-GH", {
+  return formatGhsMajor((Number(pesewas) || 0) / 100);
+}
+
+// Same output as formatGhs, for values already in major GHS units (not
+// pesewas) — hosting/domain/service order money (T44, DECISION 1: an
+// intentional, permanent exception to the pesewas rule; see the comment on
+// HostingOrder.amount in backend-eaz for the full reasoning). Do NOT use
+// this for pesewas values — it will not divide by 100.
+export function formatGhsMajor(cedis) {
+  return `GH₵${(Number(cedis) || 0).toLocaleString("en-GH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;

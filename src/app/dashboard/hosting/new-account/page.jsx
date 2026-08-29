@@ -1,4 +1,5 @@
 "use client";
+import { formatGhsMajor } from "@/lib/shop";
 
 import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Server } from "lucide-react";
 
@@ -145,7 +146,7 @@ const labelCls = "block text-body-sm font-medium text-gray-700 dark:text-slate-3
             </div>
             <div className="mt-2 flex items-center justify-between text-sm">
               <span className="text-gray-500 dark:text-slate-400">Price</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{price != null ? `GH₵${price.toLocaleString()}` : "—"}</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{price != null ? formatGhsMajor(price) : "—"}</span>
             </div>
             {!isCpanel && (
               <p className="mt-1 text-xs text-warning dark:text-warning-dark">

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { formatGhsMajor } from "@/lib/shop";
 
 function ResultRow({ result, onSelect }) {
   return (
@@ -17,7 +18,7 @@ function ResultRow({ result, onSelect }) {
         <p className="text-sm font-semibold text-gray-900 dark:text-white">{result.domain}</p>
         {result.available && (
           <p className="text-xs text-gray-600 dark:text-slate-500 mt-0.5">
-            {result.price ? <>GH₵{result.price}<span className="ml-1">/yr</span></> : "—"}
+            {result.price ? <>{formatGhsMajor(result.price)}<span className="ml-1">/yr</span></> : "—"}
           </p>
         )}
       </div>

@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Globe, RotateCw, Search, CheckCircle2, Clock, Wallet } from "lucide-react";
 import { useAdminDomainOrders, useUpdateDomainOrderStatus, useRetryDomainRegistration } from "@/hooks/queries/useDomains";
+import { formatGhsMajor } from "@/lib/shop";
 import { isAdminRole } from "@/lib/roles";
 import KpiCard from "@/components/reports/KpiCard";
 import {
@@ -229,7 +230,7 @@ export default function AdminDomainOrdersPage() {
                         </p>
                         <p className="max-w-[180px] truncate text-caption text-gray-600 dark:text-slate-400">{o.email}</p>
                       </Td>
-                      <Td className="whitespace-nowrap font-semibold text-gray-900 dark:text-white">GH₵{o.price}</Td>
+                      <Td className="whitespace-nowrap font-semibold text-gray-900 dark:text-white">{formatGhsMajor(o.price)}</Td>
                       <Td>{o.years || 1}yr</Td>
                       <Td>
                         <Badge tone={statusTones[o.status] || "neutral"} className="capitalize">
