@@ -19,14 +19,6 @@
 > Vite/React SPA with no auth). Its "critical" items are already resolved in the current
 > code — see the reconciliation note at the bottom. Do **not** re-open those tasks.
 
----
-
-## P0 — Critical / Blocking
-
-_None. The app builds, all tests pass, no broken or insecure feature blocks use._
-(Verification tasks that gate a production release are tracked under P1 below.)
-
----
 
 ## P1 — Important
 
@@ -294,6 +286,68 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 ---
 
 ## Final production re-audit (2026-08-29) — new findings
+
+- [ ] **T129 · READY TO APPLY — delete confirmed-dead frontend code** (2026-08-29)
+  - > **To run this task, say: "apply T129".** Nothing here is done yet. Everything below has been
+    > verified as unused; the work is only the deletion, with lint, tests and a build in between.
+    > Roughly 15 lines and 2 packages. Reversible — it is all in git history.
+  - **What gets deleted, in one sentence each:**
+    1. `src/hooks/queries/useContacts.js` — nothing imports it; the consultations page fetches
+       directly instead.
+    2. Two Playwright test packages — the project has no Playwright tests at all.
+  - **Full evidence:** `docs/DEAD-CODE-REPORT.md`. Audit branch `chore/dead-code-audit`.
+  - **Fix — each as its own commit, with `npm run lint`, `npx vitest run` and `next build` between:**
+    - [ ] **1. Delete `src/hooks/queries/useContacts.js`.** Its only export, `useConsultations`, has
+      **0 references** anywhere — the admin consultations page calls `api.get("/contacts?…")`
+      directly instead. Also remove `qk.consultations` from `src/lib/queryKeys.js` if nothing else
+      uses it (check before removing).
+    - [ ] **2. Drop `@playwright/test` and `playwright`** from devDependencies, then `npm install`.
+      There is no `playwright.config.*`, no `*.spec.js` and no `e2e/` directory in the repo. They
+      also pull browser binaries on install.
+  - **Do NOT re-flag these** — they look unreferenced to a naive scan but are wired via config:
+    `@testing-library/jest-dom` (`vitest.setup.js`), `eslint-config-next` (`.eslintrc.json`).
+  - **Acceptance:**
+    - [ ] Lint, 357+ tests and `next build` all pass after each step
+    - [ ] The admin consultations page still loads and lists bookings
+    - [ ] `grep -rn "useConsultations" src` returns nothing
+
+- [ ] **T133 · Migrate the remaining direct `api.*` page calls to react-query hooks** (dead-code audit 2026-08-29)
+  - **Issue:** two data-fetching patterns coexist, as CLAUDE.md documents. Measured: **50** files use
+    `@/hooks/queries/*`, **21** call `api.*` directly, and **5 use both in the same file**.
+  - **Impact:** low severity, real cost. The dead `useContacts.js` in T129 is the symptom — a hook was
+    written for the consultations page and the page kept the old pattern, so the hook rotted. Mixed
+    patterns also mean two cache-invalidation stories in one file for those 5.
+  - **Fix:** migrate page-by-page **as files are touched for other reasons**, not as one sweep — a
+    bulk rewrite of 21 pages changes data-fetching behaviour everywhere at once with no feature to
+    justify the risk. Start with the 5 mixed files, where the inconsistency is inside one component.
+  - **Acceptance:**
+    - [ ] No file uses both patterns simultaneously
+    - [ ] New pages use react-query only
+
+- [ ] **T134 · Resolve the two documented-but-unread frontend env vars** (dead-code audit 2026-08-29)
+  - **Issue:** `.env.local.example` documents `NEXT_PUBLIC_CPANEL_URL` and
+    `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`; neither is read anywhere in `src/`.
+  - **Why it matters:** `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` is unused because checkout redirects via the
+    server-created Paystack authorization URL rather than inline JS. So it is either scaffolding for
+    an inline checkout that was never built, or documentation for a variable nobody should set.
+    Someone deploying will set both and assume they do something.
+  - **Fix:** decide per variable — keep with a comment saying "reserved for inline checkout, not yet
+    used", or remove from the example. Do not silently delete `NEXT_PUBLIC_CPANEL_URL` without
+    checking whether the cPanel SSO flow is planned.
+  - **Acceptance:**
+    - [ ] Every variable in `.env.local.example` is either read by code or annotated as reserved
+
+- [ ] **T135 · `.eslintrc.json` extends `next/typescript` in a JavaScript-only project** (dead-code audit 2026-08-29)
+  - **Issue:** `.eslintrc.json` is `{ "extends": ["next/core-web-vitals", "next/typescript"] }`. There
+    is no TypeScript in this repo — no `.ts`/`.tsx` files, no `tsconfig.json`, only `jsconfig.json`.
+  - **Impact:** cosmetic today; lint is clean. But a TS preset in a JS project can silently skip rules
+    a reader assumes are active, and the audit's type-check step is N/A partly because of this
+    ambiguity. Classified **uncertain** rather than dead — verify before changing.
+  - **Fix:** drop `next/typescript` and confirm lint output is unchanged. If it changes, the preset was
+    doing something and that is worth knowing.
+  - **Acceptance:**
+    - [ ] Lint passes with the same result before and after, or the difference is understood
+
 
 - [ ] **T127 · Checkout submits customer details without sanitising, against the project's own convention** (input-sanitisation sweep 2026-08-29) — **CONFIRMED**
   - **Issue:** `STYLE_GUIDE.md` and `CLAUDE.md` both state "sanitize form input on submit with
