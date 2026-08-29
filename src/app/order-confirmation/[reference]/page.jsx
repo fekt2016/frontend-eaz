@@ -147,7 +147,7 @@ export default function OrderConfirmationPage({ params }) {
             </p>
             {order.shippingRegion && (
               <p className="text-sm text-gray-700 dark:text-slate-300 mt-1">
-                {order.shippingRegion}{order.customer?.address ? ` · ${order.customer.address}` : ""}
+                {order.shippingRegion}
               </p>
             )}
             <p className="mt-3 text-sm text-gray-700 dark:text-slate-300">
@@ -160,7 +160,7 @@ export default function OrderConfirmationPage({ params }) {
             </p>
             <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer?.phone}</p>
           </div>
-        ) : order.customer?.address && (
+        ) : (order.shippingMethod || order.shippingNeighborhood) && (
           <div className="mt-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
             <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-2">Delivery</h3>
             {order.shippingMethod && (
@@ -173,9 +173,16 @@ export default function OrderConfirmationPage({ params }) {
                 {order.shippingNeighborhood || ""}{order.shippingZoneName ? ` · ${order.shippingZoneName}` : ""}
               </p>
             )}
-            <p className="text-sm text-gray-700 dark:text-slate-300">{order.customer.name}</p>
-            <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer.phone}</p>
-            <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer.address}</p>
+            {/* T86: this page is reachable by anyone holding the payment
+                reference, so the API masks the contact and withholds the street
+                entirely. Area is shown above; the full address is in the
+                customer's own dashboard, behind login. */}
+            <p className="text-sm text-gray-700 dark:text-slate-300">{order.customer?.name}</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer?.phone}</p>
+            <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">
+              Delivering to the address you entered at checkout. See it in{" "}
+              <Link href="/dashboard/orders" className="underline underline-offset-2">your orders</Link>.
+            </p>
           </div>
         )}
 
