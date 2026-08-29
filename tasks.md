@@ -295,7 +295,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
-- [ ] **T101 · Four `business-settings` tests fail on `main` — ambiguous "Shop Profile" text** (found during T97, 2026-08-29)
+- [x] **T101 · Four `business-settings` tests fail on `main` — ambiguous "Shop Profile" text** (found during T97, 2026-08-29)
   - **Issue:** `src/app/dashboard/(admin)/business-settings/page.test.jsx` — 4 of its 5 cases fail
     with `TestingLibraryElementError: Found multiple elements with the text: Shop Profile`. The page
     renders the string twice: as a tab label (`<span class="hidden sm:inline">`) and as the section
@@ -309,6 +309,24 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     variant) rather than changing the page's markup to satisfy the test.
   - **Location:** `src/app/dashboard/(admin)/business-settings/page.test.jsx`
   - **Not fixed under T97** — out of scope for that task; logged here per the one-task-at-a-time rule.
+
+  ### Implementation Notes (2026-08-29)
+
+  - **The original diagnosis covered one of four failures.** Only `renders all three sections` hit
+    the ambiguous "Shop Profile"; the other three failed on a missing VAT switch, a missing rate
+    input and a missing "Add service" button.
+  - **Real cause:** the page was later split into tabs (`page.jsx:1077-1082`) and renders only the
+    active tab's section — `{activeTab === "services" && <ServicesSection …>}`. The tests predated
+    that and queried every section from a single render, so the fields they wanted were not hidden,
+    they were unmounted. Not a product defect: the page renders correctly.
+  - **Fix, in the tests only** — the page was not changed to suit them. An `openTab(label)` helper
+    clicks the tab first; the ambiguous query is scoped with
+    `getByRole("heading", { name: "Shop Profile" })`. Tab lookups use an **exact** name, not a
+    regex: `/Shop Profile/i` also matches the "Save shop profile" button.
+  - Added a case asserting only the active tab's section is mounted, so the next person sees why
+    a cross-section query fails instead of rediscovering it.
+  - **The frontend suite is fully green for the first time: 54/54 files, 357/357 tests**, lint
+    clean. It can gate now.
 
 - [ ] **T102 · Roll `errorMessage()` out to the other 84 raw `err.message` call sites** (follow-up to T100)
   - **Issue:** T100 added `errorMessage(err, fallback)` to `src/lib/api.js` and wired it into
