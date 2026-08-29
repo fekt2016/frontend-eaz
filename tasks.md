@@ -50,6 +50,39 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     - [ ] Deployed `sitemap.xml`, canonicals and OG URLs use the real domain
     - [ ] The variable is set in the deployment environment
 
+  ### Implementation Notes (2026-08-29 — awaiting review)
+
+  - **`src/lib/seo.js`** — replaced the silent `|| "http://localhost:3000"` default with
+    `resolveSiteUrl()`. Development keeps the localhost fallback; when
+    `NODE_ENV === "production"` and `FRONTEND_URL` is unset (or blank) it throws at module
+    load, which fails the build. A configured value now also has trailing slashes stripped
+    so `${SITE_URL}${path}` cannot emit `//shop`.
+  - **`amplify.yml` deleted** (2026-08-29, after review) — the app is hosted on **Spaceship via
+    Docker**, not AWS Amplify, so that file was dead config and the `preBuild` guard I first put
+    there would never have run. No replacement guard was added: the Dockerfile lives outside this
+    repo, and a `prebuild` npm script would run *before* Next loads `.env.local`, failing local
+    builds that are correctly configured. `src/lib/seo.js` is the right mechanism precisely
+    because it runs inside Next's env loading. The container must supply `FRONTEND_URL` at
+    **both** image-build time and run time — `sitemap.js`/`robots.js` can render per-request.
+  - **`.env.local.example`** — documents that requirement; the domain stays out of the repo.
+  - **`src/lib/seo.test.js`** — new, 6 cases: dev fallback, production throw, blank-string
+    treated as unset, configured origin, trailing-slash strip, canonical/OG construction.
+  - **Verified — development:** `next dev` with `FRONTEND_URL` empty serves
+    `Sitemap: http://localhost:3000/sitemap.xml` and `canonical="http://localhost:3000"`,
+    no errors.
+  - **Verified — production fail-fast:** `FRONTEND_URL= next build` exits 1 at
+    "Collecting page data" with the configuration error.
+  - **Verified — production output:** `FRONTEND_URL=https://www.eazworld.co next build`
+    exits 0; `robots.txt`, `sitemap.xml`, canonicals and `og:url`/`og:image` all use the
+    domain. `grep localhost:3000` over the prerendered output returns nothing.
+  - Tests: 330 passed / 4 failed — the 4 are **pre-existing** on clean `main` (see T101),
+    unrelated to this change. Lint: PASS (0 warnings). Build: PASS. Type check: N/A (JS only).
+  - **Still open — deployment side:** `FRONTEND_URL` must actually be set in the Docker
+    environment (build arg + runtime env) in the out-of-repo Dockerfile; that cannot be done or
+    verified from here. Confirm the canonical host
+    (`https://www.eazworld.co` vs apex `https://eazworld.co`) before setting it — the repo
+    references both, and the choice must match the redirect the CDN serves.
+
 ---
 
 ## P2 — Improvements
@@ -74,6 +107,42 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     - [ ] Transactional pages are marked noindex rather than given marketing metadata
     - [ ] Build and lint stay clean
 
+  ### Implementation Notes (2026-08-29 — awaiting review)
+
+  **The audit's premise was only partly right.** Its repro greps `page.jsx` alone, but in the App
+  Router metadata may live in a sibling `layout.jsx`. Checked all six against the built HTML:
+
+  | Page | Audit said | Actually |
+  |---|---|---|
+  | `hosting` | no metadata | ✅ already complete via `hosting/layout.jsx` |
+  | `reviews` | no metadata | ✅ has metadata via `reviews/layout.jsx` (but see T104) |
+  | `services/web-design` | no metadata | ✅ already complete via its `layout.jsx` |
+  | `track-order` | no metadata | ⚠️ had title + noindex, but **no description and no canonical** |
+  | `repair` | no metadata | ❌ genuinely bare — fixed |
+  | `seo` | no metadata | ❌ bare, but it is a **redirect shim**, not a content page — see T103 |
+
+  - **`src/app/repair/layout.jsx`** (new) — `/repair` is the 329-line booking form and is
+    `"use client"`, so it cannot export `metadata` itself; a layout is the only route. Title
+    targets booking intent ("Book a Device Repair in Accra") so it does not compete with the
+    `/services/phone-repair` marketing page for the same query. Deliberately carries no
+    "| EazWorld" — the root template appends it (see T104).
+  - **`src/app/track-order/layout.jsx`** — added a description and its own canonical, kept
+    `robots: { index: false, follow: true }`. It had been inheriting the root canonical, which
+    told crawlers `/track-order` **is** the homepage. Left without Open Graph copy on purpose:
+    T98's own guidance is noindex over marketing metadata for transactional pages.
+  - **`/seo` left alone deliberately** — it is a 13-line client-side `router.replace()` to
+    `/services/seo` with no content. Marketing metadata is the wrong tool; it needs a real
+    server-side redirect and removal from `sitemap.js`. Logged as **T103**.
+  - **Verified in the built HTML** (`FRONTEND_URL=https://www.eazworld.co next build`, exit 0):
+    - `/repair` → `Book a Device Repair in Accra | EazWorld`, own description,
+      `canonical=https://www.eazworld.co/repair`, `og:url` matching
+    - `/track-order` → own description, `canonical=https://www.eazworld.co/track-order`,
+      `robots=noindex, follow` retained
+    - Brand-suffix stutter count unchanged at 7 — this change introduced none
+  - Tests: 339 passed / 4 failed (the pre-existing T101 four). Lint: PASS. Build: PASS.
+  - **Known gap:** `/track-order`'s `og:url` still inherits the root. Harmless while the page is
+    noindex, and adding OG copy would contradict the acceptance criterion above.
+
 - [ ] **T99 · Plan the Next.js 16 upgrade to clear two high-severity PostCSS advisories** (audit ref EZ-014)
   - **Issue:** `npm audit --omit=dev` reports 2 high-severity PostCSS advisories (arbitrary `.map` file
     read / information disclosure via attacker-controlled `sourceMappingURL`; XSS via unescaped
@@ -92,6 +161,75 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     - [ ] Build, lint and all frontend tests pass
     - [ ] Middleware auth/maintenance behaviour verified after the upgrade
 
+  ### Assessment (2026-08-29 — planning only, no upgrade performed)
+
+  **The advisory count in the Issue above is wrong, and understates it.** `npm audit`'s
+  "2 high severity vulnerabilities" counts 2 **packages**, not 2 advisories. The JSON shows:
+
+  | Package | Advisories | Highest CVSS | Fix |
+  |---|---|---|---|
+  | `next@14.2.35` | **21** | **8.6** (SSRF via WebSocket upgrades) | `next@16.3.3` (semver-major) |
+  | `postcss` (via next) | 4 | 7.5 | same bump |
+
+  The Issue's "build-time/tooling-scoped, not a live request path" holds for **PostCSS only**.
+  Most of the 21 `next` advisories are runtime. Reachability triage against this codebase:
+
+  - **Reachable — image optimizer.** `next.config.mjs:11` sets `remotePatterns: [{ protocol:
+    "https", hostname: "**" }]`, i.e. any HTTPS host. That is precisely the configuration named
+    by "DoS via Image Optimizer remotePatterns configuration" and "Unbounded next/image disk
+    cache growth". **This is the most exposed item and it is a live endpoint.**
+  - **Reachable — App Router RSC.** "DoS with Server Components", "cache poisoning in RSC
+    responses", "cache confusion of response bodies" all apply to an App Router app.
+  - **Not reachable — Server Actions** (4 advisories): `grep '"use server"'` returns nothing.
+  - **Not reachable — Pages-Router i18n bypass**: no `i18n` config, App Router only.
+  - **Not reachable — CSP nonce XSS**: the CSP in `next.config.mjs` uses `'unsafe-inline'`, no nonces.
+  - **Partly reachable — `beforeInteractive` XSS**: used once (`layout.jsx:80`, theme init), but
+    the injected string is static, not user input.
+
+  **Migration surface measured in this repo** (14 → 16 crosses *two* majors, so both guides apply):
+
+  | Change | This repo |
+  |---|---|
+  | Async `params`/`searchParams` (sync access **removed** in 16) | **9 server files** must `await params`: `blog/[slug]/{layout,page,opengraph-image}.jsx`, `portfolio/[slug]/{layout,page}.jsx`, `services/[slug]/{layout,page}.jsx`, `shop/[slug]/page.jsx`, `shop/category/[category]/page.jsx` |
+  | Client component taking `params` as a prop | **1**: `order-confirmation/[reference]/page.jsx` → needs `use(props.params)` |
+  | `opengraph-image` `params`/`id` become Promises | `blog/[slug]/opengraph-image.jsx` — hit by this **and** the async-params change |
+  | `middleware` → `proxy` rename; **`edge` runtime unsupported in `proxy`** | `src/middleware.js` is 158 lines: `jose` JWT verify, 5 role gates, maintenance redirect, module-scope 30s cache. Moving to `proxy` means the Node runtime — the module-scope cache becomes per-instance |
+  | React 18 → **19.2** required | `react`/`react-dom` are `^18`. Also bumps `@testing-library/react`, `framer-motion`, `@vitejs/plugin-react` |
+  | Node **20.9+** | Local is v20.20.2 ✅. **The Docker base image's Node version must be confirmed ≥ 20.9 before upgrading** (Dockerfile is outside this repo) |
+  | `next lint` **removed**; ESLint flat config | `package.json:9` is `"lint": "next lint"`, and `.eslintrc.json` is legacy format on `eslint@^8`. Needs ESLint 9 + flat config (codemod exists) |
+  | `scroll-behavior` no longer overridden | `globals.css:16` sets `scroll-behavior: smooth` globally → add `data-scroll-behavior="smooth"` to `<html>` to keep today's behaviour |
+  | Turbopack default for `dev` **and** `build` | No custom `webpack` config ✅ — low risk |
+  | `next/image` defaults: `qualities` → `[75]`, `minimumCacheTTL` 60s → 4h, `imageSizes` drops 16, `maximumRedirects` → 3 | No `quality=` props anywhere ✅; the TTL and redirect changes need a visual check against supplier image hosts |
+  | Next 15: `fetch` uncached by default | **No impact** — `lib/products.js:7` always sets an explicit `next.revalidate` or `cache:"no-store"`; `sitemap.js:42` and `middleware.js:19` likewise |
+  | Parallel routes need `default.js` | No `@slot` directories ✅ |
+  | AMP, `serverRuntimeConfig`, `next/legacy/image`, `@next/font`, `experimental-edge`, `NextRequest.geo/ip`, `revalidateTag` | None used ✅ |
+
+  **Proposed staged plan** (each stage its own branch + review):
+
+  1. **Pre-work (no Next change):** migrate `next lint` → ESLint CLI + flat config (`npx
+     @next/codemod@canary next-lint-to-eslint-cli .`), bump ESLint 8 → 9. Confirm the Docker
+     base image runs Node 20.9+. Doing this first keeps the lint gate working *through* the
+     upgrade instead of breaking with it.
+  2. **React 19 first, still on Next 14.2.35** if it installs cleanly — isolates React-vs-Next
+     breakage. Run the suite; `@testing-library/react@16.3.2` already supports 19.
+  3. **The upgrade itself:** `npx @next/codemod@canary upgrade latest`, then
+     `npx @next/codemod@canary next-async-request-api .` (the `upgrade` codemod does *not* run
+     the async-params migration). Hand-verify the 10 param files and the OG image route.
+  4. **Middleware → proxy:** rename + rename the export, and re-verify every guard by hand —
+     this file is the app's entire authorization boundary. **Acceptance criterion 4 lives here.**
+  5. **Verify:** `npm audit --omit=dev` clean, build, lint, full suite, and a manual pass over
+     login/logout, each role's dashboard gating, POS access, and maintenance mode.
+  6. **Then revisit `remotePatterns: "**"`** — the image-optimizer advisories are the reachable
+     ones, and a wildcard host allowlist keeps that surface open even on 16. Worth its own task.
+
+  **Recommendation on sequencing:** this is not a same-day change. Stage 1 is safe to do now and
+  is independently useful. Stages 2-4 want a quiet window and a real device/browser pass, since
+  the middleware rename touches authentication for every role.
+
+  **Not done here:** no packages installed, no `--force`, no code changed. T99's acceptance
+  criteria 2-4 ("audit clean", "build/lint/tests pass", "middleware verified") can only be
+  ticked once the upgrade itself is executed as its own scheduled piece of work.
+
 - [ ] **T100 · Checkout shows "Validation failed" and discards the field detail it already has** (audit ref EZ-018)
   - **Issue:** Zod failures return `{ error: "Validation failed", errors: [{ field, message }] }`
     (`backend-eaz/middleware/errorHandler.js:16`). `src/lib/api.js:24` already attaches `errors` to the
@@ -109,6 +247,38 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
     - [ ] Non-validation errors still show their message
     - [ ] No raw internal detail is shown to users
 
+  ### Implementation Notes (2026-08-29 — awaiting review)
+
+  - **`src/lib/api.js`** — new exported `errorMessage(err, fallback)`. When the thrown Error
+    carries `errors[]` it renders that detail; otherwise it returns `err.message`, then the
+    fallback. Shows at most 3 field errors and appends `(+N more)`. A humanized field label
+    (`pickupLocationId` → `Pickup location id`) is prefixed **only** when the message does not
+    already name the field, so Zod's bare defaults ("Required") become actionable while
+    hand-written messages ("A pickup location is required") are not made to stutter.
+    `request()` is untouched — `err.message` still carries the backend's top-level string, so
+    no existing caller changes behaviour.
+  - **`src/app/checkout/page.jsx`** — 3 error handlers now call it: the shipping-quote
+    `.catch` (`setQuoteError`), the address-modal save (`setModalError`), and `handlePlaceOrder`
+    (`setError`). Import changed to `{ api, errorMessage }`. No other lines touched.
+  - **`src/lib/api.test.js`** — 8 new cases (5 → 13): field detail preferred, non-validation
+    messages preserved, fallback when there is no message, no stutter when the message names
+    the field, Zod bare defaults get labelled, array indices stripped from nested paths, the
+    3-error cap, entries with no usable message ignored, and an end-to-end `api.post` rejection.
+  - **Verified against the real backend:** posted an invalid payload to
+    `POST /api/v1/shipping/quote` and captured the body verbatim —
+    `errors: [{items, "At least one item is required"}, {pickupLocationId, "A pickup location
+    is required for bus-station pickup."}]`. That exact payload is now pinned in the test; the
+    checkout banner renders *"At least one item is required A pickup location is required for
+    bus-station pickup."* in place of *"Validation failed"*.
+  - **No internal detail leaks:** the helper only reads `errors[].field/message`. `lib/api.js`
+    already excludes `stack` from the fields it copies onto the Error, and the backend's
+    production 500 path returns a generic string with no `errors[]`.
+  - Tests: 339 passed / 4 failed — the 4 are the pre-existing T101 failures, unrelated.
+    Lint: PASS (0 warnings). Build: PASS. Type check: N/A (JS only).
+  - **Not done — deliberate scope limit:** 84 other call sites across ~40 files still use the
+    raw `err.message || "…"` pattern and would benefit from the same helper. Rolling that out
+    is tracked as T102 rather than swept in here.
+
 ---
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
@@ -125,7 +295,71 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
-_None._
+- [ ] **T101 · Four `business-settings` tests fail on `main` — ambiguous "Shop Profile" text** (found during T97, 2026-08-29)
+  - **Issue:** `src/app/dashboard/(admin)/business-settings/page.test.jsx` — 4 of its 5 cases fail
+    with `TestingLibraryElementError: Found multiple elements with the text: Shop Profile`. The page
+    renders the string twice: as a tab label (`<span class="hidden sm:inline">`) and as the section
+    heading (`<h2>`), so the tests' `getByText("Shop Profile")` is ambiguous.
+  - **Impact:** `npm test` is red on a clean tree (330 passed / 4 failed, 51 of 52 files green), so
+    the frontend suite cannot gate anything until it is fixed. No user-facing defect — the page
+    itself renders correctly; this is a test-query problem, not a product bug.
+  - **Repro:** `git stash -u && npx vitest run "src/app/dashboard/(admin)/business-settings/page.test.jsx"`
+    — fails identically with no local changes, confirming it predates T97.
+  - **Fix:** scope the queries (`getByRole("heading", { name: "Shop Profile" })`, or the `*AllBy*`
+    variant) rather than changing the page's markup to satisfy the test.
+  - **Location:** `src/app/dashboard/(admin)/business-settings/page.test.jsx`
+  - **Not fixed under T97** — out of scope for that task; logged here per the one-task-at-a-time rule.
+
+- [ ] **T102 · Roll `errorMessage()` out to the other 84 raw `err.message` call sites** (follow-up to T100)
+  - **Issue:** T100 added `errorMessage(err, fallback)` to `src/lib/api.js` and wired it into
+    `src/app/checkout/page.jsx` only. `grep -rn "err\.message ||" src` still finds **84** sites
+    across ~40 files — auth (login, register, verify, forgot/reset password, verify-2fa),
+    `track/[token]`, `track-order`, dashboard and admin forms — each showing the bare
+    "Validation failed" the audit flagged.
+  - **Impact:** Same defect as T100, just on other forms. Registration and password reset are the
+    highest-value ones: they are Zod-validated and are where a user most needs to know which field
+    is wrong.
+  - **Repro:** `grep -rn "err\.message ||" src --include "*.jsx" | grep -v "\.test\."`
+  - **Fix:** swap `err.message || "…"` for `errorMessage(err, "…")`. Mechanical, but it changes
+    user-visible copy on every form it touches, so it wants its own review pass — which is why
+    T100 did not sweep it in.
+  - **Location:** ~40 files under `src/app/`, listed by the grep above
+  - **Acceptance:**
+    - [ ] Validation failures show field detail on every converted form
+    - [ ] Non-validation errors unchanged
+    - [ ] Tests and lint stay clean
+
+- [ ] **T103 · `/seo` is a client-side redirect shim that is listed in the sitemap** (found during T98, 2026-08-29)
+  - **Issue:** `src/app/seo/page.jsx` is 13 lines of `"use client"` + `useEffect(() => router.replace("/services/seo"))`.
+    It renders nothing, yet `sitemap.js:25` advertises `/seo` at priority 0.5, and
+    `next.config.mjs` permanently redirects `/service/seo → /seo`, which then client-redirects
+    again to `/services/seo` — a two-hop chain whose second hop needs JavaScript.
+  - **Impact:** Crawlers are pointed at a blank page that only redirects once JS runs; link equity
+    from the `/service/seo` 308 is diluted across the chain. `/services/seo` is *also* in the
+    sitemap (line 9), so the two compete.
+  - **Repro:** `curl -s localhost:3000/seo` returns an empty shell; compare `sitemap.js:9` and `:25`.
+  - **Fix:** replace the client component with a server-side `permanentRedirect("/services/seo")`
+    (or point the `next.config.mjs` redirect straight at `/services/seo` and delete the route),
+    then drop `/seo` from `STATIC_ROUTES`.
+  - **Location:** `src/app/seo/page.jsx`; `src/app/sitemap.js:25`; `next.config.mjs` redirects
+  - **Not fixed under T98** — T98 asked for metadata; this page needs a routing change instead.
+
+- [ ] **T104 · Seven pages render a doubled "| EazWorld" brand suffix** (found during T98, 2026-08-29)
+  - **Issue:** the root layout sets `title.template = "%s | EazWorld"` (`src/app/layout.jsx:36`), so
+    any page whose own title already contains the brand gets it twice. Built output shows 7:
+    `Branding & Identity Pricing | EazWorld | EazWorld`, `Client Reviews | EazWorld — Digital Agency
+    Accra, Ghana | EazWorld`, `Dashboard | EazWorld | EazWorld`, `Email Marketing Pricing | EazWorld
+    | EazWorld`, `Paid Advertising Pricing | EazWorld | EazWorld`, `SEO & Content Marketing Pricing |
+    EazWorld | EazWorld`, `Social Media Management Pricing | EazWorld | EazWorld`.
+  - **Impact:** wasted pixels in the SERP title (Google truncates ~60 chars) and a sloppy-looking
+    browser tab. `reviews` loses real keywords to the repetition.
+  - **Repro:** `grep -rho "<title>[^<]*</title>" .next/server/app --include "*.html" | sort -u | grep -c "EazWorld.*EazWorld"`
+  - **Fix:** drop the brand from each page's own title, or use `title: { absolute: … }` where the
+    full string is intentional. Pages built through `buildMetadata()` in `src/lib/seo.js` are
+    already immune — it sets `title: { absolute }`.
+  - **Location:** the 7 layouts/pages behind those titles
+  - **Not fixed under T98** — only `reviews` is among T98's six, and fixing 1 of 7 would leave the
+    set inconsistent; worth one pass of its own.
 
 ---
 
