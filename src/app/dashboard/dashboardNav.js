@@ -51,15 +51,19 @@ export const marketplaceNav = [
 ];
 
 // roles: if undefined, visible to all POS roles.
-// superadmin = full access; admin = repair steps only; staff = full except staff mgmt (also handles sales); technician = repairs
+// superadmin = full access; admin = management and reporting; staff = the counter
+// (sales, jobs, payments); technician = repairs.
+// T83 (owner, 2026-08-29): Reports, Suppliers and Warranty moved to superadmin +
+// admin. The server enforces the same in routes/posRoutes.js — this only hides
+// the entries, and hiding is never the guard.
 export const posNav = [
   { label: "Sell",       href: "/dashboard/pos/sell",      icon: Barcode,  roles: ["superadmin","staff"] },
   { label: "My Jobs",    href: "/dashboard/pos",           icon: Wrench,   roles: ["technician"] },
   { label: "Orders",     href: "/dashboard/pos/orders",    icon: ShoppingBag, roles: ["superadmin","admin","staff"] },
-  { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: Truck,    roles: ["superadmin","staff"] },
+  { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: Truck,    roles: ["superadmin","admin"] },
   { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: Receipt,  roles: ["superadmin","admin","staff"] },
-  { label: "Warranty",   href: "/dashboard/pos/warranty",  icon: ShieldCheck, roles: ["superadmin","staff"] },
-  { label: "Reports",    href: "/dashboard/pos/reports",   icon: BarChart3, roles: ["superadmin","admin","staff"] },
+  { label: "Warranty",   href: "/dashboard/pos/warranty",  icon: ShieldCheck, roles: ["superadmin","admin"] },
+  { label: "Reports",    href: "/dashboard/pos/reports",   icon: BarChart3, roles: ["superadmin","admin"] },
 ];
 
 // ── Page titles ──────────────────────────────────────────────────────────────
