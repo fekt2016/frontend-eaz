@@ -1,4 +1,30 @@
-export const SITE_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const DEV_FALLBACK_URL = "http://localhost:3000";
+
+// `FRONTEND_URL` is the single source of truth for canonical URLs, metadataBase,
+// Open Graph URLs, sitemap.xml and robots.txt. A localhost default is convenient
+// in development, but shipping it to production points every canonical tag, OG
+// URL and sitemap entry at localhost with no runtime error to notice — search
+// engines quietly drop the pages. So production refuses to build without it.
+// Supply the value from the container environment, never here — it must be present
+// at BOTH image-build time and run time (see .env.local.example).
+function resolveSiteUrl() {
+  const configured = process.env.FRONTEND_URL?.trim();
+  // Trailing slashes would double up in `${SITE_URL}${path}` — normalize once here.
+  if (configured) return configured.replace(/\/+$/, "");
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "FRONTEND_URL is not set. It is required for production builds: canonical " +
+        "URLs, Open Graph tags, sitemap.xml and robots.txt would otherwise be " +
+        `emitted as ${DEV_FALLBACK_URL}. Set FRONTEND_URL to the deployed origin ` +
+        "(scheme + host, no trailing slash) in the deployment environment.",
+    );
+  }
+
+  return DEV_FALLBACK_URL;
+}
+
+export const SITE_URL = resolveSiteUrl();
 
 export const SITE_NAME = "EazWorld";
 

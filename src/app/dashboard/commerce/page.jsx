@@ -4,8 +4,8 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
-import { formatGhs, stockBadge } from "@/lib/shop";
+import { api, errorMessage } from "@/lib/api";
+import { formatGhs } from "@/lib/shop";
 import ProductImage from "@/components/shop/ProductImage";
 import UploadButton from "@/components/common/UploadButton";
 import {
@@ -13,9 +13,18 @@ import {
   Wrench, Truck, X,
 } from "lucide-react";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
-import { Alert, Badge, Button } from "@/components/ui";
+import { Alert, Badge } from "@/components/ui";
 
 const CATEGORIES = ["Screen", "Battery", "Charging Port", "Speaker", "Camera", "Button", "Housing", "Board", "Accessory", "Cable", "IC / Chip", "Other"];
+
+// T110 — mirrors INVENTORY_KINDS in the backend's controllers/pos/common.js.
+// "" means no filter; the server treats an unknown value as no filter too.
+const KINDS = [
+  { value: "",            label: "All" },
+  { value: "parts",       label: "Parts" },
+  { value: "accessories", label: "Accessories" },
+  { value: "other",       label: "Other" },
+];
 
 const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 const selectCls = `${inputCls} cursor-pointer`;
@@ -217,18 +226,26 @@ function PartModal({ part, onClose, onSave, suppliers = [] }) {
   );
 }
 
-function PartsTab() {
+// One list over one collection. The old page split this into "Repair Parts" and
+// "Shop Products" tabs, but since the parts/products merge both tabs queried the
+// same `Product` collection unfiltered — every item appeared twice. Bench-vs-shop
+// is a property of an item now (`sellInStore` / `sellOnline`), not a separate
+// table, so it belongs in a filter rather than a tab.
+function ProductsList() {
   const [parts,       setParts]       = useState([]);
   const [total,       setTotal]       = useState(0);
   const [loading,     setLoading]     = useState(true);
   const [q,           setQ]           = useState("");
   const [category,    setCategory]    = useState("");
+  // T110 — parts / accessories / other. "" is all stock.
+  const [kind,        setKind]        = useState("");
   const [lowStock,    setLowStock]    = useState(false);
   const [modal,       setModal]       = useState(null);
   const [page,        setPage]        = useState(1);
   const [scanFlash,   setScanFlash]   = useState(false);
   const [lowStockItems, setLowStockItems] = useState([]);
   const [suppliers,   setSuppliers]   = useState([]);
+  const [archiving,   setArchiving]   = useState(null);
   const limit = 50;
 
   const fetchParts = useCallback(async () => {
@@ -237,6 +254,7 @@ function PartsTab() {
       const params = new URLSearchParams({ page, limit });
       if (q.trim())  params.set("q", q.trim());
       if (category)  params.set("category", category);
+      if (kind)      params.set("kind", kind);
       if (lowStock)  params.set("lowStock", "true");
       const [res, lowRes] = await Promise.all([
         api.get(`/pos/inventory?${params}`),
@@ -247,7 +265,7 @@ function PartsTab() {
       setLowStockItems(lowRes.data || []);
     } catch (err) { setLowStockItems([]); console.warn("Inventory load error:", err.message); }
     finally { setLoading(false); }
-  }, [q, category, lowStock, page]);
+  }, [q, category, kind, lowStock, page]);
 
   useEffect(() => { fetchParts(); }, [fetchParts]);
 
@@ -288,8 +306,24 @@ function PartsTab() {
     }
   }, []);
 
+  // Carried over from the removed Shop Products tab: archive hides an item from
+  // the storefront (soft delete), activate brings it back. `asInventoryItem`
+  // spreads the whole document, so `isActive` is already on these rows.
+  const handleArchiveToggle = async (item) => {
+    setArchiving(item._id);
+    try {
+      if (item.isActive) await api.delete(`/products/${item._id}`);
+      else               await api.patch(`/products/${item._id}`, { isActive: true });
+      fetchParts();
+    } catch (err) {
+      alert(errorMessage(err, "Could not update this product. Please try again."));
+    } finally {
+      setArchiving(null);
+    }
+  };
+
   const handleDelete = async (id) => {
-    if (!confirm("Delete this part?")) return;
+    if (!confirm("Delete this product?")) return;
     try {
       await api.delete(`/pos/inventory/${id}`);
       fetchParts();
@@ -302,8 +336,8 @@ function PartsTab() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Repair parts</h2>
-          <p className="text-sm text-gray-500 mt-0.5">{total} parts · used in the repair shop &amp; sold online</p>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">All stock</h2>
+          <p className="text-sm text-gray-500 mt-0.5">{total} item{total === 1 ? "" : "s"} · bench stock and shop stock</p>
         </div>
         <div className="flex items-center gap-3">
           {/* Scan-ready indicator */}
@@ -321,7 +355,7 @@ function PartsTab() {
             onClick={() => openNew()}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition"
           >
-            <Plus size={11} /> Add Part
+            <Plus size={11} /> Add Product
           </button>
         </div>
       </div>
@@ -372,9 +406,28 @@ function PartsTab() {
           <input
             value={q}
             onChange={e => { setQ(e.target.value); setPage(1); }}
-            placeholder="Search parts, barcodes, SKUs…"
+            placeholder="Search stock, barcodes, SKUs…"
             className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition"
           />
+        </div>
+        {/* T110: bench vs shop is a property of the item now, not a separate
+            table, so it belongs here rather than in the tabs this page used to have. */}
+        <div className="flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-gray-900" role="group" aria-label="Stock kind">
+          {KINDS.map(({ value, label }) => (
+            <button
+              key={value || "all"}
+              type="button"
+              aria-pressed={kind === value}
+              onClick={() => { setKind(value); setPage(1); }}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                kind === value
+                  ? "bg-gray-900 text-white dark:bg-brand-500 dark:text-gray-900"
+                  : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
         <select
           value={category}
@@ -438,6 +491,7 @@ function PartsTab() {
                           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
                           {lowStockFlag && <TriangleAlert size={10} aria-hidden="true" className="text-warning dark:text-warning-dark flex-shrink-0" />}
                           {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-ink dark:text-brand-400 flex-shrink-0">Retail</span>}
+                          {p.isActive === false && <Badge tone="neutral">Archived</Badge>}
                         </div>
                         {p.sku && <p className="text-xs text-gray-500">SKU: {p.sku}</p>}
                         {p.compatibleWith?.length > 0 && (
@@ -451,8 +505,26 @@ function PartsTab() {
                     <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">{formatGhs(p.costPrice)}</span>
                     <span className="text-sm text-brand-ink dark:text-brand-400 font-medium hidden sm:block">{formatGhs(p.sellingPrice)}</span>
                     <div className="flex items-center gap-2 ml-auto sm:ml-0">
-                      <button onClick={() => setModal(p)} className="text-gray-500 hover:text-brand-400 transition"><Pen size={13} /></button>
-                      <button onClick={() => handleDelete(p._id)} className="text-gray-500 hover:text-error dark:hover:text-error-dark transition"><Trash2 size={12} /></button>
+                      {/* Inline modal covers the counter fields; the full page covers
+                          the shop ones (images, description, slug) — both reach the
+                          same document, so keep a route to each. */}
+                      <button onClick={() => setModal(p)} title="Quick edit" className="text-gray-500 hover:text-brand-400 transition"><Pen size={13} /></button>
+                      <Link
+                        href={`/dashboard/commerce/products/${p._id}/edit`}
+                        title="Edit shop details"
+                        className="text-gray-500 hover:text-brand-400 transition"
+                      >
+                        <PackageOpen size={13} />
+                      </Link>
+                      <button
+                        onClick={() => handleArchiveToggle(p)}
+                        disabled={archiving === p._id}
+                        title={p.isActive === false ? "Activate" : "Archive"}
+                        className="text-xs font-medium text-gray-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
+                      >
+                        {p.isActive === false ? "Activate" : "Archive"}
+                      </button>
+                      <button onClick={() => handleDelete(p._id)} title="Delete" className="text-gray-500 hover:text-error dark:hover:text-error-dark transition"><Trash2 size={12} /></button>
                     </div>
                   </div>
                 );
@@ -497,115 +569,6 @@ function PartsTab() {
   );
 }
 
-function ProductsTab() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(null);
-
-  const load = () => {
-    setLoading(true);
-    api
-      .get("/products/all")
-      .then((res) => setProducts(res.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleToggle = async (product) => {
-    setUpdating(product._id);
-    try {
-      if (product.isActive) {
-        await api.delete(`/products/${product._id}`);
-      } else {
-        await api.patch(`/products/${product._id}`, { isActive: true });
-      }
-      load();
-    } catch (err) {
-      alert(err.message || "Update failed");
-    } finally {
-      setUpdating(null);
-    }
-  };
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Shop products</h2>
-          <p className="text-sm text-gray-500 mt-0.5">{products.length} products · sold in the online shop</p>
-        </div>
-        <Link
-          href="/dashboard/commerce/products/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition"
-        >
-          <Plus size={11} /> Add Product
-        </Link>
-      </div>
-
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-        {loading ? (
-          <div className="p-5 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
-        ) : products.length === 0 ? (
-          <div className="py-14 text-center">
-            <PackageOpen size={24} className="text-gray-700 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400 font-medium">No products yet</p>
-            <p className="text-gray-600 text-sm mt-1">Click &ldquo;Add Product&rdquo; to create your first shop product.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-200 dark:divide-gray-800">
-            {products.map((product) => {
-              const badge = stockBadge(product.stock);
-              return (
-                <div key={product._id} className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-100/30 dark:hover:bg-gray-800/30 transition ${!product.isActive ? "opacity-70" : ""}`}>
-                  <ProductImage src={product.images?.[0]} alt={product.name} width={40} height={40} className="h-10 w-10 rounded-xl object-cover bg-gray-100" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{product.name}</p>
-                      {!product.isActive && (
-                        <Badge tone="neutral">Archived</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {product.category}
-                      {product.sku ? ` · SKU ${product.sku}` : ""} · /{product.slug}
-                    </p>
-                  </div>
-                  <div className="hidden sm:block text-right">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatGhs(product.price)}</p>
-                    <p className={`text-xs font-medium mt-0.5 ${badge.classes}`}>{badge.label}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      href={`/dashboard/commerce/products/${product._id}/edit`}
-                      variant="secondary"
-                      size="sm"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant={product.isActive ? "danger" : "primary"}
-                      size="sm"
-                      onClick={() => handleToggle(product)}
-                      loading={updating === product._id}
-                    >
-                      {product.isActive ? "Archive" : "Activate"}
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // T24: merged from the old thin /dashboard/commerce landing page (3 cards:
 // Inventory, Delivery Zones, Orders) — Inventory is now the page itself,
 // with Delivery Zones (admin-only, matching the old card's own gate) and
@@ -613,12 +576,6 @@ function ProductsTab() {
 export default function CommercePage() {
   const { user } = useAuth();
   const isAdmin = ["admin", "superadmin"].includes(user?.role);
-  const [tab, setTab] = useState("parts");
-
-  const tabs = [
-    { id: "parts",    label: "Repair Parts",  icon: Wrench },
-    { id: "products", label: "Shop Products", icon: PackageOpen },
-  ];
 
   return (
     // Padding lives here, not in DashboardShell: that shell renders a bare
@@ -626,14 +583,13 @@ export default function CommercePage() {
     // gutters — and the sibling commerce pages (orders, delivery-zones) already do,
     // which is why only this page sat flush against the viewport edges. The values
     // match PosShell's `p-5 lg:p-7`, so the marketplace lines up with every other
-    // POS screen. On the root, so the header, the tab switcher, and both tabs'
-    // content share the same gutters.
+    // POS screen.
     <div className="space-y-5 p-5 lg:p-7">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Inventory</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Marketplace</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Manage repair parts and shop products from one place. Parts flagged &ldquo;Sell in online shop&rdquo; appear in the marketplace.
+            Every item you stock — bench and shop alike. Items flagged &ldquo;Sell in online shop&rdquo; appear in the storefront.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -648,25 +604,7 @@ export default function CommercePage() {
         </div>
       </div>
 
-      {/* Tab switcher */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 w-fit">
-        {tabs.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${
-              tab === id
-                ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm border border-gray-200 dark:border-gray-600"
-                : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
-            }`}
-          >
-            <Icon size={12} />
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "parts" ? <PartsTab /> : <ProductsTab />}
+      <ProductsList />
     </div>
   );
 }
