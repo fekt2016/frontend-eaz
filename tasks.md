@@ -361,7 +361,7 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Not fixed under T98** — only `reviews` is among T98's six, and fixing 1 of 7 would leave the
     set inconsistent; worth one pass of its own.
 
-- [ ] **T106 · Marketplace's two tabs list the same collection twice** (found 2026-08-29, after the parts/products merge)
+- [x] **T106 · Marketplace's two tabs list the same collection twice** (found 2026-08-29, after the parts/products merge)
   - **Issue:** `/dashboard/commerce` renders a tab switcher — **"Repair Parts"** and **"Shop
     Products"** (`src/app/dashboard/commerce/page.jsx:618-621`). Since parts were folded into
     `Product`, both tabs read the *same* collection with no distinguishing filter:
