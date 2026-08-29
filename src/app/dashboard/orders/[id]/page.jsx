@@ -7,15 +7,12 @@ import { ArrowLeft, ArrowRight, PackageOpen, Send, Star, RotateCcw, RefreshCw } 
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { sanitizeText } from "@/lib/sanitize";
-import { formatGhs } from "@/lib/shop";
+import { formatGhs, formatShippingMethod } from "@/lib/shop";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
 import { Button } from "@/components/ui";
 
 const ORDER_STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
-// Reviews are only meaningful once a purchase is verified — mirrors the
-// backend's own hasVerifiedPurchase gate (Order.status in paid|delivered),
-// not a stricter "delivered only" guess.
-const REVIEWABLE_ORDER_STATUSES = ["paid", "delivered"];
+const REVIEWABLE_ORDER_STATUSES = ["delivered"];
 // T15 — mirrors the backend's REFUND_ELIGIBLE_STATUSES exactly (orderController.js).
 const REFUND_ELIGIBLE_STATUSES = ["paid", "processing", "shipped"];
 
@@ -338,7 +335,7 @@ export default function CustomerOrderDetailPage() {
   }
 
   const zone = order.deliveryZone;
-  const deliveryFee = zone?.fee != null ? zone.fee : order.deliveryFee;
+  const deliveryFee = order.shippingFee || zone?.fee || order.deliveryFee || 0;
   const history = order.trackingHistory || [];
   const statuses = [...ORDER_STATUSES];
 
@@ -469,12 +466,18 @@ export default function CustomerOrderDetailPage() {
 
       {isAdmin && <RefundSection order={order} onUpdate={setOrder} />}
 
-      {zone && (
+      {(order.shippingMethod || zone) && (
         <div className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
           <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-2">Delivery</h2>
           <p className="text-sm text-gray-500 dark:text-slate-400">
-            {zone.name} · {zone.estimatedDays} {zone.estimatedDays === 1 ? "day" : "days"} estimated
+            {order.shippingMethod
+              ? formatShippingMethod(order)
+              : zone?.name}
+            {order.shippingZoneCode ? ` · ${order.shippingZoneCode}` : ""}
           </p>
+          {deliveryFee > 0 && (
+            <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">{formatGhs(deliveryFee)}</p>
+          )}
         </div>
       )}
 
@@ -504,8 +507,12 @@ export default function CustomerOrderDetailPage() {
             <span className="font-medium text-gray-900 dark:text-white">{formatGhs(order.subtotal)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-slate-400">Delivery</span>
-            <span className="font-medium text-gray-900 dark:text-white">{deliveryFee > 0 ? formatGhs(deliveryFee) : "—"}</span>
+            <span className="text-gray-500 dark:text-slate-400">
+              {order.shippingMethod
+                ? formatShippingMethod(order)
+                : "Delivery"}
+            </span>
+            <span className="font-medium text-gray-900 dark:text-white">{deliveryFee > 0 ? formatGhs(deliveryFee) : "Free"}</span>
           </div>
           <div className="flex justify-between border-t border-gray-100 dark:border-slate-800 pt-2 font-semibold">
             <span className="text-gray-900 dark:text-white">Total</span>

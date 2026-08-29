@@ -78,3 +78,29 @@ export function preorderAvailability(product) {
   if (note) parts.push(note);
   return parts.join(" — ");
 }
+
+/**
+ * The fulfilment choice as the customer saw it — "Courier — Next Day".
+ *
+ * Prefers `shippingMethodLabel`, snapshotted on the order at checkout, so a
+ * later rename of a speed tier never rewrites what someone actually bought.
+ * Falls back to deriving one for orders placed before that field existed;
+ * without the fallback those would read "—".
+ */
+export function formatShippingMethod(order) {
+  if (!order) return "";
+  if (order.shippingMethodLabel) return order.shippingMethodLabel;
+
+  const method = order.shippingMethod;
+  if (!method) return "";
+  if (method === "bus_station_pickup") return "Bus Station Pickup";
+  if (method === "in_house_delivery") return "In-House Delivery";
+
+  const speed = order.shippingSpeed;
+  if (!speed || speed === "standard") return "Courier — Standard";
+  const pretty = String(speed)
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  return `Courier — ${pretty}`;
+}

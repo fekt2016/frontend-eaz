@@ -3,6 +3,9 @@ import { render, screen, waitFor, fireEvent, within } from "@testing-library/rea
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CartProvider } from "@/context/CartContext";
 
+vi.mock("@/context/AuthContext", () => ({
+  useAuth: () => ({ user: null, loading: false }),
+}));
 vi.mock("next/image", () => ({
   // eslint-disable-next-line @next/next/no-img-element
   default: ({ src, alt, ...rest }) => <img src={src} alt={alt} {...rest} />,

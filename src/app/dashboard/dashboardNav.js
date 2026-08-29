@@ -2,7 +2,7 @@
 // sidenav (dashboard, commerce, POS) renders the same sections, role-gated.
 import {
   Barcode, BarChart3, CalendarDays, FileText, Gauge, Globe,
-  History, Mail, MessagesSquare, PackageCheck, Receipt, Server, ServerCog, Settings, ShieldCheck,
+  History, Mail, MapPin, MessagesSquare, PackageCheck, Receipt, Server, ServerCog, Settings, ShieldCheck,
   Ship, ShoppingBag, Star, Store, Truck, Users, Wrench,
 } from "lucide-react";
 
@@ -12,6 +12,7 @@ export const baseNav = [
   { href: "/dashboard", icon: Gauge, label: "Overview" },
   { href: "/dashboard/orders", icon: ShoppingBag, label: "Shop Orders" },
   { href: "/dashboard/repairs", icon: Wrench, label: "My Repairs" },
+  { href: "/dashboard/addresses", icon: MapPin, label: "My Addresses" },
   { href: "/dashboard/hosting", icon: Server, label: "Hosting", hideRoles: ["technician"] },
   { href: "/dashboard/domains", icon: Globe, label: "Domains", hideRoles: ["technician"] },
 ];

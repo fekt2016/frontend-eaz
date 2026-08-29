@@ -271,16 +271,18 @@ export default function ChatWidget() {
 
         if (restored !== "bot") {
           setChatStateLocal(restored);
-          welcomeSet.current = true;
+        }
 
-          if (Array.isArray(json.data) && json.data.length > 0) {
-            setMessages(json.data.map((m, i) => ({ role: m.role, content: m.content, id: m._id || `h${i}` })));
-            setSuggestions([]);
-            const last = json.data[json.data.length - 1];
-            lastPollTime.current = last?.createdAt ?? new Date(Date.now() - 60_000).toISOString();
-          } else {
-            lastPollTime.current = new Date(Date.now() - 60_000).toISOString();
-          }
+        // Always restore server messages when they exist — even for bot-state
+        // conversations — so a page refresh doesn't wipe the chat history.
+        if (Array.isArray(json.data) && json.data.length > 0) {
+          welcomeSet.current = true;
+          setMessages(json.data.map((m, i) => ({ role: m.role, content: m.content, id: m._id || `h${i}` })));
+          setSuggestions([]);
+          const last = json.data[json.data.length - 1];
+          lastPollTime.current = last?.createdAt ?? new Date(Date.now() - 60_000).toISOString();
+        } else {
+          lastPollTime.current = new Date(Date.now() - 60_000).toISOString();
         }
       })
       .catch(() => {
@@ -403,6 +405,33 @@ export default function ChatWidget() {
       const json = await res.json();
       await new Promise((r) => setTimeout(r, 600));
       setTyping(false);
+
+      // Backend redirected to an existing open session — switch to it
+      if (json.success && json.data?.existingSession) {
+        const existingId = json.data.sessionId;
+        sessionId.current = existingId;
+        setCookie("ew_session", existingId, { days: 30 });
+        // Fetch the existing session's messages and state
+        try {
+          const sessRes = await fetch(`/api/v1/chat/sessions/${existingId}/messages`, { credentials: "include" });
+          const sessJson = await sessRes.json();
+          if (sessJson.success && Array.isArray(sessJson.data) && sessJson.data.length > 0) {
+            setMessages(sessJson.data.map((m, i) => ({ role: m.role, content: m.content, id: m._id || `h${i}` })));
+            setSuggestions([]);
+            const { humanRequested, humanAccepted, resolved } = sessJson.meta || {};
+            let restored = "bot";
+            if (resolved)            restored = "ended";
+            else if (humanAccepted)  restored = "live";
+            else if (humanRequested) restored = "pending";
+            setChatStateLocal(restored);
+            saveChatState(existingId, restored);
+            const last = sessJson.data[sessJson.data.length - 1];
+            lastPollTime.current = last?.createdAt ?? new Date(Date.now() - 60_000).toISOString();
+          }
+        } catch { /* keep current UI state */ }
+        return;
+      }
+
       if (json.success && json.data?.response) {
         setMessages((prev) => [...prev, { role: "bot", content: json.data.response, id: `b_${Date.now()}` }]);
         setSuggestions(json.data.suggestions || []);
@@ -568,9 +597,11 @@ export default function ChatWidget() {
               <a href="https://wa.me/233244388190" target="_blank" rel="noopener noreferrer" title="WhatsApp" className="p-1.5 rounded-lg text-emerald-400 hover:bg-slate-800 transition">
                 <FaWhatsapp size={16} />
               </a>
-              <button onClick={handleReset} title="New conversation" className="p-1.5 rounded-lg text-gray-600 hover:bg-slate-800 transition">
-                <RotateCw size={12} />
-              </button>
+              {isEnded && (
+                <button onClick={handleReset} title="New conversation" className="p-1.5 rounded-lg text-gray-600 hover:bg-slate-800 transition">
+                  <RotateCw size={12} />
+                </button>
+              )}
               <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-gray-600 hover:bg-slate-800 transition">
                 <X size={14} />
               </button>

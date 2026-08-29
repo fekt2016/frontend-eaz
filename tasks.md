@@ -4,7 +4,8 @@
 > **`backend-eaz/tasks.md`**. Cross-app tasks are listed in their primary repo and
 > cross-referenced.
 >
-> Source of truth: **`AUDIT.md`** (full end-to-end audit run 2026-08-18 — 112 backend + 31
+> Sources of truth: **`REVIEWFULL.md`** (full audit 2026-08-29 — build + lint clean, 927 backend
+> tests passing; tasks T81-T100 come from it) and the earlier **`AUDIT.md`** (2026-08-18 — 112 backend + 31
 > frontend tests passing, build + lint clean). This file turns that audit's findings into
 > trackable tasks. Check the box when done and add a PR/commit reference.
 >
@@ -29,110 +30,102 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
 
 ## P1 — Important
 
-_None open._
+- [ ] **T97 · `FRONTEND_URL` falls back to localhost, silently breaking every canonical URL** (audit ref EZ-006)
+  - **Issue:** `export const SITE_URL = process.env.FRONTEND_URL || "http://localhost:3000";`
+    (`src/lib/seo.js:1`) — a silent localhost default. `SITE_URL` feeds canonicals, `metadataBase`,
+    Open Graph URLs, `sitemap.xml` and `robots.txt`. `amplify.yml` does not set the variable.
+  - **Impact:** If it is unset in the deploy environment, every canonical tag, OG URL and sitemap entry
+    ships as `http://localhost:3000`. Search engines de-index or ignore the pages and social previews
+    break — with **no runtime error** to notice. Classified POTENTIAL RISK in the audit because the
+    deployed environment could not be inspected from here; verify before treating as resolved.
+  - **Repro:** Build with `FRONTEND_URL` unset, then inspect `/sitemap.xml` and any page's canonical tag.
+  - **Expected:** A production build without `FRONTEND_URL` fails fast.
+  - **Actual:** Builds successfully and emits localhost URLs.
+  - **Fix:** Throw at module load when `NODE_ENV === 'production'` and `FRONTEND_URL` is unset; keep the
+    localhost default for development. Set the variable in the Amplify environment.
+  - **Location:** `src/lib/seo.js:1`; `amplify.yml`
+  - **Acceptance:**
+    - [ ] Production build fails with a clear message when `FRONTEND_URL` is missing
+    - [ ] Development still works with no configuration
+    - [ ] Deployed `sitemap.xml`, canonicals and OG URLs use the real domain
+    - [ ] The variable is set in the deployment environment
 
 ---
 
 ## P2 — Improvements
 
-_None open._
+- [ ] **T98 · Six public pages ship with no metadata** (audit ref EZ-013)
+  - **Issue:** No `export const metadata` and no `generateMetadata` on `src/app/hosting/page.jsx`,
+    `seo/page.jsx`, `repair/page.jsx`, `reviews/page.jsx`, `services/web-design/page.jsx`,
+    `track-order/page.jsx`. They inherit only the root defaults — no page title, description, canonical
+    or Open Graph data. (25 of 89 pages have metadata; the rest are dashboard/auth/transactional and
+    correctly `disallow`ed in `robots.js`.)
+  - **Impact:** Revenue pages — hosting, repair, web design, SEO services — compete in search with
+    generic titles and no descriptions, and share incorrect social previews.
+  - **Repro:** `for f in $(find src/app -name page.jsx | grep -vE "/dashboard/|/auth/"); do grep -q
+    "export const metadata\|generateMetadata" $f || echo $f; done`
+  - **Fix:** Add `metadata` exports built on the existing `src/lib/seo.js` helpers so canonical/OG
+    construction stays consistent. `track-order` is transactional — prefer `robots: { index: false }`
+    over marketing metadata.
+  - **Location:** the six files above
+  - **Acceptance:**
+    - [ ] Each listed page has a unique title and description
+    - [ ] Canonical URLs derive from `SITE_URL`
+    - [ ] Transactional pages are marked noindex rather than given marketing metadata
+    - [ ] Build and lint stay clean
+
+- [ ] **T99 · Plan the Next.js 16 upgrade to clear two high-severity PostCSS advisories** (audit ref EZ-014)
+  - **Issue:** `npm audit --omit=dev` reports 2 high-severity PostCSS advisories (arbitrary `.map` file
+    read / information disclosure via attacker-controlled `sourceMappingURL`; XSS via unescaped
+    `</style>`), reaching the app transitively through `next`
+    (`node_modules/next/node_modules/postcss`). `npm audit fix --force` resolves them by installing
+    **`next@16.3.3` — a major version bump**.
+  - **Impact:** Build-time/tooling-scoped rather than a live request path, so not an exploitable
+    production endpoint today — but a standing high-severity item that will block security review.
+  - **Fix:** Schedule Next 14 → 16 as its own piece of work (App Router changes, middleware API, build
+    config). **Do not run `--force` casually** — it is a breaking change to the framework the whole
+    frontend sits on.
+  - **Location:** `package.json`; transitive via `next`
+  - **Acceptance:**
+    - [ ] Upgrade path assessed and scheduled
+    - [ ] After upgrade, `npm audit --omit=dev` is clean
+    - [ ] Build, lint and all frontend tests pass
+    - [ ] Middleware auth/maintenance behaviour verified after the upgrade
+
+- [ ] **T100 · Checkout shows "Validation failed" and discards the field detail it already has** (audit ref EZ-018)
+  - **Issue:** Zod failures return `{ error: "Validation failed", errors: [{ field, message }] }`
+    (`backend-eaz/middleware/errorHandler.js:16`). `src/lib/api.js:24` already attaches `errors` to the
+    thrown Error — but checkout renders only `err.message`.
+  - **Impact:** Users see "Validation failed" with no indication of which field is wrong and no way to
+    fix it. This is exactly how the recent delivery-method defect presented: the actionable detail was
+    on the wire and thrown away.
+  - **Repro:** Submit a checkout request that fails schema validation and read the message.
+  - **Expected:** The first field message, or per-field annotations. **Actual:** a bare generic string.
+  - **Fix:** Where an error carries `errors[]`, render the first message (or map them onto fields).
+    Applies to any form using `lib/api.js`, not just checkout.
+  - **Location:** `src/app/checkout/page.jsx` (quote + submit error handling); `src/lib/api.js:24`
+  - **Acceptance:**
+    - [ ] Validation failures show a specific, actionable message
+    - [ ] Non-validation errors still show their message
+    - [ ] No raw internal detail is shown to users
 
 ---
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
 
+- [ ] **T80 · E2 Shipping Expansion: Frontend Checkout + Tracking Integration** (see `backend-eaz/tasks.md` T80 for full scope)
+  - **Sub-tasks:**
+    - [x] T80j · `src/app/checkout/page.jsx` — region→city→neighborhood cascade from `/api/v1/locations`; pickup location selector for `bus_station_pickup`; send `region`/`pickupLocationId` to quote
+    - [x] T80k · `src/app/track/order/[trackingNumber]/page.jsx` — pickup panel when `shippingMethod === 'bus_station_pickup'`
+    - [x] T80l · `src/app/order-confirmation/[reference]/page.jsx` — pickup info when applicable
+    - [x] T80m · `src/hooks/queries/useShippingAdmin.js` — add `useLocations`, `usePickups` hooks + queryKeys
+    - [x] T80m2 · `src/lib/queryKeys.js` — add location/pickup query keys
+
 ---
 
 ## Ad-hoc fixes (found during work, outside the original audit)
 
-- [x] **T69 · Chat monitoring UI — staff attribution, supervisor view, metrics** — ✅ done 2026-08-26
-  - **Frontend half of `backend-eaz/tasks.md` → T69.** Admin/superadmin want to monitor the
-    quality of staff↔customer chats. Backend phases 0–4 landed in the same pass, so this is no
-    longer blocked.
-  - **Attribution — ✅** agent bubbles in `/dashboard/chats` name the sender: "You" for your own
-    replies, the staff member's name otherwise, and a generic "EazWorld team" for messages stored
-    before `senderName` existed. Every bubble used to read **"You (Admin)"** regardless of who
-    typed it — which is precisely what made quality unmeasurable by eye.
-  - **Supervisor mode — ✅** replying now requires owning the conversation. A chat someone else
-    holds shows "*Ama* is handling this chat" with a **Take over**; an unclaimed one shows
-    "watching — claim it to reply" with a **Claim chat**; both `POST …/claim` and unlock the reply
-    box in place. Pending requests are unchanged — **Accept** claims as it connects. The session
-    list carries an owner line so a supervisor can see at a glance which chats are covered.
-    Also removed a hardcoded **"Watching"** pill that sat on every session and meant nothing.
-  - **Metrics — ✅** `QualityMetrics.jsx` (a `SectionCard` beside the console, admin-only, opened
-    from a **Quality** toggle so the admin-only endpoint doesn't fire on every front-desk page
-    load): sessions, live chats accepted, resolution rate, median first reply, median time to
-    close, 7/30/90-day range, plus a per-agent table. CSAT included now that backend phase 4
-    landed: a "Customer rating" card (`x / 5`, with rated-count + response-rate as the hint so
-    the denominator is never a mystery) and a ★ column per agent.
-  - **Customer rating (T69 phase 4) — ✅** `ChatWidget.jsx` asks for stars once a chat a *person*
-    handled has closed (bot-only conversations are never asked), submits optimistically to
-    `POST /chat/sessions/:id/rating`, and on later visits shows the saved score instead of
-    asking again (`meta.rating` from polling). The console surfaces each session's score as
-    tinted ★★☆☆☆ badges in both the list and the transcript header.
-  - **Tests:** `src/app/dashboard/chats/page.test.jsx` (11) covers attribution, the claim/take-over
-    gating, the panel's admin-only visibility, and the rating display; `ChatWidget.test.jsx` (new,
-    5) covers ask-once-after-close, submit, restore-instead-of-re-ask, and bot-only chats never
-    being asked. Suite: 49 files / 317 tests green; lint clean.
-
-- [~] **T67 · "Save GH₵0" was shown on every annual hosting plan** — ✅ frontend fix done 2026-08-25
-  - **Was:** `saving = plan.monthlyPrice * 12 - plan.annualPrice`, rendered unguarded. Every tier in
-    `config/hostingPlans.js` has `annualPrice === monthlyPrice * 12`, so the saving is always 0 and
-    customers picking Annual saw a green **"Save GH₵ 0"** plus a tab reading **"Annual (Save GH₵ 0)"**.
-  - **Fixed:** all three render sites now require `saving > 0` —
-    `src/app/hosting/page.jsx:310`, `src/app/hosting/checkout/page.jsx:351` and `:362`
-    (the tab falls back to a plain "Annual"). Suite green: 47 files / 301 tests.
-  - **Still open in `backend-eaz/tasks.md` → T67:** whether annual should carry a real discount.
-    If it should, set `annualPrice` per tier and the saving line reappears with no further UI work.
-
-- [~] **T68 · Dashboard queue for hosting orders that need manual provisioning** — ✅ done 2026-08-26 (backend + frontend; purchase-confirmation email folds into T62)
-  - **Frontend half of `backend-eaz/tasks.md` → T68.** VPS, Cloud and Email orders are paid but
-    never provisioned; staff only see a count on the admin dashboard, with no list to act on.
-  - **Shipped — `dashboard/hosting/awaiting-provisioning`**, mirroring
-    `dashboard/commerce/preorders`: paid skipped orders oldest first, each card showing plan,
-    customer, whole-cedi amount (`GH₵{amount}` raw — hosting money is the T44 exception, not
-    pesewas) and a credentials form. Entering the username/password created by hand in Starlight
-    Manager calls `PATCH …/mark-provisioned`, which activates the order and emails the same
-    credentials email auto-provisioned accounts get. The password goes to the email once and is
-    never stored.
-  - **Nav:** "Awaiting Provisioning" in the admin+staff section beside Pre-orders/Shipments —
-    same reasoning as T45: a recurring job someone has to go looking for, not a detail of one
-    order. Title mapping added so the topbar `<h1>` matches.
-  - **Hooks:** `useAwaitingProvisioning` / `useMarkProvisioned` in `useHosting.js`, invalidating
-    the whole hosting domain so the order leaves the queue and the admin lists refresh.
-  - **Tests:** `page.test.jsx` (6) — listing with whole-cedi rendering, credential submit,
-    domain prefill, server-refusal surface, empty state, customer role gate. Suite:
-    50 files / 323 tests green; lint clean.
-
-- [x] **T65 · Stop advertising `.com.gh` / `.gh` / `.africa`** — ✅ closed 2026-08-26
-  - **Product answer (user, 2026-08-26): we don't resell them** — customers register via a
-    ghNIC-accredited registrar; EazWorld connects the domain. The shipped copy work (commit
-    4a064a4: domains SEO copy, checkout suggestion, services FAQ) already implements exactly
-    that, so this closes. Full detail in `backend-eaz/tasks.md` → T65.
-  - **Why:** the registrar is Spaceship now (backend T64) and its API returns `tldNotSupported`
-    for all three — verified live 2026-08-25. Backend rejects them before any API call, so the
-    old copy steered people into a dead end.
-
-- [x] **T5 · Expenses open to admin (frontend half)** — ✅ done 2026-08-26
-  - Backend admitted `admin` to expense read+write (`routes/posRoutes.js`, backend T5). The
-    Expenses nav entry now includes `admin`, and `pos/expenses/page.jsx` gates manage actions
-    on superadmin+admin instead of superadmin alone.
-
-- [x] **T62 · Surface the tracking number, and mirror the transactional emails** — ✅ done (page in cb41a45; backend emails landed 2026-08-26)
-  - **Why:** a customer pays and lands on the order-confirmation page, which shows the
-    order number but **not the tracking number** — even though the order already has one
-    from the moment it is created. For a pre-order they will check on for weeks, that is
-    the difference between the T45 tracking journey being reachable and not.
-  - **Shipped here (cb41a45):** the confirmation page shows the tracking number with a
-    direct `/track/order/<number>` link instead of only offering the lookup form, and a
-    pre-order line sets the expectation ("you'll be emailed when it reaches our shop").
-  - **Backend half done 2026-08-26:** the emails this page promised now exist — shop
-    receipt with the same tracking link (`order_confirmation`), status moves
-    (`shop_status_update`), refund outcomes, domain and service confirmations. Full
-    detail in `backend-eaz/tasks.md` → T62. No further frontend work needed: every new
-    template points at existing routes.
-  - **Backend:** `backend-eaz/tasks.md` → T62 has the full audit of which areas send
-    email today and which send nothing.
+_None._
 
 ---
 

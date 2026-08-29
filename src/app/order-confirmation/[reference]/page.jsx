@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { CheckCircle2, Loader2, TriangleAlert } from "lucide-react";
-import { formatGhs } from "@/lib/shop";
+import { formatGhs, formatShippingMethod } from "@/lib/shop";
 import { useOrderByReference } from "@/hooks/queries/useOrders";
 
 export default function OrderConfirmationPage({ params }) {
@@ -94,8 +94,12 @@ export default function OrderConfirmationPage({ params }) {
               <span className="text-gray-900 dark:text-white">{formatGhs(order.subtotal)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-slate-400">Delivery</span>
-              <span className="text-gray-900 dark:text-white">{order.deliveryFee > 0 ? formatGhs(order.deliveryFee) : "—"}</span>
+              <span className="text-gray-500 dark:text-slate-400">
+                {order.shippingMethod === "bus_station_pickup"
+                  ? "Pickup fee"
+                  : formatShippingMethod(order) || "Delivery"}
+              </span>
+              <span className="text-gray-900 dark:text-white">{(order.shippingFee || order.deliveryFee || 0) > 0 ? formatGhs(order.shippingFee || order.deliveryFee || 0) : "Free"}</span>
             </div>
             <div className="flex justify-between border-t border-gray-200 dark:border-slate-700 pt-3 font-semibold text-base">
               <span className="text-gray-900 dark:text-white">Total</span>
@@ -131,9 +135,44 @@ export default function OrderConfirmationPage({ params }) {
           </div>
         )}
 
-        {order.customer?.address && (
+        {/* T80 E2 — bus-station pickup confirmation. Shown instead of the
+            home-delivery block when the order's fulfilment is pickup. The
+            pickup panel names the station, the region, and reminds the
+            customer to use the tracking number to follow the parcel. */}
+        {order.shippingMethod === "bus_station_pickup" ? (
+          <div className="mt-6 rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-6">
+            <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-2">Pickup</h3>
+            <p className="font-semibold text-gray-900 dark:text-white">
+              {order.pickupLocationName || "Bus-station pickup"}
+            </p>
+            {order.shippingRegion && (
+              <p className="text-sm text-gray-700 dark:text-slate-300 mt-1">
+                {order.shippingRegion}{order.customer?.address ? ` · ${order.customer.address}` : ""}
+              </p>
+            )}
+            <p className="mt-3 text-sm text-gray-700 dark:text-slate-300">
+              We&apos;ll send your parcel to this pickup point. When it arrives we&apos;ll
+              mark the order as <span className="font-semibold">Ready for Pickup</span>
+              {" "}— bring a valid ID when you collect it.
+            </p>
+            <p className="text-sm text-gray-700 dark:text-slate-300 mt-3">
+              Recipient: <span className="font-medium text-gray-900 dark:text-white">{order.customer?.name}</span>
+            </p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer?.phone}</p>
+          </div>
+        ) : order.customer?.address && (
           <div className="mt-6 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
             <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-2">Delivery</h3>
+            {order.shippingMethod && (
+              <p className="text-sm text-gray-700 dark:text-slate-300 mb-1">
+                {formatShippingMethod(order)}
+              </p>
+            )}
+            {(order.shippingZoneName || order.shippingNeighborhood) && (
+              <p className="text-xs text-gray-500 dark:text-slate-400 mb-2">
+                {order.shippingNeighborhood || ""}{order.shippingZoneName ? ` · ${order.shippingZoneName}` : ""}
+              </p>
+            )}
             <p className="text-sm text-gray-700 dark:text-slate-300">{order.customer.name}</p>
             <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer.phone}</p>
             <p className="text-sm text-gray-500 dark:text-slate-400">{order.customer.address}</p>
@@ -148,10 +187,10 @@ export default function OrderConfirmationPage({ params }) {
             Continue Shopping
           </Link>
           <Link
-            href={order.trackingNumber ? `/track/order/${order.trackingNumber}` : "/track-order"}
+            href="/dashboard/orders"
             className="rounded-full border border-gray-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition"
           >
-            Track Your Order
+            View My Orders
           </Link>
         </div>
       </div>

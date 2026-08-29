@@ -38,21 +38,21 @@ export default function Modal({
   children,
   footer,
   size = "md",
-  closeOnBackdrop = true,
   showClose = true,
   className = "",
 }) {
   const panelRef = useRef(null);
   const restoreRef = useRef(null);
+  const dragRef = useRef({ dragging: false, startX: 0, startY: 0 });
   const [mounted, setMounted] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const reactId = useId();
   const titleId = `dlg-${reactId}-title`;
   const descId = `dlg-${reactId}-desc`;
 
   useEffect(() => setMounted(true), []);
 
-  // Remember what had focus, and give it back on close — otherwise the user is
-  // dumped at the top of the document every time a dialog dismisses.
+  // Remember what had focus, and give it back on close
   useEffect(() => {
     if (!open) return;
     restoreRef.current = document.activeElement;
@@ -62,18 +62,20 @@ export default function Modal({
     };
   }, [open]);
 
-  // Body scroll lock. Restores the previous value rather than clearing, so
-  // nested locks (drawer → dialog) unwind correctly.
+  // Reset drag offset when modal opens
+  useEffect(() => {
+    if (open) setOffset({ x: 0, y: 0 });
+  }, [open]);
+
+  // Body scroll lock
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
+    return () => { document.body.style.overflow = prev; };
   }, [open]);
 
-  // Move focus into the dialog once it exists.
+  // Move focus into the dialog once it exists
   useEffect(() => {
     if (!open) return;
     const id = requestAnimationFrame(() => {
@@ -85,6 +87,27 @@ export default function Modal({
     return () => cancelAnimationFrame(id);
   }, [open]);
 
+  // Drag handlers — grab the header, move the whole panel
+  const onDragStart = useCallback((e) => {
+    if (e.target.closest("button, a, input, textarea, select")) return;
+    e.preventDefault();
+    dragRef.current = { dragging: true, startX: e.clientX - offset.x, startY: e.clientY - offset.y };
+    document.body.style.userSelect = "none";
+
+    const onMove = (ev) => {
+      if (!dragRef.current.dragging) return;
+      setOffset({ x: ev.clientX - dragRef.current.startX, y: ev.clientY - dragRef.current.startY });
+    };
+    const onUp = () => {
+      dragRef.current.dragging = false;
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }, [offset]);
+
   const onKeyDown = useCallback(
     (e) => {
       if (e.key === "Escape") {
@@ -93,27 +116,16 @@ export default function Modal({
         return;
       }
       if (e.key !== "Tab") return;
-
       const panel = panelRef.current;
       if (!panel) return;
       const items = Array.from(panel.querySelectorAll(FOCUSABLE)).filter(
         (el) => el.offsetParent !== null || el === document.activeElement
       );
-      if (items.length === 0) {
-        e.preventDefault();
-        panel.focus();
-        return;
-      }
+      if (items.length === 0) { e.preventDefault(); panel.focus(); return; }
       const first = items[0];
       const last = items[items.length - 1];
-      // Wrap the cycle so focus can never leave the dialog.
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     },
     [onClose]
   );
@@ -121,14 +133,7 @@ export default function Modal({
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-      {/* Backdrop. aria-hidden because the dialog itself carries the semantics. */}
-      <div
-        aria-hidden="true"
-        onClick={closeOnBackdrop ? onClose : undefined}
-        className="absolute inset-0 bg-black/60 animate-fade-in"
-      />
-
+    <div className="fixed inset-0 z-[100] pointer-events-none">
       <div
         ref={panelRef}
         role="dialog"
@@ -138,18 +143,22 @@ export default function Modal({
         aria-label={title ? undefined : "Dialog"}
         tabIndex={-1}
         onKeyDown={onKeyDown}
+        style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
         className={cx(
-          "relative w-full bg-white dark:bg-slate-900",
+          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+          "w-full bg-white dark:bg-slate-900 pointer-events-auto",
           "border border-gray-200 dark:border-slate-800",
-          // Sheet on mobile, centred card from sm up — the shape mobile users expect.
-          "rounded-t-2xl sm:rounded-2xl",
+          "rounded-2xl",
           "max-h-[90vh] overflow-y-auto animate-dialog-in shadow-xl",
           sizes[size] || sizes.md,
           className
         )}
       >
         {(title || showClose) && (
-          <div className="flex items-start justify-between gap-4 px-5 sm:px-6 pt-5 pb-4 border-b border-gray-100 dark:border-slate-800">
+          <div
+            onMouseDown={onDragStart}
+            className="flex items-start justify-between gap-4 px-5 sm:px-6 pt-5 pb-4 border-b border-gray-100 dark:border-slate-800 cursor-grab active:cursor-grabbing select-none"
+          >
             <div className="min-w-0">
               {title && (
                 <h2

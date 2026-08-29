@@ -132,7 +132,7 @@ export default function TrackOrderPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500 dark:text-slate-400">Delivery</span>
-                  <span className="text-gray-900 dark:text-white">{order.deliveryFee > 0 ? formatGhs(order.deliveryFee) : "—"}</span>
+                  <span className="text-gray-900 dark:text-white">{(order.shippingFee || order.deliveryFee || 0) > 0 ? formatGhs(order.shippingFee || order.deliveryFee || 0) : "—"}</span>
                 </div>
                 <div className="flex justify-between border-t border-gray-200 dark:border-slate-700 pt-3 font-semibold text-base">
                   <span className="text-gray-900 dark:text-white">Total</span>

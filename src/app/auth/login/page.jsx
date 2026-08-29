@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
@@ -62,7 +63,9 @@ function LoginPageInner() {
     <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
+          <Link href="/" aria-label="EazWorld home">
+            <Image src="/logo.png" alt="EazWorld" width={512} height={440} className="h-10 w-auto mx-auto" priority />
+          </Link>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mt-6 mb-1">Welcome back</h1>
           <p className="text-gray-600 dark:text-slate-500 text-sm">Sign in to your account</p>
         </div>

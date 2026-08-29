@@ -118,4 +118,33 @@ export const qk = {
     list: (params = {}) => ["notifications", "list", params],
     unreadCount: ["notifications", "unread-count"],
   },
+  shipping: {
+    all: ["shipping"],
+    settings: ["shipping", "settings"],
+    zones: ["shipping", "zones"],
+    tiers: ["shipping", "tiers"],
+    courierRate: ["shipping", "courier-rate"],
+    distances: (region, city) => ["shipping", "distances", region || "", city || ""],
+    neighborhoods: (params) => ["shipping", "admin-neighborhoods", params || {}],
+    neighborhoodCoverage: ["shipping", "neighborhood-coverage"],
+  },
+  // T80 E2 — public Location + Pickup reads for the checkout cascade.
+  locations: {
+    all: ["locations"],
+    grouped: ["locations", "grouped"],
+    regions: ["locations", "regions"],
+    cities: (region) => ["locations", "cities", region],
+    neighborhoods: (region, city) => ["locations", "neighborhoods", region, city],
+  },
+  pickups: {
+    all: ["pickups"],
+    byCity: (region, city) => ["pickups", "byCity", region, city],
+  },
+  // The customer's own saved delivery addresses (models/Address.js). One key —
+  // the list is small, always the caller's own, and every mutation returns or
+  // invalidates the whole thing.
+  addresses: {
+    all: ["addresses"],
+    list: ["addresses", "list"],
+  },
 };

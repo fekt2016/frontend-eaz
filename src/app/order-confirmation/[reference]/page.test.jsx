@@ -38,11 +38,11 @@ describe("Order confirmation — tracking number (T62)", () => {
       .toHaveAttribute("href", "/track/order/EZWTRK-ABC123");
   });
 
-  it("points Track Your Order at this order, not the lookup form", () => {
+  it("points the orders button at the customer's order list", () => {
     render(<OrderConfirmationPage params={{ reference: "ORD_1" }} />);
 
-    expect(screen.getByText("Track Your Order").closest("a"))
-      .toHaveAttribute("href", "/track/order/EZWTRK-ABC123");
+    expect(screen.getByText("View My Orders").closest("a"))
+      .toHaveAttribute("href", "/dashboard/orders");
   });
 
   it("sets the expectation when the order contains a pre-order", () => {
@@ -60,13 +60,19 @@ describe("Order confirmation — tracking number (T62)", () => {
     expect(screen.queryByText(/pre-order/i)).toBeNull();
   });
 
-  it("falls back to the lookup form for an order with no tracking number", () => {
+  it("renders no tracking link at all for an order with no tracking number", () => {
     // Orders placed before tracking numbers existed; the backfill covered the live
     // ones, but the page must not render a link to /track/order/undefined.
     mockOrder.mockReturnValue(baseOrder({ trackingNumber: undefined }));
 
     render(<OrderConfirmationPage params={{ reference: "ORD_1" }} />);
 
-    expect(screen.getByText("Track Your Order").closest("a")).toHaveAttribute("href", "/track-order");
+    expect(screen.queryByText(/Follow your order/)).toBeNull();
+    document.querySelectorAll("a").forEach((a) => {
+      expect(a.getAttribute("href")).not.toContain("undefined");
+    });
+    // The orders button is unconditional — it never depended on tracking.
+    expect(screen.getByText("View My Orders").closest("a"))
+      .toHaveAttribute("href", "/dashboard/orders");
   });
 });

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Package, Truck, Loader2, CheckCircle2 } from "lucide-react";
+import { formatGhs } from "@/lib/shop";
 import { statusBadge } from "@/lib/orderStatus";
 import { useOrderTracking } from "@/hooks/queries/useTracking";
 import PreorderProgress from "@/components/shop/PreorderProgress";
 
 function fmtDate(value) {
   if (!value) return "";
-  return new Date(value).toLocaleString("en-GB", {
+  return new Date(value).toLocaleString("en-GH", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -18,9 +19,45 @@ function fmtDate(value) {
   });
 }
 
+// T80 E2 — translate the backend's pickup lifecycle markers into the
+// customer-facing copy. The order status itself is still "shipped" /
+// "delivered" (we did not add new enum values), so we layer the marker
+// on top to give the customer the right next-step prompt.
+function pickupStageLabel(pickup, status) {
+  if (!pickup) return null;
+  if (pickup.pickedUpAt || status === "delivered") {
+    return {
+      key: "picked_up",
+      label: "Picked Up",
+      classes: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+      detail: `Collected ${fmtDate(pickup.pickedUpAt)}`,
+    };
+  }
+  if (pickup.readyForPickupAt || status === "shipped") {
+    return {
+      key: "ready_for_pickup",
+      label: "Ready for Pickup",
+      classes: "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+      detail: `Parcel arrived at pickup point ${fmtDate(pickup.readyForPickupAt)}`,
+    };
+  }
+  if (status === "processing") {
+    return {
+      key: "packed",
+      label: "Packed — heading to pickup point",
+      classes: "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
+      detail: "Your parcel is packed and will be sent to the pickup point soon.",
+    };
+  }
+  return null;
+}
+
 export default function OrderTrackingDetailPage() {
   const { trackingNumber } = useParams();
   const { data: tracking, isLoading: loading, error } = useOrderTracking(trackingNumber);
+
+  const isPickupOrder = tracking?.shippingMethod === "bus_station_pickup";
+  const stage = pickupStageLabel(tracking?.pickup, tracking?.status);
 
   return (
     <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
@@ -58,15 +95,82 @@ export default function OrderTrackingDetailPage() {
                   <p className="font-display font-bold text-lg text-gray-900 dark:text-white">{tracking.orderNumber}</p>
                   <p className="mt-1 text-xs text-gray-600 dark:text-slate-500">Placed {fmtDate(tracking.createdAt)}</p>
                 </div>
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(tracking.status).classes}`}>
-                  {statusBadge(tracking.status).label}
-                </span>
+                <div className="flex flex-col items-end gap-1.5">
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(tracking.status).classes}`}>
+                    {statusBadge(tracking.status).label}
+                  </span>
+                  {isPickupOrder && stage && (
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${stage.classes}`}>
+                      {stage.label}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* T45: a pre-ordered item's journey, shown above the order's own
                   timeline because "where is my phone" is the question that
                   brought the customer here. Null for an ordinary order. */}
               <PreorderProgress preorder={tracking.preorder} />
+
+              {/* T80 E2 — Pickup panel. Shown when the order's shippingMethod
+                  is bus_station_pickup. The panel names the pickup station,
+                  the region, and the current pickup-stage detail. */}
+              {isPickupOrder && tracking.pickup && (
+                <div className="mt-5 rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-4">
+                  <div className="flex items-start gap-3">
+                    <Package size={16} className="mt-0.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                    <div className="flex-1 text-sm">
+                      <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-1.5">
+                        Pickup Station
+                      </p>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {tracking.pickup.name || "Pickup station"}
+                      </p>
+                      {tracking.pickup.region && (
+                        <p className="text-gray-600 dark:text-slate-400 mt-0.5">
+                          {tracking.pickup.region}
+                        </p>
+                      )}
+                      {stage?.detail && (
+                        <p className="text-gray-700 dark:text-slate-300 mt-2">
+                          {stage.detail}
+                        </p>
+                      )}
+                      {stage?.key === "ready_for_pickup" && (
+                        <p className="mt-2 text-xs text-gray-600 dark:text-slate-400 inline-flex items-center gap-1">
+                          <CheckCircle2 size={11} /> Bring a valid ID when collecting.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Shipping details — method, speed, fee, neighborhood. Hidden
+                  for pickup orders (the pickup panel above carries the same
+                  information in pickup form). */}
+              {!isPickupOrder && (tracking.shippingMethod || tracking.shippingNeighborhood || tracking.shippingZoneName) && (
+                <div className="mt-5 rounded-xl bg-paper dark:bg-ink p-4">
+                  <p className="text-xs font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-2">Delivery Details</p>
+                  <div className="flex items-start gap-3">
+                    <Truck size={16} className="mt-0.5 text-brand-500 flex-shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {tracking.shippingMethod === "courier_dispatch" ? "Courier Delivery" : "In-House Delivery"}
+                        {tracking.shippingSpeed && tracking.shippingSpeed !== "standard" ? ` — ${tracking.shippingSpeed.replace("_", " ")}` : ""}
+                      </p>
+                      {tracking.shippingNeighborhood && (
+                        <p className="text-gray-600 dark:text-slate-400 mt-0.5">
+                          {tracking.shippingNeighborhood}{tracking.shippingZoneName ? ` · ${tracking.shippingZoneName}` : ""}
+                        </p>
+                      )}
+                      <p className="text-gray-600 dark:text-slate-400 mt-0.5">
+                        {tracking.shippingFee > 0 ? `Shipping: ${formatGhs(tracking.shippingFee)}` : "Free delivery"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {tracking.latestEvent && (
                 <div className="mt-5 rounded-xl bg-paper dark:bg-ink p-4">
@@ -86,7 +190,7 @@ export default function OrderTrackingDetailPage() {
                 </div>
               )}
 
-              {tracking.destination && (
+              {tracking.destination && !isPickupOrder && (
                 <p className="mt-4 text-sm text-gray-500 dark:text-slate-400">
                   Delivering to <span className="font-medium text-gray-900 dark:text-white">{tracking.destination}</span>
                 </p>

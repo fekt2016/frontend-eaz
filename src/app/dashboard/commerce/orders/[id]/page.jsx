@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 import { Send } from "lucide-react";
-import { formatGhs } from "@/lib/shop";
+import { formatGhs, formatShippingMethod } from "@/lib/shop";
 import { useOrder, useUpdateOrderStatus, useAddTrackingEvent } from "@/hooks/queries/useOrders";
 import {
   Badge, Button, Card, EmptyState, Skeleton,
@@ -112,7 +112,7 @@ export default function AdminOrderDetailPage() {
   }
 
   const zone = order.deliveryZone;
-  const deliveryFee = zone?.fee != null ? zone.fee : order.deliveryFee;
+  const deliveryFee = order.shippingFee || zone?.fee || order.deliveryFee || 0;
   const history = order.trackingHistory || [];
 
   return (
@@ -153,7 +153,9 @@ export default function AdminOrderDetailPage() {
           <Row label="Phone" value={order.customer?.phone || "—"} />
           <Row label="Email" value={order.customer?.email || "—"} />
           <Row label="Address" value={order.customer?.address || "—"} />
-          <Row label="Delivery Zone" value={zone?.name || "—"} />
+          <Row label="Delivery Zone" value={order.shippingZoneCode || zone?.name || "—"} />
+          <Row label="Delivery Method" value={formatShippingMethod(order) || "—"} />
+          <Row label="Delivery Fee" value={deliveryFee > 0 ? formatGhs(deliveryFee) : "Free"} />
         </div>
 
         <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
@@ -175,7 +177,7 @@ export default function AdminOrderDetailPage() {
 
         <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <Row label="Subtotal" value={formatGhs(order.subtotal)} />
-          <Row label="Delivery Fee" value={formatGhs(deliveryFee)} />
+          <Row label="Delivery Fee" value={deliveryFee > 0 ? formatGhs(deliveryFee) : "Free"} />
           <div className="flex justify-between gap-4 pt-2">
             <span className="text-sm font-bold text-gray-900">Total</span>
             <span className="text-sm font-bold text-gray-900">{formatGhs(order.total)}</span>

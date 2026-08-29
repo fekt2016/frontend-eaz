@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { landingPathForRole } from "@/lib/roles";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
+import Image from "next/image";
 import { Mail, Phone, RotateCw } from "lucide-react";
 
 // T17: registration accepts email OR phone, so verification must too — a
@@ -124,7 +125,9 @@ function VerifyPageInner() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
+          <Link href="/" aria-label="EazWorld home">
+            <Image src="/logo.png" alt="EazWorld" width={512} height={440} className="h-10 w-auto mx-auto" priority />
+          </Link>
           <div className="mt-6 mb-4 flex justify-center">
             <span className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center">
               {phoneFromQuery ? <Phone size={24} className="text-brand-500" /> : <Mail size={24} className="text-brand-500" />}

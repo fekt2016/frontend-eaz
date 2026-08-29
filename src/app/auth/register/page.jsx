@@ -4,6 +4,7 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 import { Suspense, useState, useMemo } from "react";
 import { Check, Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
@@ -64,7 +65,9 @@ function RegisterPageInner() {
     <div className="min-h-screen bg-paper dark:bg-ink flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="font-display font-bold text-2xl text-gray-900 dark:text-white">EazWorld</Link>
+          <Link href="/" aria-label="EazWorld home">
+            <Image src="/logo.png" alt="EazWorld" width={512} height={440} className="h-10 w-auto mx-auto" priority />
+          </Link>
           <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mt-6 mb-1">Create your account</h1>
           <p className="text-gray-600 dark:text-slate-500 text-sm">Join thousands of businesses in Accra</p>
         </div>

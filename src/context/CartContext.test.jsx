@@ -1,6 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { CartProvider, useCart } from "./CartContext";
+
+vi.mock("@/context/AuthContext", () => ({
+  useAuth: () => ({ user: null, loading: false }),
+}));
+vi.mock("@/lib/api", () => ({ api: { get: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() } }));
 
 const wrapper = ({ children }) => <CartProvider>{children}</CartProvider>;
 
