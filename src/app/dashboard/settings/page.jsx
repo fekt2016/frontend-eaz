@@ -4,7 +4,7 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import {
   User, Lock, ShieldCheck,
   Eye, EyeOff, Moon, Sun,
@@ -34,6 +34,14 @@ function ProfileSection({ user, onUpdate }) {
   const [phone, setPhone] = useState(user?.phone || "");
   const [loading, setLoading] = useState(false);
   const [status, setStatus]   = useState({ type: "", message: "" });
+  // T84: a new phone number is parked server-side until an SMS PIN proves the
+  // account controls it — guest orders are matched by phone, so an unproven
+  // number would be a claim on someone else's order history. While a change is
+  // pending we show the code step instead of the form, otherwise the save looks
+  // like it silently did nothing: the server deliberately did not write it.
+  const [pendingPhone, setPendingPhone] = useState("");
+  const [pin, setPin] = useState("");
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     setName(user?.name || "");
@@ -44,16 +52,93 @@ function ProfileSection({ user, onUpdate }) {
     e.preventDefault();
     setLoading(true);
     setStatus({ type: "", message: "" });
+    const cleanPhone = sanitizePhone(phone);
     try {
-      const res = await api.patch("/auth/me", { name: sanitizeName(name), phone: sanitizePhone(phone) });
+      const res = await api.patch("/auth/me", { name: sanitizeName(name), phone: cleanPhone });
       onUpdate(res.data?.user);
-      setStatus({ type: "success", message: "Profile updated successfully." });
+      if (res.phoneVerificationRequired) {
+        setPendingPhone(cleanPhone);
+        setPin("");
+        setStatus({
+          type: "success",
+          message: "Name saved. Enter the code we texted you to confirm the new number.",
+        });
+      } else {
+        setStatus({ type: "success", message: "Profile updated successfully." });
+      }
     } catch (err) {
-      setStatus({ type: "error", message: err.message || "Failed to update profile." });
+      setStatus({ type: "error", message: errorMessage(err, "Failed to update profile.") });
     } finally {
       setLoading(false);
     }
   };
+
+  const handleConfirm = async (e) => {
+    e.preventDefault();
+    setConfirming(true);
+    setStatus({ type: "", message: "" });
+    try {
+      const res = await api.post("/auth/me/phone/confirm", { pin: pin.trim() });
+      onUpdate(res.data?.user);
+      setPendingPhone("");
+      setPin("");
+      setStatus({ type: "success", message: "Phone number confirmed." });
+    } catch (err) {
+      setStatus({ type: "error", message: errorMessage(err, "Could not confirm that code.") });
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  const cancelPhoneChange = () => {
+    setPendingPhone("");
+    setPin("");
+    setPhone(user?.phone || "");
+    setStatus({ type: "", message: "" });
+  };
+
+  if (pendingPhone) {
+    return (
+      <SectionCard
+        icon={User}
+        title="Confirm your phone number"
+        description={`We texted a 6-digit code to ${pendingPhone}. It expires in 15 minutes.`}
+        iconColor="bg-info"
+      >
+        <form onSubmit={handleConfirm} className="space-y-4">
+          <div>
+            <label htmlFor="settings-phone-pin" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">
+              Verification code
+            </label>
+            <input
+              id="settings-phone-pin"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+              placeholder="000000"
+              className={`${inputCls} tracking-[0.4em] font-mono`}
+              required
+            />
+            <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">
+              Your current number stays in place until this code is confirmed.
+            </p>
+          </div>
+          {status.message && <Alert tone={status.type}>{status.message}</Alert>}
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" loading={confirming} disabled={pin.length < 6}>
+              {confirming ? "Confirming…" : "Confirm number"}
+            </Button>
+            <Button type="button" variant="secondary" onClick={cancelPhoneChange}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </SectionCard>
+    );
+  }
 
   return (
     <SectionCard icon={User} title="Profile Information" description="Update your name and phone number." iconColor="bg-info">
