@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Lock, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import {
   useLocationCities,
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
         if (cancelled) return;
         setShippingQuote(null);
         setQuoteError(
-          err?.message || "We could not work out delivery for that address. Please pick another area or contact us.",
+          errorMessage(err, "We could not work out delivery for that address. Please pick another area or contact us."),
         );
       });
     return () => { cancelled = true; };
@@ -368,7 +368,7 @@ export default function CheckoutPage() {
       setAddressNeighborhoodId(saved.neighborhoodId || "");
       setModalOpen(false);
     } catch (err) {
-      setModalError(err.message || "Could not save the address. Please try again.");
+      setModalError(errorMessage(err, "Could not save the address. Please try again."));
     } finally {
       setModalSaving(false);
     }
@@ -467,7 +467,7 @@ export default function CheckoutPage() {
         setError("Unable to initialize payment. Please try again.");
       }
     } catch (err) {
-      setError(err.message || "Checkout failed. Please try again.");
+      setError(errorMessage(err, "Checkout failed. Please try again."));
     } finally {
       setLoading(false);
     }
