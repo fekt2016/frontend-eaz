@@ -361,6 +361,37 @@ _None. The app builds, all tests pass, no broken or insecure feature blocks use.
   - **Not fixed under T98** — only `reviews` is among T98's six, and fixing 1 of 7 would leave the
     set inconsistent; worth one pass of its own.
 
+- [ ] **T106 · Marketplace's two tabs list the same collection twice** (found 2026-08-29, after the parts/products merge)
+  - **Issue:** `/dashboard/commerce` renders a tab switcher — **"Repair Parts"** and **"Shop
+    Products"** (`src/app/dashboard/commerce/page.jsx:618-621`). Since parts were folded into
+    `Product`, both tabs read the *same* collection with no distinguishing filter:
+    | Tab | Endpoint | Backend query |
+    |---|---|---|
+    | Repair Parts | `GET /pos/inventory` | `Product.find({})` — `controllers/pos/inventoryController.js:30` |
+    | Shop Products | `GET /products/all` | `Product.find({})` — `controllers/productController.js:220` |
+    `getParts` says so itself: *"shop stock and bench parts are one collection now, so every
+    search already spans both"*, and its `includeProducts` param is accepted and ignored.
+  - **Impact:** Every item appears under both tabs, so the counts double-count and editing an
+    item in one tab silently changes what the other shows. The page's heading still reads
+    "Inventory" while the sidebar calls it "Marketplace", and the subtitle ("Manage repair parts
+    and shop products from one place") describes the pre-merge world.
+  - **Repro:** open `/dashboard/commerce`, note an item under "Repair Parts", switch to "Shop
+    Products" — the same document is listed again.
+  - **Fix:** collapse to a single list over the merged collection and make the repair-vs-shop
+    distinction a **filter**, not a tab — the data already supports it via `sellInStore` /
+    `sellOnline` and the two taxonomies (`partCategory` / `category`). Remove `ProductsTab`,
+    promote `PartsTab` to the single view, and align the heading/subtitle with the sidebar label.
+  - **Also here:** `/dashboard/commerce/products` → `/dashboard/commerce/inventory` →
+    `/dashboard/commerce` is a **two-hop client-side redirect chain** (both shims are `useEffect`
+    + `router.replace`). Same pattern as T103 — worth collapsing to one server redirect.
+  - **Location:** `src/app/dashboard/commerce/page.jsx` (672 lines; `PartsTab` :220, `ProductsTab`
+    :500, switcher :613-670); the two redirect shims in the same directory
+  - **Acceptance:**
+    - [ ] One list, no duplicated items
+    - [ ] Repair-vs-shop available as a filter
+    - [ ] Heading, subtitle and sidebar label agree
+    - [ ] Old `/products` and `/inventory` links still land on the merged page
+
 ---
 
 ## Notes / Reconciliation with `AUDIT_REPORT.md` (stale)

@@ -39,13 +39,16 @@ async function renderSettled() {
 }
 
 describe("Commerce page — merged Marketplace + Inventory (T24)", () => {
-  it("renders inventory content directly", async () => {
+  // T106: the "Repair Parts" / "Shop Products" tabs both queried the same
+  // Product collection unfiltered, so every item was listed twice. One list now.
+  it("renders one stock list directly, with no tab split", async () => {
     mockUser.mockReturnValue({ role: "staff" });
     await renderSettled();
 
-    expect(screen.getByText("Inventory")).toBeInTheDocument();
-    expect(screen.getByText("Repair Parts")).toBeInTheDocument();
-    expect(screen.getByText("Shop Products")).toBeInTheDocument();
+    expect(screen.getByText("Marketplace")).toBeInTheDocument();
+    expect(screen.getByText("All stock")).toBeInTheDocument();
+    expect(screen.queryByText("Repair Parts")).not.toBeInTheDocument();
+    expect(screen.queryByText("Shop Products")).not.toBeInTheDocument();
   });
 
   // The Orders button and the /dashboard/commerce/orders list it opened were both
@@ -92,7 +95,7 @@ describe("Part image upload (T33)", () => {
 
   it("uploading a photo replaces the Upload button with a thumbnail + Remove, and the save payload includes it", async () => {
     await renderSettled();
-    fireEvent.click(screen.getByRole("button", { name: /add part/i }));
+    fireEvent.click(screen.getByRole("button", { name: /add product/i }));
     expect(await screen.findByText("Add New Part")).toBeInTheDocument();
 
     expect(screen.getByRole("button", { name: /upload photo/i })).toBeInTheDocument();
@@ -117,7 +120,7 @@ describe("Part image upload (T33)", () => {
 
   it("Remove clears the image and brings back the Upload button", async () => {
     await renderSettled();
-    fireEvent.click(screen.getByRole("button", { name: /add part/i }));
+    fireEvent.click(screen.getByRole("button", { name: /add product/i }));
     await screen.findByText("Add New Part");
 
     const file = new File(["fake"], "part.jpg", { type: "image/jpeg" });
@@ -155,15 +158,14 @@ describe("Commerce page — content gutters", () => {
     expect(root.className).toMatch(/\blg:p-7\b/);
   });
 
-  it("puts them on the root, so both tabs' content is padded, not just the first", async () => {
+  it("puts them on the root, so the header and the list share one gutter", async () => {
     mockUser.mockReturnValue({ role: "admin" });
     const { container } = render(<CommercePage />);
     const root = container.firstChild;
 
-    // The tab switcher and the panel below it are both children of the padded
-    // root, so switching tabs cannot land on an unpadded panel.
-    fireEvent.click(screen.getByRole("button", { name: /Shop Products/i }));
-    await waitFor(() => expect(screen.getByRole("button", { name: /Shop Products/i })).toBeInTheDocument());
+    // T106: there is no tab switcher any more — the header and the single list
+    // are both children of the padded root.
+    await waitFor(() => expect(screen.getByText("Marketplace")).toBeInTheDocument());
     expect(container.firstChild).toBe(root);
     expect(root.className).toMatch(/\bp-5\b/);
   });

@@ -52,10 +52,13 @@ export function useProductBySlug(slug, options = {}) {
 }
 
 // Admin product list, incl. inactive (GET /products/all).
+// T107: that route is paginated now (50 default, 200 max). The product edit page
+// finds its record inside this list, so it asks for the largest page the server
+// allows — a catalogue past 200 needs an admin get-by-id route instead (T109).
 export function useAdminProducts(options = {}) {
   return useQuery({
     queryKey: qk.products.admin,
-    queryFn: () => api.get("/products/all").then((r) => r.data ?? []),
+    queryFn: () => api.get("/products/all?limit=200").then((r) => r.data ?? []),
     staleTime: 30_000,
     ...options,
   });
