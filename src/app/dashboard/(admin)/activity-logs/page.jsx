@@ -197,7 +197,7 @@ export default function ActivityLogsPage() {
   const logQ = useActivityLogs(
     {
       page,
-      limit: 50,
+      limit: 10,
       q: search.trim(),
       action: actionFilter,
       resourceType: resourceFilter,

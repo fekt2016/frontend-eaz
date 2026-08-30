@@ -33,7 +33,7 @@ export default function ShopGrid({ activeCategory = "" }) {
   const [page, setPage] = useState(1);
 
   const { data, isLoading: loading, error: queryError } = useShopProducts({
-    page, limit: 12, sort,
+    page, limit: 10, sort,
     category: activeCategory || undefined,
     q: debouncedQ.trim() || undefined,
   });

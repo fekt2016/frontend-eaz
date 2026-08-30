@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
@@ -314,47 +315,63 @@ export default function AdminUsersPage() {
   const [createOpen, setCreateOpen]         = useState(false);
   const [blockTarget, setBlockTarget]       = useState(null);
 
+  // Server-driven paging. The list used to fetch EVERY user and filter in the
+  // browser — every field of every account into one response on a 512MB heap.
+  // Search moved to the server with it: paging a client-side filter would leave
+  // search matching only within the page you happen to be on, which is a wrong
+  // answer rather than a visible error.
+  const [page, setPage]   = useState(1);
+  const [total, setTotal] = useState(0);
+  const [blockedCount, setBlockedCount] = useState(0);
+  const PAGE_SIZE = 10;
+
+  // Debounced so typing does not fire a request per keystroke.
+  const debouncedSearch = useDebounce(search, 300);
+
   const isSuperAdmin = me?.role === "superadmin";
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/auth/users");
-      setUsers(res.data || []);
+      const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
+      if (debouncedSearch.trim()) params.set("q", debouncedSearch.trim());
+      const res = await api.get(`/auth/users?${params.toString()}`);
+      setUsers(res.data.users || []);
+      setTotal(res.data.total || 0);
+      setBlockedCount(res.data.blockedTotal || 0);
     } catch {
       setUsers([]);
+      setTotal(0);
+      setBlockedCount(0);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     if (!authLoading && isAdminRole(me?.role)) fetchUsers();
   }, [authLoading, me?.role, fetchUsers]);
 
+  // A new search starts at page 1 — otherwise searching while on page 3 can
+  // land on an empty page and read as "no results".
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
   const handleSaved = (updated) => {
     setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)));
   };
 
-  const filtered = users.filter((u) => {
-    const q = search.toLowerCase();
-    return (
-      u.name?.toLowerCase().includes(q) ||
-      u.email?.toLowerCase().includes(q) ||
-      u.phone?.toLowerCase().includes(q)
-    );
-  });
+  // The server has applied the search; this is just the rendered page.
+  const filtered = users;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   if (authLoading) return null;
-
-  const blockedCount = users.filter((u) => u.isBlocked).length;
 
   return (
     <div className="px-4 pb-24 pt-6 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <PageHeader
           title="Users"
-          description={`${users.length} registered · ${blockedCount} blocked`}
+          description={`${total} registered · ${blockedCount} blocked`}
           actions={
             <>
               <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -446,6 +463,39 @@ export default function AdminUsersPage() {
               </Table>
             </TableWrap>
           </Card>
+        )}
+
+        {/* Paging sits outside the empty/loading branches so it never renders
+            over a skeleton or an empty result. Hidden entirely on a single
+            page — controls that can only be no-ops are noise. */}
+        {!loading && totalPages > 1 && (
+          <nav
+            className="mt-4 flex items-center justify-between gap-4"
+            aria-label="User list pages"
+          >
+            <p className="text-sm text-gray-600 dark:text-slate-400">
+              Page {page} of {totalPages}
+              <span className="hidden sm:inline"> · {total} users</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Next
+              </Button>
+            </div>
+          </nav>
         )}
       </div>
 

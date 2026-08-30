@@ -81,7 +81,7 @@ export default function AdminEmailLogsPage() {
   }, [authLoading, isAdmin, router]);
 
   const emailQ = useEmailLogs(
-    { page, limit: 50, type: typeFilter, status: statusFilter, q: search.trim() },
+    { page, limit: 10, type: typeFilter, status: statusFilter, q: search.trim() },
     { enabled: !authLoading && isAdmin },
   );
   const logs    = emailQ.data?.logs ?? [];
