@@ -229,13 +229,26 @@ export default function CheckoutPage() {
     api
       .get(`/shipping/methods?${params.toString()}`)
       .then((r) => {
-        const available = (r.data?.methods || []).filter((m) => m.available);
+        // Owner decision (2026-08-30): keep every method in the list, including
+        // ones that are not bookable right now. Express is sold as one of three
+        // standing options (Standard, Next Day, Express) and silently dropping
+        // it after the 5pm cutoff makes the storefront look broken. It is now
+        // rendered disabled with the server's reason instead of disappearing.
+        const available = (r.data?.methods || []);
         // Slowest first. Any speed missing from this map sorted to the bottom,
         // which put "Courier — Next Day" below Express and out of price order.
-        const speedOrder = { in_house_delivery: 0, standard: 1, next_day: 2, express: 3, same_day: 4 };
-        available.sort((a, b) => (speedOrder[a.speed] ?? 9) - (speedOrder[b.speed] ?? 9));
+        // `in_house_delivery` is an id, not a speed — it carries speed
+        // "standard", so keying this map by speed alone tied it with Courier
+        // Standard instead of pinning it to the top. Rank by id first, then
+        // fall back to speed.
+        const speedOrder = { standard: 1, next_day: 2, express: 3, same_day: 4 };
+        const idOrder = { in_house_delivery: 0, bus_station_pickup: 0 };
+        const rank = (m) => idOrder[m.id] ?? speedOrder[m.speed] ?? 9;
+        available.sort((a, b) => rank(a) - rank(b));
         setMethods(available);
-        const defaultMethod = available.find((m) => m.id === "in_house_delivery") || available[0];
+        const selectable = available.filter((m) => m.available !== false);
+        const defaultMethod =
+          selectable.find((m) => m.id === "in_house_delivery") || selectable[0];
         if (defaultMethod) setSelectedMethod(defaultMethod.id);
       })
       .catch(() => setMethods([]));
@@ -737,9 +750,16 @@ export default function CheckoutPage() {
                     <button
                       key={m.id}
                       type="button"
-                      onClick={() => setSelectedMethod(m.id)}
+                      disabled={m.available === false}
+                      aria-disabled={m.available === false}
+                      onClick={() => {
+                        if (m.available === false) return;
+                        setSelectedMethod(m.id);
+                      }}
                       className={`w-full rounded-xl border p-4 text-left transition ${
-                        selectedMethod === m.id
+                        m.available === false
+                          ? "cursor-not-allowed border-gray-100 bg-gray-50 opacity-60 dark:border-slate-800 dark:bg-slate-900/40"
+                          : selectedMethod === m.id
                           ? "border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/10"
                           : "border-gray-100 bg-white hover:border-gray-200 dark:border-slate-800 dark:bg-ink dark:hover:border-slate-700"
                       }`}
@@ -772,7 +792,19 @@ export default function CheckoutPage() {
                           );
                         })()}
                       </div>
-                      {m.estimatedDays != null && (
+                      {/* Owner requirement (2026-08-30): say plainly why a shown
+                          option cannot be picked. The server sends the reason —
+                          e.g. "Express delivery closes at 5:00 PM. Please choose
+                          Next Day or Standard for this order." — so the wording
+                          stays in step with the cutoff hour actually configured
+                          rather than hardcoding "5 PM" in the UI. */}
+                      {m.available === false && (
+                        <p className="mt-1 text-sm font-medium text-amber-700 dark:text-amber-500">
+                          {m.unavailableReason ||
+                            "Not available right now. Please choose another delivery option."}
+                        </p>
+                      )}
+                      {m.available !== false && m.estimatedDays != null && (
                         <p className="text-sm text-gray-600 dark:text-slate-500 mt-1">
                           {m.speed === "same_day"
                             ? "Delivered today"
