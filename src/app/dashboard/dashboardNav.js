@@ -12,7 +12,13 @@ export const baseNav = [
   { href: "/dashboard", icon: Gauge, label: "Overview" },
   { href: "/dashboard/orders", icon: ShoppingBag, label: "Shop Orders" },
   { href: "/dashboard/repairs", icon: Wrench, label: "My Repairs" },
-  { href: "/dashboard/addresses", icon: MapPin, label: "My Addresses" },
+  // Owner decision (2026-08-30): the address book is a CUSTOMER surface —
+  // only role "user" sees it. A delivery address book on a staff account has
+  // no purpose. Hiding the link is presentation only; the real gate is
+  // denyRoles on backend routes/addressRoutes.js, with the Next middleware
+  // stopping the page in between.
+  { href: "/dashboard/addresses", icon: MapPin, label: "My Addresses",
+    hideRoles: ["superadmin", "admin", "staff", "technician"] },
   { href: "/dashboard/hosting", icon: Server, label: "Hosting", hideRoles: ["technician"] },
   { href: "/dashboard/domains", icon: Globe, label: "Domains", hideRoles: ["technician"] },
 ];

@@ -118,6 +118,20 @@ export async function middleware(request) {
     }
   }
 
+  // Customer-only dashboard pages. This gate runs the OTHER way round to the
+  // ones above: instead of keeping customers out of a staff page, it keeps
+  // staff-side roles out of a customer page. The address book is a personal
+  // delivery address list and has no meaning on an admin/staff account.
+  // Backend mirrors this with denyRoles on routes/addressRoutes.js — that is
+  // the gate that actually holds; this one stops the page shell rendering so a
+  // bookmarked URL bounces instead of loading and then failing its fetches.
+  const CUSTOMER_ONLY_PATHS = ["/dashboard/addresses"];
+  if (token && CUSTOMER_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
+    if (userRole && userRole !== "user") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
   // Staff-accessible dashboard pages. The backend gates shop order APIs to
   // admin + staff, so staff may open the marketplace overview and shop
   // orders — but not the admin-only commerce subpages above. Staff also work
