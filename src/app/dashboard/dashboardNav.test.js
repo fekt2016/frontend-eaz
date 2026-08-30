@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { marketplaceNav, posNav } from "./dashboardNav";
+import { baseNav, marketplaceNav, posNav } from "./dashboardNav";
 
 // T24: Marketplace and Inventory used to be two separate sidebar entries
 // pointing at two now-merged pages.
@@ -54,5 +54,34 @@ describe("posNav — Jobs entry removed", () => {
         "/dashboard/pos/reports",
       ]),
     );
+  });
+});
+
+// Owner decision (2026-08-30): the address book is a CUSTOMER surface. Admin,
+// superadmin, staff and technician should not see "My Addresses" at all — a
+// personal delivery address book has no meaning on a staff account.
+//
+// This only covers the sidebar. Hiding a link is not access control: the gates
+// that hold are denyRoles on backend routes/addressRoutes.js and the
+// customer-only path check in src/middleware.js.
+describe("baseNav — My Addresses is customer-only", () => {
+  const visibleTo = (role) =>
+    baseNav.filter((n) => !n.hideRoles || !n.hideRoles.includes(role)).map((n) => n.href);
+
+  it("shows the address book to a customer", () => {
+    expect(visibleTo("user")).toContain("/dashboard/addresses");
+  });
+
+  it.each(["superadmin", "admin", "staff", "technician"])(
+    "hides the address book from %s",
+    (role) => {
+      expect(visibleTo(role)).not.toContain("/dashboard/addresses");
+    },
+  );
+
+  it("leaves the other customer entries alone for a customer", () => {
+    const hrefs = visibleTo("user");
+    expect(hrefs).toContain("/dashboard/orders");
+    expect(hrefs).toContain("/dashboard/repairs");
   });
 });
