@@ -214,9 +214,46 @@
   6. **Then revisit `remotePatterns: "**"`** — the image-optimizer advisories are the reachable
      ones, and a wildcard host allowlist keeps that surface open even on 16. Worth its own task.
 
-  **Recommendation on sequencing:** this is not a same-day change. Stage 1 is safe to do now and
-  is independently useful. Stages 2-4 want a quiet window and a real device/browser pass, since
-  the middleware rename touches authentication for every role.
+  **Recommendation on sequencing:** this is not a same-day change. Stages 2-4 want a quiet window
+  and a real device/browser pass, since the middleware rename touches authentication for every
+  role.
+
+  ### ⚠️ STAGE 1 IS BLOCKED ON NEXT 14 — attempted and reverted 2026-08-30
+
+  **The stage ordering above is wrong.** Stage 1 said the ESLint 9 + flat-config migration was
+  "safe to do now" and should come FIRST, so the lint gate survives the Next upgrade. It cannot
+  be done first. Measured, not guessed:
+
+  1. `eslint-config-next@14.2.35` ships **no flat-config export** — only eslintrc-style files
+     (`index.js`, `core-web-vitals.js`, `typescript.js`, `parser.js`) and no `exports` map. A
+     flat config therefore needs `FlatCompat` as a bridge. That part works.
+  2. Under flat config, plugins resolve from the PROJECT ROOT, not from
+     `eslint-config-next`'s own tree the way `next lint` resolved them. `eslint .` fails with
+     *ESLint couldn't find the plugin "eslint-plugin-react-hooks"*.
+  3. Installing that plugin at the root fails: `eslint-config-next@14.2.35` pins
+     **`eslint-plugin-react-hooks@5.0.0-canary-7118f5dd7-20230705`**, whose peer range is
+     `eslint@^3 || ^4 || ^5 || ^6 || ^7 || ^8` — it **does not support ESLint 9**.
+  4. Installing a newer react-hooks instead also fails: `eslint-config-next@14.2.35` is what pins
+     the canary, so npm cannot resolve around it (`ERESOLVE ... While resolving:
+     eslint-config-next@14.2.35`).
+
+  Reaching into `eslint-config-next/node_modules/` to load the nested plugin would "work" and was
+  rejected: it depends on npm's hoisting layout and breaks on the next install.
+
+  **Revised ordering:** ESLint 9 + flat config must come WITH or AFTER the
+  `eslint-config-next` upgrade, not before it. Either bump `eslint-config-next` on its own first
+  (untested — it may not be independently installable against Next 14), or accept that `next lint`
+  keeps working right up to the Next 16 bump and migrate lint as part of stage 3.
+
+  **Everything was reverted** — `package.json`, `package-lock.json` and `eslint.config.mjs`.
+  `next lint` is clean and the tree is unchanged. Nothing about this attempt is left in the repo.
+
+  **Carry forward when it IS done:** the flat config must explicitly keep `no-unused-vars`
+  (with the `^_` escape hatch), `no-array-constructor` and `no-unused-expressions`.
+  `next/core-web-vitals` configures none of them — see T135 — and in a single day that rule set
+  caught a dead `onPassword` prop, an unused `blockTarget` left by a bad scripted deletion, and an
+  orphaned `Key` import. A migration that just carries the preset across switches them off while
+  lint still reports "clean".
 
   **Not done here:** no packages installed, no `--force`, no code changed. T99's acceptance
   criteria 2-4 ("audit clean", "build/lint/tests pass", "middleware verified") can only be
