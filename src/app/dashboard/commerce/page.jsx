@@ -1,19 +1,18 @@
 "use client";
 
-import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import ProductImage from "@/components/shop/ProductImage";
-import UploadButton from "@/components/common/UploadButton";
 import {
   Plus, Search, Pen, Trash2, TriangleAlert, Barcode, PackageOpen,
-  Wrench, Truck, X,
+  Wrench, Truck,
 } from "lucide-react";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
-import { Alert, Badge } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import ItemModal from "./ItemModal";
 
 const CATEGORIES = ["Screen", "Battery", "Charging Port", "Speaker", "Camera", "Button", "Housing", "Board", "Accessory", "Cable", "IC / Chip", "Other"];
 
@@ -26,211 +25,7 @@ const KINDS = [
   { value: "other",       label: "Other" },
 ];
 
-const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
-const selectCls = `${inputCls} cursor-pointer`;
-const labelCls = "block text-body-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5";
 
-function PartModal({ part, onClose, onSave, suppliers = [] }) {
-  const editing    = Boolean(part?._id);
-  const barcodeRef = useRef(null);
-
-  const [name,       setName]      = useState(part?.name       || "");
-  const [sku,        setSku]       = useState(part?.sku        || "");
-  const [barcode,    setBarcode]   = useState(part?.barcode    || "");
-  const [isRetail,   setIsRetail]  = useState(part?.isRetail   ?? false);
-  const [allowNeg,   setAllowNeg]  = useState(part?.allowNegativeStock ?? false);
-  const [category,   setCategory]  = useState(part?.category   || "Other");
-  const [qty,        setQty]       = useState(part?.quantity   ?? 0);
-  const [threshold,  setThreshold] = useState(part?.lowStockThreshold ?? 3);
-  const [costPrice,  setCostPrice] = useState(part?.costPrice  ? part.costPrice / 100 : "");
-  const [sellPrice,  setSellPrice] = useState(part?.sellingPrice ? part.sellingPrice / 100 : "");
-  const [supplierId, setSupplierId]= useState(part?.supplier?._id || part?.supplier || "");
-  const [compat,     setCompat]    = useState(part?.compatibleWith?.join(", ") || "");
-  const [notes,      setNotes]     = useState(part?.notes      || "");
-  const [images,     setImages]    = useState(part?.images     || []);
-  const [saving,     setSaving]    = useState(false);
-  const [error,      setError]     = useState("");
-
-  // Auto-focus barcode field when adding a new product so scanner can type into it
-  useEffect(() => {
-    if (!editing) {
-      setTimeout(() => barcodeRef.current?.focus(), 120);
-    }
-  }, [editing]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!name || costPrice === "" || sellPrice === "") {
-      setError("Name, cost price, and selling price are required.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const payload = {
-        name,
-        sku: sku || undefined,
-        barcode: barcode.trim() || undefined,
-        isRetail,
-        allowNegativeStock: allowNeg,
-        category,
-        quantity: Number(qty),
-        lowStockThreshold: Number(threshold),
-        costPrice: Math.round(Number(costPrice) * 100),
-        sellingPrice: Math.round(Number(sellPrice) * 100),
-        supplier: supplierId || undefined,
-        compatibleWith: compat ? compat.split(",").map(s => s.trim()).filter(Boolean) : [],
-        notes: notes || undefined,
-        images,
-      };
-      if (editing) {
-        await api.patch(`/pos/inventory/${part._id}`, payload);
-      } else {
-        await api.post("/pos/inventory", payload);
-      }
-      onSave();
-    } catch (err) {
-      setError(err.message || "Failed to save part.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-800">
-          <h2 className="text-base font-bold text-gray-900 dark:text-white">{editing ? "Edit Part" : "Add New Part"}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-900 dark:hover:text-white">✕</button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-
-          {/* Barcode — first field, auto-focused for scanner */}
-          <div>
-            <label className={labelCls}>
-              <span className="flex items-center gap-1.5">
-                <Barcode size={11} className="text-brand-ink dark:text-brand-400" />
-                Barcode
-                {!editing && <span className="text-brand-500 font-normal normal-case tracking-normal ml-1">— scan now or type</span>}
-              </span>
-            </label>
-            <input
-              ref={barcodeRef}
-              value={barcode}
-              onChange={e => setBarcode(e.target.value)}
-              placeholder="Scan part barcode…"
-              className={`${inputCls} ${!barcode && !editing ? "border-brand-500/50 focus:border-brand-500" : ""}`}
-            />
-          </div>
-
-          {/* Photo — single image, same Cloudinary upload route as products (T33) */}
-          <div>
-            <label className={labelCls}>Photo</label>
-            {images[0] ? (
-              <div className="flex items-center gap-3">
-                <ProductImage src={images[0]} alt={name || "Part photo"} width={56} height={56} className="h-14 w-14 rounded-xl object-cover bg-gray-100 flex-shrink-0" />
-                <button
-                  type="button"
-                  onClick={() => setImages([])}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300 hover:border-error hover:text-error dark:hover:border-error-dark dark:hover:text-error-dark transition"
-                >
-                  <X size={11} /> Remove
-                </button>
-              </div>
-            ) : (
-              <UploadButton onUploaded={(url) => setImages([url])} label="Upload photo" />
-            )}
-          </div>
-
-          <div>
-            <label className={labelCls}>Part name *</label>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Tecno Spark 20 Case, USB-C Cable 1m" className={inputCls} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>SKU <span className="text-gray-600">(optional)</span></label>
-              <input value={sku} onChange={e => setSku(e.target.value)} placeholder="Internal code" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Category</label>
-              <select value={category} onChange={e => setCategory(e.target.value)} className={selectCls}>
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
-              <input type="checkbox" checked={isRetail} onChange={e => setIsRetail(e.target.checked)} className="rounded border-gray-300 dark:border-gray-600" />
-              Sell in online shop
-            </label>
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
-              <input type="checkbox" checked={allowNeg} onChange={e => setAllowNeg(e.target.checked)} className="rounded border-gray-300 dark:border-gray-600" />
-              Allow negative stock
-            </label>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Cost price (GH₵) *</label>
-              <input type="number" min="0" value={costPrice} onChange={e => setCostPrice(e.target.value)} placeholder="0" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Selling price (GH₵) *</label>
-              <input type="number" min="0" value={sellPrice} onChange={e => setSellPrice(e.target.value)} placeholder="0" className={inputCls} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Stock quantity</label>
-              <input type="number" min="0" value={qty} onChange={e => setQty(e.target.value)} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Low stock alert at</label>
-              <input type="number" min="0" value={threshold} onChange={e => setThreshold(e.target.value)} className={inputCls} />
-            </div>
-          </div>
-
-          {suppliers.length > 0 && (
-            <div>
-              <label className={labelCls}>Supplier</label>
-              <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className={selectCls}>
-                <option value="">— No supplier —</option>
-                {suppliers.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-              </select>
-            </div>
-          )}
-
-          <div>
-            <label className={labelCls}>Compatible with <span className="text-gray-600">(comma separated)</span></label>
-            <input value={compat} onChange={e => setCompat(e.target.value)} placeholder="e.g. iPhone 14, Samsung A54" className={inputCls} />
-          </div>
-
-          <div>
-            <label className={labelCls}>Notes</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className={`${inputCls} resize-none`} />
-          </div>
-
-          {error && <Alert tone="error">{error}</Alert>}
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-gray-900 text-sm font-semibold transition disabled:opacity-50"
-          >
-            {saving ? "Saving…" : editing ? "Update Part" : "Add Part"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// One list over one collection. The old page split this into "Repair Parts" and
-// "Shop Products" tabs, but since the parts/products merge both tabs queried the
-// same `Product` collection unfiltered — every item appeared twice. Bench-vs-shop
-// is a property of an item now (`sellInStore` / `sellOnline`), not a separate
-// table, so it belongs in a filter rather than a tab.
 function ProductsList() {
   const [parts,       setParts]       = useState([]);
   const [total,       setTotal]       = useState(0);
@@ -562,8 +357,8 @@ function ProductsList() {
       )}
 
       {modal && (
-        <PartModal
-          part={modalPart}
+        <ItemModal
+          item={modalPart}
           suppliers={suppliers}
           onClose={() => setModal(null)}
           onSave={() => { setModal(null); fetchParts(); }}

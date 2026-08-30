@@ -13,13 +13,18 @@ const SHORT_DESCRIPTION_MAX = 200;
 const btnGhostClass =
   "inline-flex items-center gap-1.5 rounded-full border border-gray-300 dark:border-slate-600 px-3.5 py-2 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:border-gray-900 dark:hover:border-slate-400 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-50";
 
-function Field({ label, children }) {
+function Field({ label, hint, children }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
         {label}
       </span>
       {children}
+      {hint && (
+        <span className="mt-1 block text-xs font-normal normal-case tracking-normal text-gray-500 dark:text-slate-500">
+          {hint}
+        </span>
+      )}
     </label>
   );
 }
@@ -80,7 +85,39 @@ function StringListEditor({ values, onChange, accept, uploadLabel, placeholder }
 const attributesToRows = (attributes) =>
   Object.entries(attributes || {}).map(([key, value]) => ({ key, value }));
 
-export default function ProductForm({ initial, submitLabel, submitting, onSubmit }) {
+/*
+ * `allowPart` (owner request, 2026-08-30): the Marketplace "Add" modal now uses
+ * THIS form rather than its own part-shaped one, so the form has to cover bench
+ * parts as well as shop products.
+ *
+ * The two are one collection already, but they are NOT the same thing to
+ * create. The POS path sets deliberate bench defaults — sellOnline:false,
+ * isActive:false, useInRepairs:true — so a new part is not silently listed in
+ * the public shop. POST /products sets none of those. So the form is unified
+ * while the ENDPOINT still differs, and `itemType` is what the caller routes on.
+ * Collapsing both onto /products would quietly put every new bench part on the
+ * storefront.
+ *
+ * Existing callers (new + edit product pages) pass no `allowPart` and are
+ * unchanged: the toggle and the bench fields simply do not render.
+ */
+export default function ProductForm({ initial, submitLabel, submitting, onSubmit, allowPart = false, suppliers = [] }) {
+  const [itemType, setItemType] = useState(initial?.itemType || "product");
+  const isPart = allowPart && itemType === "part";
+
+  // Bench-part fields. Absent from the shop product shape entirely, so they are
+  // only collected — and only sent — when the part type is selected.
+  const [barcode, setBarcode] = useState(initial?.barcode || "");
+  const [costGhs, setCostGhs] = useState(
+    initial?.costPrice ? String(initial.costPrice / 100) : ""
+  );
+  const [lowStockThreshold, setLowStockThreshold] = useState(initial?.lowStockThreshold ?? 3);
+  const [supplier, setSupplier] = useState(initial?.supplier?._id || initial?.supplier || "");
+  const [compatibleWith, setCompatibleWith] = useState(
+    Array.isArray(initial?.compatibleWith) ? initial.compatibleWith.join(", ") : ""
+  );
+  const [notes, setNotes] = useState(initial?.notes || "");
+
   const [name, setName] = useState(initial?.name || "");
   const [slug, setSlug] = useState(initial?.slug || "");
   const [category, setCategory] = useState(initial?.category || "");
@@ -174,7 +211,41 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       return;
     }
 
+    // A bench part is created through POST /pos/inventory, which speaks a
+    // different vocabulary to the Product model: quantity→stock,
+    // sellingPrice→price, and category doubles as partCategory. Send its shape,
+    // not the product one, or every bench field is silently dropped by the
+    // controller's whitelist.
+    if (isPart) {
+      const costPesewas = Math.round((parseFloat(costGhs) || 0) * 100);
+      if (costPesewas <= 0) {
+        setError("A bench part needs a cost price above GH₵ 0.00.");
+        return;
+      }
+      onSubmit({
+        itemType: "part",
+        name: name.trim(),
+        category: category.trim(),
+        quantity: stock === "" || stock == null ? 0 : parseInt(stock, 10) || 0,
+        sellingPrice: pesewas,
+        costPrice: costPesewas,
+        lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
+        sku: sku.trim(),
+        barcode: barcode.trim(),
+        supplier: supplier || undefined,
+        compatibleWith: compatibleWith
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean),
+        description: description.trim(),
+        images: images.filter(Boolean),
+        notes: notes.trim(),
+      });
+      return;
+    }
+
     onSubmit({
+      itemType: "product",
       name: name.trim(),
       slug: slug.trim() || undefined,
       category: category.trim(),
@@ -216,6 +287,45 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {allowPart && (
+          // Deliberately NOT wrapped in <Field>: that renders a <label>, and a
+          // label around two buttons is both invalid and actively harmful —
+          // every button inherits the label's text as part of its accessible
+          // name, so a screen reader (and any name-based query) cannot tell
+          // "Shop product" from "Bench part". A fieldset/legend is the correct
+          // grouping for a choice between controls.
+          <fieldset className="sm:col-span-2">
+            <legend className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
+              What is this?
+            </legend>
+            <div className="flex gap-2">
+              {[
+                { value: "product", label: "Shop product" },
+                { value: "part", label: "Bench part" },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setItemType(opt.value)}
+                  aria-pressed={itemType === opt.value}
+                  className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                    itemType === opt.value
+                      ? "border-brand-300 bg-brand-50 text-brand-ink dark:border-brand-500/50 dark:bg-brand-500/10 dark:text-brand-400"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-slate-500">
+              {isPart
+                ? "Bench stock: used in repairs, not listed in the shop until you opt it in."
+                : "Shop product: listed online once active."}
+            </p>
+          </fieldset>
+        )}
+
         <Field label="Name *">
           <input
             className={inputClass}
@@ -272,6 +382,68 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
             placeholder="optional"
           />
         </Field>
+
+        {isPart && (
+          <>
+            <Field label="Cost price (GH₵) *" hint="What you pay the supplier.">
+              <input
+                className={inputClass}
+                type="number" step="0.01" min="0"
+                value={costGhs}
+                onChange={(e) => setCostGhs(e.target.value)}
+                placeholder="0.00"
+              />
+            </Field>
+            <Field label="Barcode">
+              <input
+                className={inputClass}
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+                placeholder="Scan or type"
+              />
+            </Field>
+            <Field label="Low-stock threshold" hint="Warn when stock drops to this.">
+              <input
+                className={inputClass}
+                type="number" min="0"
+                value={lowStockThreshold}
+                onChange={(e) => setLowStockThreshold(e.target.value)}
+              />
+            </Field>
+            <Field label="Supplier">
+              <select
+                className={inputClass}
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+              >
+                <option value="">— None —</option>
+                {suppliers.map((sup) => (
+                  <option key={sup._id} value={sup._id}>{sup.name}</option>
+                ))}
+              </select>
+            </Field>
+            <div className="sm:col-span-2">
+              <Field label="Compatible with" hint="Comma separated, e.g. iPhone 13, iPhone 13 Pro.">
+                <input
+                  className={inputClass}
+                  value={compatibleWith}
+                  onChange={(e) => setCompatibleWith(e.target.value)}
+                  placeholder="iPhone 13, iPhone 13 Pro"
+                />
+              </Field>
+            </div>
+            <div className="sm:col-span-2">
+              <Field label="Bench notes">
+                <input
+                  className={inputClass}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Anything the counter should know"
+                />
+              </Field>
+            </div>
+          </>
+        )}
       </div>
 
       {/* T39: shown in the buy column on the product page; the full description

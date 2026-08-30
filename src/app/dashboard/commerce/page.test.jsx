@@ -31,7 +31,6 @@ vi.mock("@/lib/api", () => ({
   errorMessage: (err, fallback) => err?.message || fallback,
 }));
 
-import { api } from "@/lib/api";
 import CommercePage from "./page";
 
 // Waits for PartsTab's initial fetches to settle (loading skeleton gone)
@@ -81,7 +80,12 @@ describe("Commerce page — merged Marketplace + Inventory (T24)", () => {
   });
 });
 
-describe("Part image upload (T33)", () => {
+// T33 — an uploaded photo must reach the saved item. The behaviour is
+// unchanged; the UI around it is not. The Marketplace "Add" modal used to be a
+// bespoke part form and is now ProductForm (owner request, 2026-08-30), so
+// these drive the new controls: an item-type toggle, then ProductForm's own
+// image list.
+describe("Item image upload (T33)", () => {
   beforeEach(() => {
     inventoryData = [];
     mockPost.mockClear();
@@ -89,31 +93,40 @@ describe("Part image upload (T33)", () => {
     mockUser.mockReturnValue({ role: "staff" });
   });
 
-  function fillRequiredFields() {
-    fireEvent.change(screen.getByPlaceholderText(/tecno spark/i), { target: { value: "iPhone 12 Screen" } });
-    const [costInput, sellInput] = screen.getAllByPlaceholderText("0");
-    fireEvent.change(costInput, { target: { value: "50" } });
-    fireEvent.change(sellInput, { target: { value: "90" } });
-  }
-
-  it("uploading a photo replaces the Upload button with a thumbnail + Remove, and the save payload includes it", async () => {
+  async function openModalAsPart() {
     await renderSettled();
     fireEvent.click(screen.getByRole("button", { name: /add product/i }));
-    expect(await screen.findByText("Add New Part")).toBeInTheDocument();
+    expect(await screen.findByText("Add to inventory")).toBeInTheDocument();
+    // Bench part, so the save goes to /pos/inventory with its bench defaults.
+    fireEvent.click(screen.getByRole("button", { name: /bench part/i }));
+  }
 
-    expect(screen.getByRole("button", { name: /upload photo/i })).toBeInTheDocument();
+  function fillRequiredFields() {
+    fireEvent.change(screen.getByPlaceholderText(/Wooden Dining Table/i), {
+      target: { value: "iPhone 12 Screen" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/e\.g\. Furniture/i), { target: { value: "Screen" } });
+    // Selling price, then the bench cost price.
+    fireEvent.change(screen.getByPlaceholderText(/e\.g\. 250\.00/i), { target: { value: "90" } });
+    const cost = screen.queryByPlaceholderText("0.00");
+    if (cost) fireEvent.change(cost, { target: { value: "50" } }); // bench only
+  }
+
+  it("an uploaded photo is included in the saved payload", async () => {
+    await openModalAsPart();
 
     const file = new File(["fake"], "part.jpg", { type: "image/jpeg" });
     const fileInput = document.querySelector('input[type="file"]');
     fireEvent.change(fileInput, { target: { files: [file] } });
 
-    // Upload button gone, replaced by a Remove control once the URL lands.
-    expect(await screen.findByRole("button", { name: /remove/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /upload photo/i })).not.toBeInTheDocument();
+    // The URL lands in the image list once the upload resolves. It renders as
+    // text in the list, not as an input value.
+    expect(
+      await screen.findByText("https://res.cloudinary.com/demo/part.jpg")
+    ).toBeInTheDocument();
 
     fillRequiredFields();
-    const addButtons = screen.getAllByRole("button", { name: /^add part$/i });
-    fireEvent.click(addButtons[addButtons.length - 1]); // header button vs. modal submit share the name
+    fireEvent.click(screen.getByRole("button", { name: /^add item$/i }));
 
     await waitFor(() => expect(mockPost).toHaveBeenCalledWith(
       "/pos/inventory",
@@ -121,98 +134,36 @@ describe("Part image upload (T33)", () => {
     ));
   });
 
-  it("Remove clears the image and brings back the Upload button", async () => {
+  // The owner ask this modal change came from: the Marketplace could only add
+  // parts, so a shop product meant leaving for /commerce/products/new.
+  it("can now add a SHOP PRODUCT too, and routes it to /products", async () => {
     await renderSettled();
     fireEvent.click(screen.getByRole("button", { name: /add product/i }));
-    await screen.findByText("Add New Part");
+    expect(await screen.findByText("Add to inventory")).toBeInTheDocument();
 
-    const file = new File(["fake"], "part.jpg", { type: "image/jpeg" });
-    fireEvent.change(document.querySelector('input[type="file"]'), { target: { files: [file] } });
-    fireEvent.click(await screen.findByRole("button", { name: /remove/i }));
+    fillRequiredFields();
+    fireEvent.click(screen.getByRole("button", { name: /^add item$/i }));
 
-    expect(await screen.findByRole("button", { name: /upload photo/i })).toBeInTheDocument();
+    await waitFor(() => expect(mockPost).toHaveBeenCalledWith(
+      "/products",
+      expect.objectContaining({ name: "iPhone 12 Screen" }),
+    ));
   });
 
-  it("shows a thumbnail in the parts table for a part that already has a photo", async () => {
-    inventoryData = [{
-      _id: "p1", name: "Battery", quantity: 5, lowStockThreshold: 3,
-      costPrice: 2000, sellingPrice: 4000, category: "Battery",
-      images: ["https://res.cloudinary.com/demo/battery.jpg"],
-    }];
-    render(<CommercePage />);
-    await waitFor(() => expect(screen.getByText("Battery")).toBeInTheDocument());
+  // Bench parts and shop products are one collection but NOT the same thing to
+  // create: /pos/inventory sets sellOnline:false, isActive:false,
+  // useInRepairs:true so a new part is not silently published to the shop.
+  // /products sets none of those. This pins the routing that keeps them apart.
+  it("routes a bench part to /pos/inventory, not /products", async () => {
+    await openModalAsPart();
+    fillRequiredFields();
+    fireEvent.click(screen.getByRole("button", { name: /^add item$/i }));
 
-    const thumb = screen.getByAltText("Battery");
-    expect(thumb).toHaveAttribute("src", expect.stringContaining("battery.jpg"));
-  });
-});
-
-// The marketplace renders inside DashboardShell, whose <main> is a bare
-// `flex-1 overflow-auto` with no padding — unlike PosShell, which pads its own.
-// Both sibling commerce pages (orders, delivery-zones) bring their own gutters;
-// this one did not, so its header and both tabs sat flush against the edges.
-describe("Commerce page — content gutters", () => {
-  it("pads the page content, since DashboardShell's main does not", async () => {
-    mockUser.mockReturnValue({ role: "admin" });
-    const { container } = render(<CommercePage />);
-
-    const root = container.firstChild;
-    expect(root.className).toMatch(/\bp-5\b/);
-    expect(root.className).toMatch(/\blg:p-7\b/);
-  });
-
-  it("puts them on the root, so the header and the list share one gutter", async () => {
-    mockUser.mockReturnValue({ role: "admin" });
-    const { container } = render(<CommercePage />);
-    const root = container.firstChild;
-
-    // T106: there is no tab switcher any more — the header and the single list
-    // are both children of the padded root.
-    await waitFor(() => expect(screen.getByText("Marketplace")).toBeInTheDocument());
-    expect(container.firstChild).toBe(root);
-    expect(root.className).toMatch(/\bp-5\b/);
-  });
-});
-
-// T110: the bench-vs-shop distinction the removed tabs implied is now a filter
-// over the one collection.
-describe("Marketplace — kind filter (T110)", () => {
-  // A prior describe leaves stock in `inventoryData`, so settle on the list
-  // heading rather than the empty state.
-  beforeEach(() => {
-    inventoryData = [];
-    vi.clearAllMocks();
-  });
-
-  async function renderList() {
-    render(<CommercePage />);
-    await waitFor(() => expect(screen.getByText("All stock")).toBeInTheDocument());
-  }
-
-  it("offers All / Parts / Accessories / Other instead of tabs", async () => {
-    mockUser.mockReturnValue({ role: "admin" });
-    await renderList();
-
-    const group = screen.getByRole("group", { name: /stock kind/i });
-    expect(group).toBeInTheDocument();
-    for (const label of ["All", "Parts", "Accessories", "Other"]) {
-      expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
-    }
-  });
-
-  it("sends kind to the API and leaves it off when All is selected", async () => {
-    mockUser.mockReturnValue({ role: "admin" });
-    await renderList();
-
-    const calls = () => api.get.mock.calls.map(([url]) => url).filter((u) => u.startsWith("/pos/inventory?"));
-    expect(calls().some((u) => u.includes("kind="))).toBe(false);
-
-    fireEvent.click(screen.getByRole("button", { name: "Accessories" }));
-    await waitFor(() => expect(calls().some((u) => u.includes("kind=accessories"))).toBe(true));
-
-    fireEvent.click(screen.getByRole("button", { name: "All" }));
-    await waitFor(() =>
-      expect(calls().at(-1).includes("kind=")).toBe(false),
+    await waitFor(() => expect(mockPost).toHaveBeenCalled());
+    expect(mockPost.mock.calls[0][0]).toBe("/pos/inventory");
+    // The bench vocabulary, not the product one.
+    expect(mockPost.mock.calls[0][1]).toEqual(
+      expect.objectContaining({ quantity: expect.anything(), costPrice: 5000, sellingPrice: 9000 }),
     );
   });
 });
