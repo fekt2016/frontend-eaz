@@ -21,6 +21,11 @@ export const baseNav = [
     hideRoles: ["superadmin", "admin", "staff", "technician"] },
   { href: "/dashboard/hosting", icon: Server, label: "Hosting", hideRoles: ["technician"] },
   { href: "/dashboard/domains", icon: Globe, label: "Domains", hideRoles: ["technician"] },
+  // Owner request (2026-08-30). Personal account settings — profile, password,
+  // 2FA, appearance, identity verification and deactivation — so EVERY role
+  // gets it, with no hideRoles. Sits last because it is a place you visit
+  // occasionally, not a work surface.
+  { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
 // Live-chat console — admins plus front-desk staff. Kept out of adminNav so
@@ -82,7 +87,6 @@ export const posNav = [
 
 // Routes that have a title but deliberately no sidebar entry.
 const extraTitles = {
-  "/dashboard/settings": "Settings",
   "/dashboard/notifications": "Notifications",
   "/dashboard/pos/jobs": "Repair Jobs",
   "/dashboard/pos/jobs/new": "New Repair Job",

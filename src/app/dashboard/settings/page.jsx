@@ -12,6 +12,8 @@ import {
 import { Alert, Button, SectionCard, Switch } from "@/components/ui";
 import { useTheme } from "@/context/ThemeContext";
 import { sanitizeName, sanitizePhone } from "@/lib/sanitize";
+import IdentitySection from "./IdentitySection";
+import DangerZoneSection from "./DangerZoneSection";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -438,6 +440,8 @@ export default function SettingsPage() {
           <ProfileSection user={user} onUpdate={handleUpdate} />
           <PasswordSection />
           <TwoFactorSection user={user} onUpdate={handleUpdate} />
+          <IdentitySection />
+          <DangerZoneSection isAdmin={["admin", "superadmin"].includes(user?.role)} />
         </div>
 
       </div>

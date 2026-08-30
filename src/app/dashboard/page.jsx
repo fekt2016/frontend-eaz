@@ -473,11 +473,6 @@ function CustomerOverview() {
             <p className="text-sm text-gray-600 dark:text-slate-400">{user?.email}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Link href="/dashboard/settings" className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500 transition">
-            <CircleUser size={12} aria-hidden="true" /> Settings
-          </Link>
-        </div>
       </div>
 
       {/* Stats */}

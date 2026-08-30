@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { baseNav, marketplaceNav, posNav } from "./dashboardNav";
+import { baseNav, adminNav, marketplaceNav, posNav, titleForPath } from "./dashboardNav";
 
 // T24: Marketplace and Inventory used to be two separate sidebar entries
 // pointing at two now-merged pages.
@@ -83,5 +83,37 @@ describe("baseNav — My Addresses is customer-only", () => {
     const hrefs = visibleTo("user");
     expect(hrefs).toContain("/dashboard/orders");
     expect(hrefs).toContain("/dashboard/repairs");
+  });
+});
+
+// Owner request (2026-08-30): Settings gets a sidebar entry. It previously had
+// a page and a title but deliberately no nav link, so it was only reachable by
+// typing the URL.
+describe("baseNav — Settings link", () => {
+  const visibleTo = (role) =>
+    baseNav.filter((n) => !n.hideRoles || !n.hideRoles.includes(role)).map((n) => n.href);
+
+  it.each(["user", "staff", "technician", "admin", "superadmin"])(
+    "is visible to %s — personal account settings belong to every role",
+    (role) => {
+      expect(visibleTo(role)).toContain("/dashboard/settings");
+    },
+  );
+
+  it("resolves its page title from the nav entry", () => {
+    expect(titleForPath("/dashboard/settings")).toBe("Settings");
+  });
+
+  // The entry must not also sit in extraTitles, which is documented as "routes
+  // that have a title but deliberately no sidebar entry" — two sources for one
+  // route is how a label and a link drift apart.
+  it("is not duplicated as an extraTitle", () => {
+    const settingsEntries = baseNav.filter((n) => n.href === "/dashboard/settings");
+    expect(settingsEntries).toHaveLength(1);
+  });
+
+  it("does not disturb the admin-only Business Settings entry", () => {
+    expect(adminNav.map((n) => n.href)).toContain("/dashboard/business-settings");
+    expect(visibleTo("user")).not.toContain("/dashboard/business-settings");
   });
 });
