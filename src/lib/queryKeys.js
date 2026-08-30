@@ -60,9 +60,6 @@ export const qk = {
     awaitingProvisioning: ["hosting", "awaiting-provisioning"],
     detail: (id) => ["hosting", "detail", id],
   },
-  consultations: {
-    all: ["consultations"],
-  },
   settings: {
     all: ["settings"],
   },
