@@ -9,6 +9,13 @@ vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }) => <a href={href} {...rest}>{children}</a>,
 }));
 
+// The page now also renders DangerZoneSection, which uses the app router to send
+// a deactivated user out. Rendering the whole page means mocking what the whole
+// page needs.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
+
 const mockUser = { name: "Ama", email: "ama@example.com", phone: "0209999999" };
 const setUser = vi.fn();
 vi.mock("@/context/AuthContext", () => ({
@@ -26,7 +33,8 @@ vi.mock("@/lib/api", () => ({
   api: {
     patch: (...a) => mockPatch(...a),
     post: (...a) => mockPost(...a),
-    get: vi.fn(() => Promise.resolve({ data: {} })),
+    // IdentitySection fetches /account/ghana-card on mount.
+    get: vi.fn(() => Promise.resolve({ data: { status: "none" } })),
   },
   errorMessage: (err, fallback) => err?.message || fallback,
 }));

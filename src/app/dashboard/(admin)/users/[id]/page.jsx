@@ -33,6 +33,7 @@ import {
   Table, TableWrap, Td, Th,
 } from "@/components/ui";
 import { formatGhs } from "@/lib/shop";
+import GhanaCardReview from "./GhanaCardReview";
 
 function fmtDate(d) {
   if (!d) return "—";
@@ -454,6 +455,9 @@ export default function UserDetailPage() {
           )}
         </Card>
 
+        <div className="space-y-6">
+        <GhanaCardReview userId={id} />
+
         <Card className="p-6">
           <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
             <MapPin className="h-4 w-4" /> Saved addresses
@@ -483,6 +487,7 @@ export default function UserDetailPage() {
             </ul>
           )}
         </Card>
+        </div>
       </div>
       </div>
     </div>
