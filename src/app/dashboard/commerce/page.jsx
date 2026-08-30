@@ -246,7 +246,11 @@ function ProductsList() {
   const [lowStockItems, setLowStockItems] = useState([]);
   const [suppliers,   setSuppliers]   = useState([]);
   const [archiving,   setArchiving]   = useState(null);
-  const limit = 50;
+  // Owner decision (2026-08-30): 10 per page everywhere. The list was already
+  // server-paged with search and filters — only the page size changed. The
+  // separate lowStock fetch below stays at 100: it feeds the "low stock" banner
+  // count, which is a bounded summary, not a page.
+  const limit = 10;
 
   const fetchParts = useCallback(async () => {
     setLoading(true);

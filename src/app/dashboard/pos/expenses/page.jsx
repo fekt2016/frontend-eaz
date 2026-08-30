@@ -62,7 +62,8 @@ export default function ExpensesPage() {
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo,   setFilterTo]   = useState("");
   const [page,       setPage]       = useState(1);
-  const limit = 30;
+  // Owner decision (2026-08-30): 10 per page everywhere.
+  const limit = 10;
 
   // Add form
   const [showForm,   setShowForm]   = useState(false);

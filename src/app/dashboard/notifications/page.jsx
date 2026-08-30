@@ -17,7 +17,8 @@ export default function NotificationsPage() {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [unreadOnly, setUnreadOnly] = useState(false);
-  const limit = 20;
+  // Owner decision (2026-08-30): 10 per page everywhere.
+  const limit = 10;
 
   const { data, isLoading } = useNotifications({ page, limit, unreadOnly });
   const notifications = data?.data ?? [];
