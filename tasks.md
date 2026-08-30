@@ -328,7 +328,7 @@
     - [ ] No file uses both patterns simultaneously
     - [ ] New pages use react-query only
 
-- [ ] **T134 · Resolve the two documented-but-unread frontend env vars** (dead-code audit 2026-08-29)
+- [x] **T134 · APPLIED 2026-08-30 — resolved the two documented-but-unread frontend env vars** (dead-code audit 2026-08-29)
   - **Issue:** `.env.local.example` documents `NEXT_PUBLIC_CPANEL_URL` and
     `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`; neither is read anywhere in `src/`.
   - **Why it matters:** `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` is unused because checkout redirects via the
@@ -339,9 +339,28 @@
     used", or remove from the example. Do not silently delete `NEXT_PUBLIC_CPANEL_URL` without
     checking whether the cPanel SSO flow is planned.
   - **Acceptance:**
-    - [ ] Every variable in `.env.local.example` is either read by code or annotated as reserved
+    - [x] Every variable in `.env.local.example` is either read by code or annotated as reserved
 
-- [ ] **T135 · `.eslintrc.json` extends `next/typescript` in a JavaScript-only project** (dead-code audit 2026-08-29)
+  ### Implementation Notes (2026-08-30 — commit `b6b4664`)
+
+  - **`NEXT_PUBLIC_CPANEL_URL` — removed.** The task warned not to delete it without checking
+    whether cPanel SSO was planned. It is not planned, it is **already built and live**:
+    `dashboard/hosting/[orderId]/page.jsx:76` calls `GET /hosting/orders/:id/cpanel-login`, and
+    `hostingOrderController.getCpanelLoginUrl` returns a one-time session URL that **WHM itself
+    generates** (`services/whm.js:154`, off the backend's `WHM_HOST`). The frontend never builds
+    the URL, so the variable controlled nothing — and its comment, "avoid a bare IP in
+    production", pointed at the wrong knob. Replaced with a note naming the real one.
+  - **`NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` — kept, commented out, annotated.** Genuinely reserved:
+    checkout redirects to a server-created authorization URL, so no client-side key is used.
+  - **Found while verifying:** `NEXT_PUBLIC_CPANEL_OPEN_IN_NEW_TAB` **is** read (`page.jsx:78`)
+    but sat commented-out in the example — the inverse of the reported bug, a live variable
+    documented as if it were not. Uncommented.
+  - `docs/monorepo-README.md` listed 3 frontend variables for a repo that reads 10; now covers
+    `FRONTEND_URL` and the cPanel tab flag, and strikes through the Paystack key.
+  - Acceptance was checked mechanically, not by eye: every name in `.env.local.example` is now
+    either read under `src/`/`middleware.js`/`next.config.mjs` or annotated as reserved.
+
+- [x] **T135 · APPLIED 2026-08-30 — `next/typescript` was NOT cosmetic; swapped for base JS rules** (dead-code audit 2026-08-29)
   - **Issue:** `.eslintrc.json` is `{ "extends": ["next/core-web-vitals", "next/typescript"] }`. There
     is no TypeScript in this repo — no `.ts`/`.tsx` files, no `tsconfig.json`, only `jsconfig.json`.
   - **Impact:** cosmetic today; lint is clean. But a TS preset in a JS project can silently skip rules
@@ -350,7 +369,39 @@
   - **Fix:** drop `next/typescript` and confirm lint output is unchanged. If it changes, the preset was
     doing something and that is worth knowing.
   - **Acceptance:**
-    - [ ] Lint passes with the same result before and after, or the difference is understood
+    - [x] Lint passes with the same result before and after, or the difference is understood
+
+  ### Implementation Notes (2026-08-30 — commit `c46076a`)
+
+  **The task's proposed fix — "drop `next/typescript` and confirm lint output is unchanged" —
+  would have silently removed a working lint gate.** The audit was right to classify this
+  uncertain rather than dead.
+
+  Measured with `eslint --print-config src/lib/api.js`, before vs after dropping the preset:
+
+  | | With preset | Without |
+  |---|---|---|
+  | Resolved rules | 75 | 52 |
+  | Parser | `@typescript-eslint/parser` | `eslint-config-next/parser` |
+  | Unused-variable rule | `@typescript-eslint/no-unused-vars` = error | **none at all** |
+
+  `next/core-web-vitals` does **not** configure `no-unused-vars`. The TS preset switched the base
+  rule *off* and supplied the `@typescript-eslint` replacement — which does run on `.js`/`.jsx`
+  via the TS parser. So the preset was the only thing catching unused variables in this repo.
+  Confirmed with a probe file holding two unused bindings: 3 errors with the preset, **silence**
+  without it. Lint output would indeed have looked "unchanged" — because it went blind.
+
+  Applied instead: drop the preset **and** turn on the base-JS equivalents it was shadowing —
+  `no-unused-vars` (with the `^_` escape hatch the backend already uses), `no-array-constructor`,
+  `no-unused-expressions`. `@typescript-eslint` is gone from the resolved config, which was the
+  point; the gate survives. `@typescript-eslint` was never a direct dependency (transitive via
+  `eslint-config-next`), so nothing to uninstall.
+
+  Verified: `eslint .` exit 0 repo-wide, `next lint` clean, 357/357 tests, production build
+  generates every page, probe file still caught.
+
+  **Bearing on T99 stage 1:** the planned ESLint 9 flat-config migration must carry these three
+  rules across explicitly. A flat config that merely drops the TS preset re-opens this hole.
 
 
 - [ ] **T127 · Checkout submits customer details without sanitising, against the project's own convention** (input-sanitisation sweep 2026-08-29) — **CONFIRMED**
