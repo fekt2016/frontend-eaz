@@ -426,7 +426,7 @@
     submit, never on keystroke — that is the documented rule and the reason typing is not disrupted.
   - **Location:** `src/app/checkout/page.jsx`; `src/app/hosting/checkout/page.jsx`; the four listed above
 
-- [ ] **T123 · The `FRONTEND_URL` fail-fast stops at the frontend — the backend still degrades silently** (final re-audit 2026-08-29) — **CONFIRMED, cross-app**
+- [x] **T123 · CLOSED 2026-08-30 — the backend half shipped as T119** (final re-audit 2026-08-29) — **CONFIRMED, cross-app**
   - **Issue:** T97 is genuinely fixed on this side: `src/lib/seo.js` throws when
     `NODE_ENV === "production"` and `FRONTEND_URL` is unset, verified by build (`exit 1` with the
     configuration error) and by `src/lib/seo.test.js`. But the backend's `utils/frontendUrl.js`
@@ -436,7 +436,18 @@
     the backend value. See **`backend-eaz/tasks.md` T119** for the detail and the fix.
   - **Why it is logged here too:** T97's acceptance reads as satisfied from this repo alone, which is
     how the backend half stayed invisible. Anyone re-checking T97 should read both.
-  - **Location:** `src/lib/seo.js` (fixed); `backend-eaz/utils/frontendUrl.js` (not fixed)
+  - **Location:** `src/lib/seo.js` (fixed); `backend-eaz/utils/frontendUrl.js` (**now fixed**)
+
+  ### Closed 2026-08-30 — backend commit `be4188d`
+
+  `utils/validateEnv.js` now refuses to boot in production when `FRONTEND_URL`/`CLIENT_URL` is
+  missing, and also rejects a value that is not an absolute `http(s)` URL — a host-relative one
+  fails identically to an empty string. `utils/frontendUrl.js` throws rather than returning `""`,
+  as a backstop for a worker or script that skipped validateEnv.
+
+  Verified by **exit code**: prod+missing → 1, prod+`"/order"` → 1, prod+valid → 0, dev+missing → 0.
+  Development is unchanged. The cross-app point this entry was logged to make now holds in both
+  directions.
 
 - [ ] **T124 · Two high-severity PostCSS advisories remain in the shipped dependency tree** (final re-audit 2026-08-29) — **CONFIRMED, unchanged**
   - **Issue:** `npm audit --omit=dev` still reports **2 high severity** in `frontend-eaz`, reaching
