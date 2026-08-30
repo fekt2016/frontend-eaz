@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { isAdminRole } from "@/lib/roles";
+import { isAdminRole, ROLE_OPTIONS, roleTones } from "@/lib/roles";
 import {
   RotateCw, Pen, Ban, CheckCircle2,
-  Search, ShieldCheck, User, Key, Eye, EyeOff,
+  Search, ShieldCheck, User, Eye, EyeOff,
   Plus, UserCog, Wrench, Users as UsersIcon,
 } from "lucide-react";
 import {
@@ -18,28 +19,6 @@ function fmtDate(d) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
-
-const ROLE_OPTIONS = [
-  { value: "user",       label: "User" },
-  { value: "staff",      label: "Staff" },
-  { value: "technician", label: "Technician" },
-  { value: "admin",      label: "Admin" },
-  { value: "superadmin", label: "Super Admin" },
-];
-
-/*
- * Roles used to carry five hand-picked Tailwind hues (purple/blue/emerald/
- * orange) whose light shades were never contrast-checked. They now map onto the
- * measured semantic tones, which stay distinguishable while clearing 4.5:1 in
- * both themes. Gold is reserved for the highest authority — the house accent.
- */
-const roleTones = {
-  superadmin: "brand",
-  admin:      "info",
-  staff:      "success",
-  technician: "warning",
-  user:       "neutral",
-};
 
 const roleIcons = {
   superadmin: ShieldCheck,
@@ -179,70 +158,6 @@ function CreateUserModal({ isSuperAdmin, onClose, onCreated }) {
 }
 
 // ─── Edit Modal ────────────────────────────────────────────────────────────
-function EditModal({ user, onClose, onSaved, isSuperAdmin }) {
-  const [form, setForm] = useState({
-    name:  user.name  || "",
-    email: user.email || "",
-    phone: user.phone || "",
-    role:  user.role  || "user",
-  });
-  const [saving, setSaving] = useState(false);
-  const [error, setError]   = useState("");
-
-  const visibleRoles = ROLE_OPTIONS.filter((r) => r.value !== "superadmin" || isSuperAdmin);
-  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
-
-  const handleSave = async () => {
-    if (!form.name.trim() || !form.email.trim()) {
-      setError("Name and email are required.");
-      return;
-    }
-    setSaving(true);
-    setError("");
-    try {
-      const res = await api.patch(`/auth/users/${user._id}`, form);
-      onSaved(res.data);
-      onClose();
-    } catch (e) {
-      setError(errMsg(e, "Failed to update user."));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Modal
-      open
-      onClose={onClose}
-      title="Edit user"
-      description={user.email || user.phone || undefined}
-      footer={
-        <>
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} loading={saving}>
-            {saving ? "Saving…" : "Save changes"}
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <FormError>{error}</FormError>
-
-        <Input label="Full name" required value={form.name} onChange={set("name")} />
-        <Input label="Email address" required type="email" value={form.email} onChange={set("email")} />
-        <Input label="Phone number" type="tel" value={form.phone} onChange={set("phone")} />
-
-        <Select label="Role" value={form.role} onChange={set("role")}>
-          {visibleRoles.map((r) => (
-            <option key={r.value} value={r.value}>{r.label}</option>
-          ))}
-        </Select>
-      </div>
-    </Modal>
-  );
-}
-
-// ─── Block Modal ───────────────────────────────────────────────────────────
 function BlockModal({ user, onClose, onSaved }) {
   const [reason, setReason] = useState(user.blockedReason || "");
   const [saving, setSaving] = useState(false);
@@ -316,90 +231,7 @@ function BlockModal({ user, onClose, onSaved }) {
 }
 
 // ─── Change Password Modal ─────────────────────────────────────────────────
-function ChangePasswordModal({ user, onClose }) {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirm] = useState("");
-  const [saving, setSaving]           = useState(false);
-  const [error, setError]             = useState("");
-  const [success, setSuccess]         = useState(false);
-
-  const handleSave = async () => {
-    setError("");
-    if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    setSaving(true);
-    try {
-      await api.patch(`/auth/users/${user._id}/password`, { newPassword });
-      setSuccess(true);
-    } catch (e) {
-      setError(errMsg(e, "Failed to update password."));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Modal
-      open
-      onClose={onClose}
-      size="sm"
-      title="Change password"
-      description={user.name}
-      footer={
-        success ? (
-          <Button onClick={onClose}>Done</Button>
-        ) : (
-          <>
-            <Button variant="secondary" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSave} loading={saving}>
-              {!saving && <Key size={15} aria-hidden="true" />}
-              {saving ? "Saving…" : "Set password"}
-            </Button>
-          </>
-        )
-      }
-    >
-      {success ? (
-        <div className="py-2 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success-surface dark:bg-success-surface-dark">
-            <CheckCircle2 size={22} aria-hidden="true" className="text-success dark:text-success-dark" />
-          </div>
-          <p className="font-display font-bold text-gray-900 dark:text-white">Password updated</p>
-          <p className="mt-1 text-body-sm text-gray-600 dark:text-slate-400">
-            The new password is active immediately.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <FormError>{error}</FormError>
-          <PasswordField
-            label="New password"
-            required
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Min. 8 characters"
-          />
-          <PasswordField
-            label="Confirm password"
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirm(e.target.value)}
-            placeholder="Repeat new password"
-          />
-        </div>
-      )}
-    </Modal>
-  );
-}
-
-// ─── Row ───────────────────────────────────────────────────────────────────
-function UserRow({ u, isSelf, onEdit, onPassword, onBlock }) {
+function UserRow({ u, isSelf, onBlock }) {
   const RoleIcon = roleIcons[u.role] || User;
   return (
     <tr className={`transition-colors hover:bg-paper dark:hover:bg-slate-800/40 ${u.isBlocked ? "opacity-60" : ""}`}>
@@ -442,12 +274,18 @@ function UserRow({ u, isSelf, onEdit, onPassword, onBlock }) {
       <Td className="whitespace-nowrap">{fmtDate(u.createdAt)}</Td>
       <Td>
         <div className="flex items-center justify-end gap-1">
-          <Button variant="ghost" size="sm" onClick={onEdit} aria-label={`Edit ${u.name}`} className="px-2">
+          {/* Edit, role and password moved to the detail page (owner request,
+              2026-08-30). Two code paths for one mutation is how the deleted
+              useContacts hook rotted (T129), so the modals were removed here
+              rather than kept alongside. Block/unblock stays inline — it is the
+              one action worth having without leaving a table of twenty. */}
+          <Link
+            href={`/dashboard/users/${u._id}`}
+            aria-label={`Open ${u.name}`}
+            className="inline-flex items-center rounded-lg px-2 py-1.5 text-gray-600 hover:bg-paper hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+          >
             <Pen size={15} aria-hidden="true" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={onPassword} aria-label={`Change password for ${u.name}`} className="px-2">
-            <Key size={15} aria-hidden="true" />
-          </Button>
+          </Link>
           {!isSelf && (
             <Button
               variant="ghost"
@@ -474,9 +312,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState("");
   const [createOpen, setCreateOpen]         = useState(false);
-  const [editTarget, setEditTarget]         = useState(null);
   const [blockTarget, setBlockTarget]       = useState(null);
-  const [passwordTarget, setPasswordTarget] = useState(null);
 
   const isSuperAdmin = me?.role === "superadmin";
 
@@ -603,8 +439,6 @@ export default function AdminUsersPage() {
                       key={u._id}
                       u={u}
                       isSelf={String(u._id) === String(me?._id)}
-                      onEdit={() => setEditTarget(u)}
-                      onPassword={() => setPasswordTarget(u)}
                       onBlock={() => setBlockTarget(u)}
                     />
                   ))}
@@ -623,19 +457,8 @@ export default function AdminUsersPage() {
           onCreated={fetchUsers}
         />
       )}
-      {editTarget && (
-        <EditModal
-          user={editTarget}
-          isSuperAdmin={isSuperAdmin}
-          onClose={() => setEditTarget(null)}
-          onSaved={handleSaved}
-        />
-      )}
       {blockTarget && (
         <BlockModal user={blockTarget} onClose={() => setBlockTarget(null)} onSaved={handleSaved} />
-      )}
-      {passwordTarget && (
-        <ChangePasswordModal user={passwordTarget} onClose={() => setPasswordTarget(null)} />
       )}
     </div>
   );
