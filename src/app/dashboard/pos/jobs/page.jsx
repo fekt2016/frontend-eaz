@@ -22,7 +22,8 @@ export default function JobsPage() {
   const [status,  setStatus]  = useState("all");
   const [q,       setQ]       = useState("");
   const [page,    setPage]    = useState(1);
-  const limit = 20;
+  // Owner decision (2026-08-30): 10 per page everywhere.
+  const limit = 10;
 
   const jobsQuery = useJobs({ page, limit, status, q: q.trim() });
   const jobs    = jobsQuery.data?.data ?? [];
