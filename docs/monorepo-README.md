@@ -81,7 +81,9 @@ See `backend-eaz/.env.example` for the full list.
 |----------|-------------|
 | NEXT_PUBLIC_API_URL | Backend API base URL (e.g. `http://localhost:5000/api/v1`) |
 | JWT_SECRET | Must match the backend — the Next.js middleware verifies auth tokens with it (server-only, no `NEXT_PUBLIC_` prefix) |
-| NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY | Paystack public key for inline checkout (optional) |
+| FRONTEND_URL | Canonical site URL. **Required in production** — `src/lib/seo.js` throws rather than emit localhost URLs |
+| NEXT_PUBLIC_CPANEL_OPEN_IN_NEW_TAB | `"true"` opens the cPanel SSO session in a new tab; omit or `"false"` redirects in the same tab |
+| ~~NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY~~ | **Reserved, not read by any code** (T134). Checkout redirects to a server-created Paystack authorization URL, so no client-side key is used |
 
 See `frontend-eaz/.env.local.example` for the full list.
 
