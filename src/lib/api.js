@@ -1,5 +1,5 @@
 // Always use a relative path so requests go through Next.js rewrites (next.config.mjs).
-// This avoids mixed-content errors on Amplify (HTTPS → HTTP backend) and keeps
+// This avoids mixed-content errors (HTTPS frontend → HTTP backend) and keeps
 // CORS simple — the browser only ever talks to the same origin.
 const BASE_URL = '/api/v1';
 

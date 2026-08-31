@@ -29,9 +29,17 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deployed to **Spaceship Essential** (shared cPanel, LiteSpeed, AutoSSL) at `eazworld.co`,
+running under Phusion Passenger via cPanel's *Setup Node.js App*. Deploys go through
+cPanel Git Version Control using `.cpanel.yml`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# frontend-eaz
+Build **before** deploying — one shared core is not enough to run `next build` reliably
+during a deploy:
+
+```bash
+npm ci && npm run build     # then push, and Deploy HEAD Commit in cPanel
+```
+
+See **`docs/HOSTING.md`** for DNS, the 5-hostname budget, and this plan's limits.

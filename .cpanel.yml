@@ -1,0 +1,34 @@
+---
+# cPanel Git Version Control deployment — Spaceship Essential (shared cPanel).
+#
+# Next.js runs under Phusion Passenger via cPanel's "Setup Node.js App"
+# (Application root ~/eazworld.co, startup file node_modules/.bin/next, `start`).
+# There is no PM2 and no Nginx on a shared plan — see backend-eaz/docs/HOSTING.md.
+#
+# BUILD POLICY: `next build` is NOT run here. One shared core with a 20 GB quota
+# is not enough to build reliably, and a failed build mid-deploy leaves the live
+# site with a half-copied .next. Build before deploying — either locally or over
+# SSH into the account — then deploy:
+#
+#   npm ci && npm run build          # locally, on the commit you are shipping
+#   git push                         # then Deploy HEAD Commit in cPanel
+#
+# .next/ is gitignored, so the deploy below copies the build from the checkout
+# only if you have built in place over SSH. If .next is absent the copy is a
+# no-op and Passenger keeps serving the previous build — deliberately, so a
+# botched deploy degrades to "stale" rather than "down".
+
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/$(whoami)/eazworld.co/
+    - /bin/mkdir -p $DEPLOYPATH/tmp
+
+    - /bin/cp -R package.json package-lock.json next.config.mjs jsconfig.json tailwind.config.js postcss.config.mjs $DEPLOYPATH 2>/dev/null || true
+    - /bin/cp -R public src $DEPLOYPATH
+    - /bin/cp -R .next $DEPLOYPATH 2>/dev/null || true
+
+    # Next.js needs its build-time deps present at runtime, so this is a full
+    # install rather than --omit=dev.
+    - cd $DEPLOYPATH && /bin/npm ci
+
+    - /bin/touch $DEPLOYPATH/tmp/restart.txt
