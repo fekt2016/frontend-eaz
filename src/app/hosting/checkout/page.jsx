@@ -9,6 +9,7 @@ import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Check, CheckCircle2, CreditCard, Landmark, SmartphoneNfc, X } from "lucide-react";
+import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
 
 const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 
@@ -300,7 +301,17 @@ function HostingCheckoutPageInner() {
           const a = ADDONS.find((x) => x.id === id);
           return { id, name: a?.name, price: a?.price ?? 0 };
         }),
-        customer,
+        // T127 — sanitise on submit. This form carries the registrant details
+        // that reach the domain registrar, so a malformed value here becomes a
+        // malformed WHOIS record rather than just a bad row.
+        customer: {
+          name: sanitizeName(customer.name),
+          email: sanitizeEmail(customer.email) || "",
+          phone: sanitizePhone(customer.phone) || customer.phone.trim(),
+          address: sanitizeText(customer.address, 500) || "",
+          city: sanitizeText(customer.city, 100) || "",
+          country: sanitizeText(customer.country, 100) || "",
+        },
         paymentMethod,
         domainMode,
         ...(domain && { domain }),
@@ -308,7 +319,13 @@ function HostingCheckoutPageInner() {
           domainRegistrationFee,
           domainRegistrationYears: 1,
         }),
-        ...(paymentMethod === "mobile_money" && { mobileNumber, network }),
+        ...(paymentMethod === "mobile_money" && {
+          // Same fallback rule as the phone above: a number sanitizePhone does
+          // not recognise is passed through for the server to refuse with a
+          // message, rather than blanked here into a confusing empty field.
+          mobileNumber: sanitizePhone(mobileNumber) || mobileNumber.trim(),
+          network,
+        }),
       });
 
       const { authorizationUrl, orderId } = res.data;

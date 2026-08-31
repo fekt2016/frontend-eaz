@@ -11,6 +11,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { usePublicParts } from "@/hooks/queries/usePublicParts";
 import { useCart } from "@/context/CartContext";
 import { Loader2, CheckCircle2, Phone, Wrench, Search, Motorbike, ShoppingCart } from "lucide-react";
+import { sanitizeName, sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
 
 const inputCls =
   "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-900";
@@ -140,9 +141,10 @@ export default function TrackRepairPage() {
       const res = await api.post(`/track/${token}/orders`, {
         items: cart.map((i) => ({ partId: i.partId, quantity: i.quantity })),
         ...(zoneId && { shippingZoneId: zoneId }),
-        name: name.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
+        // T127 — sanitise on submit, like every other order-placing form.
+        name: sanitizeName(name),
+        phone: sanitizePhone(phone) || phone.trim(),
+        email: sanitizeEmail(email) || "",
       });
       window.location.href = res.data.authorizationUrl;
     } catch (err) {
@@ -157,7 +159,9 @@ export default function TrackRepairPage() {
     if (!balancePhone.trim()) { setBalanceError("Please enter the phone number on the receipt."); return; }
     setBalancePaying(true);
     try {
-      const res = await api.post(`/track/${token}/balance-payment`, { phone: balancePhone.trim() });
+      const res = await api.post(`/track/${token}/balance-payment`, {
+        phone: sanitizePhone(balancePhone) || balancePhone.trim(),
+      });
       window.location.href = res.data.authorizationUrl;
     } catch (err) {
       setBalanceError(err.message || "Unable to start payment. Please try again.");

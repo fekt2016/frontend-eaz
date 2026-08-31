@@ -9,6 +9,7 @@ import { landingPathForRole } from "@/lib/roles";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import Image from "next/image";
 import { Mail, Phone, RotateCw } from "lucide-react";
+import { sanitizeEmail, sanitizePhone, sanitizePin } from "@/lib/sanitize";
 
 // T17: registration accepts email OR phone, so verification must too — a
 // phone-only signup has no email to submit here. A single identifier field
@@ -81,8 +82,12 @@ function VerifyPageInner() {
 
     setLoading(true);
     try {
-      const body = looksLikeEmail(identifier) ? { email: identifier } : { phone: identifier };
-      const res = await api.post("/auth/verify-pin", { ...body, pin: code });
+      // T127 — sanitise on submit. sanitizePin strips non-digits and caps at 6,
+      // which is exactly the shape the backend expects.
+      const body = looksLikeEmail(identifier)
+        ? { email: sanitizeEmail(identifier) || identifier.trim() }
+        : { phone: sanitizePhone(identifier) || identifier.trim() };
+      const res = await api.post("/auth/verify-pin", { ...body, pin: sanitizePin(code) });
       // Backend logs the user in and returns token + user
       if (res.data?.user) {
         setUser(res.data.user);
@@ -104,7 +109,9 @@ function VerifyPageInner() {
     setError("");
     setSuccess("");
     try {
-      const body = looksLikeEmail(identifier) ? { email: identifier } : { phone: identifier };
+      const body = looksLikeEmail(identifier)
+        ? { email: sanitizeEmail(identifier) || identifier.trim() }
+        : { phone: sanitizePhone(identifier) || identifier.trim() };
       await api.post("/auth/resend-pin", body);
       setSuccess(looksLikeEmail(identifier) ? "A new code has been sent to your email." : "A new code has been sent to your phone.");
       setResendCooldown(60); // 60 second cooldown
