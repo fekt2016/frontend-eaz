@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SHARED_PLANS, WORDPRESS_PLANS, HOSTING_FEATURES } from "@/data/hostingHostingData";
+import { HOSTING_FEATURES } from "@/data/hostingHostingData";
+import { useHostingPlans } from "@/hooks/queries/useHosting";
+import { toPlanCards } from "@/lib/hostingPlans";
 import { Banknote, Check, Lock, MapPin, Phone, RefreshCw, X, Zap } from "lucide-react";
 import { formatGhsMajor } from "@/lib/shop";
 
@@ -16,6 +18,12 @@ function scrollTo(id) {
 export default function Hosting() {
   const [tab, setTab] = useState("shared");
   const [billing, setBilling] = useState("monthly");
+
+  // Prices come from the API, not a local copy — the local copy drifted to about
+  // a seventh of what checkout actually charges. See lib/hostingPlans.js.
+  const { data: plans, isLoading } = useHostingPlans();
+  const SHARED_PLANS = toPlanCards(plans, "shared");
+  const WORDPRESS_PLANS = toPlanCards(plans, "wordpress");
 
   return (
     <div className="min-h-screen bg-paper dark:bg-ink">
@@ -129,7 +137,18 @@ export default function Hosting() {
           </div>
 
           {/* Plan cards */}
-          {tab === "shared" && (
+          {isLoading && (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-96 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 animate-pulse"
+                />
+              ))}
+            </div>
+          )}
+
+          {!isLoading && tab === "shared" && (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {SHARED_PLANS.map((plan) => (
                 <PlanCard key={plan.name} plan={plan} billing={billing} planType="shared" />
@@ -137,7 +156,7 @@ export default function Hosting() {
             </div>
           )}
 
-          {tab === "wordpress" && (
+          {!isLoading && tab === "wordpress" && (
             <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
               {WORDPRESS_PLANS.map((plan) => (
                 <PlanCard key={plan.name} plan={plan} billing={billing} planType="wordpress" />
@@ -148,6 +167,9 @@ export default function Hosting() {
       </section>
 
       {/* ── COMPARISON TABLE ── */}
+      {/* Hidden while the catalogue loads: with no plans the table renders a
+          header row and nothing under it, which reads as "no plans exist". */}
+      {SHARED_PLANS.length > 0 && (
       <section id="compare" className="bg-paper dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800 px-4 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-10">
@@ -216,6 +238,7 @@ export default function Hosting() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ── WHY EAZWORLD ── */}
       <section className="px-4 py-20">

@@ -4,7 +4,8 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 import { Suspense, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { SHARED_PLANS, WORDPRESS_PLANS } from "@/data/hostingHostingData";
+import { useHostingPlans } from "@/hooks/queries/useHosting";
+import { toPlanCards } from "@/lib/hostingPlans";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -20,11 +21,6 @@ const ADDONS = [
   { id: "priority", name: "Priority Support", price: 35 },
   { id: "domain-privacy", name: "Domain Privacy Protection", price: 10 },
 ];
-
-const TIER_TO_NAME = {
-  deluxe: "Deluxe", professional: "Professional", enterprise: "Enterprise", ultimate: "Ultimate",
-  starter: "WP Starter", business: "WP Business", agency: "WP Agency",
-};
 
 // ── Domain Checker Component ──────────────────────────────────────────────────
 function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomainRegistrationFee }) {
@@ -297,12 +293,23 @@ function HostingCheckoutPageInner() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const planName = TIER_TO_NAME[(tier || "").toLowerCase()];
-  const allPlans = [...SHARED_PLANS, ...WORDPRESS_PLANS];
-  const plan = allPlans.find((p) => p.name === planName) || SHARED_PLANS[0];
+  // Prices come from the API — the same source hostingOrderController prices the
+  // order from. The local copy this replaced was about a seventh of the real
+  // figure on every shared tier, so the summary here disagreed with the charge.
+  const { data: plansData, isLoading: plansLoading } = useHostingPlans();
+  const allPlans = [
+    ...toPlanCards(plansData, "shared"),
+    ...toPlanCards(plansData, "wordpress"),
+  ];
+  // Resolve on the tier from the URL rather than a name lookup table: the tier is
+  // what gets POSTed and what the server prices, so matching on it means the
+  // summary cannot show one plan while the order creates another. An unknown tier
+  // resolves to nothing and is reported, instead of silently falling back to the
+  // cheapest plan and quoting the customer the wrong price.
+  const plan = allPlans.find((p) => p.tier === (tier || "").toLowerCase());
   const addonsTotal = addons.reduce((sum, id) => sum + (ADDONS.find((a) => a.id === id)?.price ?? 0), 0);
-  const basePrice = billingCycle === "annual" ? plan.annualPrice : plan.monthlyPrice;
-  const saving = plan.monthlyPrice * 12 - plan.annualPrice;
+  const basePrice = billingCycle === "annual" ? plan?.annualPrice ?? 0 : plan?.monthlyPrice ?? 0;
+  const saving = plan ? plan.monthlyPrice * 12 - plan.annualPrice : 0;
   const domainFee = domainMode === "new" && domain ? domainRegistrationFee : 0;
   const total = basePrice + addonsTotal + domainFee;
 
@@ -366,6 +373,41 @@ function HostingCheckoutPageInner() {
       setLoading(false);
     }
   };
+
+  if (plansLoading) {
+    return (
+      <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">
+        <div className="mx-auto max-w-4xl space-y-4">
+          <div className="h-8 w-48 rounded bg-gray-100 dark:bg-slate-800 animate-pulse" />
+          <div className="h-64 rounded-2xl bg-gray-100 dark:bg-slate-800 animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  // An unknown tier used to fall back to SHARED_PLANS[0], so a stale or mistyped
+  // link quoted the customer the cheapest plan while the server priced whatever
+  // tier was actually posted. Say it is unrecognised instead.
+  if (!plan) {
+    return (
+      <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-2">
+            We could not find that plan
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
+            The plan in this link is no longer available. Pick one from the hosting page.
+          </p>
+          <Link
+            href="/hosting"
+            className="inline-block rounded-full bg-brand-500 px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-brand-400 transition"
+          >
+            View hosting plans
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">
