@@ -31,7 +31,12 @@ import { Button, Field, Input, SectionCard } from "@/components/ui";
 // as the admin types, without a round trip per keystroke.
 const SAMPLE_TLD_COST_USD = { ".com": 10.18, ".net": 11.4, ".org": 11.59, ".io": 51.75 };
 // Mirrors config/hostingPlans.js — hosting prices carry NO markup.
-const SAMPLE_PLANS_USD = { "Shared Deluxe": 4, "Shared Professional": 8, "VPS Starter": 18.06 };
+//
+// The two shared figures are fractional because those tiers are pinned to GH₵9
+// and GH₵16 and back-derived through the rate; see the note above HOSTING_PLANS.
+// That is exactly what this preview is for: it shows the admin what editing the
+// rate does to a cedi price the market expects to stay put.
+const SAMPLE_PLANS_USD = { "Shared Deluxe": 0.58, "Shared Professional": 1.03, "VPS Starter": 18.06 };
 
 const ghs = (n) => `GH₵${Number(n).toLocaleString("en-GB")}`;
 

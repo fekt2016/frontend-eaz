@@ -21,8 +21,8 @@ const PAYLOAD = {
         { label: "NVMe SSD Storage", value: "1GB" },
       ],
       features: ["FREE Webmail", "24/7 Support"],
-      monthlyPrice: 47,
-      annualPrice: 470,
+      monthlyPrice: 9,
+      annualPrice: 90,
     },
     enterprise: {
       name: "Enterprise",
@@ -30,8 +30,8 @@ const PAYLOAD = {
       priceUsd: 11,
       specs: [{ label: "Websites", value: "3" }],
       features: ["FREE .top Domain"],
-      monthlyPrice: 171,
-      annualPrice: 1710,
+      monthlyPrice: 32,
+      annualPrice: 320,
     },
   },
   wordpress: {
@@ -50,10 +50,22 @@ const PAYLOAD = {
 describe("toPlanCards", () => {
   it("carries the API price through untouched", () => {
     const [deluxe] = toPlanCards(PAYLOAD, "shared");
-    expect(deluxe.monthlyPrice).toBe(47);
-    expect(deluxe.annualPrice).toBe(470);
-    // Not 9/108 — the figures the deleted local copy still held.
-    expect(deluxe.monthlyPrice).not.toBe(9);
+    expect(deluxe.monthlyPrice).toBe(9);
+    expect(deluxe.annualPrice).toBe(90);
+  });
+
+  // This guard used to assert the price was NOT 9, because GH₵9 was then the
+  // stale hardcoded figure the storefront showed while checkout charged GH₵62.
+  // GH₵9 is now the real Deluxe price (Aveshost-aligned), so the number itself
+  // proves nothing. What still matters is the property that bug violated: the
+  // adapter must render whatever the API sends and never a value of its own.
+  it("renders the API's figure even when it changes underneath", () => {
+    const repriced = {
+      shared: { deluxe: { ...PAYLOAD.shared.deluxe, monthlyPrice: 123, annualPrice: 1230 } },
+    };
+    const [deluxe] = toPlanCards(repriced, "shared");
+    expect(deluxe.monthlyPrice).toBe(123);
+    expect(deluxe.annualPrice).toBe(1230);
   });
 
   it("keeps the tier key, which is what gets POSTed and priced server-side", () => {
@@ -77,7 +89,7 @@ describe("toPlanCards", () => {
     const enterprise = cards.find((p) => p.tier === "enterprise");
     expect(enterprise.featured).toBe(true);
     expect(enterprise.badge).toBe("MOST POPULAR");
-    expect(enterprise.monthlyPrice).toBe(171);
+    expect(enterprise.monthlyPrice).toBe(32);
   });
 
   it("defaults presentation for a tier it has no entry for", () => {
