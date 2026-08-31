@@ -441,7 +441,7 @@
   rules across explicitly. A flat config that merely drops the TS preset re-opens this hole.
 
 
-- [ ] **T127 · Checkout submits customer details without sanitising, against the project's own convention** (input-sanitisation sweep 2026-08-29) — **CONFIRMED**
+- [x] **T127 · APPLIED 2026-08-31 — five public forms now sanitise on submit** (input-sanitisation sweep 2026-08-29) — **CONFIRMED**
   - **Issue:** `STYLE_GUIDE.md` and `CLAUDE.md` both state "sanitize form input on submit with
     `lib/sanitize.js`". `src/app/checkout/page.jsx` does not import it at all — it posts
     `customer.name`, `phone`, `email` and `street` straight from state. Same for
@@ -462,6 +462,23 @@
     submit handler, as `CheckoutForm.jsx` and the auth register/login pages already do. Sanitise on
     submit, never on keystroke — that is the documented rule and the reason typing is not disrupted.
   - **Location:** `src/app/checkout/page.jsx`; `src/app/hosting/checkout/page.jsx`; the four listed above
+
+  ### Implementation Notes (2026-08-31 — merged as `6447c4c`)
+
+  Sanitised on SUBMIT, never on keystroke — the documented rule, and the reason is that stripping
+  characters as someone types fights them mid-word. Covered: checkout, hosting/checkout,
+  track/[token], auth/verify, auth/verify-2fa. Phone fields keep the raw value as a fallback when
+  `sanitizePhone` does not recognise the number, so a legitimate edge case is refused by the server
+  with a message rather than silently blanked.
+
+  **ONE LISTED FILE WAS A FALSE POSITIVE.** `auth/reset-password/[token]` appears in this task
+  because the audit grepped for `sanitize[A-Z]` and found none — but that page already validates
+  with a Zod schema, which is CORRECT. Running a sanitiser over a password would corrupt valid
+  passwords containing exactly the characters a strong one should have. A test now asserts it
+  validates and does not sanitise, so nobody "fixes" it later.
+
+  10 tests guard the convention at source level rather than by driving six pages: what decays here
+  is the convention, including a check that no page sanitises inside an `onChange`.
 
 - [x] **T123 · CLOSED 2026-08-30 — the backend half shipped as T119** (final re-audit 2026-08-29) — **CONFIRMED, cross-app**
   - **Issue:** T97 is genuinely fixed on this side: `src/lib/seo.js` throws when
