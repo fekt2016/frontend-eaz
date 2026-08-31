@@ -94,7 +94,7 @@ export const serviceDetails = [
       "We handle domain search, registration, DNS setup, and ongoing management so you never have to worry about your domain expiring or being misconfigured.",
     process: [
       { step: "Search", desc: "We find available domains that match your brand." },
-      { step: "Register", desc: "Secure registration via Spaceship with privacy protection." },
+      { step: "Register", desc: "Secure registration via Namecheap with privacy protection." },
       { step: "Configure DNS", desc: "Point to your hosting, email, and any third-party services." },
       { step: "Auto-renew", desc: "We monitor and renew before expiry — no gaps." },
     ],

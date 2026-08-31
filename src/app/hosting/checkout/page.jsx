@@ -58,7 +58,7 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
         return;
       }
 
-      // Check availability via the registrar (Spaceship)
+      // Check availability via the registrar (Namecheap)
       const res = await api.get(`/domain/search?domain=${encodeURIComponent(cleaned)}`);
       // GET /domain/search does NOT use the project's { success, data } envelope —
       // it returns { domain, available, registered, price, results } at the top

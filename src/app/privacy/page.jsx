@@ -77,7 +77,7 @@ const sections = [
       "• Paystack (payment processing) — paystack.com/privacy",
       "• Google Analytics (website analytics) — policies.google.com/privacy",
       "• Cloudinary (image hosting) — cloudinary.com/privacy",
-      "• Spaceship (domain registration) — spaceship.com/legal/privacy-policy",
+      "• Namecheap (domain registration) — namecheap.com/legal/privacy-policy",
       "We are not responsible for the privacy practices of these third-party services.",
     ],
   },
