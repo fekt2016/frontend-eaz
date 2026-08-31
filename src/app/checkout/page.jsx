@@ -7,6 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
+import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
 import {
   useLocationCities,
   useLocationRegions,
@@ -422,7 +423,19 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
-      const address = addressLine(customer);
+      // T127 — sanitise ON SUBMIT, never on keystroke. That is the documented
+      // rule (STYLE_GUIDE.md, CLAUDE.md) and the reason typing is not disrupted:
+      // stripping characters as someone types fights them mid-word.
+      //
+      // This is the shop's highest-value form and it was the one place the
+      // convention was skipped — `.trim()` and nothing else. It pairs with T125,
+      // which added the matching caps and email validation on Order.customer:
+      // before both, neither layer bounded the input.
+      //
+      // Not an XSS fix — the backend runs xss-clean globally. This bounds length
+      // and normalises shape so the server is not asked to store a megabyte of
+      // "address".
+      const address = sanitizeText(addressLine(customer), 500);
       const orderBody = {
         items: items.map((i) => ({
           slug: i.slug,
@@ -431,9 +444,13 @@ export default function CheckoutPage() {
         })),
         region: customer.region,
         customer: {
-          name: customer.name.trim(),
-          phone: customer.phone.trim(),
-          email: user?.email || "",
+          name: sanitizeName(customer.name),
+          // sanitizePhone normalises to the local 10-digit form and returns
+          // undefined for anything that is not a Ghanaian number; the raw value
+          // is the fallback so a legitimate edge case is refused by the server
+          // with a message rather than silently blanked here.
+          phone: sanitizePhone(customer.phone) || customer.phone.trim(),
+          email: sanitizeEmail(user?.email) || "",
           address,
         },
       };

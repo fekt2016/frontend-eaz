@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { landingPathForRole } from "@/lib/roles";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { ShieldCheck } from "lucide-react";
+import { sanitizeEmail, sanitizePin } from "@/lib/sanitize";
 
 function Verify2FAInner() {
   const { setUser } = useAuth();
@@ -45,7 +46,11 @@ function Verify2FAInner() {
     if (code.length !== 6) { setError("Please enter the complete 6-digit code."); return; }
     setLoading(true); setError("");
     try {
-      const res = await api.post("/auth/2fa/verify", { email, pin: code });
+      // T127 — sanitise on submit.
+      const res = await api.post("/auth/2fa/verify", {
+        email: sanitizeEmail(email) || email,
+        pin: sanitizePin(code),
+      });
       if (res.data?.user) setUser(res.data.user);
       router.push(landingPathForRole(res.data?.user?.role));
     } catch (err) {
