@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Store, Tags, Receipt, Truck, MapPin, Package, Plus, Trash2, Navigation, RefreshCw, AlertTriangle } from "lucide-react";
+import { Store, Tags, Receipt, Truck, MapPin, Package, Plus, Trash2, Navigation, RefreshCw, AlertTriangle, Coins } from "lucide-react";
 import { useSettings, useUpdateSettings } from "@/hooks/queries/useSettings";
 import {
   useShippingSettings, useUpdateShippingSettings,
@@ -15,6 +15,7 @@ import {
   SectionCard, Skeleton, Switch,
 } from "@/components/ui";
 import NeighborhoodsSection from "@/components/admin/NeighborhoodsSection";
+import PricingSection from "@/components/admin/PricingSection";
 
 // ─── Shop Profile ──────────────────────────────────────────────────────────
 
@@ -1079,6 +1080,9 @@ const TABS = [
   { key: "services", label: "Services", icon: Tags },
   { key: "tax", label: "Tax / VAT", icon: Receipt },
   { key: "shipping", label: "Shipping", icon: Truck },
+  // Owner request 2026-08-31. Here rather than on the domain page because the
+  // exchange rate reprices hosting as well as domains.
+  { key: "pricing", label: "Pricing", icon: Coins },
 ];
 
 export default function BusinessSettingsPage() {
@@ -1130,6 +1134,7 @@ export default function BusinessSettingsPage() {
           {activeTab === "services" && <ServicesSection business={business} />}
           {activeTab === "tax" && <TaxSection business={business} />}
           {activeTab === "shipping" && <ShippingSection />}
+          {activeTab === "pricing" && <PricingSection />}
         </>
       )}
     </div>
