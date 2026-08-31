@@ -49,9 +49,10 @@
     `NODE_ENV === "production"` and `FRONTEND_URL` is unset (or blank) it throws at module
     load, which fails the build. A configured value now also has trailing slashes stripped
     so `${SITE_URL}${path}` cannot emit `//shop`.
-  - **`amplify.yml` deleted** (2026-08-29, after review) — the app is hosted on **Spaceship via
-    Docker**, not AWS Amplify, so that file was dead config and the `preBuild` guard I first put
-    there would never have run. No replacement guard was added: the Dockerfile lives outside this
+  - **`amplify.yml` deleted** (2026-08-29, after review) — the app is not hosted on AWS Amplify,
+    so that file was dead config and the `preBuild` guard I first put there would never have run.
+    (Hosting has since settled on a Namecheap cPanel reseller plan under Passenger; `.cpanel.yml`
+    is tracked in this repo.) No replacement guard was added: the Dockerfile lives outside this
     repo, and a `prebuild` npm script would run *before* Next loads `.env.local`, failing local
     builds that are correctly configured. `src/lib/seo.js` is the right mechanism precisely
     because it runs inside Next's env loading. The container must supply `FRONTEND_URL` at

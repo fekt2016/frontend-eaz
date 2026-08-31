@@ -15,7 +15,7 @@ single product — it is five products sharing one shell:
 |---|---|
 | Digital agency | Services, portfolio, case studies, consultations, blog, reviews |
 | E-commerce | Shop, cart, checkout, orders, pre-orders, delivery zones, tracking |
-| Domains | Search, registration, checkout (Spaceship-backed) |
+| Domains | Search, registration, checkout (Namecheap-backed) |
 | Hosting | Plans, checkout, provisioning, account management (WHM/cPanel) |
 | Repair POS | In-store device repair — jobs, parts, suppliers, expenses, warranty, receipts |
 
@@ -63,7 +63,7 @@ Verified from `package.json`, config files, and actual imports — not assumed.
 
 ### Backend (`backend-eaz`)
 Node + Express (CommonJS), Mongoose/MongoDB, **28 models**, **22 route groups** under `/api/v1`.
-JWT in an httpOnly cookie. Paystack (card + MoMo), Cloudinary, Resend + react-email, Spaceship
+JWT in an httpOnly cookie. Paystack (card + MoMo), Cloudinary, Resend + react-email, Namecheap
 (domains), WHM (hosting), `@anthropic-ai/sdk` (chat). Jest + `mongodb-memory-server`. PM2 + Nginx
 on cPanel/EC2, tuned for a **512 MB heap**.
 
