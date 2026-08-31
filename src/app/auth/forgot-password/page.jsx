@@ -4,7 +4,7 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { sanitizeEmail } from "@/lib/sanitize";
 
 const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
       await api.post("/auth/forgot-password", { email: sanitizeEmail(email) });
       setSent(true);
     } catch (err) {
-      setError(err.message || "Something went wrong. Please try again.");
+      setError(errorMessage(err, "Something went wrong. Please try again."));
     } finally {
       setLoading(false);
     }

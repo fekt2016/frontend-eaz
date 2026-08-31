@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
 import { sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
 import { landingPathForRole } from "@/lib/roles";
+import { errorMessage } from "@/lib/api";
 import { Button, Input, Field } from "@/components/ui";
 
 const schema = z.object({
@@ -53,7 +54,7 @@ function LoginPageInner() {
         router.push(`/auth/verify?${param}=${encodeURIComponent(value)}`);
         return;
       }
-      setError(err.message || "Invalid email or password.");
+      setError(errorMessage(err, "Invalid email or password."));
     } finally {
       setLoading(false);
     }
