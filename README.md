@@ -35,11 +35,14 @@ Deployed to a **Namecheap cPanel reseller plan** (LiteSpeed, AutoSSL) at `eazwor
 running under Phusion Passenger via cPanel's *Setup Node.js App*. Deploys go through
 cPanel Git Version Control using `.cpanel.yml`.
 
-Build **before** deploying — one shared core is not enough to run `next build` reliably
-during a deploy:
+Build **over SSH, in place** — `.next/` is gitignored, so a local build never reaches the
+server's checkout:
 
 ```bash
-npm ci && npm run build     # then push, and Deploy HEAD Commit in cPanel
+ssh <cpanel-user>@<server>.web-hosting.com
+cd ~/repositories/frontend-eaz && npm ci && npm run build
 ```
+
+Then Deploy HEAD Commit in cPanel.
 
 See **`docs/HOSTING.md`** for DNS, the registrar API, and the open items.

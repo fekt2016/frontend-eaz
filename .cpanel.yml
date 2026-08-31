@@ -5,18 +5,18 @@
 # (Application root ~/eazworld.co, startup file node_modules/.bin/next, `start`).
 # There is no PM2 and no Nginx on a shared plan — see backend-eaz/docs/HOSTING.md.
 #
-# BUILD POLICY: `next build` is NOT run here. One shared core with a 20 GB quota
-# is not enough to build reliably, and a failed build mid-deploy leaves the live
-# site with a half-copied .next. Build before deploying — either locally or over
-# SSH into the account — then deploy:
+# BUILD POLICY: `next build` is NOT run here — a failure mid-deploy would leave
+# the live site with a half-copied .next.
 #
-#   npm ci && npm run build          # locally, on the commit you are shipping
-#   git push                         # then Deploy HEAD Commit in cPanel
+# Build OVER SSH, in place. .next/ is gitignored, so building locally does NOT
+# get the build onto the server; only an in-place build does:
 #
-# .next/ is gitignored, so the deploy below copies the build from the checkout
-# only if you have built in place over SSH. If .next is absent the copy is a
-# no-op and Passenger keeps serving the previous build — deliberately, so a
-# botched deploy degrades to "stale" rather than "down".
+#   ssh <cpanel-user>@<server>.web-hosting.com
+#   cd ~/repositories/frontend-eaz && npm ci && npm run build
+#
+# Then Deploy HEAD Commit in cPanel. If .next is absent the copy below is a no-op
+# and Passenger keeps serving the previous build — deliberately, so a botched
+# deploy degrades to "stale" rather than "down".
 
 deployment:
   tasks:
