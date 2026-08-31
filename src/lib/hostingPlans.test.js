@@ -104,3 +104,31 @@ describe("toPlanCards", () => {
     expect(wp[0].monthlyPrice).toBe(78);
   });
 });
+
+describe("resolving the plan the checkout will actually POST", () => {
+  // `tier` alone is ambiguous: "starter" exists under wordpress, vps, cloud and
+  // email. Checkout POSTs planType from the URL, so it must resolve on the PAIR
+  // or the summary can show one price while the server charges another.
+  const MULTI = {
+    ...PAYLOAD,
+    vps: {
+      starter: {
+        name: "VPS Starter",
+        specs: [],
+        features: [],
+        monthlyPrice: 280,
+        annualPrice: 2800,
+      },
+    },
+  };
+
+  it("distinguishes wordpress/starter from vps/starter", () => {
+    const wp = toPlanCards(MULTI, "wordpress").find((p) => p.tier === "starter");
+    const vps = toPlanCards(MULTI, "vps").find((p) => p.tier === "starter");
+    expect(wp.monthlyPrice).toBe(78);
+    expect(vps.monthlyPrice).toBe(280);
+    // Same tier key, very different charge — matching on tier alone would have
+    // shown GH₵78 for an order the server prices at GH₵280.
+    expect(wp.monthlyPrice).not.toBe(vps.monthlyPrice);
+  });
+});

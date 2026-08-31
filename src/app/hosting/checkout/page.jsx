@@ -297,16 +297,21 @@ function HostingCheckoutPageInner() {
   // order from. The local copy this replaced was about a seventh of the real
   // figure on every shared tier, so the summary here disagreed with the charge.
   const { data: plansData, isLoading: plansLoading } = useHostingPlans();
-  const allPlans = [
-    ...toPlanCards(plansData, "shared"),
-    ...toPlanCards(plansData, "wordpress"),
-  ];
-  // Resolve on the tier from the URL rather than a name lookup table: the tier is
-  // what gets POSTed and what the server prices, so matching on it means the
-  // summary cannot show one plan while the order creates another. An unknown tier
-  // resolves to nothing and is reported, instead of silently falling back to the
-  // cheapest plan and quoting the customer the wrong price.
-  const plan = allPlans.find((p) => p.tier === (tier || "").toLowerCase());
+  // Resolve on BOTH type and tier, because `type` is what gets POSTed as
+  // planType (below) and the server prices the pair. Matching on tier alone is
+  // not enough: `starter` exists under wordpress, vps, cloud AND email, so
+  // ?type=vps&tier=starter would display WP Starter at GH₵78 while the server
+  // charged the VPS price. Matching the pair means the summary and the charge
+  // cannot disagree.
+  //
+  // ORDERABLE is the allowlist. vps/cloud/email are excluded deliberately: a
+  // cPanel reseller plan cannot provision them at all — utils/provisionHosting
+  // only auto-builds shared and wordpress — so they must not be reachable by
+  // editing a URL. They stay in the catalogue for the manual/bespoke path.
+  const ORDERABLE = ["shared", "wordpress"];
+  const plan = ORDERABLE.includes(type)
+    ? toPlanCards(plansData, type).find((p) => p.tier === (tier || "").toLowerCase())
+    : undefined;
   const addonsTotal = addons.reduce((sum, id) => sum + (ADDONS.find((a) => a.id === id)?.price ?? 0), 0);
   const basePrice = billingCycle === "annual" ? plan?.annualPrice ?? 0 : plan?.monthlyPrice ?? 0;
   const saving = plan ? plan.monthlyPrice * 12 - plan.annualPrice : 0;
