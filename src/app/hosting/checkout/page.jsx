@@ -304,21 +304,24 @@ function HostingCheckoutPageInner() {
   // charged the VPS price. Matching the pair means the summary and the charge
   // cannot disagree.
   //
-  // ORDERABLE is the allowlist of what checkout will price and post.
+  // What checkout will price and post comes from the API, not a list kept here.
+  // Each plan carries `availability` ('instant' | 'enquiry') from
+  // config/hostingPlans.js, and only 'instant' can be bought online.
   //
-  // `vps` is included even though it cannot be AUTO-provisioned: a cPanel
-  // reseller plan only creates cPanel accounts, so utils/provisionHosting marks
-  // a paid VPS order `skipped`, which puts it in the awaiting-provisioning queue
-  // for staff to build by hand. That is the designed fulfilment path, not a gap —
-  // the queue exists for exactly this. The hosting page says so before the price.
+  // This used to be a hardcoded ORDERABLE allowlist that included `vps`, on the
+  // reasoning that a paid VPS order lands in the awaiting-provisioning queue for
+  // staff to build by hand. The queue does exist — but there is no VPS supplier
+  // behind it, so that took money for a server nobody could source. VPS is now
+  // quoted first and paid afterwards, and `createOrder` rejects it outright.
   //
-  // `cloud` and `email` stay out. Cloud Enterprise has no price at all
-  // (priceUsd null, quote-only), and the Email tiers cannot be honoured on the
-  // reseller plan, which allows 30 mailboxes across every customer combined.
-  const ORDERABLE = ["shared", "wordpress", "vps"];
-  const plan = ORDERABLE.includes(type)
-    ? toPlanCards(plansData, type).find((p) => p.tier === (tier || "").toLowerCase())
-    : undefined;
+  // `cloud` and `email` are no longer returned by GET /hosting/plans at all:
+  // Cloud Enterprise has no price (priceUsd null) and the Email tiers cannot be
+  // honoured on a plan that allows 30 mailboxes across every customer combined.
+  const resolved = toPlanCards(plansData, type).find(
+    (p) => p.tier === (tier || "").toLowerCase()
+  );
+  const plan = resolved?.availability === "instant" ? resolved : undefined;
+  const isEnquiryPlan = resolved?.availability === "enquiry";
   const addonsTotal = addons.reduce((sum, id) => sum + (ADDONS.find((a) => a.id === id)?.price ?? 0), 0);
   const basePrice = billingCycle === "annual" ? plan?.annualPrice ?? 0 : plan?.monthlyPrice ?? 0;
   const saving = plan ? plan.monthlyPrice * 12 - plan.annualPrice : 0;
@@ -400,6 +403,31 @@ function HostingCheckoutPageInner() {
   // An unknown tier used to fall back to SHARED_PLANS[0], so a stale or mistyped
   // link quoted the customer the cheapest plan while the server priced whatever
   // tier was actually posted. Say it is unrecognised instead.
+  // A quoted plan reached by an old link or a hand-typed URL is not an error —
+  // the visitor wants this plan, we just cannot sell it at a fixed price. Send
+  // them to the enquiry rather than a dead end that reads as "no longer available".
+  if (isEnquiryPlan) {
+    return (
+      <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="font-display font-bold text-2xl text-gray-900 dark:text-white mb-2">
+            {resolved.name} is quoted to order
+          </h1>
+          <p className="mx-auto max-w-md text-sm text-gray-600 dark:text-slate-400 mb-6">
+            VPS servers are built for each client, so we send a firm quote and a timeline
+            first — you pay once it is agreed, not before.
+          </p>
+          <Link
+            href={`/contact?subject=${encodeURIComponent(`Quote request: ${resolved.name}`)}`}
+            className="inline-block rounded-full bg-brand-500 px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-brand-400 transition"
+          >
+            Request a quote
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!plan) {
     return (
       <div className="min-h-screen bg-paper dark:bg-ink px-4 pt-24 pb-24">

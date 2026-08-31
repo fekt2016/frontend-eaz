@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckCircle2 } from "lucide-react";
 import { Button, Input, Textarea } from "@/components/ui";
@@ -17,6 +17,17 @@ export default function ContactForm() {
   const [fields, setFields] = useState({ name: "", email: "", subject: "", message: "" });
   const [errors, setErrors]  = useState({});
   const [status, setStatus]  = useState("idle"); // idle | loading | success | error
+
+  // Let a page hand the visitor a subject line — the VPS cards on /hosting link
+  // here with ?subject=… because a VPS is quoted by hand, not bought online, and
+  // arriving at a blank form loses what they were actually asking about.
+  // Read from window rather than useSearchParams(): this component renders inside
+  // statically-prerendered pages, where useSearchParams() demands a Suspense
+  // boundary around every one of them.
+  useEffect(() => {
+    const subject = new URLSearchParams(window.location.search).get("subject");
+    if (subject) setFields((f) => (f.subject ? f : { ...f, subject: subject.slice(0, 200) }));
+  }, []);
 
   const set = (k) => (e) => setFields((f) => ({ ...f, [k]: e.target.value }));
 

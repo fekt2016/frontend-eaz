@@ -23,10 +23,12 @@ const PRESENTATION = {
     business: { featured: true, badge: "BEST VALUE", buttonText: "Get Started" },
     agency: { featured: false, badge: null, buttonText: "Get Started" },
   },
+  // buttonText here is a fallback only — toPlanCards overrides it for any plan
+  // the API marks 'enquiry'.
   vps: {
-    starter: { featured: false, badge: null, buttonText: "Get Started" },
-    business: { featured: true, badge: "MOST POPULAR", buttonText: "Get Started" },
-    pro: { featured: false, badge: null, buttonText: "Get Started" },
+    starter: { featured: false, badge: null, buttonText: "Request a quote" },
+    business: { featured: true, badge: null, buttonText: "Request a quote" },
+    pro: { featured: false, badge: null, buttonText: "Request a quote" },
   },
 };
 
@@ -55,6 +57,11 @@ export function toPlanCards(plans, category) {
     symbol: "GH₵",
     specs: plan.specs || [],
     features: plan.features || [],
+    // 'instant' | 'enquiry' — set by the API, never decided here. A VPS is
+    // quoted by hand, so its card must not lead to checkout; the backend
+    // rejects the order anyway, and the two must not disagree.
+    availability: plan.availability || "instant",
     ...(PRESENTATION[category]?.[tier] || DEFAULT_PRESENTATION),
+    ...(plan.availability === "enquiry" ? { buttonText: "Request a quote" } : {}),
   }));
 }

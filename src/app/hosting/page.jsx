@@ -169,15 +169,17 @@ export default function Hosting() {
           {!isLoading && tab === "vps" && (
             <div className="max-w-4xl mx-auto">
               {/* Said before the price, not after. A VPS cannot be provisioned
-                  automatically from a cPanel reseller plan — the server is bought
-                  and built by hand, and the order sits in the awaiting-provisioning
-                  queue until it is. A customer who expects the instant activation
-                  the shared plans give would otherwise be surprised after paying. */}
+                  from a cPanel reseller plan at all — the server has to be sourced
+                  and built by hand, so these figures are indicative and the plan is
+                  quoted rather than sold. The earlier version of this banner took
+                  payment upfront and promised delivery afterwards, which is a
+                  promise no supplier stood behind. */}
               <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-800 dark:border-brand-900/40 dark:bg-brand-900/20 dark:text-brand-300">
-                <p className="font-semibold">Built to order.</p>
+                <p className="font-semibold">Quoted to order.</p>
                 <p className="mt-0.5">
-                  VPS servers are set up by hand rather than instantly. We build yours after
-                  payment and email the credentials once it is ready.
+                  VPS servers are built for each client rather than activated instantly.
+                  Tell us what you need and we will send a firm quote and a timeline —
+                  you pay once it is agreed, not before.
                 </p>
               </div>
               <div className="grid gap-6 md:grid-cols-3">
@@ -328,7 +330,18 @@ function PlanCard({ plan, billing, planType }) {
   const price = billing === "annual" ? plan.annualPrice : plan.monthlyPrice;
   const saving = plan.monthlyPrice * 12 - plan.annualPrice;
 
+  // A plan the API marks 'enquiry' is quoted by hand — sending it to checkout
+  // would take money for a server we have no supplier for, and createOrder
+  // rejects it anyway. Carry the plan name across so the enquiry arrives with
+  // context instead of a blank subject line.
+  const isEnquiry = plan.availability === "enquiry";
+
   const handleSelect = () => {
+    if (isEnquiry) {
+      const subject = `Quote request: ${plan.name}`;
+      router.push(`/contact?subject=${encodeURIComponent(subject)}`);
+      return;
+    }
     const params = new URLSearchParams({ type: planType, tier: plan.tier, billing });
     router.push(`/hosting/checkout?${params.toString()}`);
   };
@@ -352,10 +365,14 @@ function PlanCard({ plan, billing, planType }) {
 
       <div className="mb-4">
         <div className="flex items-end gap-1">
+          {/* "from" on a quoted plan: the figure is indicative, and the real
+              price depends on the server we source. Stating it flat would be a
+              promise we cannot keep. */}
+          {isEnquiry && <span className="text-xs text-gray-600 dark:text-slate-500 mb-1.5">from</span>}
           <span className="text-3xl font-bold text-brand-500">{plan.symbol}{price}</span>
           <span className="text-xs text-gray-600 dark:text-slate-500 mb-1">/{billing === "annual" ? "yr" : "mo"}</span>
         </div>
-        {billing === "annual" && saving > 0 && (
+        {!isEnquiry && billing === "annual" && saving > 0 && (
           <p className="text-[11px] text-emerald-600 font-medium">Save {plan.symbol}{saving}/yr</p>
         )}
       </div>
