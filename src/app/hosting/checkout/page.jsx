@@ -58,9 +58,19 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
         return;
       }
 
-      // Check availability via Namecheap
+      // Check availability via the registrar (Spaceship)
       const res = await api.get(`/domain/search?domain=${encodeURIComponent(cleaned)}`);
-      const results = res.data?.results || res.data?.data?.results || [];
+      // GET /domain/search does NOT use the project's { success, data } envelope —
+      // it returns { domain, available, registered, price, results } at the top
+      // level. This read `res.data?.results`, so `results` was ALWAYS [], no
+      // match was ever found, and every lookup fell through to the "error"
+      // branch: "Could not check — enter manually or skip". The domains page
+      // (components/domains/DomainsSearch.jsx) reads `res.results` and has
+      // always worked, which is why only this form was broken.
+      //
+      // The `res.data` fallbacks are kept so this keeps working if the endpoint
+      // is ever brought onto the standard envelope.
+      const results = res?.results || res.data?.results || res.data?.data?.results || [];
       const match = results.find((r) => r.domain === cleaned || r.domain?.startsWith(cleaned.split(".")[0]));
 
       if (!match) {

@@ -45,7 +45,7 @@ export function useUpdateDomainOrderStatus() {
   });
 }
 
-// Admin: re-attempt Namecheap registration for a paid order that failed to register.
+// Admin: re-attempt registration for a paid order that failed to register.
 export function useRetryDomainRegistration() {
   const qc = useQueryClient();
   return useMutation({
