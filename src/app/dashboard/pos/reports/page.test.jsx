@@ -57,20 +57,31 @@ describe("Reports page — staff scope (T32)", () => {
     mockUseReportsAnalytics.mockReset();
   });
 
-  it("shows 'My Report' for a staff caller and never renders the staff picker", () => {
+  // T111 — this used to assert a "My Report" title for a staff caller. That
+  // scenario cannot occur: T83 restricted /pos/reports/analytics to
+  // superadmin+admin, so the `isOwnReport` flag it depended on was always false
+  // and the branch never rendered. The test passed because it hand-fed
+  // `isOwnReport: true` into a mock — asserting a payload the server cannot
+  // produce.
+  //
+  // What is pinned instead is the decision: there is no self-report view here.
+  // Staff have their own scoped screen at /dashboard/pos.
+  it("never renders a 'My Report' view, even given a staff-shaped payload", () => {
     mockRole = "staff";
-    mockHook(baseData({ staffId: "u1", staffName: "Ama", isOwnReport: true, staffList: [] }));
+    mockHook(baseData({ staffId: "u1", staffName: "Ama", staffList: [] }));
 
     render(<ReportsPage />);
 
-    expect(screen.getByText("My Report")).toBeInTheDocument();
+    expect(screen.queryByText("My Report")).not.toBeInTheDocument();
+    // Falls through to the named-staff title, driven by staffId alone.
+    expect(screen.getByText("Report — Ama")).toBeInTheDocument();
     expect(screen.queryByLabelText("Staff member")).not.toBeInTheDocument();
   });
 
   it("shows the staff picker for admin, defaulting to shop-wide", () => {
     mockRole = "admin";
     mockHook(baseData({
-      staffId: null, staffName: null, isOwnReport: false,
+      staffId: null, staffName: null,
       staffList: [{ _id: "u1", name: "Ama", role: "staff" }, { _id: "u2", name: "Kofi", role: "staff" }],
     }));
 
@@ -89,7 +100,7 @@ describe("Reports page — staff scope (T32)", () => {
   it("re-queries with the selected staffId when admin picks a staff member", () => {
     mockRole = "admin";
     mockHook(baseData({
-      staffId: null, staffName: null, isOwnReport: false,
+      staffId: null, staffName: null,
       staffList: [{ _id: "u1", name: "Ama", role: "staff" }],
     }));
 
@@ -103,7 +114,7 @@ describe("Reports page — staff scope (T32)", () => {
   it("shows a personalized header when admin has a staff member selected", () => {
     mockRole = "admin";
     mockHook(baseData({
-      staffId: "u1", staffName: "Ama", isOwnReport: false,
+      staffId: "u1", staffName: "Ama",
       staffList: [{ _id: "u1", name: "Ama", role: "staff" }],
     }));
 
@@ -113,7 +124,7 @@ describe("Reports page — staff scope (T32)", () => {
 
   it("blocks technicians with a friendly stop and never calls the hook enabled", () => {
     mockRole = "technician";
-    mockHook(baseData({ staffId: null, staffName: null, isOwnReport: false, staffList: [] }));
+    mockHook(baseData({ staffId: null, staffName: null, staffList: [] }));
 
     render(<ReportsPage />);
 

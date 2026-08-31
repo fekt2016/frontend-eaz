@@ -508,16 +508,17 @@ export default function ReportsPage() {
 }
 
 function Header({ refreshing, scope }) {
-  const title = scope?.isOwnReport
-    ? "My Report"
-    : scope?.staffId
-      ? `Report — ${scope.staffName || "Staff member"}`
-      : "Reports & Analytics";
-  const subtitle = scope?.isOwnReport
-    ? "Your jobs, sales, repair payments and activity."
-    : scope?.staffId
-      ? `${scope.staffName || "This staff member"}'s jobs, sales, repair payments and activity.`
-      : "Monitor sales, orders, inventory, repairs, payments and shipping performance.";
+  // T111 — the "My Report" branch is gone with `scope.isOwnReport`. That flag was
+  // `req.user.role === 'staff'` on a route restricted to superadmin+admin
+  // (routes/posRoutes.js), so it could only ever be false: this page has never
+  // rendered "My Report" for anyone, and keeping the branch implied staff reach
+  // this screen. Staff get their own scoped view at /dashboard/pos instead.
+  const title = scope?.staffId
+    ? `Report — ${scope.staffName || "Staff member"}`
+    : "Reports & Analytics";
+  const subtitle = scope?.staffId
+    ? `${scope.staffName || "This staff member"}'s jobs, sales, repair payments and activity.`
+    : "Monitor sales, orders, inventory, repairs, payments and shipping performance.";
 
   return (
     <div className="flex items-start justify-between flex-wrap gap-3">
