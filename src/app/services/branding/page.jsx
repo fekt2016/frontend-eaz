@@ -3,7 +3,8 @@ import { CheckCircle2 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 export const metadata = {
-  title: "Branding & Identity Pricing | EazWorld",
+  // T104 — no brand here: the root layout's title.template appends "| EazWorld".
+  title: "Branding & Identity Pricing",
   description: "Professional logo design and brand identity packages for businesses in Accra, Ghana. Transparent pricing, fast turnaround.",
 };
 

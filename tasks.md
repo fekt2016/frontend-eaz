@@ -574,7 +574,7 @@
     - [ ] Non-validation errors unchanged
     - [ ] Tests and lint stay clean
 
-- [ ] **T103 · `/seo` is a client-side redirect shim that is listed in the sitemap** (found during T98, 2026-08-29)
+- [x] **T103 · APPLIED 2026-08-31 — server-side 308, detour removed, out of the sitemap** (found during T98, 2026-08-29)
   - **Issue:** `src/app/seo/page.jsx` is 13 lines of `"use client"` + `useEffect(() => router.replace("/services/seo"))`.
     It renders nothing, yet `sitemap.js:25` advertises `/seo` at priority 0.5, and
     `next.config.mjs` permanently redirects `/service/seo → /seo`, which then client-redirects
@@ -589,7 +589,17 @@
   - **Location:** `src/app/seo/page.jsx`; `src/app/sitemap.js:25`; `next.config.mjs` redirects
   - **Not fixed under T98** — T98 asked for metadata; this page needs a routing change instead.
 
-- [ ] **T104 · Seven pages render a doubled "| EazWorld" brand suffix** (found during T98, 2026-08-29)
+  ### Implementation Notes (2026-08-31)
+
+  `/seo` is now a server component calling `permanentRedirect("/services/seo")` — one 308, no
+  JavaScript needed. The route is KEPT rather than deleted because `/seo` is a real URL people may
+  have linked to; removing it would 404 those instead of forwarding them.
+
+  The `/service/seo → /seo` rule in `next.config.mjs` is gone: the generic `/service/:path*` rule
+  already routes it to `/services/seo`, so that special case existed only to create the detour.
+  `/seo` is out of `STATIC_ROUTES`, where it competed with `/services/seo` for the same content.
+
+- [x] **T104 · APPLIED 2026-08-31 — 7 doubled titles fixed, guarded by a build check** (found during T98, 2026-08-29)
   - **Issue:** the root layout sets `title.template = "%s | EazWorld"` (`src/app/layout.jsx:36`), so
     any page whose own title already contains the brand gets it twice. Built output shows 7:
     `Branding & Identity Pricing | EazWorld | EazWorld`, `Client Reviews | EazWorld — Digital Agency
@@ -605,6 +615,20 @@
   - **Location:** the 7 layouts/pages behind those titles
   - **Not fixed under T98** — only `reviews` is among T98's six, and fixing 1 of 7 would leave the
     set inconsistent; worth one pass of its own.
+
+  ### Implementation Notes (2026-08-31)
+
+  Verified from BUILT output, not source — the repro in this task. Was 7, now **0** across 74 pages.
+
+  Six pages dropped the brand from their own title (the layout template appends it). `/reviews`
+  instead became `title: { absolute: … }`: its tail is real keywords worth keeping, and trimming
+  would have cost them.
+
+  **A source-level unit test was written and thrown away.** It flagged 49 files while the build had
+  zero defects, because a regex cannot tell `metadata.title` (which the template decorates) from
+  `openGraph.title` (which it does not) without parsing the module. Replaced with
+  `npm run check:titles` — a script over the built HTML, where the question has a definite answer.
+  Mutation-verified: reintroducing one brand suffix makes it name the file and exit 1.
 
 - [x] **T106 · Marketplace's two tabs list the same collection twice** (found 2026-08-29, after the parts/products merge)
   - **Issue:** `/dashboard/commerce` renders a tab switcher — **"Repair Parts"** and **"Shop

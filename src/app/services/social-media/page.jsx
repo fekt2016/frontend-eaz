@@ -3,7 +3,8 @@ import { CheckCircle2, Zap } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 export const metadata = {
-  title: "Social Media Management Pricing | EazWorld",
+  // T104 — no brand here: the root layout's title.template appends "| EazWorld".
+  title: "Social Media Management Pricing",
   description: "Social media management for businesses in Accra, Ghana. Consistent posting, community management and content creation across Facebook, Instagram and more.",
 };
 
