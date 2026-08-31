@@ -78,6 +78,19 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
         return;
       }
 
+      // A FAILED lookup also comes back as `available: false` — with an `error`
+      // string alongside it. Without this check the UI told the customer "This
+      // domain is taken" whenever the registrar was unreachable or refused the
+      // call (e.g. the API IP is not whitelisted), which is both wrong and
+      // unactionable: they go off inventing variations of a name that was free.
+      if (match.error) {
+        setStatus("error");
+        setDomainInfo(null);
+        setDomain("");
+        setDomainRegistrationFee(0);
+        return;
+      }
+
       if (match.available) {
         setStatus("available");
         setDomainInfo(match);

@@ -31,7 +31,9 @@ function ResultRow({ result, onSelect }) {
           Register
         </button>
       ) : (
-        <span className="text-xs text-gray-600 dark:text-slate-500 font-medium">Taken</span>
+        <span className="text-xs text-gray-600 dark:text-slate-500 font-medium">
+          {result.error ? "Couldn't check" : "Taken"}
+        </span>
       )}
     </div>
   );
@@ -67,9 +69,20 @@ function DomainsContentInner() {
           domain: r.domain,
           available: r.available,
           price: r.price ?? null,
+          // A failed check is also `available: false`, distinguished only by
+          // this. Dropping it made an unreachable registrar look like a taken
+          // domain — see ResultRow.
+          error: r.error || null,
           tld,
         };
       });
+      // Every row failing with the same message is a registrar/config problem,
+      // not a naming problem. Say so once at the top instead of leaving the user
+      // to read "Couldn't check" twelve times and guess why.
+      const failures = mapped.filter((r) => r.error);
+      if (failures.length === mapped.length && failures.length > 0) {
+        setError(`Domain lookup is unavailable right now (${failures[0].error}). Please try again shortly.`);
+      }
       setResults(mapped);
     } catch (err) {
       setError(err.message || "Search failed. Please try again.");
