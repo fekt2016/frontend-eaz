@@ -3,7 +3,8 @@ import { CheckCircle2, Zap } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 export const metadata = {
-  title: "SEO & Content Marketing Pricing | EazWorld",
+  // T104 — no brand here: the root layout's title.template appends "| EazWorld".
+  title: "SEO & Content Marketing Pricing",
   description: "Transparent SEO and content marketing pricing for businesses in Accra, Ghana. Local SEO, business SEO, content writing and one-time audits.",
 };
 

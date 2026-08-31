@@ -3,7 +3,8 @@ import AppShellDecision from "./AppShellDecision";
 import ChatWidget from "@/components/ChatWidget";
 
 export const metadata = {
-  title: "Dashboard | EazWorld",
+  // T104 — no brand here: the root layout's title.template appends "| EazWorld".
+  title: "Dashboard",
   description: "Manage your orders, hosting, and account.",
   robots: { index: false, follow: false },
 };

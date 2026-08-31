@@ -3,7 +3,8 @@ import { CheckCircle2, Zap } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 export const metadata = {
-  title: "Paid Advertising Pricing | EazWorld",
+  // T104 — no brand here: the root layout's title.template appends "| EazWorld".
+  title: "Paid Advertising Pricing",
   description: "Facebook, Instagram and Google Ads management for businesses in Accra, Ghana. Transparent pricing with no hidden fees.",
 };
 
