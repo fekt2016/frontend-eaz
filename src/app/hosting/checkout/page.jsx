@@ -304,11 +304,18 @@ function HostingCheckoutPageInner() {
   // charged the VPS price. Matching the pair means the summary and the charge
   // cannot disagree.
   //
-  // ORDERABLE is the allowlist. vps/cloud/email are excluded deliberately: a
-  // cPanel reseller plan cannot provision them at all — utils/provisionHosting
-  // only auto-builds shared and wordpress — so they must not be reachable by
-  // editing a URL. They stay in the catalogue for the manual/bespoke path.
-  const ORDERABLE = ["shared", "wordpress"];
+  // ORDERABLE is the allowlist of what checkout will price and post.
+  //
+  // `vps` is included even though it cannot be AUTO-provisioned: a cPanel
+  // reseller plan only creates cPanel accounts, so utils/provisionHosting marks
+  // a paid VPS order `skipped`, which puts it in the awaiting-provisioning queue
+  // for staff to build by hand. That is the designed fulfilment path, not a gap —
+  // the queue exists for exactly this. The hosting page says so before the price.
+  //
+  // `cloud` and `email` stay out. Cloud Enterprise has no price at all
+  // (priceUsd null, quote-only), and the Email tiers cannot be honoured on the
+  // reseller plan, which allows 30 mailboxes across every customer combined.
+  const ORDERABLE = ["shared", "wordpress", "vps"];
   const plan = ORDERABLE.includes(type)
     ? toPlanCards(plansData, type).find((p) => p.tier === (tier || "").toLowerCase())
     : undefined;

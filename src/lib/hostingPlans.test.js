@@ -41,8 +41,8 @@ const PAYLOAD = {
       priceUsd: 5,
       specs: [{ label: "WordPress Sites", value: "1" }],
       features: ["WordPress preinstalled (Softaculous)"],
-      monthlyPrice: 78,
-      annualPrice: 780,
+      monthlyPrice: 25,
+      annualPrice: 250,
     },
   },
 };
@@ -113,7 +113,7 @@ describe("toPlanCards", () => {
     const wp = toPlanCards(PAYLOAD, "wordpress");
     expect(wp).toHaveLength(1);
     expect(wp[0].name).toBe("WP Starter");
-    expect(wp[0].monthlyPrice).toBe(78);
+    expect(wp[0].monthlyPrice).toBe(25);
   });
 });
 
@@ -137,10 +137,10 @@ describe("resolving the plan the checkout will actually POST", () => {
   it("distinguishes wordpress/starter from vps/starter", () => {
     const wp = toPlanCards(MULTI, "wordpress").find((p) => p.tier === "starter");
     const vps = toPlanCards(MULTI, "vps").find((p) => p.tier === "starter");
-    expect(wp.monthlyPrice).toBe(78);
+    expect(wp.monthlyPrice).toBe(25);
     expect(vps.monthlyPrice).toBe(280);
     // Same tier key, very different charge — matching on tier alone would have
-    // shown GH₵78 for an order the server prices at GH₵280.
+    // shown GH₵25 for an order the server prices at GH₵280.
     expect(wp.monthlyPrice).not.toBe(vps.monthlyPrice);
   });
 });

@@ -21,6 +21,12 @@ const PRESENTATION = {
   wordpress: {
     starter: { featured: false, badge: null, buttonText: "Get Started" },
     business: { featured: true, badge: "BEST VALUE", buttonText: "Get Started" },
+    agency: { featured: false, badge: null, buttonText: "Get Started" },
+  },
+  vps: {
+    starter: { featured: false, badge: null, buttonText: "Get Started" },
+    business: { featured: true, badge: "MOST POPULAR", buttonText: "Get Started" },
+    pro: { featured: false, badge: null, buttonText: "Get Started" },
   },
 };
 

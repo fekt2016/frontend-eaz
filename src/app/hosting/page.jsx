@@ -24,6 +24,7 @@ export default function Hosting() {
   const { data: plans, isLoading } = useHostingPlans();
   const SHARED_PLANS = toPlanCards(plans, "shared");
   const WORDPRESS_PLANS = toPlanCards(plans, "wordpress");
+  const VPS_PLANS = toPlanCards(plans, "vps");
 
   return (
     <div className="min-h-screen bg-paper dark:bg-ink">
@@ -121,6 +122,7 @@ export default function Hosting() {
             {[
               { key: "shared", label: "Shared Hosting" },
               { key: "wordpress", label: "WordPress Hosting" },
+              { key: "vps", label: "VPS Hosting" },
             ].map(({ key, label }) => (
               <button
                 key={key}
@@ -161,6 +163,28 @@ export default function Hosting() {
               {WORDPRESS_PLANS.map((plan) => (
                 <PlanCard key={plan.name} plan={plan} billing={billing} planType="wordpress" />
               ))}
+            </div>
+          )}
+
+          {!isLoading && tab === "vps" && (
+            <div className="max-w-4xl mx-auto">
+              {/* Said before the price, not after. A VPS cannot be provisioned
+                  automatically from a cPanel reseller plan — the server is bought
+                  and built by hand, and the order sits in the awaiting-provisioning
+                  queue until it is. A customer who expects the instant activation
+                  the shared plans give would otherwise be surprised after paying. */}
+              <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-800 dark:border-brand-900/40 dark:bg-brand-900/20 dark:text-brand-300">
+                <p className="font-semibold">Built to order.</p>
+                <p className="mt-0.5">
+                  VPS servers are set up by hand rather than instantly. We build yours after
+                  payment and email the credentials once it is ready.
+                </p>
+              </div>
+              <div className="grid gap-6 md:grid-cols-3">
+                {VPS_PLANS.map((plan) => (
+                  <PlanCard key={plan.name} plan={plan} billing={billing} planType="vps" />
+                ))}
+              </div>
             </div>
           )}
         </div>
