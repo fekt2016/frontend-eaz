@@ -67,10 +67,17 @@ function ProvisionForm({ order, onDone, onError }) {
 /**
  * T68 — the manual provisioning queue.
  *
- * VPS / Cloud / Email plans can't self-provision (the VM has no API), so a paid
- * order used to sit in silence after checkout. Staff build the server by hand,
- * then record it here — which activates the order and emails the credentials.
- * Oldest first, because that customer has been waiting longest.
+ * VPS / Cloud / Email plans can't self-provision (a reseller plan only creates
+ * cPanel accounts), so a paid order used to sit in silence after checkout. Staff
+ * build the server by hand, then record it here — which activates the order and
+ * emails the credentials. Oldest first, because that customer has been waiting
+ * longest.
+ *
+ * Orders whose automatic build FAILED are listed here too. They used to appear
+ * only as a number on the admin overview, with no row anywhere to act on, so the
+ * customer waited unseen. They are flagged with their error rather than blending
+ * in, because a failure usually has a server-side cause that will hit the next
+ * order as well.
  */
 export default function AwaitingProvisioningPage() {
   const { user } = useAuth();
@@ -98,7 +105,7 @@ export default function AwaitingProvisioningPage() {
           <EmptyState
             icon={ServerCog}
             title="Nothing awaiting provisioning."
-            description="Paid orders that need a manual build appear here the moment checkout completes."
+            description="Paid orders needing a manual build — and any whose automatic build failed — appear here the moment checkout completes."
           />
         </Card>
       ) : (
@@ -127,6 +134,24 @@ export default function AwaitingProvisioningPage() {
               <p className="mt-2 text-xs text-gray-600 dark:text-slate-400">
                 {order.planType} · {order.tier}
               </p>
+
+              {/* A build that ERRORED and one that was never attempted both land
+                  in this queue, but they need different handling: a failure is
+                  usually a fixable server-side cause (missing WHM package,
+                  unreachable host) that will recur on the next order too. Show
+                  the reason rather than letting it read as a routine manual build. */}
+              {order.provisioningStatus === "failed" && (
+                <div className="mt-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 dark:border-red-900/40 dark:bg-red-900/20">
+                  <p className="text-xs font-semibold text-red-700 dark:text-red-400">
+                    Automatic build failed
+                  </p>
+                  {order.provisioningError && (
+                    <p className="mt-0.5 text-xs text-red-600 dark:text-red-400">
+                      {order.provisioningError}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <ProvisionForm
                 order={order}
