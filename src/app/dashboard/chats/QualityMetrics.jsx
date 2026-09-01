@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { BarChart3, RotateCw } from "lucide-react";
 import { Badge, Button, SectionCard, Skeleton, Table, TableWrap, Td, Th } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 
 const RANGES = [
   { days: 7,  label: "7 days" },
@@ -50,7 +50,7 @@ export default function QualityMetrics() {
       const json = await api.get(`/chat/metrics?from=${encodeURIComponent(isoDaysAgo(rangeDays))}`);
       setData(json.data || null);
     } catch (err) {
-      setError(err.message || "Could not load chat metrics.");
+      setError(errorMessage(err, "Could not load chat metrics."));
       setData(null);
     } finally {
       setLoading(false);

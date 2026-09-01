@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
@@ -33,7 +34,7 @@ export default function AdminEditProductPage() {
       { id, data },
       {
         onSuccess: () => router.push("/dashboard/commerce"),
-        onError: (err) => alert(err.message || "Failed to update product"),
+        onError: (err) => alert(errorMessage(err, "Failed to update product")),
       },
     );
   };

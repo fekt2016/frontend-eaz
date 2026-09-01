@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useState } from "react";
 import Link from "next/link";
 import { ServerCog } from "lucide-react";
@@ -28,7 +29,7 @@ function ProvisionForm({ order, onDone, onError }) {
     e.preventDefault();
     mark.mutate(
       { id: order._id, username, password, domain },
-      { onSuccess: onDone, onError: (err) => onError(err.message || "Could not mark this order provisioned.") }
+      { onSuccess: onDone, onError: (err) => onError(errorMessage(err, "Could not mark this order provisioned.")) }
     );
   };
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useState } from "react";
 import Link from "next/link";
 import { PackageCheck } from "lucide-react";
@@ -37,7 +38,7 @@ export default function PreordersPage() {
     setError("");
     setReleasing(order._id);
     release.mutate(order._id, {
-      onError: (err) => setError(err.message || "Could not release this pre-order."),
+      onError: (err) => setError(errorMessage(err, "Could not release this pre-order.")),
       onSettled: () => setReleasing(null),
     });
   };

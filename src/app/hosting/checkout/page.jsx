@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useHostingPlans } from "@/hooks/queries/useHosting";
 import { toPlanCards } from "@/lib/hostingPlans";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Check, CheckCircle2, CreditCard, Landmark, SmartphoneNfc, X } from "lucide-react";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
@@ -383,7 +383,7 @@ function HostingCheckoutPageInner() {
         router.push("/hosting/order-confirmation");
       }
     } catch (err) {
-      setError(err.message || "Order failed. Please try again.");
+      setError(errorMessage(err, "Order failed. Please try again."));
     } finally {
       setLoading(false);
     }

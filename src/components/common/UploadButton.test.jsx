@@ -6,6 +6,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 const mockUpload = vi.fn();
 vi.mock("@/lib/api", () => ({
   api: { upload: (...args) => mockUpload(...args) },
+  errorMessage: (err, fb = "") => err?.message || fb,
 }));
 
 import UploadButton from "./UploadButton";

@@ -4,7 +4,7 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { useMomoCharge } from "@/hooks/useMomoCharge";
 import { useCardCharge } from "@/hooks/useCardCharge";
@@ -160,7 +160,7 @@ export default function JobDetailPage() {
       await api.patch(`/pos/jobs/${id}`, { status: newStatus });
       await fetchJob();
     } catch (err) {
-      setError(err.message || "Failed to update status.");
+      setError(errorMessage(err, "Failed to update status."));
     } finally {
       setSaving(false);
     }
@@ -181,7 +181,7 @@ export default function JobDetailPage() {
       });
       await fetchJob();
     } catch (err) {
-      setError(err.message || "Failed to save.");
+      setError(errorMessage(err, "Failed to save."));
     } finally {
       setSaving(false);
     }
@@ -199,7 +199,7 @@ export default function JobDetailPage() {
       setPayAmount(""); setPayRef("");
       await fetchJob();
     } catch (err) {
-      setError(err.message || "Payment failed.");
+      setError(errorMessage(err, "Payment failed."));
     } finally {
       setPayLoading(false);
     }

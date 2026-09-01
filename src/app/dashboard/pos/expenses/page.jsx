@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { formatGhs } from "@/lib/shop";
@@ -111,7 +112,7 @@ export default function ExpensesPage() {
           setFormAmount(""); setFormDesc(""); setFormNotes(""); setFormDate(today()); setFormCat("other");
           setShowForm(false);
         },
-        onError: (err) => setFormError(err.message || "Failed to save."),
+        onError: (err) => setFormError(errorMessage(err, "Failed to save.")),
       },
     );
   };
@@ -130,7 +131,7 @@ export default function ExpensesPage() {
         id, amount: Math.round(Number(editAmount) * 100), category: editCat, // cedis → pesewas
         description: editDesc, date: editDate,
       },
-      { onSuccess: () => setEditId(null), onError: (err) => setError(err.message || "Failed to update.") },
+      { onSuccess: () => setEditId(null), onError: (err) => setError(errorMessage(err, "Failed to update.")) },
     );
   };
 
@@ -138,7 +139,7 @@ export default function ExpensesPage() {
     if (!deleteTarget) return;
     deleteExpense.mutate(deleteTarget._id, {
       onSettled: () => setDeleteTarget(null),
-      onError: (err) => setError(err.message || "Failed to delete."),
+      onError: (err) => setError(errorMessage(err, "Failed to delete.")),
     });
   };
 

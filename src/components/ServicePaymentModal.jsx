@@ -3,7 +3,7 @@
 import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useMemo } from "react";
 import { Check, X, Lock, Loader2, Eye, EyeOff, User } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText, getPasswordRules, validatePassword } from "@/lib/sanitize";
 import { formatGhsMajor } from "@/lib/shop";
@@ -97,7 +97,7 @@ const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
         setError("Could not initialize payment. Please try again.");
       }
     } catch (err) {
-      setError(err.message || "Payment failed. Please try again.");
+      setError(errorMessage(err, "Payment failed. Please try again."));
     } finally {
       setLoading(false);
     }

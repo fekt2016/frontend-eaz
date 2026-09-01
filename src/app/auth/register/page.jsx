@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { Suspense, useState, useMemo } from "react";
 import { Check, Eye, EyeOff, X } from "lucide-react";
@@ -55,7 +56,7 @@ function RegisterPageInner() {
         router.push("/dashboard");
       }
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      setError(errorMessage(err, "Registration failed. Please try again."));
     } finally {
       setLoading(false);
     }

@@ -3,7 +3,7 @@
 import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { Search, Plus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -155,7 +155,7 @@ export default function NewJobPage() {
       if (!jobId) throw new Error("Failed to create job.");
       router.push(`/dashboard/pos/jobs/${jobId}`);
     } catch (err) {
-      setError(err.message || "Failed to create job.");
+      setError(errorMessage(err, "Failed to create job."));
       setLoading(false);
     }
   };

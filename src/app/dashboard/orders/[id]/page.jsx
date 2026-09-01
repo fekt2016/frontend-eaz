@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, PackageOpen, Send, Star, RotateCcw, RefreshCw } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { sanitizeText } from "@/lib/sanitize";
 import { formatGhs, formatShippingMethod } from "@/lib/shop";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
@@ -71,7 +71,7 @@ function OrderItemReview({ productId }) {
         setJustSubmitted(true);
       }
     } catch (err) {
-      setFormError(err.message || "Could not submit review.");
+      setFormError(errorMessage(err, "Could not submit review."));
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +168,7 @@ function RefundSection({ order, onUpdate }) {
       setConfirming(false);
       setReason("");
     } catch (err) {
-      setError(err.message || "Refund failed.");
+      setError(errorMessage(err, "Refund failed."));
     } finally {
       setLoading(false);
     }
@@ -181,7 +181,7 @@ function RefundSection({ order, onUpdate }) {
       const res = await api.post(`/orders/${order._id}/refund/sync`);
       onUpdate(res.data);
     } catch (err) {
-      setError(err.message || "Failed to check refund status.");
+      setError(errorMessage(err, "Failed to check refund status."));
     } finally {
       setLoading(false);
     }
@@ -284,7 +284,7 @@ export default function CustomerOrderDetailPage() {
     api
       .get(seesAll ? `/orders/${id}` : `/orders/mine/${id}`)
       .then((res) => setOrder(res.data))
-      .catch((err) => setError(err.message || "Order not found"))
+      .catch((err) => setError(errorMessage(err, "Order not found")))
       .finally(() => setLoading(false));
   };
 
@@ -307,7 +307,7 @@ export default function CustomerOrderDetailPage() {
       setOrder((prev) => ({ ...prev, status: trackStatus }));
       load();
     } catch (err) {
-      alert(err.message || "Update failed");
+      alert(errorMessage(err, "Update failed"));
     } finally {
       setSaving(false);
     }

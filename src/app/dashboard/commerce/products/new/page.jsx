@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -21,7 +22,7 @@ export default function AdminNewProductPage() {
   const handleSubmit = (data) => {
     createProduct.mutate(data, {
       onSuccess: () => router.push("/dashboard/commerce"),
-      onError: (err) => alert(err.message || "Failed to create product"),
+      onError: (err) => alert(errorMessage(err, "Failed to create product")),
     });
   };
 

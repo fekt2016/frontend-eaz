@@ -13,6 +13,7 @@ const mockGet = vi.fn();
 const mockPost = vi.fn();
 vi.mock("@/lib/api", () => ({
   api: { get: (...args) => mockGet(...args), post: (...args) => mockPost(...args) },
+  errorMessage: (err, fb = "") => err?.message || fb,
 }));
 
 // The Sell page now renders the sales-tracking section, which needs AuthProvider and

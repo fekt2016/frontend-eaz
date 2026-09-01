@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -70,7 +71,7 @@ export default function AdminOrderDetailPage() {
   if (authLoading || !isAllowed) return null;
 
   const handleStatus = (status) => {
-    updateStatus.mutate({ id, status }, { onError: (err) => alert(err.message || "Update failed") });
+    updateStatus.mutate({ id, status }, { onError: (err) => alert(errorMessage(err, "Update failed")) });
   };
 
   const handleTrackingUpdate = (e) => {
@@ -79,7 +80,7 @@ export default function AdminOrderDetailPage() {
       { id, status: trackStatus, note: trackNote, location: trackLocation },
       {
         onSuccess: () => { setTrackNote(""); setTrackLocation(""); },
-        onError: (err) => alert(err.message || "Update failed"),
+        onError: (err) => alert(errorMessage(err, "Update failed")),
       },
     );
   };

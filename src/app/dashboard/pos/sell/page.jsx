@@ -13,7 +13,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { qk } from "@/lib/queryKeys";
 import { useCreateSale } from "@/hooks/queries/usePosSales";
@@ -282,7 +282,7 @@ export default function SellPage() {
       setCompletedSale(sale);
       setShowPay(false);
     } catch (err) {
-      setPayError(err.message || "Sale failed. Try again.");
+      setPayError(errorMessage(err, "Sale failed. Try again."));
     }
   };
 

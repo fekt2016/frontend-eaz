@@ -195,7 +195,7 @@ function PasswordSection() {
       setStatus({ type: "success", message: "Password changed successfully." });
       setCurrent(""); setNewPass(""); setConfirm("");
     } catch (err) {
-      setStatus({ type: "error", message: err.message || "Failed to change password." });
+      setStatus({ type: "error", message: errorMessage(err, "Failed to change password.") });
     } finally {
       setLoading(false);
     }
@@ -283,7 +283,7 @@ function TwoFactorSection({ user, onUpdate }) {
       setStep("confirm-enable");
       setStatus({ type: "success", message: "Check your email for the verification code." });
     } catch (err) {
-      setStatus({ type: "error", message: err.message || "Failed to send code." });
+      setStatus({ type: "error", message: errorMessage(err, "Failed to send code.") });
     } finally { setLoading(false); }
   };
 
@@ -298,7 +298,7 @@ function TwoFactorSection({ user, onUpdate }) {
       onUpdate({ ...user, twoFactorEnabled: true });
       setStatus({ type: "success", message: "Two-factor authentication is now enabled." });
     } catch (err) {
-      setStatus({ type: "error", message: err.message || "Incorrect code." });
+      setStatus({ type: "error", message: errorMessage(err, "Incorrect code.") });
     } finally { setLoading(false); }
   };
 
@@ -311,7 +311,7 @@ function TwoFactorSection({ user, onUpdate }) {
       onUpdate({ ...user, twoFactorEnabled: false });
       setStatus({ type: "success", message: "Two-factor authentication has been disabled." });
     } catch (err) {
-      setStatus({ type: "error", message: err.message || "Incorrect password." });
+      setStatus({ type: "error", message: errorMessage(err, "Incorrect password.") });
     } finally { setLoading(false); }
   };
 

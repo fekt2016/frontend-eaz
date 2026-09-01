@@ -1,4 +1,5 @@
 "use client";
+import { errorMessage } from "@/lib/api";
 import { formatGhsMajor } from "@/lib/shop";
 
 import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Server } from "lucide-react";
@@ -79,7 +80,7 @@ export default function StaffCreateHostingAccountPage() {
       },
       {
         onSuccess: (res) => setResult({ ok: true, data: res?.data ?? res }),
-        onError: (err) => setResult({ ok: false, error: err.message || "Failed to create account." }),
+        onError: (err) => setResult({ ok: false, error: errorMessage(err, "Failed to create account.") }),
       }
     );
   };

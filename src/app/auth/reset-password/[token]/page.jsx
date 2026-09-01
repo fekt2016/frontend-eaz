@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 
 const schema = z.object({ password: z.string().min(8) });
 const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
       setSuccess(true);
       setTimeout(() => router.push("/auth/login"), 2500);
     } catch (err) {
-      setError(err.message || "Invalid or expired reset link.");
+      setError(errorMessage(err, "Invalid or expired reset link."));
     } finally {
       setLoading(false);
     }

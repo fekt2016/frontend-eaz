@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -69,7 +70,7 @@ export default function AdminDomainOrdersPage() {
     setNotice(null);
     updateStatus.mutate(
       { id: orderId, status },
-      { onError: (err) => setNotice({ tone: "error", text: err.message || "Update failed." }) },
+      { onError: (err) => setNotice({ tone: "error", text: errorMessage(err, "Update failed.") }) },
     );
   };
 
@@ -77,7 +78,7 @@ export default function AdminDomainOrdersPage() {
     setNotice(null);
     retryReg.mutate(orderId, {
       onSuccess: () => setNotice({ tone: "success", text: "Domain registered successfully." }),
-      onError: (err) => setNotice({ tone: "error", text: err.message || "Registration retry failed." }),
+      onError: (err) => setNotice({ tone: "error", text: errorMessage(err, "Registration retry failed.") }),
     });
   };
 

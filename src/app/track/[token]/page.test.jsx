@@ -15,7 +15,7 @@ vi.mock("next/link", () => ({
 }));
 
 const mockGet = vi.fn();
-vi.mock("@/lib/api", () => ({ api: { get: (...a) => mockGet(...a), post: vi.fn() } }));
+vi.mock("@/lib/api", () => ({ api: { get: (...a) => mockGet(...a), post: vi.fn() }, errorMessage: (err, fb = "") => err?.message || fb }));
 
 let searchParamValue = null;
 vi.mock("next/navigation", () => ({

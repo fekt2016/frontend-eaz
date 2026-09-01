@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Plus, Truck, Search, Check, X, Pen, Trash2, ChevronRight, Circle } from "lucide-react";
@@ -46,7 +47,7 @@ export default function SuppliersPage() {
     setFormError("");
     createSupplier.mutate(form, {
       onSuccess: () => { setForm(EMPTY_FORM); setShowForm(false); },
-      onError: (err) => setFormError(err.message || "Failed to save."),
+      onError: (err) => setFormError(errorMessage(err, "Failed to save.")),
     });
   };
 
@@ -63,7 +64,7 @@ export default function SuppliersPage() {
   const handleEdit = (id) => {
     updateSupplier.mutate(
       { id, ...editForm },
-      { onSuccess: () => setEditId(null), onError: (err) => setError(err.message || "Failed to update.") },
+      { onSuccess: () => setEditId(null), onError: (err) => setError(errorMessage(err, "Failed to update.")) },
     );
   };
 
@@ -71,14 +72,14 @@ export default function SuppliersPage() {
     if (!deleteTarget) return;
     deleteSupplier.mutate(deleteTarget._id, {
       onSettled: () => setDeleteTarget(null),
-      onError: (err) => setError(err.message || "Failed to delete."),
+      onError: (err) => setError(errorMessage(err, "Failed to delete.")),
     });
   };
 
   const toggleActive = (s) => {
     updateSupplier.mutate(
       { id: s._id, isActive: !s.isActive },
-      { onError: (err) => setError(err.message || "Failed to update.") },
+      { onError: (err) => setError(errorMessage(err, "Failed to update.")) },
     );
   };
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useState } from "react";
 import Link from "next/link";
 import { Loader2, Search } from "lucide-react";
@@ -36,7 +37,7 @@ export default function TrackOrderPage() {
     }
     trackOrder.mutate(
       { orderNumber: orderNumber.trim(), phone: phone.trim() },
-      { onError: (err) => setError(err.message || "Unable to find your order.") },
+      { onError: (err) => setError(errorMessage(err, "Unable to find your order.")) },
     );
   };
 

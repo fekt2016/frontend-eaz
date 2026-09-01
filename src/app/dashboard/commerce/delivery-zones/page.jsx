@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -31,7 +32,7 @@ function ZoneEditor({ zone, onDone }) {
         estimatedDays: parseInt(days, 10) || 0,
         isActive,
       },
-      { onSuccess: onDone, onError: (err) => alert(err.message || "Update failed") },
+      { onSuccess: onDone, onError: (err) => alert(errorMessage(err, "Update failed")) },
     );
   };
 
@@ -121,13 +122,13 @@ export default function AdminDeliveryZonesPage() {
       },
       {
         onSuccess: () => setNewZone({ name: "", feeGhs: "", days: "", isActive: true }),
-        onError: (err) => alert(err.message || "Failed to create zone"),
+        onError: (err) => alert(errorMessage(err, "Failed to create zone")),
       },
     );
   };
 
   const handleArchive = (zone) => {
-    const onError = (err) => alert(err.message || "Update failed");
+    const onError = (err) => alert(errorMessage(err, "Update failed"));
     if (zone.isActive) deleteZone.mutate(zone._id, { onError });
     else archiveZone.mutate({ id: zone._id, isActive: true }, { onError });
   };

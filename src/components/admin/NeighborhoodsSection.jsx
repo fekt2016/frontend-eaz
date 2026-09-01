@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useState } from "react";
 import { MapPinned, RefreshCw, Plus, AlertTriangle, Ruler } from "lucide-react";
 import {
@@ -237,7 +238,7 @@ export default function NeighborhoodsSection() {
     setStatus({ type: "", message: "" });
     update.mutate(body, {
       onSuccess: () => setStatus({ type: "success", message: "Area updated." }),
-      onError: (err) => setStatus({ type: "error", message: err.message || "Update failed." }),
+      onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Update failed.") }),
     });
   };
 
@@ -254,7 +255,7 @@ export default function NeighborhoodsSection() {
             : `${d.name}: ${d.distanceKm} km — stays in zone ${d.assignedZone}.`,
         });
       },
-      onError: (err) => setStatus({ type: "error", message: err.message || "Measurement failed." }),
+      onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Measurement failed.") }),
       onSettled: () => setRecalculatingId(null),
     });
   };
@@ -274,7 +275,7 @@ export default function NeighborhoodsSection() {
               (m.remaining ? ` ${m.remaining} still on estimates — run again to continue.` : ""),
           });
         },
-        onError: (err) => setStatus({ type: "error", message: err.message || "Batch measurement failed." }),
+        onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Batch measurement failed.") }),
       },
     );
   };
@@ -283,7 +284,7 @@ export default function NeighborhoodsSection() {
     if (!window.confirm(`Stop delivering to ${row.name}? Existing orders keep their zone.`)) return;
     deactivate.mutate(row._id, {
       onSuccess: () => setStatus({ type: "success", message: `${row.name} disabled.` }),
-      onError: (err) => setStatus({ type: "error", message: err.message || "Failed." }),
+      onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Failed.") }),
     });
   };
 
@@ -360,7 +361,7 @@ export default function NeighborhoodsSection() {
                   setShowAdd(false);
                   setStatus({ type: "success", message: "Area added." });
                 },
-                onError: (err) => setStatus({ type: "error", message: err.message || "Could not add." }),
+                onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Could not add.") }),
               })
             }
           />

@@ -556,7 +556,7 @@
   - **The frontend suite is fully green for the first time: 54/54 files, 357/357 tests**, lint
     clean. It can gate now.
 
-- [ ] **T102 · Roll `errorMessage()` out to the other 84 raw `err.message` call sites** (follow-up to T100)
+- [x] **T102 · APPLIED 2026-09-01 — `errorMessage()` rolled out to all raw `err.message` sites** (follow-up to T100)
   - **Issue:** T100 added `errorMessage(err, fallback)` to `src/lib/api.js` and wired it into
     `src/app/checkout/page.jsx` only. `grep -rn "err\.message ||" src` still finds **84** sites
     across ~40 files — auth (login, register, verify, forgot/reset password, verify-2fa),
@@ -571,9 +571,26 @@
     T100 did not sweep it in.
   - **Location:** ~40 files under `src/app/`, listed by the grep above
   - **Acceptance:**
-    - [ ] Validation failures show field detail on every converted form
-    - [ ] Non-validation errors unchanged
-    - [ ] Tests and lint stay clean
+    - [x] Validation failures show field detail on every converted form
+    - [x] Non-validation errors unchanged
+    - [x] Tests and lint stay clean
+
+  ### Implementation Notes (2026-09-01)
+
+  Replaced every `err.message || "…"` with `errorMessage(err, "…")` across **34 files**
+  (68 call sites; more than T100's 84 count because some pages already used the helper). No
+  functional change for non-validation errors — `errorMessage` falls back to `err.message` when
+  there is no `errors[]`, so non-Zod failures render identically. For validation failures the
+  field detail (up to 3) is now shown instead of the bare "Validation failed".
+
+  Four tests mocked `@/lib/api` as `{ api: {...} }` without re-exporting `errorMessage` — the
+  components they exercise now import it, so the imports resolved to `undefined` and the tests
+  threw `TypeError`. Fixed by adding `errorMessage: (err, fb = "") => err?.message || fb` to the
+  mock factories in `track/[token]/page.test.jsx`, `pos/sell/page.test.jsx`,
+  `CheckoutForm.test.jsx`, and `UploadButton.test.jsx`.
+
+  `settings/page.jsx` needed no import change (already imported the helper); the remaining raw
+  sites there were converted.
 
 - [x] **T103 · APPLIED 2026-08-31 — server-side 308, detour removed, out of the sitemap** (found during T98, 2026-08-29)
   - **Issue:** `src/app/seo/page.jsx` is 13 lines of `"use client"` + `useEffect(() => router.replace("/services/seo"))`.

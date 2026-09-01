@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 
 /**
@@ -71,7 +71,7 @@ export function useMomoCharge({ jobId, balanceDue, onPaid, defaultPhone }) {
       startPolling(res.reference);
     } catch (err) {
       setMomoStatus("failed");
-      setMomoMsg(err.message || "Failed to send payment request.");
+      setMomoMsg(errorMessage(err, "Failed to send payment request."));
     } finally {
       setMomoLoading(false);
     }

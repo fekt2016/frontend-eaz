@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 
 /**
@@ -66,7 +66,7 @@ export function useCardCharge({ jobId, balanceDue, onPaid }) {
       startCardPolling(res.reference);
     } catch (err) {
       setCardStatus("failed");
-      setCardMsg(err.message || "Failed to create card charge.");
+      setCardMsg(errorMessage(err, "Failed to create card charge."));
     } finally {
       setCardLoading(false);
     }

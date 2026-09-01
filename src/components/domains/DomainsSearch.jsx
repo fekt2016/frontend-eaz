@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatGhsMajor } from "@/lib/shop";
 
 function ResultRow({ result, onSelect }) {
@@ -85,7 +85,7 @@ function DomainsContentInner() {
       }
       setResults(mapped);
     } catch (err) {
-      setError(err.message || "Search failed. Please try again.");
+      setError(errorMessage(err, "Search failed. Please try again."));
       setResults([]);
     } finally {
       setLoading(false);

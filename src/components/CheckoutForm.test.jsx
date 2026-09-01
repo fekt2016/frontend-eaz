@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-vi.mock("@/lib/api", () => ({ api: { post: vi.fn() } }));
+vi.mock("@/lib/api", () => ({ api: { post: vi.fn() }, errorMessage: (err, fb = "") => err?.message || fb }));
 vi.mock("@/context/AuthContext", () => ({ useAuth: () => ({ user: null }) }));
 import { api } from "@/lib/api";
 import CheckoutForm from "./CheckoutForm";

@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -82,7 +83,7 @@ export default function BookRepairPage() {
 
     setErrors({});
     createJob.mutate(clean, {
-      onError: (err) => setErrors({ form: err.message || "Something went wrong. Please try again." }),
+      onError: (err) => setErrors({ form: errorMessage(err, "Something went wrong. Please try again.") }),
     });
   };
 

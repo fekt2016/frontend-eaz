@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatPhoneInput } from "@/lib/sanitize";
 import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -71,7 +71,7 @@ export default function TrackRepairPage() {
     api
       .get(`/track/${token}`)
       .then((r) => setJob(r.data))
-      .catch((err) => setError(err.message || "Unable to load your repair."))
+      .catch((err) => setError(errorMessage(err, "Unable to load your repair.")))
       .finally(() => setLoading(false));
   };
 
@@ -148,7 +148,7 @@ export default function TrackRepairPage() {
       });
       window.location.href = res.data.authorizationUrl;
     } catch (err) {
-      setOrderError(err.message || "Unable to start payment. Please try again.");
+      setOrderError(errorMessage(err, "Unable to start payment. Please try again."));
       setPlacing(false);
     }
   };
@@ -164,7 +164,7 @@ export default function TrackRepairPage() {
       });
       window.location.href = res.data.authorizationUrl;
     } catch (err) {
-      setBalanceError(err.message || "Unable to start payment. Please try again.");
+      setBalanceError(errorMessage(err, "Unable to start payment. Please try again."));
       setBalancePaying(false);
     }
   };

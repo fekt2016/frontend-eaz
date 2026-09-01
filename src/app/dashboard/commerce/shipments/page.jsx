@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useState } from "react";
 import { Ship, Plus, PackageCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -54,7 +55,7 @@ export default function ShipmentsPage() {
           setForm({ name: "", containerNumber: "", expectedArrival: "", note: "" });
           setShowForm(false);
         },
-        onError: (err) => setError(err.message || "Could not create the shipment."),
+        onError: (err) => setError(errorMessage(err, "Could not create the shipment.")),
       },
     );
   };
@@ -63,7 +64,7 @@ export default function ShipmentsPage() {
     setError("");
     advance.mutate(
       { id: shipment._id, stage },
-      { onError: (err) => setError(err.message || "Could not update the shipment.") },
+      { onError: (err) => setError(errorMessage(err, "Could not update the shipment.")) },
     );
   };
 

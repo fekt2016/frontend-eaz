@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Store, Tags, Receipt, Truck, MapPin, Package, Plus, Trash2, Navigation, RefreshCw, AlertTriangle, Coins } from "lucide-react";
 import { useSettings, useUpdateSettings } from "@/hooks/queries/useSettings";
@@ -48,7 +49,7 @@ function ShopProfileSection({ business }) {
       { business: form },
       {
         onSuccess: () => setStatus({ type: "success", message: "Shop profile saved." }),
-        onError: (err) => setStatus({ type: "error", message: err.message || "Failed to save." }),
+        onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Failed to save.") }),
       }
     );
   };
@@ -115,7 +116,7 @@ function ServicesSection({ business }) {
       { business: { services: cleaned } },
       {
         onSuccess: () => { setServices(cleaned.map((s) => ({ ...s }))); setStatus({ type: "success", message: "Services saved." }); },
-        onError: (err) => setStatus({ type: "error", message: err.message || "Failed to save." }),
+        onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Failed to save.") }),
       }
     );
   };
@@ -204,7 +205,7 @@ function TaxSection({ business }) {
       { business: { ...form, vatRate: Math.min(100, Math.max(0, Number(form.vatRate) || 0)) } },
       {
         onSuccess: () => setStatus({ type: "success", message: "Tax settings saved." }),
-        onError: (err) => setStatus({ type: "error", message: err.message || "Failed to save." }),
+        onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Failed to save.") }),
       }
     );
   };
@@ -470,7 +471,7 @@ function ZonesSection() {
   const handleSave = (data) => {
     const opts = {
       onSuccess: () => { setShowForm(false); setEditingZone(null); },
-      onError: (err) => alert(err.message || "Save failed"),
+      onError: (err) => alert(errorMessage(err, "Save failed")),
     };
     if (data.id) {
       updateZone.mutate(data, opts);
@@ -481,7 +482,7 @@ function ZonesSection() {
 
   const handleDelete = (zone) => {
     if (!confirm(`Delete zone "${zone.name}"?`)) return;
-    deleteZone.mutate(zone._id, { onError: (err) => alert(err.message || "Delete failed") });
+    deleteZone.mutate(zone._id, { onError: (err) => alert(errorMessage(err, "Delete failed")) });
   };
 
   const toggleExpand = (id) => setExpandedId((prev) => (prev === id ? null : id));
@@ -657,7 +658,7 @@ function DistancesSection({ originAddress, useGoogleDistance }) {
               (m.failed ? ` ${m.failed} could not be found — set those manually.` : ""),
           });
         },
-        onError: (err) => setStatus({ type: "error", message: err.message || "Lookup failed." }),
+        onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Lookup failed.") }),
       },
     );
   };
@@ -666,7 +667,7 @@ function DistancesSection({ originAddress, useGoogleDistance }) {
     setStatus({ type: "", message: "" });
     setManual.mutate(body, {
       onSuccess: () => setStatus({ type: "success", message: "Distance saved." }),
-      onError: (err) => setStatus({ type: "error", message: err.message || "Failed to save." }),
+      onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Failed to save.") }),
     });
   };
 
@@ -835,7 +836,7 @@ function ShippingSection() {
     };
     updateSettings.mutate(payload, {
       onSuccess: () => setStatus({ type: "success", message: "Shipping settings saved." }),
-      onError: (err) => setStatus({ type: "error", message: err.message || "Failed to save." }),
+      onError: (err) => setStatus({ type: "error", message: errorMessage(err, "Failed to save.") }),
     });
   };
 
@@ -851,7 +852,7 @@ function ShippingSection() {
       },
       {
         onSuccess: () => setCourierStatus({ type: "success", message: "Courier payout saved." }),
-        onError: (err) => setCourierStatus({ type: "error", message: err.message || "Failed to save." }),
+        onError: (err) => setCourierStatus({ type: "error", message: errorMessage(err, "Failed to save.") }),
       },
     );
   };

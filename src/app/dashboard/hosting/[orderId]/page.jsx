@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Download, Upload, CheckCircle2, ExternalLink, Trash2, RotateCw, Key } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { isAdminRole } from "@/lib/roles";
 import { formatGhsMajor } from "@/lib/shop";
 import { useAuth } from "@/context/AuthContext";
@@ -153,7 +153,7 @@ export default function HostingOrderDetailPage() {
       setOrder((prev) => ({ ...prev, proofUploadUrl: data.data.proofUploadUrl }));
       setUploadSuccess(true);
     } catch (err) {
-      setUploadError(err.message || "Upload failed. Please try again.");
+      setUploadError(errorMessage(err, "Upload failed. Please try again."));
     } finally {
       setUploading(false);
     }

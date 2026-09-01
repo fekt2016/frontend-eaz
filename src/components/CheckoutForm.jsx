@@ -3,7 +3,7 @@
 import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState } from "react";
 import { z } from "zod";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
 import { formatGhsMajor } from "@/lib/shop";
@@ -65,7 +65,7 @@ export default function CheckoutForm({ domain, price }) {
         setError("Could not initialize payment. Please try again.");
       }
     } catch (err) {
-      setError(err.message || "Payment failed. Please try again.");
+      setError(errorMessage(err, "Payment failed. Please try again."));
     } finally {
       setLoading(false);
     }
