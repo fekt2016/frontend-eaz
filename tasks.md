@@ -313,7 +313,7 @@
 
 ## Missing Features (new work — mirrors backend-eaz/tasks.md's "Missing Features" section)
 
-- [ ] **T80 · E2 Shipping Expansion: Frontend Checkout + Tracking Integration** (see `backend-eaz/tasks.md` T80 for full scope)
+- [x] **T80 · E2 Shipping Expansion: Frontend Checkout + Tracking Integration** (see `backend-eaz/tasks.md` T80 for full scope) — every sub-task shipped; closed 2026-09-01 when the backend side completed (T80n–r)
   - **Sub-tasks:**
     - [x] T80j · `src/app/checkout/page.jsx` — region→city→neighborhood cascade from `/api/v1/locations`; pickup location selector for `bus_station_pickup`; send `region`/`pickupLocationId` to quote
     - [x] T80k · `src/app/track/order/[trackingNumber]/page.jsx` — pickup panel when `shippingMethod === 'bus_station_pickup'`
