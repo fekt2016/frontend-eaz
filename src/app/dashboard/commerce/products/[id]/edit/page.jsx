@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 import ProductForm from "@/components/commerce/ProductForm";
-import { useAdminProducts, useUpdateProduct } from "@/hooks/queries/useProducts";
+import { useAdminProduct, useUpdateProduct } from "@/hooks/queries/useProducts";
 
 export default function AdminEditProductPage() {
   const { user, loading: authLoading } = useAuth();
@@ -12,8 +12,12 @@ export default function AdminEditProductPage() {
   const { id } = useParams();
 
   const isAllowed = ["admin", "superadmin", "staff"].includes(user?.role);
-  const { data: products, isLoading: loading } = useAdminProducts({ enabled: !authLoading && isAllowed });
-  const product = (products ?? []).find((p) => p._id === id) || null;
+  // T109 — fetch the one record, not the catalogue. This used to pull up to
+  // 200 products and search the array, so editing anything past the 200th
+  // newest found nothing and rendered a blank form over a product that exists.
+  const { data: product = null, isLoading: loading } = useAdminProduct(id, {
+    enabled: !authLoading && isAllowed,
+  });
 
   const updateProduct = useUpdateProduct();
   const submitting = updateProduct.isPending;

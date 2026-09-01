@@ -51,14 +51,23 @@ export function useProductBySlug(slug, options = {}) {
   });
 }
 
-// Admin product list, incl. inactive (GET /products/all).
-// T107: that route is paginated now (50 default, 200 max). The product edit page
-// finds its record inside this list, so it asks for the largest page the server
-// allows — a catalogue past 200 needs an admin get-by-id route instead (T109).
-export function useAdminProducts(options = {}) {
+// NOTE (T109): `useAdminProducts` — the paginated GET /products/all list — was
+// removed here, not just un-pinned. Its ONLY caller was the product edit page,
+// which used it to hunt for one record inside the array; that is now
+// `useAdminProduct(id)` below. Leaving the hook behind would have left a
+// footgun: `/all` defaults to 10 per page, so a hook named "all products"
+// would quietly return ten. This repo has been bitten by exactly that shape of
+// rot before — see the dead `useContacts.js` in T129. Bring it back with an
+// explicit page/limit signature if a real list view needs one.
+
+// One product by _id for the admin edit form (GET /products/id/:id, T109).
+// Unlike `useProduct(slug)` this hits the admin route, so it resolves an
+// archived product — which is exactly when the record still needs opening.
+export function useAdminProduct(id, options = {}) {
   return useQuery({
-    queryKey: qk.products.admin,
-    queryFn: () => api.get("/products/all?limit=200").then((r) => r.data ?? []),
+    queryKey: qk.products.adminDetail(id),
+    queryFn: () => api.get(`/products/id/${encodeURIComponent(id)}`).then((r) => r.data),
+    enabled: !!id,
     staleTime: 30_000,
     ...options,
   });

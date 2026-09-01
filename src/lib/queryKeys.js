@@ -40,6 +40,10 @@ export const qk = {
     admin: ["products", "admin"],
     list: (params = {}) => ["products", "list", params],
     detail: (slug) => ["products", "detail", slug],
+    // T109 — admin get-by-id. Distinct from `detail`, which is keyed by SLUG
+    // and served by the public route; this one is keyed by _id and can return
+    // an archived product.
+    adminDetail: (id) => ["products", "admin", "detail", id],
   },
   deliveryZones: {
     all: ["delivery-zones"],
