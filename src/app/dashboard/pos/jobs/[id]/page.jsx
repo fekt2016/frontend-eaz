@@ -4,10 +4,15 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { api, errorMessage } from "@/lib/api";
+import { errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { useMomoCharge } from "@/hooks/useMomoCharge";
 import { useCardCharge } from "@/hooks/useCardCharge";
+import {
+  useJobDetail,
+  useUpdateJob,
+  useAddJobPayment,
+} from "@/hooks/queries/usePosJobs";
 import { CustomerDeviceCard } from "./_components/CustomerDeviceCard";
 import { JobHeader } from "./_components/JobHeader";
 import { JobInvoice } from "./_components/JobInvoice";
@@ -34,10 +39,28 @@ export default function JobDetailPage() {
   const { user } = useAuth();
   const isTechnician = user?.role === "technician";
 
-  const [job,      setJob]      = useState(null);
-  const [loading,  setLoading]  = useState(true);
   const [saving,   setSaving]   = useState(false);
   const [error,    setError]    = useState("");
+
+  // Single job lookup (GET /pos/jobs/:id). The edit fields below are seeded from
+  // the loaded job in an effect rather than inline, and every save refetches via
+  // the query — the mutations invalidate the same ["jobs"] prefix, so the list,
+  // this detail, and the warranty bucket all stay in step.
+  const {
+    data: job,
+    isLoading: loading,
+    isError,
+    error: queryError,
+    refetch,
+  } = useJobDetail(id);
+  const fetchJob = useCallback(() => refetch(), [refetch]);
+
+  const updateJob = useUpdateJob(id);
+  const addPayment = useAddJobPayment(id);
+
+  useEffect(() => {
+    if (isError && queryError) setError("Failed to load job.");
+  }, [isError, queryError]);
 
   // Edit fields
   const [status,               setStatus]               = useState("");
@@ -77,38 +100,31 @@ export default function JobDetailPage() {
   // MoMo + card charge state and polling live in dedicated hooks (wired up
   // below, once balanceDue and fetchJob are in scope).
 
-  const fetchJob = useCallback(async () => {
-    try {
-      const res = await api.get(`/pos/jobs/${id}`);
-      const j = res.data;
-      setJob(j);
-      setStatus(j.status);
-      setDiagnosis(j.diagnosis || "");
-      setRepairWork(j.repairWork || "");
-      // Money arrives from the API in integer pesewas; edit inputs work in cedis.
-      setLaborCost(String((j.laborCost || 0) / 100));
-      setNotes(j.notes || "");
-      setDiagnosisFee(String((j.diagnosisFee || 0) / 100));
-      setSelectedParts(j.parts?.map(p => ({
-        id:          p._id || p.part?._id || Math.random().toString(36).slice(2),
-        name:        p.name || p.part?.name || "",
-        quantity:    p.quantity || 1,
-        cost:        Math.round(p.priceAtTime || 0),  // integer pesewas (T43)
-        costAtTime:  Math.round(p.costAtTime  || 0),
-        sku:         p.part?.sku || "",
-      })) || []);
-      if (j.parts?.length) setShowParts(true);
-      setEstimatedCompletion(j.estimatedCompletion ? new Date(j.estimatedCompletion).toISOString().slice(0, 16) : "");
-      setWarrantyDays(String(j.warrantyDays || 0));
-      setWarrantyNotes(j.warrantyNotes || "");
-    } catch {
-      setError("Failed to load job.");
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => { fetchJob(); }, [fetchJob]);
+  // Seed the edit fields whenever the job arrives or a refetch settles — the old
+  // fetchJob did this inline on every fetch; the query keeps the same rhythm.
+  useEffect(() => {
+    const j = job;
+    if (!j) return;
+    setStatus(j.status);
+    setDiagnosis(j.diagnosis || "");
+    setRepairWork(j.repairWork || "");
+    // Money arrives from the API in integer pesewas; edit inputs work in cedis.
+    setLaborCost(String((j.laborCost || 0) / 100));
+    setNotes(j.notes || "");
+    setDiagnosisFee(String((j.diagnosisFee || 0) / 100));
+    setSelectedParts(j.parts?.map(p => ({
+      id:          p._id || p.part?._id || Math.random().toString(36).slice(2),
+      name:        p.name || p.part?.name || "",
+      quantity:    p.quantity || 1,
+      cost:        Math.round(p.priceAtTime || 0),  // integer pesewas (T43)
+      costAtTime:  Math.round(p.costAtTime  || 0),
+      sku:         p.part?.sku || "",
+    })) || []);
+    if (j.parts?.length) setShowParts(true);
+    setEstimatedCompletion(j.estimatedCompletion ? new Date(j.estimatedCompletion).toISOString().slice(0, 16) : "");
+    setWarrantyDays(String(j.warrantyDays || 0));
+    setWarrantyNotes(j.warrantyNotes || "");
+  }, [job]);
 
   const pickPart = (part) => {
     setSelectedParts(prev => {
@@ -157,7 +173,7 @@ export default function JobDetailPage() {
     setStatus(newStatus);
     setSaving(true);
     try {
-      await api.patch(`/pos/jobs/${id}`, { status: newStatus });
+      await updateJob.mutateAsync({ status: newStatus });
       await fetchJob();
     } catch (err) {
       setError(errorMessage(err, "Failed to update status."));
@@ -170,7 +186,7 @@ export default function JobDetailPage() {
     setSaving(true);
     setError("");
     try {
-      await api.patch(`/pos/jobs/${id}`, {
+      await updateJob.mutateAsync({
         // Money entered in cedis → sent as integer pesewas (×100).
         status, diagnosis, repairWork, laborCost: laborCostPesewas, notes,
         diagnosisFee: diagnosisFeePesewas,
@@ -192,7 +208,7 @@ export default function JobDetailPage() {
     if (!payAmount || Number(payAmount) <= 0) return;
     setPayLoading(true);
     try {
-      await api.post(`/pos/jobs/${id}/payments`, {
+      await addPayment.mutateAsync({
         amount: Math.round(Number(payAmount) * 100), method: payMethod, // cedis → pesewas
         reference: payRef || undefined,
       });

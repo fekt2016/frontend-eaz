@@ -3,13 +3,19 @@
 import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { api, errorMessage } from "@/lib/api";
+import { errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { Search, Plus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useInventorySearch } from "@/hooks/queries/useInventory";
+import {
+  useCustomerSearch,
+  useTechnicians,
+  useCreatePosCustomer,
+  useCreatePosJob,
+} from "@/hooks/queries/usePosJobs";
 
 const inputCls = `${controlBase} ${controlSizes.md} ${controlBorder(false)}`;
 const selectCls = `${inputCls} cursor-pointer`;
@@ -58,29 +64,34 @@ export default function NewJobPage() {
   const partRef = useRef(null);
 
   // Staff
-  const [staff,      setStaff]      = useState([]);
   const [assignedTo, setAssignedTo] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
 
-  // Live phone search
-  useEffect(() => {
-    if (selectedCustomer || custPhone.length < 2) { setCustMatches([]); setShowDropdown(false); return; }
-    const t = setTimeout(async () => {
-      try {
-        const res = await api.get(`/pos/customers?q=${encodeURIComponent(custPhone)}&limit=6`);
-        setCustMatches(res.data || []);
-        setShowDropdown((res.data || []).length > 0);
-      } catch { setCustMatches([]); }
-    }, 250);
-    return () => clearTimeout(t);
-  }, [custPhone, selectedCustomer]);
+  const createCustomer = useCreatePosCustomer();
+  const createJob = useCreatePosJob();
 
-  // Load technicians
+  // Live phone search — debounced by the shared hook; the query only runs while
+  // no customer has been selected yet and once 2+ characters are typed.
+  const debouncedCustPhone = useDebounce(custPhone, 250);
+  const customerSearch = useCustomerSearch(debouncedCustPhone, {
+    enabled: !selectedCustomer,
+  });
+
   useEffect(() => {
-    api.get("/pos/technicians").then(r => setStaff(r.data || [])).catch(() => {});
-  }, []);
+    if (selectedCustomer || debouncedCustPhone.trim().length < 2) {
+      setCustMatches([]);
+      setShowDropdown(false);
+      return;
+    }
+    const matches = customerSearch.data ?? [];
+    setCustMatches(matches);
+    setShowDropdown(matches.length > 0);
+  }, [selectedCustomer, debouncedCustPhone, customerSearch.data]);
+
+  // In-store technician roster (GET /pos/technicians) — loaded once via the hook.
+  const { data: staff = [] } = useTechnicians();
 
   // Close the part dropdown on outside click
   useEffect(() => {
@@ -127,7 +138,7 @@ export default function NewJobPage() {
           setLoading(false);
           return;
         }
-        const cRes = await api.post("/pos/customers", {
+        const cRes = await createCustomer.mutateAsync({
           phone,
           accountVia: custAccountVia,
           ...(custAccountVia === "email" && custEmail.trim() ? { email: sanitizeEmail(custEmail) } : {}),
@@ -137,7 +148,7 @@ export default function NewJobPage() {
         if (cRes.existing) setError("Phone already registered — using existing customer: " + cRes.data.name);
       }
 
-      const res = await api.post("/pos/jobs", {
+      const res = await createJob.mutateAsync({
         customerId, deviceType, deviceBrand, deviceModel, imei, color,
         faultDescription: faultDesc, priority,
         parts: selectedParts.map(p => ({ partId: p.id, quantity: p.quantity })),

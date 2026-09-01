@@ -33,7 +33,8 @@ async function getPost(slug) {
   }
 }
 
-export default async function BlogOgImage({ params }) {
+export default async function BlogOgImage(props) {
+  const params = await props.params;
   const post = await getPost(params.slug);
 
   const title    = post?.title    || "EazWorld Blog";

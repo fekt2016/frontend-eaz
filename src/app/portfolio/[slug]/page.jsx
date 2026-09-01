@@ -2,7 +2,8 @@ import PortfolioDetail from "@/components/portfolio/PortfolioDetail";
 import { PROJECTS } from "@/data/portfolioData";
 import { buildMetadata, truncate } from "@/lib/seo";
 
-export function generateMetadata({ params }) {
+export async function generateMetadata(props) {
+  const params = await props.params;
   const project = PROJECTS.find((p) => p.slug === params.slug);
   if (!project) {
     return buildMetadata({
@@ -23,6 +24,7 @@ export function generateMetadata({ params }) {
   });
 }
 
-export default function PortfolioDetailPage({ params }) {
+export default async function PortfolioDetailPage(props) {
+  const params = await props.params;
   return <PortfolioDetail slug={params.slug} />;
 }

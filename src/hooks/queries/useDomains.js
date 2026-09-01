@@ -54,3 +54,18 @@ export function useRetryDomainRegistration() {
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.domains.all }),
   });
 }
+
+// The DomainChecker in hosting/checkout drives its availability check via
+// `qc.fetchQuery` (imperative — the check is debounced + button-triggered, not a
+// mount-time query). These exported fetchers live here so the page never calls
+// `api.*` directly. Shapes match their useQuery twins:
+//   fetchOwnDomainOrders  ≡ the queryFn of useDomainOrders (same key/type)
+//   fetchDomainSearch     raw body — top-level { availability, price, results, … }
+export function fetchOwnDomainOrders() {
+  return api.get("/domain/orders").then((r) => r.data ?? []);
+}
+export function fetchDomainSearch(domain) {
+  const q = (domain || "").trim();
+  const suffix = q ? `?domain=${encodeURIComponent(q)}` : "";
+  return api.get(`/domain/search${suffix}`);
+}

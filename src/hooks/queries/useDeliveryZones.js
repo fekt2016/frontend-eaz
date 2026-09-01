@@ -12,6 +12,17 @@ export function useDeliveryZones(options = {}) {
   });
 }
 
+// Public active delivery zones (GET /delivery-zones) — the visitor-facing
+// checkout (track page) picks a zone here, so it must never see inactive ones.
+export function usePublicDeliveryZones(options = {}) {
+  return useQuery({
+    queryKey: qk.deliveryZones.public,
+    queryFn: () => api.get("/delivery-zones").then((r) => r.data ?? []),
+    staleTime: 60_000,
+    ...options,
+  });
+}
+
 function useZoneMutation(mutationFn) {
   const qc = useQueryClient();
   return useMutation({

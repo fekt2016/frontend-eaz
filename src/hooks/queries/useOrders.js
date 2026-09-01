@@ -103,6 +103,18 @@ export function useTrackOrder() {
   });
 }
 
+// Public payment checkout (POST /orders) — creates the order and returns a
+// Paystack link. Returns r.data — { authorizationUrl, accessCode, reference,
+// orderId, orderNumber }. Invalidating the orders prefix is safe: a logged-in
+// customer's new pending order surfaces in their own-order list too.
+export function useCreateOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body) => api.post("/orders", body).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.orders.all }),
+  });
+}
+
 // Update an order's status. On success, refresh everything under ["orders"]
 // (lists, recent, and this order's detail all live under that prefix) — scoped
 // to the orders domain, not the whole cache.

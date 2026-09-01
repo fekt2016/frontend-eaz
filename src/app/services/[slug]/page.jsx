@@ -2,7 +2,8 @@ import ServiceDetail from "@/components/services/ServiceDetail";
 import { serviceDetails } from "@/data/serviceDetails";
 import { buildMetadata, truncate } from "@/lib/seo";
 
-export function generateMetadata({ params }) {
+export async function generateMetadata(props) {
+  const params = await props.params;
   const service = serviceDetails.find((s) => s.slug === params.slug);
   if (!service) {
     return buildMetadata({
@@ -18,6 +19,7 @@ export function generateMetadata({ params }) {
   });
 }
 
-export default function ServiceDetailPage({ params }) {
+export default async function ServiceDetailPage(props) {
+  const params = await props.params;
   return <ServiceDetail slug={params.slug} />;
 }

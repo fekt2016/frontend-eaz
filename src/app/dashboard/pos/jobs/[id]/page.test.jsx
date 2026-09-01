@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // T18: "Cancel Job" now opens a confirmation modal instead of firing
 // immediately, and hides once the job is `ready` (parity with the backend's
@@ -41,7 +42,8 @@ vi.mock("@/hooks/useCardCharge", () => ({
   }),
 }));
 
-// Part search is a react-query hook — not under test here, no QueryClientProvider in this test.
+// Part search is a react-query hook — not under test here (the QueryClient
+// below supplies its provider; the hook is still stubbed to an empty list).
 vi.mock("@/hooks/queries/useInventory", () => ({
   useInventorySearch: () => ({ data: [] }),
 }));
@@ -50,6 +52,15 @@ vi.mock("@/hooks/queries/useInventory", () => ({
 vi.mock("@/components/pos/JobPhotos", () => ({ default: () => null }));
 
 import JobDetailPage from "./page";
+
+// The job detail + mutations are real react-query hooks now — they call the
+// mocked `@/lib/api` (mockGet/mockPatch), so supply a QueryClientProvider with
+// `retry: false` (a rejected lookup must surface immediately, like the track test).
+// The client is created per render (not per file) so each test starts with a cold
+// cache — otherwise the detail query's 15s staleTime would skip the next fetch.
+function makeClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+}
 
 function baseJob(overrides = {}) {
   return {
@@ -67,7 +78,11 @@ function baseJob(overrides = {}) {
 
 async function renderWithJob(job) {
   mockGet.mockResolvedValue({ data: job });
-  render(<JobDetailPage />);
+  render(
+    <QueryClientProvider client={makeClient()}>
+      <JobDetailPage />
+    </QueryClientProvider>,
+  );
   await waitFor(() => expect(mockGet).toHaveBeenCalledWith("/pos/jobs/job1"));
   // Let the fetched job settle into state before interacting.
   await screen.findByText(job.jobNumber ? new RegExp(job.jobNumber) : /./);

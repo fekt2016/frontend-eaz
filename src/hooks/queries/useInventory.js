@@ -42,3 +42,18 @@ export function useInventory(params = {}, options = {}) {
     ...options,
   });
 }
+
+// Imperative barcode-scan lookups used by the Sell page (which drives them via
+// `qc.fetchQuery` — the raw fetch here is NOT a query hook, so the cache
+// behaviour is up to the caller). Both return the raw response body so callers
+// resolve the `r.data` shape themselves.
+export function fetchScanLookup(code) {
+  const q = (code || "").trim();
+  return api.get(`/pos/scan/${encodeURIComponent(q)}`);
+}
+export function fetchRetailSearch(code) {
+  const q = (code || "").trim();
+  return api.get(
+    `/pos/inventory?q=${encodeURIComponent(q)}&retail=true&includeProducts=true&limit=8`,
+  );
+}

@@ -11,7 +11,8 @@ function decodeCategory(raw) {
   }
 }
 
-export function generateMetadata({ params }) {
+export async function generateMetadata(props) {
+  const params = await props.params;
   const category = decodeCategory(params.category);
   return buildMetadata({
     title: `${category} — Buy Online in Ghana | EazWorld Shop`,
@@ -20,7 +21,8 @@ export function generateMetadata({ params }) {
   });
 }
 
-export default function ShopCategoryPage({ params }) {
+export default async function ShopCategoryPage(props) {
+  const params = await props.params;
   const category = decodeCategory(params.category);
   const jsonLd = breadcrumbJsonLd([
     { name: "Home", url: SITE_URL },

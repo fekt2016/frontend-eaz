@@ -2,12 +2,58 @@
 const nextConfig = {
   images: {
     // Product images come from many external supplier hosts (cdn.shopify.com,
-    // apple.com, samsung.com, amazon, belkin, jbl, …). Rather than maintain a
-    // brittle allowlist that crashes the shop whenever a new host appears, allow
-    // any HTTPS image host. next/image still serves optimized images from the
-    // same origin (/_next/image), so the browser CSP `img-src 'self'` covers them.
-    // Applies in dev and production. http:// is intentionally excluded.
-    remotePatterns: [{ protocol: "https", hostname: "**" }],
+    // apple.com, samsung.com, amazon, belkin, jbl, …). This allowlist is kept in
+    // lockstep with the CSP `img-src` self-host/self-approved host list below:
+    // a host must live in BOTH this array (so next/image will optimize it) and
+    // the CSP img-src directive (so the browser will load it). Add a new supplier
+    // host to both in the same change — the CSP list is the guard that keeps the
+    // catalog from loading a host that the optimizer would silently accept.
+    // http:// is intentionally excluded from both.
+    remotePatterns: [
+      // Keep sorted; mirror of the https:// entries in the img-src directive below.
+      { protocol: "https", hostname: "api.microlink.io" },
+      { protocol: "https", hostname: "cdn.ecoustics.com" },
+      { protocol: "https", hostname: "cdn.shopify.com" },
+      { protocol: "https", hostname: "d3gqasl9vmjfd8.cloudfront.net" },
+      { protocol: "https", hostname: "eu.baseus.com" },
+      { protocol: "https", hostname: "hypervolt.in" },
+      { protocol: "https", hostname: "i0.wp.com" },
+      { protocol: "https", hostname: "image-us.samsung.com" },
+      { protocol: "https", hostname: "images.ctfassets.net" },
+      { protocol: "https", hostname: "images.mobilefun.co.uk" },
+      { protocol: "https", hostname: "images.samsung.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "in.jbl.com" },
+      { protocol: "https", hostname: "irepart.com" },
+      { protocol: "https", hostname: "lamicallshop.com" },
+      { protocol: "https", hostname: "logo.clearbit.com" },
+      { protocol: "https", hostname: "m.media-amazon.com" },
+      { protocol: "https", hostname: "nillkin.org" },
+      { protocol: "https", hostname: "partners.spigen.com" },
+      { protocol: "https", hostname: "phonesstorekenya.com" },
+      { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "pisces.bbystatic.com" },
+      { protocol: "https", hostname: "placehold.co" },
+      { protocol: "https", hostname: "repairpartsusa.com" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "store.storeimages.cdn-apple.com" },
+      { protocol: "https", hostname: "supcase.com" },
+      { protocol: "https", hostname: "target.scene7.com" },
+      { protocol: "https", hostname: "techhouse.sg" },
+      { protocol: "https", hostname: "us.moshi.com" },
+      { protocol: "https", hostname: "us.ugreen.com" },
+      { protocol: "https", hostname: "www.apple.com" },
+      { protocol: "https", hostname: "www.baseus.com" },
+      { protocol: "https", hostname: "www.belkin.com" },
+      { protocol: "https", hostname: "www.esrtech.com" },
+      { protocol: "https", hostname: "www.jbl.com" },
+      { protocol: "https", hostname: "www.nillkin.com" },
+      { protocol: "https", hostname: "www.ringkestore.com" },
+      { protocol: "https", hostname: "www.safesleevecases.com" },
+      { protocol: "https", hostname: "www.shopyvision.com" },
+      { protocol: "https", hostname: "www.spigen.com" },
+      { protocol: "https", hostname: "www.tanotis.com" },
+    ],
   },
   async headers() {
     const isProd = process.env.NODE_ENV === "production";

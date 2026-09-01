@@ -77,6 +77,12 @@ export function useDeleteHostingOrder() {
   return useHostingMutation((id) => api.delete(`/hosting/orders/${id}`));
 }
 
+// Public payment checkout (POST /hosting/orders) — creates the hosting order and
+// returns a Paystack link. Returns r.data — { authorizationUrl, orderId }.
+export function useCreateHostingOrder() {
+  return useHostingMutation((body) => api.post("/hosting/orders", body).then((r) => r.data));
+}
+
 // Staff/admin: create a cPanel hosting account for a customer in-store
 // (cash → provisioned now; paystack → returns a payment link).
 export function useStaffCreateHostingAccount() {

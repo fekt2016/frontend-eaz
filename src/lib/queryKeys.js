@@ -48,11 +48,18 @@ export const qk = {
   deliveryZones: {
     all: ["delivery-zones"],
     list: ["delivery-zones", "list"],
+    // Public read (GET /delivery-zones) — active zones only, used by the track
+    // page's rider checkout. Kept distinct from `list` (admin, all zones).
+    public: ["delivery-zones", "public"],
   },
   pos: {
     overview: (range = {}) => ["pos", "overview", range],
     myOverview: ["pos", "my-overview"],
     partOrders: (status = "all") => ["pos", "part-orders", status],
+    // Customer autocomplete + the technician roster. Under ["pos", "…"] so the
+    // auto-invalidation after creating a customer only touches customers.
+    customers: (q) => ["pos", "customers", q],
+    technicians: ["pos", "technicians"],
   },
   hosting: {
     all: ["hosting"],
@@ -72,6 +79,9 @@ export const qk = {
     mine: ["domains", "mine"],
     registered: ["domains", "registered"],
     list: (params = {}) => ["domains", "list", params],
+    // Live wholesale availability check (GET /domain/search). staleTime 0 —
+    // availability is a point-in-time fact, never cache it.
+    search: (domain) => ["domains", "search", domain],
   },
   reviews: {
     all: ["reviews"],
@@ -89,11 +99,14 @@ export const qk = {
   },
   repairs: {
     mine: ["repairs", "mine"],
+    detail: (token) => ["repairs", "detail", token],
+    // Guest-initiated payments against a tracked repair — mutations, no keys.
   },
   jobs: {
     all: ["jobs"],
     list: (params = {}) => ["jobs", "list", params],
     warranty: ["jobs", "warranty"],
+    detail: (id) => ["jobs", "detail", id],
   },
   expenses: {
     all: ["expenses"],

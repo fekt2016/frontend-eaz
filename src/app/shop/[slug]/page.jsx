@@ -5,7 +5,8 @@ import { getProductBySlug } from "@/lib/products";
 import { buildMetadata, truncate, productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/seo";
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata(props) {
+  const params = await props.params;
   const product = await getProductBySlug(params.slug);
   if (!product) {
     notFound();
@@ -20,7 +21,8 @@ export async function generateMetadata({ params }) {
   });
 }
 
-export default async function ShopProductPage({ params }) {
+export default async function ShopProductPage(props) {
+  const params = await props.params;
   const product = await getProductBySlug(params.slug);
   if (!product) {
     notFound();

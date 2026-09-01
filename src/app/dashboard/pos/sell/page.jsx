@@ -13,11 +13,11 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { api, errorMessage } from "@/lib/api";
+import { errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { qk } from "@/lib/queryKeys";
 import { useCreateSale } from "@/hooks/queries/usePosSales";
-import { useInventorySearch } from "@/hooks/queries/useInventory";
+import { useInventorySearch, fetchScanLookup, fetchRetailSearch } from "@/hooks/queries/useInventory";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { Receipt } from "@/components/pos/Receipt";
@@ -211,7 +211,7 @@ export default function SellPage() {
       // imperative, scanner-driven flow.
       const res = await qc.fetchQuery({
         queryKey: ["scan", code.trim()],
-        queryFn: () => api.get(`/pos/scan/${encodeURIComponent(code.trim())}`),
+        queryFn: () => fetchScanLookup(code.trim()),
         staleTime: 0,
       });
       if (res.type === "product") {
@@ -226,7 +226,7 @@ export default function SellPage() {
       try {
         const search = await qc.fetchQuery({
           queryKey: qk.inventory.search(`${code.trim()}|retail`),
-          queryFn: () => api.get(`/pos/inventory?q=${encodeURIComponent(code.trim())}&retail=true&includeProducts=true&limit=8`),
+          queryFn: () => fetchRetailSearch(code.trim()),
           staleTime: 10_000,
         });
         if (search.data.length === 1) {

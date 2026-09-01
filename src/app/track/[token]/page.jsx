@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
-import { api, errorMessage } from "@/lib/api";
+import { errorMessage } from "@/lib/api";
 import { formatPhoneInput } from "@/lib/sanitize";
 import { formatGhs, stockBadge, placeholderToPng } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePublicParts } from "@/hooks/queries/usePublicParts";
+import { useTrackRepair, useCreateTrackOrder, usePayTrackBalance } from "@/hooks/queries/useRepairs";
+import { usePublicDeliveryZones } from "@/hooks/queries/useDeliveryZones";
 import { useCart } from "@/context/CartContext";
 import { Loader2, CheckCircle2, Phone, Wrench, Search, Motorbike, ShoppingCart } from "lucide-react";
 import { sanitizeName, sanitizeEmail, sanitizePhone } from "@/lib/sanitize";
@@ -40,9 +42,19 @@ export default function TrackRepairPage() {
   const justPaid = searchParams.get("paid") === "1";
   const { addItem, openCart } = useCart();
 
-  const [job, setJob] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Single repair lookup by token (GET /track/:token). `retry: false` so an
+  // invalid or mistyped link surfaces immediately, like the old callback fetch.
+  const {
+    data: job,
+    isLoading: loading,
+    isError,
+    error: loadError,
+  } = useTrackRepair(token);
+  useEffect(() => {
+    if (isError && loadError) setError(errorMessage(loadError, "Unable to load your repair."));
+  }, [isError, loadError]);
 
   // Part catalogue + cart
   const [catQuery, setCatQuery] = useState("");
@@ -50,7 +62,6 @@ export default function TrackRepairPage() {
   // the app (T41). The server re-prices from the Part model anyway — items are sent as
   // { partId, quantity } only — so this money is display-only.
   const [cart, setCart] = useState([]); // { partId, name, sku, unitPricePesewas, quantity, stock }
-  const [zones, setZones] = useState([]);
   const [zoneId, setZoneId] = useState("");
 
   // Order form state
@@ -65,17 +76,8 @@ export default function TrackRepairPage() {
   const [balancePaying, setBalancePaying] = useState(false);
   const [balanceError, setBalanceError] = useState("");
 
-  const load = () => {
-    setLoading(true);
-    setError("");
-    api
-      .get(`/track/${token}`)
-      .then((r) => setJob(r.data))
-      .catch((err) => setError(errorMessage(err, "Unable to load your repair.")))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => { if (token) load(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  const createTrackOrder = useCreateTrackOrder(token);
+  const payTrackBalance = usePayTrackBalance(token);
 
   useEffect(() => { if (job?.customerName && !name) setName(job.customerName); }, [job]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -91,14 +93,15 @@ export default function TrackRepairPage() {
     { enabled: !!canOrder },
   );
 
+  // Public active delivery zones — only fetched once the repair is orderable and
+  // ships by rider; a single available zone is auto-selected (auto-ship, no fee).
+  const { data: zones = [] } = usePublicDeliveryZones({
+    enabled: !!canOrder && job?.dropoff === "rider",
+  });
+
   useEffect(() => {
-    if (!canOrder || job?.dropoff !== "rider") return;
-    api.get("/delivery-zones").then((r) => {
-      const list = r.data || [];
-      setZones(list);
-      if (list.length === 1) setZoneId(list[0]._id);
-    }).catch(() => {});
-  }, [canOrder]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (zones.length === 1) setZoneId(zones[0]._id);
+  }, [zones]);
 
   const selectedZone = zones.find((z) => z._id === zoneId);
 
@@ -138,7 +141,7 @@ export default function TrackRepairPage() {
     if (job?.dropoff === "rider" && zones.length > 0 && !zoneId) { setOrderError("Please select a shipping zone."); return; }
     setPlacing(true);
     try {
-      const res = await api.post(`/track/${token}/orders`, {
+      const { authorizationUrl } = await createTrackOrder.mutateAsync({
         items: cart.map((i) => ({ partId: i.partId, quantity: i.quantity })),
         ...(zoneId && { shippingZoneId: zoneId }),
         // T127 — sanitise on submit, like every other order-placing form.
@@ -146,7 +149,7 @@ export default function TrackRepairPage() {
         phone: sanitizePhone(phone) || phone.trim(),
         email: sanitizeEmail(email) || "",
       });
-      window.location.href = res.data.authorizationUrl;
+      window.location.href = authorizationUrl;
     } catch (err) {
       setOrderError(errorMessage(err, "Unable to start payment. Please try again."));
       setPlacing(false);
@@ -159,10 +162,10 @@ export default function TrackRepairPage() {
     if (!balancePhone.trim()) { setBalanceError("Please enter the phone number on the receipt."); return; }
     setBalancePaying(true);
     try {
-      const res = await api.post(`/track/${token}/balance-payment`, {
+      const { authorizationUrl } = await payTrackBalance.mutateAsync({
         phone: sanitizePhone(balancePhone) || balancePhone.trim(),
       });
-      window.location.href = res.data.authorizationUrl;
+      window.location.href = authorizationUrl;
     } catch (err) {
       setBalanceError(errorMessage(err, "Unable to start payment. Please try again."));
       setBalancePaying(false);

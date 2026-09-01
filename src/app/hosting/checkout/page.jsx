@@ -4,10 +4,13 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 import { Suspense, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useHostingPlans } from "@/hooks/queries/useHosting";
+import { useQueryClient } from "@tanstack/react-query";
+import { useHostingPlans, useCreateHostingOrder } from "@/hooks/queries/useHosting";
+import { fetchDomainSearch, fetchOwnDomainOrders } from "@/hooks/queries/useDomains";
+import { qk } from "@/lib/queryKeys";
 import { toPlanCards } from "@/lib/hostingPlans";
 import PageLoadingFallback from "@/components/common/PageLoadingFallback";
-import { api, errorMessage } from "@/lib/api";
+import { errorMessage } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Check, CheckCircle2, CreditCard, Landmark, SmartphoneNfc, X } from "lucide-react";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
@@ -24,6 +27,7 @@ const ADDONS = [
 
 // ── Domain Checker Component ──────────────────────────────────────────────────
 function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomainRegistrationFee }) {
+  const qc = useQueryClient();
   const [query, setQuery] = useState(domain || "");
   const [status, setStatus] = useState(null); // null | 'checking' | 'available' | 'taken' | 'owned' | 'error'
   const [domainInfo, setDomainInfo] = useState(null);
@@ -41,9 +45,14 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
     setDomainInfo(null);
 
     try {
-      // Check if already ordered by this user
-      const ordersRes = await api.get("/domain/orders").catch(() => ({ data: [] }));
-      const orders = ordersRes?.data?.data || ordersRes?.data || [];
+      // Check if already ordered by this user. `fetchOwnDomainOrders` is the same
+      // normalized queryFn useDomainOrders uses (same key, same shape), so this
+      // seeds the shared cache instead of maintaining a second reader.
+      const orders = await qc.fetchQuery({
+        queryKey: qk.domains.mine,
+        queryFn: fetchOwnDomainOrders,
+        staleTime: 30_000,
+      }).catch(() => []);
       const existing = orders.find(
         (o) => o.domain?.toLowerCase() === cleaned && ["pending", "completed", "active"].includes(o.status)
       );
@@ -54,8 +63,13 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
         return;
       }
 
-      // Check availability via the registrar (Namecheap)
-      const res = await api.get(`/domain/search?domain=${encodeURIComponent(cleaned)}`);
+      // Check availability via the registrar (Namecheap). staleTime 0 — domain
+      // availability is a point-in-time fact, never keep it.
+      const res = await qc.fetchQuery({
+        queryKey: qk.domains.search(cleaned),
+        queryFn: () => fetchDomainSearch(cleaned),
+        staleTime: 0,
+      });
       // GET /domain/search does NOT use the project's { success, data } envelope —
       // it returns { domain, available, registered, price, results } at the top
       // level. This read `res.data?.results`, so `results` was ALWAYS [], no
@@ -101,7 +115,7 @@ function DomainChecker({ domain, setDomain, domainMode, setDomainMode, setDomain
     } catch {
       setStatus("error");
     }
-  }, [setDomain, setDomainRegistrationFee]);
+  }, [qc, setDomain, setDomainRegistrationFee]);
 
   const handleInput = (e) => {
     const val = e.target.value;
@@ -268,6 +282,7 @@ function HostingCheckoutPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
+  const createHostingOrder = useCreateHostingOrder();
 
   const type = searchParams.get("type") || "shared";
   const tier = searchParams.get("tier") || "deluxe";
@@ -338,7 +353,7 @@ function HostingCheckoutPageInner() {
 
     setLoading(true);
     try {
-      const res = await api.post("/hosting/orders", {
+      const { authorizationUrl, orderId } = await createHostingOrder.mutateAsync({
         planType: type,
         tier: tier.toLowerCase(),
         billingCycle,
@@ -372,8 +387,6 @@ function HostingCheckoutPageInner() {
           network,
         }),
       });
-
-      const { authorizationUrl, orderId } = res.data;
 
       if (paymentMethod === "bank_transfer") {
         router.push(`/hosting/bank-transfer/${orderId}`);

@@ -260,6 +260,28 @@
   criteria 2-4 ("audit clean", "build/lint/tests pass", "middleware verified") can only be
   ticked once the upgrade itself is executed as its own scheduled piece of work.
 
+  ### Safe prep stage executed (2026-09-01 — async-params migration, Next 14 compatible)
+
+  The reversible, framework-independent half of the plan is now done **on the current tree**:
+
+  - **9 server files converted** to `await props.params` (async-request-api codemod + hand-fixes):
+    `blog/[slug]/{layout,page,opengraph-image}.jsx`, `portfolio/[slug]/{layout,page}.jsx`,
+    `services/[slug]/{layout,page}.jsx`, `shop/[slug]/page.jsx`, `shop/category/[category]/page.jsx`.
+    `sync` `generateMetadata` fns had to become `async` to `await`. Safe on Next 14: `params` is a
+    plain object there, so `await` is a no-op; async pages/layouts and async `generateMetadata`
+    are fully supported. Lint clean, full suite 57/57 files + 389/389 tests green, `next build`
+    exits 0 (78 pages incl. the OG route).
+  - **`order-confirmation/[reference]/page.jsx` NOT converted — intentionally.** React 18.3.1 in
+    this tree ships **no `use` export** (verified: `use` landed in React 19), and `use(props.params)`
+    is the required Next 15/16 pattern for a client page. Converting it now would crash the page at
+    runtime, so it waits for the React 19 half of the upgrade (stage 2) — a one-line change then.
+  - **Codemod note:** `@next/codemod@canary next-async-request-api` accepts a **single** directory
+    (extra dir args were silently dropped) and skips `opengraph-image` routes — the OG route was
+    converted by hand.
+  - **Remaining for T99:** React 18→19 + the upgrade itself (stage 3), `middleware`→`proxy`
+    (stage 4, the authorization boundary), ESLint 9 + flat config carried alongside
+    (stage 3, per the 2026-08-30 revision), and the Docker Node ≥20.9 confirmation (out of repo).
+
 - [x] **T100 · Checkout shows "Validation failed" and discards the field detail it already has** (audit ref EZ-018)
   - **Issue:** Zod failures return `{ error: "Validation failed", errors: [{ field, message }] }`
     (`backend-eaz/middleware/errorHandler.js:16`). `src/lib/api.js:24` already attaches `errors` to the
@@ -353,7 +375,7 @@
   - `qk.consultations` was removed from `src/lib/queryKeys.js` too — the deleted hook was its only
     consumer. Applied in two commits on `chore/dead-code-phase-b`.
 
-- [ ] **T133 · Migrate the remaining direct `api.*` page calls to react-query hooks** (dead-code audit 2026-08-29)
+- [x] **T133 · Migrate the remaining direct `api.*` page calls to react-query hooks** (dead-code audit 2026-08-29)
   - **Issue:** two data-fetching patterns coexist, as CLAUDE.md documents. Measured: **50** files use
     `@/hooks/queries/*`, **21** call `api.*` directly, and **5 use both in the same file**.
   - **Impact:** low severity, real cost. The dead `useContacts.js` in T129 is the symptom — a hook was
@@ -363,8 +385,24 @@
     bulk rewrite of 21 pages changes data-fetching behaviour everywhere at once with no feature to
     justify the risk. Start with the 5 mixed files, where the inconsistency is inside one component.
   - **Acceptance:**
-    - [ ] No file uses both patterns simultaneously
-    - [ ] New pages use react-query only
+    - [x] No file uses both patterns simultaneously  ← applied 2026-09-01; the audit grep (`imports @/hooks/queries` AND `api.*` in the same file) returns nothing
+    - [x] New pages use react-query only
+
+  ### Implementation Notes (2026-09-01 — applied)
+
+  - **Migrated (all 6 mixed files):** `checkout/page.jsx`, `hosting/checkout/page.jsx` (+
+    DomainChecker, which needed imperative `qc.fetchQuery` fetchers `fetchOwnDomainOrders` /
+    `fetchDomainSearch`), `track/[token]/page.jsx`, `pos/sell/page.jsx`, `pos/jobs/new/page.jsx`,
+    `pos/jobs/[id]/page.jsx` (replaced `api.patch`/`api.post` with `useUpdateJob`/
+    `useAddJobPayment`).
+  - **Hooks added:** `useCreateOrder` (useOrders), `useTrackRepair`/`useCreateTrackOrder`/
+    `usePayTrackBalance` (useRepairs), `usePublicDeliveryZones` (useDeliveryZones),
+    `useCreateHostingOrder` (useHosting), the two domain fetchers (useDomains),
+    `fetchScanLookup`/`fetchRetailSearch` (useInventory), and the POS job/customer/technician set
+    (usePosJobs) with `qk` keys in `queryKeys.js`.
+  - **Verified:** vitest 57 files / 389 tests green, `next lint` clean, `next build` exits 0.
+    `pos/jobs/[id]/page.test.jsx` now supplies a per-render `QueryClientProvider` (the shared
+    client's 15s staleTime cache was skipping refetches between tests).
 
 - [x] **T134 · APPLIED 2026-08-30 — resolved the two documented-but-unread frontend env vars** (dead-code audit 2026-08-29)
   - **Issue:** `.env.local.example` documents `NEXT_PUBLIC_CPANEL_URL` and
@@ -504,7 +542,7 @@
   Development is unchanged. The cross-app point this entry was logged to make now holds in both
   directions.
 
-- [ ] **T124 · Two high-severity PostCSS advisories remain in the shipped dependency tree** (final re-audit 2026-08-29) — **CONFIRMED, unchanged**
+- [x] **T124 · Two high-severity PostCSS advisories remain in the shipped dependency tree** (final re-audit 2026-08-29) — **CONFIRMED, unchanged**
   - **Issue:** `npm audit --omit=dev` still reports **2 high severity** in `frontend-eaz`, reaching
     the app transitively through `next@14.2.35`. The backend is clean — `npm audit` and
     `npm audit --omit=dev` both report **0 vulnerabilities**.
@@ -518,6 +556,25 @@
   - **Repro:** `cd frontend-eaz && npm audit --omit=dev`
   - **Decision needed before deploy:** accept the risk explicitly, or narrow `remotePatterns` to the
     supplier hosts actually used — which shrinks the reachable surface without the framework upgrade.
+
+  ### Implementation Notes (2026-09-01 — resolved by decision: narrow `remotePatterns`)
+
+  - **The 2026-09-01 audit still shows the same 2 high (PostCSS) plus the full `next` advisory
+    set**; the only automated fix is `npm audit fix --force` → `next@16.3.4` (breaking major =
+    T99's plan).
+  - **Applied the second option:** `next.config.mjs` no longer uses `remotePatterns: [{ hostname:
+    "**" }]`. The optimizer now serves only the 42 hosts already whitelisted in the **CSP
+    `img-src`** directive (verified machine-checkable: any image that loaded before still loads,
+    because a host must pass both the optimizer's allowlist *and* the browser's CSP gate).
+  - **Keep the two lists in sync:** the `remotePatterns` array and the `img-src` directive now carry
+    the same host list; new supplier hosts must be added to **both** in the same change (comment in
+    the config says so).
+  - **Residual accepted risk:** the 2 build-time PostCSS advisories cannot be removed without the
+    Next 16 upgrade (T99). That risk is now explicitly accepted and documented — PostCSS runs only
+    at build time, from this repo's own pinned dependency, not from attacker-controlled input.
+  - **Verification:** `next.config.mjs` imports cleanly and the two lists cross-check with zero
+    drift; `next lint` clean; `next build` exits 0 (static pages + middleware all prerendered).
+  - **Backend unaffected:** `npm audit` and `npm audit --omit=dev` remain 0 vulnerabilities.
 
 ---
 

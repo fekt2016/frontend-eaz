@@ -1,7 +1,8 @@
 import { serviceDetails } from "@/data/serviceDetails";
 import { SITE_URL } from "@/lib/seo";
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata(props) {
+  const params = await props.params;
   const service = serviceDetails.find((s) => s.slug === params.slug);
 
   if (!service) {

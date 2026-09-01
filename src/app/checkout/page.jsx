@@ -5,9 +5,14 @@ import Link from "next/link";
 import { ArrowLeft, Lock, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { api, errorMessage } from "@/lib/api";
+import { errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
+import {
+  useCreateAddress,
+  useDeleteAddress,
+} from "@/hooks/queries/useAddresses";
+import { useCreateOrder } from "@/hooks/queries/useOrders";
 import {
   useLocationCities,
   useLocationRegions,
@@ -69,6 +74,9 @@ function addressLine(a) {
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const { user } = useAuth();
+  const createAddress = useCreateAddress();
+  const deleteAddress = useDeleteAddress();
+  const createOrder = useCreateOrder();
 
   // Customer + destination. `region` and `city` are picked from API-driven
   // dropdowns (T80 E2); `neighborhood` is filtered by city; for outside
@@ -363,10 +371,10 @@ export default function CheckoutPage() {
     setModalSaving(true);
     try {
       if (user) {
-        const sRes = await api.post("/addresses", saved);
+        const created = await createAddress.mutateAsync(saved);
         setSavedAddresses((prev) => {
           const without = prev.filter((a) => addressLine(a) !== addressLine(saved));
-          return [sRes.data, ...without];
+          return [created, ...without];
         });
       } else {
         persistLocal(saved);
@@ -470,8 +478,7 @@ export default function CheckoutPage() {
         orderBody.method = selectedMethod || "in_house_delivery";
         if (!inAccraCore) orderBody.pickupLocationId = pickupLocationId;
       }
-      const res = await api.post("/orders", orderBody);
-      const { authorizationUrl } = res.data;
+      const { authorizationUrl } = await createOrder.mutateAsync(orderBody);
       if (authorizationUrl) {
         const saved = {
           street: customer.street.trim(),
@@ -480,12 +487,16 @@ export default function CheckoutPage() {
           neighborhood: customer.neighborhood.trim(),
         };
         if (user) {
-          const sRes = await api.post("/addresses", saved).catch(() => null);
-          if (sRes?.data) {
+          // Saving the address can fail (e.g. 3-address cap) — not a reason to
+          // block the payment redirect.
+          try {
+            const created = await createAddress.mutateAsync(saved);
             setSavedAddresses((prev) => {
               const without = prev.filter((a) => addressLine(a) !== addressLine(saved));
-              return [sRes.data, ...without];
+              return [created, ...without];
             });
+          } catch {
+            /* ignore */
           }
         } else {
           persistLocal(saved);
@@ -608,7 +619,7 @@ export default function CheckoutPage() {
                             onClick={async (e) => {
                               e.preventDefault();
                               try {
-                                await api.delete(`/addresses/${addr._id}`);
+                                await deleteAddress.mutateAsync(addr._id);
                                 setSavedAddresses((prev) => prev.filter((a) => a._id !== addr._id));
                               } catch {
                                 /* ignore — selection still works */

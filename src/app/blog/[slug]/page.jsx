@@ -15,7 +15,8 @@ async function getPost(slug) {
   }
 }
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata(props) {
+  const params = await props.params;
   const post = await getPost(params.slug);
   if (!post) {
     return buildMetadata({
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }) {
   });
 }
 
-export default function BlogArticlePage({ params }) {
+export default async function BlogArticlePage(props) {
+  const params = await props.params;
   return <BlogArticle slug={params.slug} />;
 }
