@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, ChevronLeft, ChevronRight, Search, ShoppingBag } from "lucide-react";
-import { formatGhs, stockBadge, canPreorder } from "@/lib/shop";
+import { formatGhs, stockBadge, canPreorder, isPreorderable } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useShopProducts } from "@/hooks/queries/useProducts";
 import StarRule from "@/components/common/StarRule";
@@ -31,11 +31,13 @@ export default function ShopGrid({ activeCategory = "" }) {
   const debouncedQ = useDebounce(q, 400);
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
+  const [preorder, setPreorder] = useState(false);
 
   const { data, isLoading: loading, error: queryError } = useShopProducts({
     page, limit: 10, sort,
     category: activeCategory || undefined,
     q: debouncedQ.trim() || undefined,
+    preorder: preorder || undefined,
   });
   const products = data?.data ?? [];
   const pagination = { total: data?.total ?? 0, pages: data?.pages ?? 1 };
@@ -43,7 +45,7 @@ export default function ShopGrid({ activeCategory = "" }) {
 
   useEffect(() => {
     setPage(1);
-  }, [activeCategory, debouncedQ, sort]);
+  }, [activeCategory, debouncedQ, sort, preorder]);
 
   const heading = activeCategory || "All Products";
 
@@ -98,6 +100,18 @@ export default function ShopGrid({ activeCategory = "" }) {
                 </button>
               )}
             </div>
+            <button
+              type="button"
+              aria-pressed={preorder}
+              onClick={() => setPreorder((v) => !v)}
+              className={`whitespace-nowrap rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                preorder
+                  ? "bg-brand-500 text-white border-brand-500"
+                  : "border-gray-200 text-gray-600 hover:border-gray-400 hover:text-gray-900 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-white"
+              }`}
+            >
+              {preorder ? "✓ Pre-order" : "Pre-order"}
+            </button>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
@@ -206,7 +220,7 @@ export default function ShopGrid({ activeCategory = "" }) {
 }
 
 function ProductCard({ product }) {
-  const badge = stockBadge(product.stock, product.preorder?.enabled);
+  const badge = stockBadge(product.stock, isPreorderable(product));
   const images = product.images?.length
     ? product.images
     : ["/images/product-placeholder.svg"];

@@ -69,7 +69,29 @@ export function placeholderToPng(url) {
 // would then refuse, or promise what it would silently allow.
 export function canPreorder(product, stock) {
   const available = Number(stock ?? product?.stock) || 0;
-  return Boolean(product?.preorder?.enabled) && available <= 0;
+  return isPreorderable(product) && available <= 0;
+}
+
+// True when the product is a pre-order on any level — the product as a whole, or
+// a single variant of it. The badge and pre-order affordances must honour the
+// per-variant case (a 0-stock size among stocked ones) as much as the
+// product-level flag.
+export function isPreorderable(product) {
+  if (product?.preorder?.enabled) return true;
+  return Array.isArray(product?.variants) &&
+    product.variants.some((v) => Boolean(v?.preorder?.enabled));
+}
+
+// Pre-order status scoped to the variant currently being viewed. When a variant
+// is selected, ITS owner pre-order flag decides — a 0-stock size that is not
+// itself flagged must not be treated as pre-orderable just because a sibling
+// size is. With no variant selected (or no variants at all), fall back to the
+// product as a whole, matching the grid card.
+export function isVariantPreorderable(product, selectedVariant) {
+  if (selectedVariant?.sku) {
+    return Boolean(selectedVariant.preorder?.enabled);
+  }
+  return isPreorderable(product);
 }
 
 // Human copy for when a pre-ordered item is expected. Returns "" when there is

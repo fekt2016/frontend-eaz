@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Eye, Minus, Package, Play, Plus, Search, ShoppingBag } from "lucide-react";
-import { formatCount, formatGhs, stockBadge, placeholderToPng, canPreorder, preorderAvailability } from "@/lib/shop";
+import { formatCount, formatGhs, stockBadge, placeholderToPng, preorderAvailability, isVariantPreorderable } from "@/lib/shop";
 import { api } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useProductBySlug } from "@/hooks/queries/useProducts";
@@ -154,8 +154,10 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   const displayStock = selectedVariant ? Number(selectedVariant.stock) || 0 : product.stock;
   // T45: with no stock on hand, a product marked for pre-order is still orderable.
   // `preorderable` is the only thing standing between "Out of Stock" and a sale.
-  const preorderable = canPreorder(product, displayStock);
-  const badge = stockBadge(displayStock, product.preorder?.enabled);
+  // It is scoped to the selected variant: a 0-stock size that is not itself
+  // flagged must not be pre-orderable just because a sibling size is.
+  const preorderable = isVariantPreorderable(product, selectedVariant) && displayStock <= 0;
+  const badge = stockBadge(displayStock, isVariantPreorderable(product, selectedVariant));
   const inStock = displayStock > 0;
   // A pre-order draws on no stock, so the quantity ceiling is the product's own
   // cap instead — the server enforces the same number at checkout.

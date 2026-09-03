@@ -124,3 +124,68 @@ describe("ProductForm — main images upload (T34)", () => {
     );
   });
 });
+
+describe("ProductForm — per-variant pre-order (edit modal)", () => {
+  it("renders every variant and lets a single variant be flagged for pre-order", () => {
+    const onSubmit = vi.fn();
+    render(
+      <ProductForm
+        submitLabel="Save"
+        onSubmit={onSubmit}
+        initial={{
+          name: "Phone",
+          category: "Phones",
+          price: 50000,
+          variants: [
+            { sku: "V1-128", attributes: { storage: "128GB" }, stock: 0 },
+            { sku: "V2-256", attributes: { storage: "256GB" }, stock: 3 },
+          ],
+        }}
+      />
+    );
+
+    // Every variant is visible for editing.
+    expect(screen.getByDisplayValue("V1-128")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("V2-256")).toBeInTheDocument();
+
+    // One pre-order toggle per variant.
+    const toggles = screen.getAllByText("Pre-order this variant");
+    expect(toggles).toHaveLength(2);
+
+    // Flag only the first (0-stock) variant.
+    fireEvent.click(toggles[0]);
+    fireEvent.click(screen.getByText("Save"));
+
+    const payload = onSubmit.mock.calls[0][0];
+    expect(payload.variants[0].preorder.enabled).toBe(true);
+    expect(payload.variants[1].preorder.enabled).toBe(false);
+  });
+
+  it("pre-fills a variant's pre-order fields when it is already flagged", () => {
+    const onSubmit = vi.fn();
+    render(
+      <ProductForm
+        submitLabel="Save"
+        onSubmit={onSubmit}
+        initial={{
+          name: "Phone",
+          category: "Phones",
+          price: 50000,
+          variants: [
+            { sku: "V1", attributes: { storage: "128GB" }, stock: 0,
+              preorder: { enabled: true, availableFrom: "2026-10-01", note: "ships from abroad", maxQty: 4 } },
+          ],
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByText("Save"));
+    const payload = onSubmit.mock.calls[0][0];
+    expect(payload.variants[0].preorder).toEqual({
+      enabled: true,
+      availableFrom: "2026-10-01",
+      note: "ships from abroad",
+      maxQty: 4,
+    });
+  });
+});

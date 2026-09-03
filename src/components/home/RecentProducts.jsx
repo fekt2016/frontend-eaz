@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { formatGhs, stockBadge } from "@/lib/shop";
+import { formatGhs, stockBadge, isPreorderable } from "@/lib/shop";
 import StarRule from "@/components/common/StarRule";
 import ProductImage from "@/components/shop/ProductImage";
 import ProductStats from "@/components/shop/ProductStats";
@@ -80,7 +80,7 @@ export default function RecentProducts() {
 }
 
 function RecentCard({ product }) {
-  const badge = stockBadge(product.stock, product.preorder?.enabled);
+  const badge = stockBadge(product.stock, isPreorderable(product));
   const images = product.images?.length
     ? product.images
     : ["/images/product-placeholder.svg"];

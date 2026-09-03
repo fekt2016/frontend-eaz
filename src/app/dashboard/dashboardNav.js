@@ -10,7 +10,15 @@ import {
 // T21: technicians get zero hosting/domain access, so Hosting/Domains are hidden for them.
 export const baseNav = [
   { href: "/dashboard", icon: Gauge, label: "Overview" },
-  { href: "/dashboard/orders", icon: ShoppingBag, label: "Shop Orders" },
+  // Owner decision: admin/staff fulfil online shop orders from the POS "Orders"
+  // page (/dashboard/pos/orders), which lists the same shop orders. Keeping two
+  // sidebar entries pointing at the same list is redundant, so "Shop Orders" is
+  // hidden for every POS role — staff use the POS Orders page, and technicians
+  // have no order-fulfilment surface at all (repairs only). Customers keep this
+  // page for their own orders. Hiding is a navigation-only change — the route
+  // itself still works for anyone who has it.
+  { href: "/dashboard/orders", icon: ShoppingBag, label: "Shop Orders",
+    hideRoles: ["superadmin", "admin", "staff", "technician"] },
   { href: "/dashboard/repairs", icon: Wrench, label: "My Repairs" },
   // Owner decision (2026-08-30): the address book is a CUSTOMER surface —
   // only role "user" sees it. A delivery address book on a staff account has
@@ -69,7 +77,6 @@ export const marketplaceNav = [
 // the entries, and hiding is never the guard.
 export const posNav = [
   { label: "Sell",       href: "/dashboard/pos/sell",      icon: Barcode,  roles: ["superadmin","staff"] },
-  { label: "My Jobs",    href: "/dashboard/pos",           icon: Wrench,   roles: ["technician"] },
   { label: "Orders",     href: "/dashboard/pos/orders",    icon: ShoppingBag, roles: ["superadmin","admin","staff"] },
   { label: "Suppliers",  href: "/dashboard/pos/suppliers", icon: Truck,    roles: ["superadmin","admin"] },
   { label: "Expenses",   href: "/dashboard/pos/expenses",  icon: Receipt,  roles: ["superadmin","admin","staff"] },

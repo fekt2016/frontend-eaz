@@ -10,7 +10,7 @@ export function JobHeader({ job, linkCopied, saving, onCopyLink, onPrint, onSave
   return (
     <div className="flex items-start justify-between print:hidden">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/pos/jobs" className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
+        <Link href="/dashboard/pos" className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
           <ArrowLeft size={12} />
         </Link>
         <div>

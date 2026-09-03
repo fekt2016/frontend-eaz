@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import UploadButton from "@/components/common/UploadButton";
+import { api } from "@/lib/api";
+import { productSkuBase, variantSkuSuffix } from "@/lib/sku";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700";
@@ -138,10 +140,24 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       images: Array.isArray(v.images) ? v.images : [],
       // Blank = unset (falls back to base price at checkout), not "free".
       priceGhs: v.price != null ? (Number(v.price) / 100).toFixed(2) : "",
+      // Per-variant pre-order, independent of the product-level flag — a
+      // single 0-stock size can be pre-ordered while its siblings stay in stock.
+      preorder: {
+        enabled: v.preorder?.enabled ?? false,
+        availableFrom: v.preorder?.availableFrom ? new Date(v.preorder.availableFrom).toISOString().slice(0, 10) : "",
+        note: v.preorder?.note || "",
+        maxQty: v.preorder?.maxQty ?? "",
+      },
     }))
   );
   const [galleryImages, setGalleryImages] = useState(initial?.gallery?.images || []);
   const [galleryVideos, setGalleryVideos] = useState(initial?.gallery?.videos || []);
+  const [preorderEnabled, setPreorderEnabled] = useState(initial?.preorder?.enabled ?? false);
+  const [preorderAvailableFrom, setPreorderAvailableFrom] = useState(
+    initial?.preorder?.availableFrom ? new Date(initial.preorder.availableFrom).toISOString().slice(0, 10) : ""
+  );
+  const [preorderNote, setPreorderNote] = useState(initial?.preorder?.note || "");
+  const [preorderMaxQty, setPreorderMaxQty] = useState(initial?.preorder?.maxQty ?? "");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -163,10 +179,22 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         stock: v.stock ?? "",
         images: Array.isArray(v.images) ? v.images : [],
         priceGhs: v.price != null ? (Number(v.price) / 100).toFixed(2) : "",
+        preorder: {
+          enabled: v.preorder?.enabled ?? false,
+          availableFrom: v.preorder?.availableFrom ? new Date(v.preorder.availableFrom).toISOString().slice(0, 10) : "",
+          note: v.preorder?.note || "",
+          maxQty: v.preorder?.maxQty ?? "",
+        },
       }))
     );
     setGalleryImages(initial.gallery?.images || []);
     setGalleryVideos(initial.gallery?.videos || []);
+    setPreorderEnabled(initial.preorder?.enabled ?? false);
+    setPreorderAvailableFrom(
+      initial.preorder?.availableFrom ? new Date(initial.preorder.availableFrom).toISOString().slice(0, 10) : ""
+    );
+    setPreorderNote(initial.preorder?.note || "");
+    setPreorderMaxQty(initial.preorder?.maxQty ?? "");
   }, [initial]);
 
   const updateVariant = (vi, key, value) =>
@@ -175,7 +203,10 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   const addVariant = () =>
     setVariants((prev) => [
       ...prev,
-      { sku: "", attributes: [{ key: "color", value: "" }], stock: "", images: [], priceGhs },
+      {
+        sku: "", attributes: [{ key: "color", value: "" }], stock: "", images: [], priceGhs,
+        preorder: { enabled: false, availableFrom: "", note: "", maxQty: "" },
+      },
     ]);
 
   const removeVariant = (vi) => setVariants((prev) => prev.filter((_, i) => i !== vi));
@@ -200,6 +231,31 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         i === vi ? { ...v, attributes: v.attributes.filter((_, j) => j !== ai) } : v
       )
     );
+
+  // One-click SKU generators — the API guarantees the returned number/suffix is
+  // unique (see services/skuGenerator.js). Errors keep the current value.
+  const generateProductSku = async () => {
+    try {
+      const res = await api.post("/products/generate-sku", { mode: "product", prefix: productSkuBase(name) });
+      if (res?.data?.sku) setSku(res.data.sku);
+    } catch { /* keep current sku */ }
+  };
+
+  const generateVariantSku = async (vi) => {
+    try {
+      const attributes = Object.fromEntries(
+        variants[vi].attributes
+          .filter((a) => a.key.trim() && a.value.trim())
+          .map((a) => [a.key.trim(), a.value.trim()])
+      );
+      const res = await api.post("/products/generate-sku", {
+        mode: "variant",
+        parentSku: sku.trim(),
+        suffix: variantSkuSuffix(attributes),
+      });
+      if (res?.data?.sku) updateVariant(vi, "sku", res.data.sku);
+    } catch { /* keep current sku */ }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -274,6 +330,15 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
             v.priceGhs === "" || v.priceGhs == null
               ? null
               : Math.round((parseFloat(v.priceGhs) || 0) * 100),
+          preorder: {
+            enabled: v.preorder?.enabled ?? false,
+            availableFrom: v.preorder?.availableFrom || null,
+            note: (v.preorder?.note || "").trim(),
+            maxQty:
+              v.preorder?.maxQty === "" || v.preorder?.maxQty == null
+                ? null
+                : parseInt(v.preorder?.maxQty, 10) || null,
+          },
         }))
         .filter((v) => v.sku),
       gallery: {
@@ -281,6 +346,12 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         videos: galleryVideos.filter(Boolean),
       },
       isActive,
+      preorder: {
+        enabled: preorderEnabled,
+        availableFrom: preorderAvailableFrom || null,
+        note: preorderNote.trim(),
+        maxQty: preorderMaxQty === "" || preorderMaxQty == null ? null : parseInt(preorderMaxQty, 10) || null,
+      },
     });
   };
 
@@ -592,6 +663,55 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
                 placeholder="https://res.cloudinary.com/..."
               />
             </div>
+
+            {/* Per-variant pre-order — independent of the product-level flag. */}
+            <div className="rounded-lg border border-gray-100 dark:border-slate-800 p-3 space-y-3">
+              <label className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={v.preorder?.enabled ?? false}
+                  onChange={(e) => updateVariant(vi, "preorder", { ...v.preorder, enabled: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 dark:border-slate-600"
+                />
+                Pre-order this variant
+              </label>
+              <p className="text-xs text-gray-500 dark:text-slate-500 -mt-1">
+                Lets this single size be bought when its stock is zero, even if sibling variants are in stock.
+              </p>
+              {v.preorder?.enabled && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-slate-800">
+                  <Field label="Expected availability">
+                    <input
+                      type="date"
+                      className={inputClass}
+                      value={v.preorder?.availableFrom || ""}
+                      onChange={(e) => updateVariant(vi, "preorder", { ...v.preorder, availableFrom: e.target.value })}
+                    />
+                  </Field>
+                  <Field label="Max per order" hint="Leave empty for no limit.">
+                    <input
+                      type="number"
+                      min="1"
+                      className={inputClass}
+                      value={v.preorder?.maxQty ?? ""}
+                      onChange={(e) => updateVariant(vi, "preorder", { ...v.preorder, maxQty: e.target.value })}
+                      placeholder="e.g. 5"
+                    />
+                  </Field>
+                  <div className="sm:col-span-2">
+                    <Field label="Note" hint="Shown to customers, e.g. ships from abroad.">
+                      <input
+                        className={inputClass}
+                        value={v.preorder?.note || ""}
+                        onChange={(e) => updateVariant(vi, "preorder", { ...v.preorder, note: e.target.value })}
+                        placeholder="e.g. Ships from abroad, ~3 weeks"
+                        maxLength={200}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ))}
 
@@ -636,6 +756,57 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         />
         Active (visible in the shop)
       </label>
+
+      {/* Pre-order — only when stock is zero or empty */}
+      {Number(stock) <= 0 && (
+        <div className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-4">
+          <label className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={preorderEnabled}
+              onChange={(e) => setPreorderEnabled(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 dark:border-slate-600"
+            />
+            Enable pre-order
+          </label>
+          <p className="text-xs text-gray-500 dark:text-slate-500 -mt-2">
+            Customers can buy this product even when stock is zero. They pay in full upfront.
+          </p>
+          {preorderEnabled && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100 dark:border-slate-800">
+              <Field label="Expected availability">
+                <input
+                  type="date"
+                  className={inputClass}
+                  value={preorderAvailableFrom}
+                  onChange={(e) => setPreorderAvailableFrom(e.target.value)}
+                />
+              </Field>
+              <Field label="Max per order" hint="Leave empty for no limit.">
+                <input
+                  type="number"
+                  min="1"
+                  className={inputClass}
+                  value={preorderMaxQty}
+                  onChange={(e) => setPreorderMaxQty(e.target.value)}
+                  placeholder="e.g. 5"
+                />
+              </Field>
+              <div className="sm:col-span-2">
+                <Field label="Note" hint="Shown to customers, e.g. ships from abroad.">
+                  <input
+                    className={inputClass}
+                    value={preorderNote}
+                    onChange={(e) => setPreorderNote(e.target.value)}
+                    placeholder="e.g. Ships from abroad, ~3 weeks"
+                    maxLength={200}
+                  />
+                </Field>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
 

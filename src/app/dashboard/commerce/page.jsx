@@ -27,6 +27,18 @@ const KINDS = [
 
 
 function ProductsList() {
+  const { user } = useAuth();
+  const isSuperadmin = user?.role === "superadmin";
+  // Full static class strings so Tailwind's JIT can detect the arbitrary grid
+  // template — it cannot see templates split across interpolation. auto tracks
+  // let each column stretch to its widest cell (header or value), so labels and
+  // values always sit in the same track.
+  const COLUMNS_ADMIN_HEADER = "grid-cols-[minmax(140px,1fr)_auto_auto_auto_auto_auto_auto]";
+  const COLUMNS_ADMIN_ROW    = "sm:grid-cols-[minmax(140px,1fr)_auto_auto_auto_auto_auto_auto]";
+  const COLUMNS_REG_HEADER   = "grid-cols-[minmax(140px,1fr)_auto_auto_auto_auto_auto]";
+  const COLUMNS_REG_ROW      = "sm:grid-cols-[minmax(140px,1fr)_auto_auto_auto_auto_auto]";
+  const colHeaderCls = isSuperadmin ? COLUMNS_ADMIN_HEADER : COLUMNS_REG_HEADER;
+  const colRowCls    = isSuperadmin ? COLUMNS_ADMIN_ROW    : COLUMNS_REG_ROW;
   const [parts,       setParts]       = useState([]);
   const [total,       setTotal]       = useState(0);
   const [loading,     setLoading]     = useState(true);
@@ -269,20 +281,20 @@ function ProductsList() {
           </div>
         ) : (
           <>
-            <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-gray-200 dark:border-gray-800 text-xs text-gray-500 font-medium uppercase tracking-wide">
+            <div className={`hidden sm:grid gap-4 px-5 py-3 border-b border-gray-200 dark:border-gray-800 text-xs text-gray-500 font-medium uppercase tracking-wide whitespace-nowrap ${colHeaderCls}`}>
               <span>Part</span>
               <span>Barcode</span>
               <span>Category</span>
-              <span>Stock</span>
-              <span>Cost</span>
-              <span>Price</span>
-              <span />
+              <span className="text-left">Stock</span>
+              {isSuperadmin && <span className="text-left">Cost</span>}
+              <span className="text-left">Price</span>
+              <span className="text-right">Actions</span>
             </div>
             <div className="divide-y divide-gray-200 dark:divide-gray-800">
               {parts.map(p => {
                 const lowStockFlag = p.quantity <= p.lowStockThreshold;
                 return (
-                  <div key={p._id} className="flex sm:grid sm:grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 items-center px-5 py-3.5 hover:bg-gray-100/30 dark:hover:bg-gray-800/30 transition">
+                  <div key={p._id} className={`flex sm:grid ${colRowCls} gap-4 items-center px-5 py-3.5 hover:bg-gray-100/30 dark:hover:bg-gray-800/30 transition`}>
                     <div className="min-w-0 flex items-center gap-3">
                       <ProductImage src={p.images?.[0]} alt={p.name} width={36} height={36} className="h-9 w-9 rounded-xl object-cover bg-gray-100 flex-shrink-0" />
                       <div className="min-w-0">
@@ -298,23 +310,13 @@ function ProductsList() {
                         )}
                       </div>
                     </div>
-                    <span className="text-xs font-mono text-gray-500 hidden sm:block">{p.barcode || "—"}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{p.category}</span>
-                    <span className={`text-sm font-semibold hidden sm:block ${lowStockFlag ? (p.quantity === 0 ? "text-error dark:text-error-dark" : "text-warning dark:text-warning-dark") : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">{formatGhs(p.costPrice)}</span>
-                    <span className="text-sm text-brand-ink dark:text-brand-400 font-medium hidden sm:block">{formatGhs(p.sellingPrice)}</span>
-                    <div className="flex items-center gap-2 ml-auto sm:ml-0">
-                      {/* Inline modal covers the counter fields; the full page covers
-                          the shop ones (images, description, slug) — both reach the
-                          same document, so keep a route to each. */}
-                      <button onClick={() => setModal(p)} title="Quick edit" className="text-gray-500 hover:text-brand-400 transition"><Pen size={13} /></button>
-                      <Link
-                        href={`/dashboard/commerce/products/${p._id}/edit`}
-                        title="Edit shop details"
-                        className="text-gray-500 hover:text-brand-400 transition"
-                      >
-                        <PackageOpen size={13} />
-                      </Link>
+                    <span className="text-xs font-mono text-gray-500 hidden sm:block whitespace-nowrap">{p.barcode || "—"}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block whitespace-nowrap">{p.category}</span>
+                    <span className={`text-sm font-semibold hidden sm:block text-left whitespace-nowrap ${lowStockFlag ? (p.quantity === 0 ? "text-error dark:text-error-dark" : "text-warning dark:text-warning-dark") : "text-gray-900 dark:text-white"}`}>{p.quantity}</span>
+                    {isSuperadmin && <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block text-left whitespace-nowrap">{formatGhs(p.costPrice)}</span>}
+                    <span className="text-sm text-brand-ink dark:text-brand-400 font-medium hidden sm:block text-left whitespace-nowrap">{formatGhs(p.sellingPrice)}</span>
+                    <div className="flex items-center gap-2 ml-auto sm:ml-0 sm:justify-end sm:min-w-[150px]">
+                      <button onClick={() => setModal(p)} title="Edit" className="text-gray-500 hover:text-brand-400 transition"><Pen size={13} /></button>
                       <button
                         onClick={() => handleArchiveToggle(p)}
                         disabled={archiving === p._id}

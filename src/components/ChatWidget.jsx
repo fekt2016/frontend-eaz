@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
 import {
   MessageSquare, X, Send, RotateCw,
   ShieldCheck, Loader2, Clock, Headset, Star,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
-import { canHandleChats } from "@/lib/roles";
+
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeMessage } from "@/lib/sanitize";
 import { getCookie, setCookie, removeCookie } from "@/lib/cookies";
 
@@ -188,15 +187,6 @@ function HumanRequestForm({ user, onSubmit, onCancel }) {
 }
 
 // ─── Admin shortcut badge ─────────────────────────────────────────────────────
-function AdminChatBadge() {
-  return (
-    <Link href="/dashboard/chats"
-      className="fixed bottom-5 right-4 sm:right-6 z-50 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all">
-      <ShieldCheck size={14} /><span>Admin Chats</span>
-    </Link>
-  );
-}
-
 // ─── Main widget ──────────────────────────────────────────────────────────────
 export default function ChatWidget() {
   const { user, loading: authLoading } = useAuth();
@@ -554,9 +544,6 @@ export default function ChatWidget() {
   };
 
   if (authLoading) return null;
-  // Admins, superadmins, and staff are chat agents — show the console badge
-  // instead of the visitor widget.
-  if (canHandleChats(user?.role)) return <AdminChatBadge />;
 
   const isLoggedIn = !!user;
   const isPending  = chatState === "pending";

@@ -36,10 +36,13 @@ describe("posNav — Jobs entry removed", () => {
     expect(posNav.some((n) => n.href === "/dashboard/pos/jobs")).toBe(false);
   });
 
-  it("keeps My Jobs, which is the technician's only nav entry", () => {
-    const myJobs = posNav.find((n) => n.href === "/dashboard/pos");
-    expect(myJobs).toBeDefined();
-    expect(myJobs.roles).toContain("technician");
+  it("has no sidenav link to /dashboard/pos (My Jobs), the technician's landing page", () => {
+    expect(posNav.some((n) => n.href === "/dashboard/pos")).toBe(false);
+  });
+
+  it("leaves technicians with no Repair Shop POS sidenav section (repairs live under My Repairs)", () => {
+    const forTech = posNav.filter((n) => !n.roles || n.roles.includes("technician"));
+    expect(forTech).toHaveLength(0);
   });
 
   it("leaves the rest of the POS nav intact", () => {
@@ -83,6 +86,37 @@ describe("baseNav — My Addresses is customer-only", () => {
     const hrefs = visibleTo("user");
     expect(hrefs).toContain("/dashboard/orders");
     expect(hrefs).toContain("/dashboard/repairs");
+  });
+});
+
+// Owner decision: admin/staff fulfil online shop orders from the POS "Orders"
+// page (/dashboard/pos/orders), which lists the same shop orders. Keeping the
+// base "Shop Orders" link as well would show the same list twice in the sidebar,
+// so it is hidden for every role that has access to the POS Orders page.
+// Technicians (no POS Orders entry) and customers keep it.
+describe("baseNav — Shop Orders is staff-only-via-POS", () => {
+  const visibleTo = (role) =>
+    baseNav.filter((n) => !n.hideRoles || !n.hideRoles.includes(role)).map((n) => n.href);
+
+  it.each(["superadmin", "admin", "staff", "technician"])(
+    "hides /dashboard/orders from %s (staff use POS Orders; technicians do repairs only)",
+    (role) => {
+      expect(visibleTo(role)).not.toContain("/dashboard/orders");
+    },
+  );
+
+  it("keeps /dashboard/orders for a customer", () => {
+    expect(visibleTo("user")).toContain("/dashboard/orders");
+  });
+
+  it("still exposes My Repairs to technicians", () => {
+    expect(visibleTo("technician")).toContain("/dashboard/repairs");
+  });
+
+  it("leaves the POS Orders entry for the roles that fulfil orders", () => {
+    const entry = posNav.find((n) => n.href === "/dashboard/pos/orders");
+    expect(entry).toBeDefined();
+    expect(entry.roles).toEqual(expect.arrayContaining(["superadmin", "admin", "staff"]));
   });
 });
 

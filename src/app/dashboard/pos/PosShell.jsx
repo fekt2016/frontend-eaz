@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/dashboard/NotificationBell";
-import { Menu, Settings, Wrench } from "lucide-react";
-import { posNav } from "../dashboardNav";
+import { Menu } from "lucide-react";
 import Sidebar from "../Sidebar";
 
 const PAGE_TITLES = {
@@ -52,73 +50,9 @@ export default function PosShell({ children }) {
   if (loading || redirecting || !user) return <Spinner />;
   if (!POS_ROLES.includes(user.role)) return <Spinner />;
 
-  const visibleNav = posNav.filter(n => !n.roles || n.roles.includes(user.role));
-
   const pageTitle = Object.keys(PAGE_TITLES)
     .filter(p => pathname === p || pathname.startsWith(p + "/"))
     .sort((a, b) => b.length - a.length)[0] || "POS";
-
-  // Technicians get a horizontal top navigation bar instead of the left sidebar.
-  if (user.role === "technician") {
-    return (
-      <div className="h-screen overflow-hidden bg-paper dark:bg-ink flex flex-col">
-        <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
-          <div className="flex items-center gap-4 px-4 sm:px-6 py-3">
-            <Link href="/dashboard/pos" className="flex items-center gap-2.5 flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-                <Wrench size={14} aria-hidden="true" className="text-gray-900" />
-              </div>
-              <div className="hidden sm:block">
-                <p className="font-bold text-gray-900 dark:text-white text-sm leading-none">EazWorld</p>
-                <p className="text-caption text-gray-600 dark:text-slate-400">Dashboard</p>
-              </div>
-            </Link>
-
-            <nav className="flex items-center gap-1 flex-1 overflow-x-auto">
-              {visibleNav.map(({ label, href, icon: Icon }) => {
-                const active = pathname === href || (!["/dashboard", "/dashboard/pos"].includes(href) && pathname.startsWith(href));
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${
-                      active
-                        ? "bg-brand-500/15 text-brand-ink dark:text-brand-400"
-                        : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800"
-                    }`}
-                  >
-                    <Icon size={15} aria-hidden="true" className="flex-shrink-0" />
-                    <span>{label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <NotificationBell />
-              <ThemeToggle />
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-semibold text-gray-900 dark:text-white truncate max-w-[120px]">{user.name}</p>
-                <p className="text-caption capitalize text-gray-600 dark:text-slate-400">{user.role}</p>
-              </div>
-              <Link
-                href="/dashboard/settings"
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition"
-                aria-label="Settings"
-              >
-                <Settings size={15} aria-hidden="true" />
-                <span className="hidden sm:inline">Settings</span>
-              </Link>
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-auto p-5 lg:p-7">
-          {children}
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="h-screen overflow-hidden bg-paper dark:bg-ink flex">
