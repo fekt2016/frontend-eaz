@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Lock, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { errorMessage } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { formatGhs } from "@/lib/shop";
 import { sanitizeName, sanitizeEmail, sanitizePhone, sanitizeText } from "@/lib/sanitize";
 import {
