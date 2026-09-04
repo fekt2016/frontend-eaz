@@ -27,12 +27,19 @@ const ACCEPT = "image/jpeg,image/png,image/webp";
 // the server is authoritative, this just avoids a pointless round trip.
 const CARD_RE = /^GHA-\d{9}-\d$/;
 
-function formatCardNumber(raw) {
-  const digits = String(raw).replace(/\D/g, "").slice(0, 10);
-  if (!digits) return "";
-  const body = digits.slice(0, 9);
-  const check = digits.slice(9, 10);
+// The input holds raw digits (like the phone field); the masked GHA-XXXX at
+// the end. Nine digits then a check digit.
+function maskCardNumber(digits) {
+  const d = digits.slice(0, 10);
+  const body = d.slice(0, 9);
+  const check = d.slice(9);
   return check ? `GHA-${body}-${check}` : `GHA-${body}`;
+}
+
+// Keep only digits, capped at ten — the field never shows the mask while typing,
+// so a stray "GHA-" or "-" from the placeholder can never wipe the input.
+function digitsOnly(raw) {
+  return String(raw).replace(/\D/g, "").slice(0, 10);
 }
 
 const STATUS = {
@@ -102,7 +109,7 @@ export default function IdentitySection() {
     e.preventDefault();
     setError("");
 
-    if (!CARD_RE.test(number)) {
+    if (!CARD_RE.test(maskCardNumber(number))) {
       setError("Enter your card number in the form GHA-123456789-0.");
       return;
     }
@@ -120,7 +127,7 @@ export default function IdentitySection() {
     setBusy(true);
     try {
       const body = new FormData();
-      body.append("number", number);
+      body.append("number", maskCardNumber(number));
       body.append("front", front);
       body.append("back", back);
       const res = await api.upload("/account/ghana-card", body);
@@ -176,9 +183,10 @@ export default function IdentitySection() {
           <Field label="Ghana Card number" hint="Printed on the front of the card.">
             <Input
               value={number}
-              onChange={(e) => setNumber(formatCardNumber(e.target.value))}
+              onChange={(e) => setNumber(digitsOnly(e.target.value))}
               placeholder="GHA-123456789-0"
               inputMode="numeric"
+              maxLength={10}
             />
           </Field>
 
