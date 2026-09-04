@@ -308,11 +308,19 @@ function ProductsList() {
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
                           {lowStockFlag && <TriangleAlert size={10} aria-hidden="true" className="text-warning dark:text-warning-dark flex-shrink-0" />}
+                          {/* A depleted variant used to be an 8px dot with the
+                              detail in a title tooltip — invisible in practice,
+                              nothing at all on touch, and no accessible name. It
+                              is the one stock fact the row cannot otherwise show,
+                              since the stock column is the total across variants
+                              and stays healthy while a size is unsellable. */}
                           {p.hasDepletedVariant && (
-                            <span
-                              title={`Variant out of stock: ${p.depletedVariantLabels?.join(", ") || "—"}`}
-                              className="w-2 h-2 rounded-full bg-error dark:bg-error-dark flex-shrink-0 inline-block"
-                            />
+                            <span className="inline-flex items-center gap-1 rounded-md bg-error/10 dark:bg-error-dark/15 px-1.5 py-0.5 text-[10px] font-semibold text-error dark:text-error-dark flex-shrink-0 whitespace-nowrap">
+                              <TriangleAlert size={9} aria-hidden="true" />
+                              {p.depletedVariantLabels?.length
+                                ? `${p.depletedVariantLabels.slice(0, 2).join(", ")} out${p.depletedVariantLabels.length > 2 ? ` +${p.depletedVariantLabels.length - 2}` : ""}`
+                                : "Variant out"}
+                            </span>
                           )}
                           {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-ink dark:text-brand-400 flex-shrink-0">Retail</span>}
                           {p.isActive === false && <Badge tone="neutral">Archived</Badge>}
