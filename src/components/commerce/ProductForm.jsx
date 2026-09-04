@@ -1,13 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import UploadButton from "@/components/common/UploadButton";
 import { api } from "@/lib/api";
 import { productSkuBase, variantSkuSuffix } from "@/lib/sku";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700";
+
+// Attribute rows ({key,value}[]) as the plain object the SKU suffix builder
+// and the API both expect. Rows missing either half are not yet meaningful.
+const attrRowsToObject = (rows = []) =>
+  Object.fromEntries(
+    rows
+      .filter((a) => a.key.trim() && a.value.trim())
+      .map((a) => [a.key.trim(), a.value.trim()])
+  );
 
 // Mirrors the `shortDescription` maxlength on the backend Product model (T39).
 const SHORT_DESCRIPTION_MAX = 200;
@@ -128,6 +138,9 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   );
   const [stock, setStock] = useState(initial?.stock ?? "");
   const [sku, setSku] = useState(initial?.sku || "");
+  // A SKU the user typed themselves is never overwritten by the auto-fill. A
+  // product that arrives with one already saved counts as user-owned too.
+  const [skuTouched, setSkuTouched] = useState(Boolean(initial?.sku));
   const [description, setDescription] = useState(initial?.description || "");
   const [shortDescription, setShortDescription] = useState(initial?.shortDescription || "");
   const [images, setImages] = useState(initial?.images || []);
@@ -135,6 +148,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   const [variants, setVariants] = useState(() =>
     (Array.isArray(initial?.variants) ? initial.variants : []).map((v) => ({
       sku: v.sku || "",
+      skuTouched: Boolean(v.sku),
       attributes: attributesToRows(v.attributes),
       stock: v.stock ?? "",
       images: Array.isArray(v.images) ? v.images : [],
@@ -168,6 +182,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setPriceGhs((Number(initial.price || 0) / 100).toFixed(2));
     setStock(initial.stock ?? "");
     setSku(initial.sku || "");
+    setSkuTouched(Boolean(initial.sku));
     setDescription(initial.description || "");
     setShortDescription(initial.shortDescription || "");
     setImages(initial.images || []);
@@ -175,6 +190,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setVariants(
       (Array.isArray(initial.variants) ? initial.variants : []).map((v) => ({
         sku: v.sku || "",
+        skuTouched: Boolean(v.sku),
         attributes: attributesToRows(v.attributes),
         stock: v.stock ?? "",
         images: Array.isArray(v.images) ? v.images : [],
@@ -204,7 +220,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setVariants((prev) => [
       ...prev,
       {
-        sku: "", attributes: [{ key: "color", value: "" }], stock: "", images: [], priceGhs,
+        sku: "", skuTouched: false, attributes: [{ key: "color", value: "" }], stock: "", images: [], priceGhs,
         preorder: { enabled: false, availableFrom: "", note: "", maxQty: "" },
       },
     ]);
@@ -232,30 +248,89 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       )
     );
 
-  // One-click SKU generators — the API guarantees the returned number/suffix is
-  // unique (see services/skuGenerator.js). Errors keep the current value.
-  const generateProductSku = async () => {
-    try {
-      const res = await api.post("/products/generate-sku", { mode: "product", prefix: productSkuBase(name) });
-      if (res?.data?.sku) setSku(res.data.sku);
-    } catch { /* keep current sku */ }
-  };
+  // --- Automatic SKU fill -------------------------------------------------
+  // The SKU writes itself from the product's own details: the name gives the
+  // EZW-<BRAND> base, a variant's attributes give its suffix, and the API picks
+  // the number so the result is unique (services/skuGenerator.js). Generation
+  // is debounced because it costs a query, and it never runs against a SKU the
+  // user typed themselves. Errors leave the field as it is.
+  const debouncedName = useDebounce(name, 500);
+  const productSkuSeq = useRef(0);
 
-  const generateVariantSku = async (vi) => {
-    try {
-      const attributes = Object.fromEntries(
-        variants[vi].attributes
-          .filter((a) => a.key.trim() && a.value.trim())
-          .map((a) => [a.key.trim(), a.value.trim()])
-      );
-      const res = await api.post("/products/generate-sku", {
-        mode: "variant",
-        parentSku: sku.trim(),
-        suffix: variantSkuSuffix(attributes),
-      });
-      if (res?.data?.sku) updateVariant(vi, "sku", res.data.sku);
-    } catch { /* keep current sku */ }
-  };
+  useEffect(() => {
+    if (skuTouched) return;
+    const base = debouncedName.trim();
+    if (!base) return;
+    const seq = ++productSkuSeq.current;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.post("/products/generate-sku", {
+          mode: "product",
+          prefix: productSkuBase(base),
+        });
+        // Ignore a slow reply the user has already typed past.
+        if (!cancelled && seq === productSkuSeq.current && res?.data?.sku) {
+          setSku(res.data.sku);
+        }
+      } catch { /* keep current sku */ }
+    })();
+    return () => { cancelled = true; };
+  }, [debouncedName, skuTouched]);
+
+  // A variant's SKU hangs off the parent's, so it refills whenever the parent
+  // SKU or the variant's own attributes change. The signature keeps the effect
+  // from re-firing on unrelated variant edits (stock, price, images).
+  const variantSkuSig = variants
+    .map((v) => (v.skuTouched ? "" : variantSkuSuffix(attrRowsToObject(v.attributes))))
+    .join("|");
+  const debouncedVariantSig = useDebounce(variantSkuSig, 500);
+  const variantSkuSeq = useRef(0);
+
+  useEffect(() => {
+    const parent = sku.trim();
+    if (!parent) return;
+    const pending = variants
+      .map((v, vi) => ({ vi, suffix: v.skuTouched ? "" : variantSkuSuffix(attrRowsToObject(v.attributes)) }))
+      .filter((x) => x.suffix);
+    if (!pending.length) return;
+
+    const seq = ++variantSkuSeq.current;
+    let cancelled = false;
+    (async () => {
+      // Sequential, not parallel: the API only knows about saved SKUs, so two
+      // unsaved siblings can be handed the same string. Tracking what this form
+      // has already claimed lets us step past a clash the way the server does.
+      const claimed = new Set(variants.map((v) => v.sku.trim()).filter(Boolean));
+      for (const { vi, suffix } of pending) {
+        if (cancelled || seq !== variantSkuSeq.current) return;
+        try {
+          const res = await api.post("/products/generate-sku", {
+            mode: "variant",
+            parentSku: parent,
+            suffix,
+          });
+          let next = res?.data?.sku;
+          if (!next) continue;
+          if (claimed.has(next)) {
+            let i = 2;
+            while (claimed.has(`${next}-${i}`)) i += 1;
+            next = `${next}-${i}`;
+          }
+          claimed.add(next);
+          if (!cancelled && seq === variantSkuSeq.current) {
+            setVariants((prev) =>
+              prev.map((v, i) => (i === vi && !v.skuTouched ? { ...v, sku: next } : v))
+            );
+          }
+        } catch { /* keep current sku */ }
+      }
+    })();
+    return () => { cancelled = true; };
+    // `variants` is intentionally absent — the signature stands in for the parts
+    // of it that matter, so editing stock or price does not regenerate SKUs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedVariantSig, sku]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -319,11 +394,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       variants: variants
         .map((v) => ({
           sku: v.sku.trim(),
-          attributes: Object.fromEntries(
-            v.attributes
-              .filter((a) => a.key.trim() && a.value.trim())
-              .map((a) => [a.key.trim(), a.value.trim()])
-          ),
+          attributes: attrRowsToObject(v.attributes),
           stock: v.stock === "" || v.stock == null ? 0 : parseInt(v.stock, 10) || 0,
           images: v.images.filter(Boolean),
           price:
@@ -445,12 +516,12 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
             placeholder="0"
           />
         </Field>
-        <Field label="SKU">
+        <Field label="SKU" hint="Fills itself from the name — type to override.">
           <input
             className={inputClass}
             value={sku}
-            onChange={(e) => setSku(e.target.value)}
-            placeholder="optional"
+            onChange={(e) => { setSku(e.target.value); setSkuTouched(true); }}
+            placeholder="e.g. EZW-WOO-001"
           />
         </Field>
 
@@ -589,8 +660,14 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
                 <input
                   className={inputClass}
                   value={v.sku}
-                  onChange={(e) => updateVariant(vi, "sku", e.target.value)}
-                  placeholder="e.g. EZW-SPG-001-BLK"
+                  onChange={(e) =>
+                    setVariants((prev) =>
+                      prev.map((x, i) =>
+                        i === vi ? { ...x, sku: e.target.value, skuTouched: true } : x
+                      )
+                    )
+                  }
+                  placeholder="auto-generated from attributes"
                 />
               </Field>
               <Field label="Stock">

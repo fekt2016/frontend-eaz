@@ -4,8 +4,12 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 // T34: main product images were a URL-only textarea; now reuses the same
 // StringListEditor + Cloudinary UploadButton the variant/gallery fields use.
 const mockUpload = vi.fn();
+const mockPost = vi.fn();
 vi.mock("@/lib/api", () => ({
-  api: { upload: (...args) => mockUpload(...args) },
+  api: {
+    upload: (...args) => mockUpload(...args),
+    post: (...args) => mockPost(...args),
+  },
 }));
 
 import ProductForm from "./ProductForm";
@@ -186,6 +190,98 @@ describe("ProductForm — per-variant pre-order (edit modal)", () => {
       availableFrom: "2026-10-01",
       note: "ships from abroad",
       maxQty: 4,
+    });
+  });
+});
+
+
+// The SKU field derives itself from the product's own details rather than
+// waiting on a button — the generator functions shipped in c8753d7 were never
+// wired to any UI, so until now the field was purely manual.
+describe("ProductForm — automatic SKU fill", () => {
+  beforeEach(() => {
+    mockPost.mockReset();
+    mockUpload.mockReset();
+  });
+
+  const skuField = () => screen.getByPlaceholderText("e.g. EZW-WOO-001");
+
+  it("fills the SKU from the product name, sending the derived prefix", async () => {
+    mockPost.mockResolvedValue({ data: { sku: "EZW-WOO-001" } });
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. Wooden Dining Table"), {
+      target: { value: "Wooden Dining Table" },
+    });
+
+    await waitFor(
+      () => expect(skuField()).toHaveValue("EZW-WOO-001"),
+      { timeout: 3000 }
+    );
+    expect(mockPost).toHaveBeenCalledWith("/products/generate-sku", {
+      mode: "product",
+      prefix: "EZW-WOO",
+    });
+  });
+
+  it("never overwrites a SKU the user typed themselves", async () => {
+    mockPost.mockResolvedValue({ data: { sku: "EZW-WOO-001" } });
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+
+    fireEvent.change(skuField(), { target: { value: "MY-OWN-SKU" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. Wooden Dining Table"), {
+      target: { value: "Wooden Dining Table" },
+    });
+
+    await new Promise((r) => setTimeout(r, 900));
+    expect(skuField()).toHaveValue("MY-OWN-SKU");
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("leaves an existing product's saved SKU alone", async () => {
+    mockPost.mockResolvedValue({ data: { sku: "EZW-NEW-009" } });
+    render(
+      <ProductForm
+        submitLabel="Save"
+        onSubmit={vi.fn()}
+        initial={{ name: "Wooden Dining Table", category: "Furniture", price: 25000, sku: "EZW-WOO-001" }}
+      />
+    );
+
+    await new Promise((r) => setTimeout(r, 900));
+    expect(skuField()).toHaveValue("EZW-WOO-001");
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("fills a variant's SKU from its attributes once the parent SKU exists", async () => {
+    mockPost.mockImplementation((_url, body) =>
+      Promise.resolve({
+        data: { sku: body.mode === "variant" ? "EZW-WOO-001-BLA" : "EZW-WOO-001" },
+      })
+    );
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. Wooden Dining Table"), {
+      target: { value: "Wooden Dining Table" },
+    });
+    await waitFor(() => expect(skuField()).toHaveValue("EZW-WOO-001"), { timeout: 3000 });
+
+    fireEvent.click(screen.getByText("Add variant"));
+    fireEvent.change(screen.getAllByPlaceholderText("Value (e.g. Black)")[0], {
+      target: { value: "Black" },
+    });
+
+    await waitFor(
+      () =>
+        expect(screen.getByPlaceholderText("auto-generated from attributes")).toHaveValue(
+          "EZW-WOO-001-BLA"
+        ),
+      { timeout: 3000 }
+    );
+    expect(mockPost).toHaveBeenCalledWith("/products/generate-sku", {
+      mode: "variant",
+      parentSku: "EZW-WOO-001",
+      suffix: "BLA",
     });
   });
 });
