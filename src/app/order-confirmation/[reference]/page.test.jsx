@@ -55,6 +55,27 @@ describe("Order confirmation — tracking number (T62)", () => {
     expect(screen.getByText(/we'll email you as soon as it reaches our shop/i)).toBeInTheDocument();
   });
 
+  it("shows where the pre-ordered goods actually are, not just a promise", () => {
+    // The copy alone said "we'll email you"; it never said the item is being made
+    // in China. The journey belongs on the page the customer lands on after paying.
+    mockOrder.mockReturnValue(baseOrder({
+      items: [{ name: "Imported Phone", qty: 1, price: 500000, isPreorder: true }],
+      preorder: {
+        stage: "on_the_way",
+        label: "On its way",
+        origin: "China",
+        items: [{ name: "Imported Phone", qty: 1 }],
+        history: [{ stage: "preparing", label: "Preparing with our supplier", date: "2026-07-10T00:00:00Z" }],
+      },
+    }));
+
+    render(<OrderConfirmationPage params={{ reference: "ORD_1" }} />);
+
+    expect(screen.getAllByText("On its way").length).toBeGreaterThan(0);
+    expect(screen.getByText("Coming from China")).toBeInTheDocument();
+    expect(screen.getByText("10 July 2026")).toBeInTheDocument();
+  });
+
   it("says nothing about pre-orders for an ordinary order", () => {
     render(<OrderConfirmationPage params={{ reference: "ORD_1" }} />);
     expect(screen.queryByText(/pre-order/i)).toBeNull();
