@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { formatGhs } from "@/lib/shop";
+import { cartLineCeiling, formatGhs } from "@/lib/shop";
 import ProductImage from "@/components/shop/ProductImage";
 
 export default function CartItems() {
@@ -106,7 +106,7 @@ const href = (slug) => (slug?.startsWith("part-") ? null : `/shop/${slug}`);
                 <span className="w-5 text-center text-xs font-semibold text-gray-900 dark:text-white">{item.qty}</span>
                 <button
                   type="button"
-                  disabled={item.qty >= item.stock}
+                  disabled={item.qty >= cartLineCeiling(item)}
                   onClick={() => updateQty(item.lineId, item.qty + 1)}
                   className="text-gray-600 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white transition disabled:opacity-40"
                   aria-label="Increase quantity"

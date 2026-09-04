@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isPreorderable, isVariantPreorderable, canPreorder } from "./shop";
+import { isPreorderable, isVariantPreorderable, canPreorder, resolvePreorder, cartLineCeiling } from "./shop";
 
 // The storefront must not refuse what checkout would accept, nor offer what it
 // would reject. These mirror resolveVariantPreorder in the order controller:
@@ -50,5 +50,53 @@ describe("canPreorder", () => {
     const p = product({ enabled: true });
     expect(canPreorder(p, 3)).toBe(false);
     expect(canPreorder(p, 0)).toBe(true);
+  });
+});
+
+// The date, note and cap are per-level too. Showing the product's (usually
+// empty) copy beside a variant that ships from abroad misleads the buyer, and
+// enforcing the product's cap on a variant with a tighter one oversells it.
+describe("resolvePreorder terms", () => {
+  const p = product({ enabled: true, note: "product note", maxQty: 10, availableFrom: "2026-01-01" }, []);
+
+  it("returns the variant's own terms when the variant opted in", () => {
+    const terms = resolvePreorder(p, {
+      sku: "V1",
+      preorder: { enabled: true, note: "ships from abroad", maxQty: 2, availableFrom: "2026-03-01" },
+    });
+    expect(terms).toEqual({ availableFrom: "2026-03-01", note: "ships from abroad", maxQty: 2 });
+  });
+
+  it("falls through to the product's terms when the variant is unset", () => {
+    const terms = resolvePreorder(p, { sku: "V1" });
+    expect(terms).toEqual({ availableFrom: "2026-01-01", note: "product note", maxQty: 10 });
+  });
+
+  it("is null when the variant opted out", () => {
+    expect(resolvePreorder(p, { sku: "V1", preorder: { enabled: false } })).toBeNull();
+  });
+
+  it("is null when neither level says yes", () => {
+    expect(resolvePreorder(product({ enabled: false }), { sku: "V1" })).toBeNull();
+  });
+});
+
+// A pre-order line holds no stock, so bounding its quantity by `stock` pinned it
+// at one unit — the cart's + button sat disabled and updateQty floored it back.
+describe("cartLineCeiling", () => {
+  it("bounds an ordinary line by its stock", () => {
+    expect(cartLineCeiling({ stock: 3 })).toBe(3);
+  });
+
+  it("bounds a pre-order line by its cap, not its zero stock", () => {
+    expect(cartLineCeiling({ stock: 0, isPreorder: true, preorderMaxQty: 2 })).toBe(2);
+  });
+
+  it("gives an uncapped pre-order the same 10 the product page uses", () => {
+    expect(cartLineCeiling({ stock: 0, isPreorder: true, preorderMaxQty: null })).toBe(10);
+  });
+
+  it("never lets a cap exceed 10", () => {
+    expect(cartLineCeiling({ stock: 0, isPreorder: true, preorderMaxQty: 50 })).toBe(10);
   });
 });

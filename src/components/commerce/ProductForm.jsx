@@ -156,7 +156,9 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       // Per-variant pre-order, independent of the product-level flag — a
       // single 0-stock size can be pre-ordered while its siblings stay in stock.
       preorder: {
-        enabled: v.preorder?.enabled ?? false,
+        // null = unset: this variant follows the product-level pre-order. Kept
+        // distinct from an explicit false ("never"), which overrides it.
+        enabled: typeof v.preorder?.enabled === "boolean" ? v.preorder.enabled : null,
         availableFrom: v.preorder?.availableFrom ? new Date(v.preorder.availableFrom).toISOString().slice(0, 10) : "",
         note: v.preorder?.note || "",
         maxQty: v.preorder?.maxQty ?? "",
@@ -195,7 +197,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         images: Array.isArray(v.images) ? v.images : [],
         priceGhs: v.price != null ? (Number(v.price) / 100).toFixed(2) : "",
         preorder: {
-          enabled: v.preorder?.enabled ?? false,
+          enabled: typeof v.preorder?.enabled === "boolean" ? v.preorder.enabled : null,
           availableFrom: v.preorder?.availableFrom ? new Date(v.preorder.availableFrom).toISOString().slice(0, 10) : "",
           note: v.preorder?.note || "",
           maxQty: v.preorder?.maxQty ?? "",
@@ -221,7 +223,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       ...prev,
       {
         sku: "", skuTouched: false, attributes: [{ key: "color", value: "" }], stock: "", images: [], priceGhs,
-        preorder: { enabled: false, availableFrom: "", note: "", maxQty: "" },
+        preorder: { enabled: null, availableFrom: "", note: "", maxQty: "" },
       },
     ]);
 
@@ -410,8 +412,11 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
             v.priceGhs === "" || v.priceGhs == null
               ? null
               : Math.round((parseFloat(v.priceGhs) || 0) * 100),
+          // Three states, not two. Sending `false` for a variant nobody touched
+          // used to mean "never pre-order this one", which switched off a
+          // product-level pre-order for every variant on the first admin save.
           preorder: {
-            enabled: v.preorder?.enabled ?? false,
+            enabled: typeof v.preorder?.enabled === "boolean" ? v.preorder.enabled : null,
             availableFrom: v.preorder?.availableFrom || null,
             note: (v.preorder?.note || "").trim(),
             maxQty:
@@ -758,19 +763,28 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
 
             {/* Per-variant pre-order — independent of the product-level flag. */}
             <div className="rounded-lg border border-gray-100 dark:border-slate-800 p-3 space-y-3">
-              <label className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={v.preorder?.enabled ?? false}
-                  onChange={(e) => updateVariant(vi, "preorder", { ...v.preorder, enabled: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 dark:border-slate-600"
-                />
-                Pre-order this variant
-              </label>
+              <Field label="Pre-order">
+                <select
+                  className={inputClass}
+                  value={v.preorder?.enabled === true ? "on" : v.preorder?.enabled === false ? "off" : "inherit"}
+                  onChange={(e) =>
+                    updateVariant(vi, "preorder", {
+                      ...v.preorder,
+                      enabled: e.target.value === "on" ? true : e.target.value === "off" ? false : null,
+                    })
+                  }
+                >
+                  <option value="inherit">
+                    Follow the product{preorderEnabled ? " (pre-order is on)" : " (pre-order is off)"}
+                  </option>
+                  <option value="on">Pre-order this variant</option>
+                  <option value="off">Never pre-order this variant</option>
+                </select>
+              </Field>
               <p className="text-xs text-gray-500 dark:text-slate-500 -mt-1">
                 Lets this single size be bought when its stock is zero, even if sibling variants are in stock.
               </p>
-              {v.preorder?.enabled && (
+              {v.preorder?.enabled === true && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-slate-800">
                   <Field label="Expected availability">
                     <input

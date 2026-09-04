@@ -88,23 +88,53 @@ export function isPreorderable(product) {
 // size is. With no variant selected (or no variants at all), fall back to the
 // product as a whole, matching the grid card.
 export function isVariantPreorderable(product, selectedVariant) {
+  return Boolean(resolvePreorder(product, selectedVariant));
+}
+
+/**
+ * The pre-order terms that actually apply to what the shopper has selected —
+ * `{ availableFrom, note, maxQty }` — or null when this selection cannot be
+ * pre-ordered at all.
+ *
+ * Mirror of resolveVariantPreorder in orderController: the variant's own flag
+ * wins when it is an explicit boolean, and UNSET (null/undefined) falls through
+ * to the product. Reading only the variant's flag meant a product-level
+ * pre-order reached none of its variants — the storefront showed "Out of Stock"
+ * while checkout would have accepted the order.
+ *
+ * It returns the terms rather than a boolean because the date, note and cap are
+ * per-level too: a variant that ships from abroad carries its own ETA, and
+ * showing the product's (usually empty) copy beside it misleads the buyer.
+ */
+export function resolvePreorder(product, selectedVariant) {
+  const own = selectedVariant?.preorder;
   if (selectedVariant?.sku) {
-    // Mirror of resolveVariantPreorder in orderController: the variant's own
-    // flag wins when it is an explicit boolean, and UNSET falls through to the
-    // product. Reading only the variant's flag meant a product-level pre-order
-    // reached none of its variants — the storefront showed "Out of Stock" while
-    // checkout would have accepted the order.
-    const own = selectedVariant.preorder?.enabled;
-    if (typeof own === "boolean") return own;
-    return Boolean(product?.preorder?.enabled);
+    if (own && typeof own.enabled === "boolean") {
+      if (!own.enabled) return null;
+      return {
+        availableFrom: own.availableFrom ?? null,
+        note: own.note || "",
+        maxQty: own.maxQty ?? null,
+      };
+    }
+    if (!product?.preorder?.enabled) return null;
+  } else if (!isPreorderable(product)) {
+    return null;
   }
-  return isPreorderable(product);
+  return {
+    availableFrom: product?.preorder?.availableFrom ?? null,
+    note: product?.preorder?.note || "",
+    maxQty: product?.preorder?.maxQty ?? null,
+  };
 }
 
 // Human copy for when a pre-ordered item is expected. Returns "" when there is
 // nothing honest to say, so callers can render nothing rather than "expected null".
-export function preorderAvailability(product) {
-  const { availableFrom, note } = product?.preorder || {};
+export function preorderAvailability(product, selectedVariant) {
+  const { availableFrom, note } =
+    (selectedVariant === undefined ? null : resolvePreorder(product, selectedVariant)) ||
+    product?.preorder ||
+    {};
   const parts = [];
   if (availableFrom) {
     const when = new Date(availableFrom);
@@ -140,6 +170,20 @@ export function formatShippingMethod(order) {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
   return `Courier — ${pretty}`;
+}
+
+/**
+ * How many of one cart line a shopper may hold.
+ *
+ * A pre-order line draws on no stock, so clamping it to `stock` (always 0)
+ * pinned it at one unit — the quantity stepper sat disabled and updateQty
+ * floored every change back to 1. Its ceiling is the pre-order cap instead,
+ * with the same 10 the product page uses, and the server re-checks the cap at
+ * checkout regardless.
+ */
+export function cartLineCeiling(item) {
+  if (item?.isPreorder) return Math.min(item.preorderMaxQty || 10, 10);
+  return Number(item?.stock) || 0;
 }
 
 /*

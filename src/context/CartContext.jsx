@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { api } from "@/lib/api";
+import { cartLineCeiling } from "@/lib/shop";
 
 const CartContext = createContext(null);
 
@@ -146,9 +147,9 @@ export function CartProvider({ children }) {
       const selected = product.variants?.find((v) => v.sku === variant?.sku);
       const stock = selected ? Number(selected.stock) || 0 : Number(product.stock) || 0;
       if (stock <= 0 && !preorder) return prev;
-      const ceiling = preorder
-        ? Math.min(preorder.maxQty || 10, 10)
-        : stock;
+      const ceiling = cartLineCeiling(
+        preorder ? { isPreorder: true, preorderMaxQty: preorder.maxQty } : { stock },
+      );
       const addQty = Math.min(Math.max(Math.floor(qty) || 1, 1), ceiling);
       const lineId = selected ? `${product.slug}::${selected.sku}` : product.slug;
       const existing = prev.find((i) => i.lineId === lineId);
@@ -171,6 +172,9 @@ export function CartProvider({ children }) {
           image: selected?.images?.[0] || product.images?.[0] || "",
           category: product.category,
           stock,
+          // Carried on the line so the cart keeps treating it as a pre-order:
+          // its quantity ceiling is the cap, not the (zero) stock.
+          ...(preorder && { isPreorder: true, preorderMaxQty: preorder.maxQty ?? null }),
           qty: addQty,
         },
       ];
@@ -185,7 +189,7 @@ export function CartProvider({ children }) {
     setItems((prev) =>
       prev.map((i) => {
         if (i.lineId !== lineId) return i;
-        const nextQty = Math.max(1, Math.min(Math.floor(qty) || 1, i.stock));
+        const nextQty = Math.max(1, Math.min(Math.floor(qty) || 1, cartLineCeiling(i)));
         return { ...i, qty: nextQty };
       })
     );

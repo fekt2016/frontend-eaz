@@ -152,17 +152,68 @@ describe("ProductForm — per-variant pre-order (edit modal)", () => {
     expect(screen.getByDisplayValue("V1-128")).toBeInTheDocument();
     expect(screen.getByDisplayValue("V2-256")).toBeInTheDocument();
 
-    // One pre-order toggle per variant.
-    const toggles = screen.getAllByText("Pre-order this variant");
-    expect(toggles).toHaveLength(2);
+    // One pre-order control per variant — three-state, because "follow the
+    // product" is not the same answer as "never pre-order this one".
+    const controls = screen
+      .getAllByRole("combobox")
+      .filter((el) => Array.from(el.options || []).some((o) => o.value === "on"));
+    expect(controls).toHaveLength(2);
 
     // Flag only the first (0-stock) variant.
-    fireEvent.click(toggles[0]);
+    fireEvent.change(controls[0], { target: { value: "on" } });
     fireEvent.click(screen.getByText("Save"));
 
     const payload = onSubmit.mock.calls[0][0];
     expect(payload.variants[0].preorder.enabled).toBe(true);
-    expect(payload.variants[1].preorder.enabled).toBe(false);
+    // The untouched variant stays UNSET. Submitting `false` here used to mean
+    // "never pre-order this one", which switched a product-level pre-order off
+    // for every variant the first time an admin saved the product.
+    expect(payload.variants[1].preorder.enabled).toBeNull();
+  });
+
+  it("keeps a variant unset so a product-level pre-order still reaches it", () => {
+    const onSubmit = vi.fn();
+    render(
+      <ProductForm
+        submitLabel="Save"
+        onSubmit={onSubmit}
+        initial={{
+          name: "Phone",
+          category: "Phones",
+          price: 50000,
+          preorder: { enabled: true },
+          variants: [{ sku: "V1", attributes: { storage: "128GB" }, stock: 0 }],
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByText("Save"));
+    expect(onSubmit.mock.calls[0][0].variants[0].preorder.enabled).toBeNull();
+  });
+
+  it("lets a variant opt out explicitly", () => {
+    const onSubmit = vi.fn();
+    render(
+      <ProductForm
+        submitLabel="Save"
+        onSubmit={onSubmit}
+        initial={{
+          name: "Phone",
+          category: "Phones",
+          price: 50000,
+          preorder: { enabled: true },
+          variants: [{ sku: "V1", attributes: { storage: "128GB" }, stock: 0 }],
+        }}
+      />
+    );
+
+    const control = screen
+      .getAllByRole("combobox")
+      .find((el) => Array.from(el.options || []).some((o) => o.value === "off"));
+    fireEvent.change(control, { target: { value: "off" } });
+    fireEvent.click(screen.getByText("Save"));
+
+    expect(onSubmit.mock.calls[0][0].variants[0].preorder.enabled).toBe(false);
   });
 
   it("pre-fills a variant's pre-order fields when it is already flagged", () => {

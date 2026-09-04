@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Eye, Minus, Package, Play, Plus, Search, ShoppingBag } from "lucide-react";
 import {
-  formatCount, formatGhs, stockBadge, placeholderToPng, preorderAvailability, isVariantPreorderable,
+  formatCount, formatGhs, stockBadge, placeholderToPng, preorderAvailability, resolvePreorder,
   variantAttributeGroups, findVariantByAttributes, isAttributeValueAvailable, selectAttributeValue,
   attributeValueImage, swatchAttributeKey, variantsShowImages,
 } from "@/lib/shop";
@@ -164,16 +164,20 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   // `preorderable` is the only thing standing between "Out of Stock" and a sale.
   // It is scoped to the selected variant: a 0-stock size that is not itself
   // flagged must not be pre-orderable just because a sibling size is.
-  const preorderable = isVariantPreorderable(product, selectedVariant) && displayStock <= 0;
-  const badge = stockBadge(displayStock, isVariantPreorderable(product, selectedVariant));
+  // The terms that apply to THIS selection — the variant's own when it has
+  // opted in, the product's when the variant is unset. One resolution feeds the
+  // button, the cap and the copy, so they can never disagree with each other.
+  const preorderTerms = resolvePreorder(product, selectedVariant);
+  const preorderable = Boolean(preorderTerms) && displayStock <= 0;
+  const badge = stockBadge(displayStock, Boolean(preorderTerms));
   const inStock = displayStock > 0;
-  // A pre-order draws on no stock, so the quantity ceiling is the product's own
+  // A pre-order draws on no stock, so the quantity ceiling is the resolved
   // cap instead — the server enforces the same number at checkout.
   const maxQty = preorderable
-    ? Math.min(selectedVariant?.preorder?.maxQty ?? product.preorder?.maxQty ?? 10, 10)
+    ? Math.min(preorderTerms.maxQty ?? 10, 10)
     : Math.min(displayStock, 10);
   const orderable = inStock || preorderable;
-  const availabilityCopy = preorderAvailability(product);
+  const availabilityCopy = preorderAvailability(product, selectedVariant);
 
   const selectVariant = (variant) => {
     setSelectedSku(variant.sku);
@@ -200,9 +204,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
 
   const handleAddToCart = () => {
     if (!product || (hasVariants && !selectedVariant)) return;
-    const preorder = preorderable
-      ? { maxQty: selectedVariant?.preorder?.maxQty ?? product.preorder?.maxQty }
-      : null;
+    const preorder = preorderable ? { maxQty: preorderTerms.maxQty ?? undefined } : null;
     addItem(product, qty, selectedVariant || undefined, preorder);
     openCart();
   };
@@ -590,7 +592,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                 <p className="text-xs text-blue-600 dark:text-blue-300 mt-3">
                   Pre-order — you pay now and we ship as soon as it arrives.
                   {availabilityCopy ? ` ${availabilityCopy}.` : ""}
-                  {product.preorder?.maxQty ? ` Limit ${product.preorder.maxQty} per order.` : ""}
+                  {preorderTerms?.maxQty ? ` Limit ${preorderTerms.maxQty} per order.` : ""}
                 </p>
               ) : (
                 <p className="text-xs text-gray-600 dark:text-slate-500 mt-3">
