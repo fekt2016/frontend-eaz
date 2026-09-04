@@ -285,3 +285,76 @@ describe("ProductForm — automatic SKU fill", () => {
     });
   });
 });
+
+// The storefront only splits colour and size into separate rows when every
+// variant declares the same attribute keys. Keys are free text here, so "color"
+// on one variant and "Color" on the next silently costs the shopper that picker
+// — with nothing on the form to say why. These cover the guard.
+describe("ProductForm — variant attribute keys", () => {
+  beforeEach(() => {
+    mockPost.mockReset();
+    mockUpload.mockReset();
+  });
+
+  function addVariantWith(key, value, index) {
+    fireEvent.click(screen.getByText("Add variant"));
+    const keys = screen.getAllByPlaceholderText("Key (e.g. color)");
+    const values = screen.getAllByPlaceholderText("Value (e.g. Black)");
+    fireEvent.change(keys[index], { target: { value: key } });
+    fireEvent.change(values[index], { target: { value } });
+  }
+
+  const warning = () => screen.queryByText(/don't share the same attributes/i);
+
+  it("offers the keys already used on this product, so the next variant reuses them", () => {
+    const { container } = render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("storage", "128GB", 0);
+
+    const list = container.querySelector("datalist#variant-attribute-keys");
+    expect(list).toBeInTheDocument();
+    expect([...list.querySelectorAll("option")].map((o) => o.value)).toContain("storage");
+    // And the key inputs actually point at it.
+    expect(screen.getAllByPlaceholderText("Key (e.g. color)")[0]).toHaveAttribute("list", "variant-attribute-keys");
+  });
+
+  it("stays quiet while every variant declares the same keys", () => {
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("color", "Black", 0);
+    addVariantWith("color", "Blue", 1);
+    expect(warning()).not.toBeInTheDocument();
+  });
+
+  it("warns when the keys diverge, naming what the shop will do instead", () => {
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("color", "Black", 0);
+    addVariantWith("Color", "Blue", 1);   // capital C — a different key
+    expect(warning()).toBeInTheDocument();
+  });
+
+  it("does not warn on a single variant — there is no picker to lose yet", () => {
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("color", "Black", 0);
+    expect(warning()).not.toBeInTheDocument();
+  });
+
+  it("aligns the keys across variants on request, without touching existing values", () => {
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("color", "Black", 0);
+    fireEvent.click(screen.getByText("Add variant"));
+    // Second variant: replace its seeded colour row with a different key.
+    const keys = screen.getAllByPlaceholderText("Key (e.g. color)");
+    fireEvent.change(keys[1], { target: { value: "storage" } });
+    fireEvent.change(screen.getAllByPlaceholderText("Value (e.g. Black)")[1], { target: { value: "128GB" } });
+    expect(warning()).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(/give every variant the same attributes/i));
+
+    // Both keys now present on both variants, and the typed values survive.
+    const allKeys = screen.getAllByPlaceholderText("Key (e.g. color)").map((i) => i.value);
+    expect(allKeys.filter((k) => k === "color")).toHaveLength(2);
+    expect(allKeys.filter((k) => k === "storage")).toHaveLength(2);
+    const allValues = screen.getAllByPlaceholderText("Value (e.g. Black)").map((i) => i.value);
+    expect(allValues).toContain("Black");
+    expect(allValues).toContain("128GB");
+  });
+});

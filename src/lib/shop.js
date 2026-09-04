@@ -134,3 +134,175 @@ export function formatShippingMethod(order) {
     .join(" ");
   return `Courier — ${pretty}`;
 }
+
+/*
+ * Per-attribute variant selection.
+ *
+ * Variants store their options as a flat object — { color: "Black", storage:
+ * "128GB" } — and the detail page used to render one button per variant with
+ * every value crammed into the label. Three colours by three sizes is nine
+ * buttons reading "Natural Titanium 128GB", and the shopper has to scan the
+ * whole list to find the pairing they want. These helpers split that into one
+ * row per attribute, which is how a size/colour picker is expected to behave.
+ */
+
+/** "color" → "Color", "screenSize" → "Screen size". Attribute keys are author-typed. */
+export function attributeLabel(key) {
+  const spaced = String(key || "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .toLowerCase()
+    .trim();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+/**
+ * One group per attribute, in the order the first variant declares them, each
+ * with its distinct values in first-seen order.
+ *
+ * Returns `null` when the variants do not all describe the same attributes —
+ * a product mixing `{grade}` with `{color, storage}` cannot be laid out as a
+ * grid without inventing combinations that do not exist, so the caller should
+ * fall back to listing whole variants.
+ */
+export function variantAttributeGroups(variants = []) {
+  const usable = (variants || []).filter((v) => v && v.attributes && Object.keys(v.attributes).length);
+  if (!usable.length || usable.length !== (variants || []).length) return null;
+
+  const keys = Object.keys(usable[0].attributes);
+  const sameShape = usable.every((v) => {
+    const k = Object.keys(v.attributes);
+    return k.length === keys.length && keys.every((key) => k.includes(key));
+  });
+  if (!sameShape) return null;
+
+  return keys.map((key) => ({
+    key,
+    label: attributeLabel(key),
+    values: [...new Set(usable.map((v) => String(v.attributes[key])))],
+  }));
+}
+
+/**
+ * The variant matching every selected attribute, or null while the choice is
+ * incomplete. Every attribute the variant declares has to be chosen — matching
+ * on a partial selection would let a shopper add "Black" to the cart without
+ * ever picking a size.
+ */
+export function findVariantByAttributes(variants = [], selection = {}) {
+  if (!Object.keys(selection || {}).length) return null;
+  return (
+    (variants || []).find(
+      (v) =>
+        v?.attributes &&
+        Object.keys(v.attributes).every(
+          (k) => k in selection && String(selection[k]) === String(v.attributes[k])
+        )
+    ) || null
+  );
+}
+
+/** Does any variant satisfy every pair chosen so far? Partial selections count. */
+function someVariantSatisfies(variants = [], selection = {}) {
+  const entries = Object.entries(selection || {});
+  return (variants || []).some(
+    (v) => v?.attributes && entries.every(([k, val]) => String(v.attributes[k]) === String(val))
+  );
+}
+
+/**
+ * Would choosing `value` for `key` still name a real variant, given what else is
+ * chosen? Used to grey out combinations that were never stocked — "Red" when Red
+ * only ever came in 1m, say. Deliberately ignores stock: a 0-stock variant may
+ * still be pre-orderable, and hiding it would lose that sale.
+ */
+export function isAttributeValueAvailable(variants = [], selection = {}, key, value) {
+  const others = Object.entries(selection || {}).filter(([k]) => k !== key);
+  return (variants || []).some(
+    (v) =>
+      v?.attributes &&
+      String(v.attributes[key]) === String(value) &&
+      others.every(([k, val]) => String(v.attributes[k]) === String(val))
+  );
+}
+
+/**
+ * Choosing `value` for `key`, keeping the rest of the selection where it still
+ * works. When the exact pairing was never stocked, the other attributes move to
+ * whatever the first variant carrying this value has, so a shopper picking a
+ * colour is never left on a dead combination.
+ */
+export function selectAttributeValue(variants = [], selection = {}, key, value) {
+  const next = { ...selection, [key]: value };
+  // Still a real combination — including a half-made one, which stays half-made
+  // so the shopper picks the remaining attributes themselves.
+  if (someVariantSatisfies(variants, next)) return next;
+  const fallback = (variants || []).find((v) => v?.attributes && String(v.attributes[key]) === String(value));
+  return fallback ? { ...fallback.attributes } : { ...selection, [key]: value };
+}
+
+/**
+ * The image standing for one attribute value — the first variant carrying that
+ * value which has a picture of its own.
+ *
+ * Used to turn the attribute row into image swatches: a shopper picks "Blue" by
+ * clicking the blue phone, not by reading the word. A value maps to several
+ * variants (Black/128GB and Black/256GB), and they share a colour, so the first
+ * one with an image is the right representative.
+ */
+export function attributeValueImage(variants = [], key, value) {
+  const match = (variants || []).find(
+    (v) => v?.attributes && String(v.attributes[key]) === String(value) && v.images?.length
+  );
+  return match ? match.images[0] : null;
+}
+
+/**
+ * Does this attribute identify a variant's picture? True when at least two of
+ * its values have different images.
+ *
+ * Not enough on its own to decide swatches: every variant tends to carry its own
+ * photo, so "128GB" and "256GB" resolve to two different pictures — of two
+ * different COLOURS — and storage would wrongly earn swatches showing a black
+ * phone next to a blue one. See swatchAttributeKey.
+ */
+export function attributeHasDistinctImages(variants = [], key, values = []) {
+  const images = values.map((v) => attributeValueImage(variants, key, v)).filter(Boolean);
+  return images.length >= 2 && new Set(images).size >= 2;
+}
+
+/** Does this attribute key name a colour? Accepts both spellings. */
+export function isColourKey(key) {
+  return /colou?r/i.test(String(key || ""));
+}
+
+/**
+ * The ONE attribute whose values are shown as image swatches, or null for none.
+ *
+ * Only ever colour, and only when its values genuinely have different pictures.
+ *
+ * Two rules are folded in here. Showing photos against SIZE is worse than
+ * useless: two storages of one phone resolve to different-coloured photos, so
+ * the row implies a colour choice that picking a size never makes. And a
+ * product with NO colour — a screen assembly sold by grade — gets no swatches at
+ * all: those pictures differ only by their caption, so the thumbnails would be
+ * near-identical squares where plain text reads better and takes less room.
+ */
+export function swatchAttributeKey(groups = [], variants = []) {
+  const colour = (groups || []).find((g) => isColourKey(g.key));
+  if (!colour) return null;
+  return attributeHasDistinctImages(variants, colour.key, colour.values) ? colour.key : null;
+}
+
+/**
+ * Should a plain list of whole variants show pictures rather than labels? Same
+ * rule: only when the variants describe a colour and were actually photographed.
+ */
+export function variantsShowImages(variants = []) {
+  const withColour = (variants || []).filter(
+    (v) => v?.attributes && Object.keys(v.attributes).some(isColourKey)
+  );
+  if (withColour.length < 2) return false;
+  const images = withColour.map((v) => v.images?.[0]).filter(Boolean);
+  return images.length >= 2 && new Set(images).size >= 2;
+}

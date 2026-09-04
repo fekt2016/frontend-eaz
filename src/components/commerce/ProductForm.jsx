@@ -6,6 +6,7 @@ import UploadButton from "@/components/common/UploadButton";
 import { api } from "@/lib/api";
 import { productSkuBase, variantSkuSuffix } from "@/lib/sku";
 import { useDebounce } from "@/hooks/useDebounce";
+import { variantAttributeGroups } from "@/lib/shop";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700";
@@ -246,6 +247,41 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
         i === vi ? { ...v, attributes: v.attributes.filter((_, j) => j !== ai) } : v
       )
     );
+
+  /*
+   * Attribute-key consistency.
+   *
+   * The storefront only splits colour and size into separate rows when EVERY
+   * variant declares the SAME attribute keys (lib/shop.js variantAttributeGroups).
+   * Keys here are free text, so "color" on one variant and "Color" on the next
+   * silently drops the shopper back to one row of combined labels — with nothing
+   * on this form to say why. The check below is the storefront's own function, so
+   * the warning cannot drift from the behaviour it predicts.
+   */
+  const attributeKeysInUse = [
+    ...new Set(
+      variants.flatMap((v) => v.attributes.map((a) => a.key.trim()).filter(Boolean))
+    ),
+  ];
+  const pickerGroups = variantAttributeGroups(
+    variants.map((v) => ({ attributes: attrRowsToObject(v.attributes) }))
+  );
+  // Only worth flagging once there is a picker to lose.
+  const keysAreInconsistent = variants.length > 1 && !pickerGroups;
+
+  /** Give every variant a row for each key any variant uses, so the shapes match. */
+  const alignAttributeKeys = () =>
+    setVariants((prev) => {
+      const keys = [
+        ...new Set(prev.flatMap((v) => v.attributes.map((a) => a.key.trim()).filter(Boolean))),
+      ];
+      return prev.map((v) => {
+        const have = v.attributes.map((a) => a.key.trim());
+        const missing = keys.filter((k) => !have.includes(k)).map((key) => ({ key, value: "" }));
+        // Existing rows keep their order and values; only the gaps are filled.
+        return missing.length ? { ...v, attributes: [...v.attributes, ...missing] } : v;
+      });
+    });
 
   // --- Automatic SKU fill -------------------------------------------------
   // The SKU writes itself from the product's own details: the name gives the
@@ -586,6 +622,31 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
           <span className="text-xs text-gray-600 dark:text-slate-500">Optional — each has its own SKU, attributes, and stock</span>
         </div>
 
+        {/* Keys already used on this product, offered on every key input so the
+            second variant reuses "color" rather than inviting "Color". */}
+        <datalist id="variant-attribute-keys">
+          {attributeKeysInUse.map((k) => <option key={k} value={k} />)}
+        </datalist>
+
+        {/* The storefront can only show separate colour/size rows when every
+            variant declares the same keys. Silently losing that is the failure
+            this warns about — it is the storefront's own check, not a guess. */}
+        {keysAreInconsistent && (
+          <div className="rounded-xl border border-warning/30 bg-warning-surface dark:bg-warning-surface-dark px-4 py-3">
+            <p className="text-xs font-semibold text-warning dark:text-warning-dark">
+              Variants don&apos;t share the same attributes
+            </p>
+            <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">
+              The shop will show one button per variant with every value in the label
+              (&ldquo;Black 128GB&rdquo;) instead of separate Colour and Size rows. Give every
+              variant the same attribute keys to get the picker.
+            </p>
+            <button type="button" onClick={alignAttributeKeys} className={`${btnGhostClass} mt-2`}>
+              <Plus size={12} /> Give every variant the same attributes
+            </button>
+          </div>
+        )}
+
         {variants.length === 0 && (
           <p className="rounded-xl border border-dashed border-gray-300 dark:border-slate-600 px-4 py-3 text-xs text-gray-600 dark:text-slate-500">
             No variants — the product is sold as a single SKU using the stock above.
@@ -658,6 +719,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
                       value={a.key}
                       onChange={(e) => updateAttribute(vi, ai, "key", e.target.value)}
                       placeholder="Key (e.g. color)"
+                      list="variant-attribute-keys"
                     />
                     <input
                       className={`${inputClass} flex-1`}
