@@ -89,7 +89,14 @@ export function isPreorderable(product) {
 // product as a whole, matching the grid card.
 export function isVariantPreorderable(product, selectedVariant) {
   if (selectedVariant?.sku) {
-    return Boolean(selectedVariant.preorder?.enabled);
+    // Mirror of resolveVariantPreorder in orderController: the variant's own
+    // flag wins when it is an explicit boolean, and UNSET falls through to the
+    // product. Reading only the variant's flag meant a product-level pre-order
+    // reached none of its variants — the storefront showed "Out of Stock" while
+    // checkout would have accepted the order.
+    const own = selectedVariant.preorder?.enabled;
+    if (typeof own === "boolean") return own;
+    return Boolean(product?.preorder?.enabled);
   }
   return isPreorderable(product);
 }
