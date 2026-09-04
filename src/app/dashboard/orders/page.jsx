@@ -6,7 +6,13 @@ import { useAuth } from "@/context/AuthContext";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
 import { useOrders, useMyOrders } from "@/hooks/queries/useOrders";
 import { formatGhs } from "@/lib/shop";
+import { preorderState, PreorderBadge } from "@/components/dashboard/PreorderBadge";
 
+/*
+ * The customer's own order list. A pre-order line is marked so they can see why
+ * their order has not shipped; releasing it is staff work and lives on the POS
+ * order list, which is what staff actually navigate to.
+ */
 export default function CustomerOrdersPage() {
   const { user } = useAuth();
 
@@ -83,6 +89,9 @@ export default function CustomerOrdersPage() {
                         <p className="text-xs text-gray-300 dark:text-slate-600 truncate max-w-[200px] font-mono">
                           {o.trackingNumber}
                         </p>
+                      )}
+                      {preorderState(o) && (
+                        <p className="mt-1"><PreorderBadge state={preorderState(o)} /></p>
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-500 dark:text-slate-500 whitespace-nowrap">

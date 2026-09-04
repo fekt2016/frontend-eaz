@@ -2,10 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 
-// Shop orders (admin/staff). `params` may include { status, limit }.
+// Shop orders (admin/staff). `params` may include { status, limit, preorder }.
+// `preorder: "pending"` is the release queue — the same orders the dedicated
+// page used to list, now a view of this one list.
 export function useOrders(params = {}, options = {}) {
   const qs = new URLSearchParams();
   if (params.status && params.status !== "all") qs.set("status", params.status);
+  if (params.preorder) qs.set("preorder", params.preorder);
   if (params.limit) qs.set("limit", String(params.limit));
   const suffix = qs.toString() ? `?${qs}` : "";
   return useQuery({
@@ -27,13 +30,18 @@ export function useRecentOrders(limit = 5, options = {}) {
   });
 }
 
-// T45 — paid orders with a pre-order line still waiting on stock. Server-sorted
-// oldest-first, so the longest-waiting customer is at the top.
-export function usePreorders(options = {}) {
+/**
+ * How many orders are waiting on stock, for the badge on the Orders nav item.
+ *
+ * The count has to come to staff rather than wait to be looked for: a queue
+ * nobody remembers to open is a customer who paid weeks ago and heard nothing.
+ * That safety net is the one thing a dedicated page gave, and this replaces it.
+ */
+export function usePreorderCount(options = {}) {
   return useQuery({
-    queryKey: qk.orders.preorders,
-    queryFn: () => api.get("/orders/preorders").then((r) => r.data ?? []),
-    staleTime: 15_000,
+    queryKey: qk.orders.preorderCount,
+    queryFn: () => api.get("/orders/preorders/count").then((r) => r.data?.count ?? 0),
+    staleTime: 30_000,
     ...options,
   });
 }

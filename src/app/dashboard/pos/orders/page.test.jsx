@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 // T28: this page rendered shop/part orders as cards; rebuilt as a table like the
 // other admin order lists.
@@ -33,8 +33,13 @@ const partOrder = {
 
 const mockUpdateShop = vi.fn();
 const mockUpdatePart = vi.fn();
+const mockRelease = vi.fn();
+// The page now asks for a view: {} for all orders, { preorder: "pending" } for
+// the release queue that used to be its own page.
+const mockUseOrders = vi.fn(() => ({ data: [shopOrder], isLoading: false }));
 vi.mock("@/hooks/queries/useOrders", () => ({
-  useOrders: () => ({ data: [shopOrder], isLoading: false }),
+  useOrders: (...args) => mockUseOrders(...args),
+  useReleasePreorder: () => ({ mutate: mockRelease, isPending: false }),
   useUpdateOrderStatus: () => ({ mutate: mockUpdateShop, isPending: false }),
 }));
 vi.mock("@/hooks/queries/usePosDashboard", () => ({
@@ -69,5 +74,64 @@ describe("POS orders page — table layout (T28)", () => {
 
     expect(screen.queryByText("Part Orders")).not.toBeInTheDocument();
     expect(screen.queryByText("Shop Orders")).not.toBeInTheDocument();
+  });
+});
+
+// The release queue used to be /dashboard/commerce/preorders — a second
+// implementation of "list orders" that had drifted: no search, no pagination,
+// against an endpoint capped at 10, so with twelve people waiting two were
+// invisible. It is a filter and a sort of this list plus one button.
+const waitingOrder = {
+  _id: "so2", orderNumber: "EZW-0002", status: "paid", total: 29500,
+  createdAt: "2026-01-02T00:00:00Z", customer: { name: "Kwame", phone: "0241111111" },
+  items: [{ name: "AirPods Pro 2", qty: 1, isPreorder: true }],
+};
+const releasedOrder = {
+  _id: "so3", orderNumber: "EZW-0003", status: "processing", total: 29500,
+  createdAt: "2026-01-03T00:00:00Z", customer: { name: "Esi", phone: "0242222222" },
+  items: [{ name: "AirPods Pro 2", qty: 1, isPreorder: true, preorderReleasedAt: "2026-01-04T00:00:00Z" }],
+};
+
+describe("POS orders page — pre-orders in the list", () => {
+  beforeEach(() => {
+    mockRelease.mockClear();
+    mockUseOrders.mockReturnValue({ data: [shopOrder, waitingOrder, releasedOrder], isLoading: false });
+  });
+
+  it("marks a waiting pre-order apart from one already released", () => {
+    render(<PosOrdersPage />);
+    // Two states, because only one is actionable.
+    expect(screen.getByText("Pre-order")).toBeInTheDocument();
+    expect(screen.getByText("Pre-order released")).toBeInTheDocument();
+  });
+
+  it("offers Release only on an order still waiting on stock", () => {
+    render(<PosOrdersPage />);
+    const buttons = screen.getAllByRole("button", { name: /release/i });
+    expect(buttons).toHaveLength(1);
+
+    fireEvent.click(buttons[0]);
+    expect(mockRelease).toHaveBeenCalledWith("so2", expect.anything());
+  });
+
+  it("asks the server for the queue when the Awaiting release view is chosen", () => {
+    render(<PosOrdersPage />);
+    // Default view is every order.
+    expect(mockUseOrders.mock.calls[0][0].preorder).toBeUndefined();
+
+    fireEvent.click(screen.getByRole("tab", { name: /awaiting release/i }));
+    // The sort matters as much as the filter: oldest first, so the customer who
+    // has waited longest is served first. That is the server's job, not a
+    // client-side re-sort of a page of results.
+    expect(mockUseOrders).toHaveBeenLastCalledWith(
+      expect.objectContaining({ preorder: "pending" }), expect.anything(),
+    );
+  });
+
+  it("says nothing is waiting rather than showing the shop's empty state", () => {
+    mockUseOrders.mockReturnValue({ data: [], isLoading: false });
+    render(<PosOrdersPage />);
+    fireEvent.click(screen.getByRole("tab", { name: /awaiting release/i }));
+    expect(screen.getByText(/nothing waiting on stock/i)).toBeInTheDocument();
   });
 });

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { canHandleChats } from "@/lib/roles";
 import { useInventory } from "@/hooks/queries/useInventory";
+import { usePreorderCount } from "@/hooks/queries/useOrders";
 import { LogOut, X } from "lucide-react";
 import { baseNav, chatNav, adminNav, marketplaceNav, posNav } from "./dashboardNav";
 
@@ -44,6 +45,15 @@ export default function Sidebar({ open, onClose }) {
   // Low-stock badge count (React Query — shared cache with the inventory page).
   const lowStockQ = useInventory({ lowStock: true, limit: 1 }, { enabled: canSeeStock });
   const lowStockCount = lowStockQ.data?.total ?? 0;
+
+  /*
+   * Pre-orders waiting on stock. The release queue used to be its own nav entry,
+   * which made it hard to forget — but a nav item looks identical whether nobody
+   * or twelve people are waiting. A count says which, and an unreleased
+   * pre-order is a customer who paid and has heard nothing.
+   */
+  const preorderQ = usePreorderCount({ enabled: canSeeStock });
+  const preorderCount = preorderQ.data ?? 0;
 
   const isActive = (href) => {
     if (href === "/dashboard" || href === "/dashboard/pos") {
@@ -97,6 +107,14 @@ export default function Sidebar({ open, onClose }) {
                 {...item}
                 active={isActive(item.href)}
                 onClick={onClose}
+                badge={item.href === "/dashboard/pos/orders" && preorderCount > 0 ? (
+                  <span
+                    title={`${preorderCount} pre-order${preorderCount === 1 ? "" : "s"} waiting on stock`}
+                    className="ml-auto text-xs bg-warning text-white dark:bg-warning-dark dark:text-gray-900 font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
+                  >
+                    {preorderCount}
+                  </span>
+                ) : undefined}
               />
             ))}
           </>

@@ -2,7 +2,7 @@
 // sidenav (dashboard, commerce, POS) renders the same sections, role-gated.
 import {
   Barcode, BarChart3, CalendarDays, FileText, Gauge, Globe,
-  History, Mail, MapPin, MessagesSquare, PackageCheck, Receipt, Server, ServerCog, Settings, ShieldCheck,
+  History, Mail, MapPin, MessagesSquare, Receipt, Server, ServerCog, Settings, ShieldCheck,
   Ship, ShoppingBag, Star, Store, Truck, Users, Wrench,
 } from "lucide-react";
 
@@ -60,9 +60,12 @@ export const adminNav = [
 // Marketplace and Inventory merged into one page/one nav entry.
 export const marketplaceNav = [
   { href: "/dashboard/commerce", icon: Store, label: "Marketplace" },
-  // T45 — the pre-order release queue. Its own entry because releasing is a
-  // recurring job someone has to go looking for, not a detail of one order.
-  { href: "/dashboard/commerce/preorders", icon: PackageCheck, label: "Pre-orders" },
+  // The pre-order release queue used to be its own entry here. It is now a view
+  // of Shop Orders — it was the same rows plus one button, and as a second list
+  // it had drifted (no search, no pagination, capped at 10). What the entry did
+  // give was being impossible to forget; that is now a count badge on Shop
+  // Orders, which is better, since a nav item looks the same whether nobody or
+  // twelve people are waiting.
   { href: "/dashboard/commerce/shipments", icon: Ship, label: "Shipments" },
   // T68 — same class of recurring job for hosting: paid VPS/Cloud/Email orders
   // nobody has built yet. Backend mirrors via restrictTo('admin', 'staff').
