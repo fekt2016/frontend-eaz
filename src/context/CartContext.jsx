@@ -141,16 +141,19 @@ export function CartProvider({ children }) {
 
   // ── Cart actions (unchanged interface) ──
 
-  const addItem = useCallback((product, qty = 1, variant) => {
+  const addItem = useCallback((product, qty = 1, variant, preorder = null) => {
     setItems((prev) => {
       const selected = product.variants?.find((v) => v.sku === variant?.sku);
       const stock = selected ? Number(selected.stock) || 0 : Number(product.stock) || 0;
-      if (stock <= 0) return prev;
-      const addQty = Math.min(Math.max(Math.floor(qty) || 1, 1), stock);
+      if (stock <= 0 && !preorder) return prev;
+      const ceiling = preorder
+        ? Math.min(preorder.maxQty || 10, 10)
+        : stock;
+      const addQty = Math.min(Math.max(Math.floor(qty) || 1, 1), ceiling);
       const lineId = selected ? `${product.slug}::${selected.sku}` : product.slug;
       const existing = prev.find((i) => i.lineId === lineId);
       if (existing) {
-        const nextQty = Math.min(existing.qty + addQty, stock);
+        const nextQty = Math.min(existing.qty + addQty, ceiling);
         return prev.map((i) => (i.lineId === lineId ? { ...i, qty: nextQty } : i));
       }
       return [

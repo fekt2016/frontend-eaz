@@ -30,15 +30,12 @@ function ProductsList() {
   const { user } = useAuth();
   const isSuperadmin = user?.role === "superadmin";
   // Full static class strings so Tailwind's JIT can detect the arbitrary grid
-  // template — it cannot see templates split across interpolation. auto tracks
-  // let each column stretch to its widest cell (header or value), so labels and
-  // values always sit in the same track.
-  const COLUMNS_ADMIN_HEADER = "grid-cols-[minmax(140px,1fr)_auto_auto_auto_auto_auto_auto]";
-  const COLUMNS_ADMIN_ROW    = "sm:grid-cols-[minmax(140px,1fr)_auto_auto_auto_auto_auto_auto]";
-  const COLUMNS_REG_HEADER   = "grid-cols-[minmax(140px,1fr)_auto_auto_auto_auto_auto]";
-  const COLUMNS_REG_ROW      = "sm:grid-cols-[minmax(140px,1fr)_auto_auto_auto_auto_auto]";
-  const colHeaderCls = isSuperadmin ? COLUMNS_ADMIN_HEADER : COLUMNS_REG_HEADER;
-  const colRowCls    = isSuperadmin ? COLUMNS_ADMIN_ROW    : COLUMNS_REG_ROW;
+  // template — it cannot see templates split across interpolation. Explicit
+  // pixel widths (not auto) guarantee header and body rows share identical track
+  // sizes even though each row is its own grid container.
+  const GRID_ADMIN = "sm:grid-cols-[minmax(140px,1fr)_100px_130px_50px_90px_90px_150px]";
+  const GRID_REG   = "sm:grid-cols-[minmax(140px,1fr)_100px_130px_50px_90px_150px]";
+  const colCls = isSuperadmin ? GRID_ADMIN : GRID_REG;
   const [parts,       setParts]       = useState([]);
   const [total,       setTotal]       = useState(0);
   const [loading,     setLoading]     = useState(true);
@@ -47,6 +44,7 @@ function ProductsList() {
   // T110 — parts / accessories / other. "" is all stock.
   const [kind,        setKind]        = useState("");
   const [lowStock,    setLowStock]    = useState(false);
+  const [depletedVariant, setDepletedVariant] = useState(false);
   const [modal,       setModal]       = useState(null);
   const [page,        setPage]        = useState(1);
   const [scanFlash,   setScanFlash]   = useState(false);
@@ -67,6 +65,7 @@ function ProductsList() {
       if (category)  params.set("category", category);
       if (kind)      params.set("kind", kind);
       if (lowStock)  params.set("lowStock", "true");
+      if (depletedVariant) params.set("depletedVariant", "true");
       const [res, lowRes] = await Promise.all([
         api.get(`/pos/inventory?${params}`),
         api.get(`/pos/inventory?lowStock=true&limit=100`),
@@ -76,7 +75,7 @@ function ProductsList() {
       setLowStockItems(lowRes.data || []);
     } catch (err) { setLowStockItems([]); console.warn("Inventory load error:", err.message); }
     finally { setLoading(false); }
-  }, [q, category, kind, lowStock, page]);
+  }, [q, category, kind, lowStock, depletedVariant, page]);
 
   useEffect(() => { fetchParts(); }, [fetchParts]);
 
@@ -256,6 +255,14 @@ function ProductsList() {
         >
           <TriangleAlert size={11} /> Low stock
         </button>
+        <button
+          onClick={() => { setDepletedVariant(v => !v); setPage(1); }}
+          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm font-medium border transition ${
+            depletedVariant ? "bg-error/10 border-error/30 text-error dark:bg-error-dark/10 dark:text-error-dark" : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-error dark:bg-error-dark flex-shrink-0" /> Depleted variant
+        </button>
       </div>
 
       {/* Scan hint */}
@@ -281,7 +288,7 @@ function ProductsList() {
           </div>
         ) : (
           <>
-            <div className={`hidden sm:grid gap-4 px-5 py-3 border-b border-gray-200 dark:border-gray-800 text-xs text-gray-500 font-medium uppercase tracking-wide whitespace-nowrap ${colHeaderCls}`}>
+            <div className={`hidden sm:grid gap-4 px-5 py-3 border-b border-gray-200 dark:border-gray-800 text-xs text-gray-500 font-medium uppercase tracking-wide whitespace-nowrap ${colCls}`}>
               <span>Part</span>
               <span>Barcode</span>
               <span>Category</span>
@@ -294,13 +301,19 @@ function ProductsList() {
               {parts.map(p => {
                 const lowStockFlag = p.quantity <= p.lowStockThreshold;
                 return (
-                  <div key={p._id} className={`flex sm:grid ${colRowCls} gap-4 items-center px-5 py-3.5 hover:bg-gray-100/30 dark:hover:bg-gray-800/30 transition`}>
+                  <div key={p._id} className={`flex sm:grid ${colCls} gap-4 items-center px-5 py-3.5 hover:bg-gray-100/30 dark:hover:bg-gray-800/30 transition`}>
                     <div className="min-w-0 flex items-center gap-3">
                       <ProductImage src={p.images?.[0]} alt={p.name} width={36} height={36} className="h-9 w-9 rounded-xl object-cover bg-gray-100 flex-shrink-0" />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
                           {lowStockFlag && <TriangleAlert size={10} aria-hidden="true" className="text-warning dark:text-warning-dark flex-shrink-0" />}
+                          {p.hasDepletedVariant && (
+                            <span
+                              title={`Variant out of stock: ${p.depletedVariantLabels?.join(", ") || "—"}`}
+                              className="w-2 h-2 rounded-full bg-error dark:bg-error-dark flex-shrink-0 inline-block"
+                            />
+                          )}
                           {p.isRetail && <span className="text-xs px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-ink dark:text-brand-400 flex-shrink-0">Retail</span>}
                           {p.isActive === false && <Badge tone="neutral">Archived</Badge>}
                         </div>

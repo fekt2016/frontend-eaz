@@ -162,7 +162,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   // A pre-order draws on no stock, so the quantity ceiling is the product's own
   // cap instead — the server enforces the same number at checkout.
   const maxQty = preorderable
-    ? Math.min(product.preorder?.maxQty || 10, 10)
+    ? Math.min(selectedVariant?.preorder?.maxQty ?? product.preorder?.maxQty ?? 10, 10)
     : Math.min(displayStock, 10);
   const orderable = inStock || preorderable;
   const availabilityCopy = preorderAvailability(product);
@@ -174,7 +174,10 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
 
   const handleAddToCart = () => {
     if (!product || (hasVariants && !selectedVariant)) return;
-    addItem(product, qty, selectedVariant || undefined);
+    const preorder = preorderable
+      ? { maxQty: selectedVariant?.preorder?.maxQty ?? product.preorder?.maxQty }
+      : null;
+    addItem(product, qty, selectedVariant || undefined, preorder);
     openCart();
   };
 
