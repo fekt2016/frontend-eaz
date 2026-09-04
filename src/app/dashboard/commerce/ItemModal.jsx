@@ -1,24 +1,16 @@
 "use client";
 
 /*
- * The Marketplace "Add" modal: ONE form and ONE endpoint for both kinds of
- * stock — shop products and bench parts.
+ * The Marketplace "Add" modal.
  *
- * It previously rendered its own part-shaped form that always posted to
- * /pos/inventory, so adding a shop product from the Marketplace was not
- * possible. The form was unified 2026-08-30 (ProductForm's `allowPart`); the
- * endpoint followed 2026-09-04 (owner request).
+ * There is no longer a product/part distinction (owner request, 2026-09-04):
+ * every item is created through POST /products, is listed online and offered
+ * in store, and carries the fields that used to be bench-only. Whether it can
+ * also go on a repair job is a checkbox on the form.
  *
- * Everything now goes to /products and declares itself with `itemType`. A part
- * payload is handed on by productController to the POS handler that owns the
- * bench defaults — sellOnline:false, isActive:false, useInRepairs:true — plus
- * the quantity→stock / sellingPrice→price mapping and the INVENTORY_* audit
- * action. So a bench part is still built exactly as before and is still not
- * published to the storefront; only the URL it arrives at has changed.
- *
- * /pos/inventory stays for the POS screens that call it directly.
- */
-import { useState } from "react";
+ * /pos/inventory is still what this screen READS and deletes through; it just
+ * no longer creates.
+ */import { useState } from "react";
 import { X } from "lucide-react";
 import ProductForm from "@/components/commerce/ProductForm";
 import { api, errorMessage } from "@/lib/api";
@@ -28,19 +20,11 @@ export default function ItemModal({ item, suppliers = [], onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // An existing row is edited as whatever it already is. Only a NEW item offers
-  // the choice — changing a saved part into a shop product is a different
-  // operation (it has to publish it), not a form toggle.
-  const initialType = editing ? (item.isPart || item.partCategory ? "part" : "product") : "product";
 
   async function handleSubmit(data) {
     setSaving(true);
     setError("");
     try {
-      // One destination for both kinds of stock (owner request, 2026-09-04).
-      // `itemType` rides along in the body: /products hands a part to the POS
-      // handler that owns the bench defaults, so nothing about how a part is
-      // built has changed — only the URL it arrives at.
       if (editing) await api.patch(`/products/${item._id}`, data);
       else await api.post("/products", data);
       onSave();
@@ -72,9 +56,8 @@ export default function ItemModal({ item, suppliers = [], onClose, onSave }) {
             <p className="mb-4 text-sm text-error dark:text-error-dark" role="alert">{error}</p>
           )}
           <ProductForm
-            allowPart={!editing || initialType === "part"}
             suppliers={suppliers}
-            initial={editing ? { ...item, itemType: initialType } : { itemType: initialType }}
+            initial={editing ? item : undefined}
             submitLabel={editing ? "Save changes" : "Add item"}
             submitting={saving}
             onSubmit={handleSubmit}

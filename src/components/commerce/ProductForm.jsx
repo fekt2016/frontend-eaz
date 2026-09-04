@@ -98,24 +98,20 @@ const attributesToRows = (attributes) =>
   Object.entries(attributes || {}).map(([key, value]) => ({ key, value }));
 
 /*
- * `allowPart` (owner request, 2026-08-30): the Marketplace "Add" modal now uses
- * THIS form rather than its own part-shaped one, so the form has to cover bench
- * parts as well as shop products.
+ * One item type (owner request, 2026-09-04).
  *
- * The two are one collection already, but they are NOT the same thing to
- * create. The POS path sets deliberate bench defaults — sellOnline:false,
- * isActive:false, useInRepairs:true — so a new part is not silently listed in
- * the public shop. POST /products sets none of those. So the form is unified
- * while the ENDPOINT still differs, and `itemType` is what the caller routes on.
- * Collapsing both onto /products would quietly put every new bench part on the
- * storefront.
+ * There is no longer a "shop product" vs "bench part" choice. The Product model
+ * had already called that split the wrong question — "Behaviour, not type. The
+ * old split forced 'is it a Product or a Part?' when the real questions are
+ * where it can be sold and whether it can go on a repair job" — and the owner's
+ * answer is that everything is sold in both channels.
  *
- * Existing callers (new + edit product pages) pass no `allowPart` and are
- * unchanged: the toggle and the bench fields simply do not render.
+ * So every item created here is listed online, offered in store, AND selectable
+ * on a repair job. The fields that used to be bench-only (cost price, barcode,
+ * supplier, low-stock threshold, compatible-with, notes) now show for every
+ * item; the model always had somewhere to put them.
  */
-export default function ProductForm({ initial, submitLabel, submitting, onSubmit, allowPart = false, suppliers = [] }) {
-  const [itemType, setItemType] = useState(initial?.itemType || "product");
-  const isPart = allowPart && itemType === "part";
+export default function ProductForm({ initial, submitLabel, submitting, onSubmit, suppliers = [] }) {
 
   // Bench-part fields. Absent from the shop product shape entirely, so they are
   // only collected — and only sent — when the part type is selected.
@@ -129,6 +125,8 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     Array.isArray(initial?.compatibleWith) ? initial.compatibleWith.join(", ") : ""
   );
   const [notes, setNotes] = useState(initial?.notes || "");
+  // Defaults on: an item nobody can put on a job is the exception, not the rule.
+  const [useInRepairs, setUseInRepairs] = useState(initial?.useInRepairs ?? true);
 
   const [name, setName] = useState(initial?.name || "");
   const [slug, setSlug] = useState(initial?.slug || "");
@@ -211,6 +209,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     );
     setPreorderNote(initial.preorder?.note || "");
     setPreorderMaxQty(initial.preorder?.maxQty ?? "");
+    setUseInRepairs(initial.useInRepairs ?? true);
   }, [initial]);
 
   const updateVariant = (vi, key, value) =>
@@ -342,47 +341,21 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       return;
     }
 
-    // A bench part is created through POST /pos/inventory, which speaks a
-    // different vocabulary to the Product model: quantity→stock,
-    // sellingPrice→price, and category doubles as partCategory. Send its shape,
-    // not the product one, or every bench field is silently dropped by the
-    // controller's whitelist.
-    if (isPart) {
-      const costPesewas = Math.round((parseFloat(costGhs) || 0) * 100);
-      if (costPesewas <= 0) {
-        setError("A bench part needs a cost price above GH₵ 0.00.");
-        return;
-      }
-      onSubmit({
-        itemType: "part",
-        name: name.trim(),
-        category: category.trim(),
-        quantity: stock === "" || stock == null ? 0 : parseInt(stock, 10) || 0,
-        sellingPrice: pesewas,
-        costPrice: costPesewas,
-        lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
-        sku: sku.trim(),
-        barcode: barcode.trim(),
-        supplier: supplier || undefined,
-        compatibleWith: compatibleWith
-          .split(",")
-          .map((v) => v.trim())
-          .filter(Boolean),
-        description: description.trim(),
-        images: images.filter(Boolean),
-        notes: notes.trim(),
-      });
-      return;
-    }
-
     onSubmit({
-      itemType: "product",
       name: name.trim(),
       slug: slug.trim() || undefined,
       category: category.trim(),
       price: pesewas,
       stock: stock === "" || stock == null ? 0 : parseInt(stock, 10) || 0,
       sku: sku.trim(),
+      // Formerly bench-only. Sent for every item now — createProduct reads them.
+      costPrice: Math.round((parseFloat(costGhs) || 0) * 100),
+      barcode: barcode.trim(),
+      lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
+      supplier: supplier || undefined,
+      compatibleWith: compatibleWith.split(",").map((v) => v.trim()).filter(Boolean),
+      notes: notes.trim(),
+      useInRepairs,
       description: description.trim(),
       shortDescription: shortDescription.trim(),
       images: images.filter(Boolean),
@@ -429,44 +402,6 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {allowPart && (
-          // Deliberately NOT wrapped in <Field>: that renders a <label>, and a
-          // label around two buttons is both invalid and actively harmful —
-          // every button inherits the label's text as part of its accessible
-          // name, so a screen reader (and any name-based query) cannot tell
-          // "Shop product" from "Bench part". A fieldset/legend is the correct
-          // grouping for a choice between controls.
-          <fieldset className="sm:col-span-2">
-            <legend className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
-              What is this?
-            </legend>
-            <div className="flex gap-2">
-              {[
-                { value: "product", label: "Shop product" },
-                { value: "part", label: "Bench part" },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setItemType(opt.value)}
-                  aria-pressed={itemType === opt.value}
-                  className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                    itemType === opt.value
-                      ? "border-brand-300 bg-brand-50 text-brand-ink dark:border-brand-500/50 dark:bg-brand-500/10 dark:text-brand-400"
-                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-500">
-              {isPart
-                ? "Bench stock: used in repairs, not listed in the shop until you opt it in."
-                : "Shop product: listed online once active."}
-            </p>
-          </fieldset>
-        )}
 
         <Field label="Name *">
           <input
@@ -525,9 +460,9 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
           />
         </Field>
 
-        {isPart && (
-          <>
-            <Field label="Cost price (GH₵) *" hint="What you pay the supplier.">
+        {/* Shown for every item — see the header note. */}
+        <>
+            <Field label="Cost price (GH₵)" hint="What you pay the supplier. Leave blank if unknown.">
               <input
                 className={inputClass}
                 type="number" step="0.01" min="0"
@@ -575,7 +510,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
               </Field>
             </div>
             <div className="sm:col-span-2">
-              <Field label="Bench notes">
+              <Field label="Internal notes" hint="Never shown to customers.">
                 <input
                   className={inputClass}
                   value={notes}
@@ -584,8 +519,26 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
                 />
               </Field>
             </div>
+
+            {/* Channels. Everything is sold online and in store (owner request,
+                2026-09-04); whether an item can also go on a repair job is the
+                one genuine per-item choice left, so it stays a control rather
+                than a hardcoded default. */}
+            <div className="sm:col-span-2">
+              <label className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-900"
+                  checked={useInRepairs}
+                  onChange={(e) => setUseInRepairs(e.target.checked)}
+                />
+                <span className="text-sm text-gray-900 dark:text-white">Use in repairs</span>
+              </label>
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-500">
+                Selectable as a part on a repair job. Sold online and in store either way.
+              </p>
+            </div>
           </>
-        )}
       </div>
 
       {/* T39: shown in the buy column on the product page; the full description

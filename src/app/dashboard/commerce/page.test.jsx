@@ -93,12 +93,10 @@ describe("Item image upload (T33)", () => {
     mockUser.mockReturnValue({ role: "staff" });
   });
 
-  async function openModalAsPart() {
+  async function openModal() {
     await renderSettled();
     fireEvent.click(screen.getByRole("button", { name: /add product/i }));
     expect(await screen.findByText("Add to inventory")).toBeInTheDocument();
-    // Bench part — same endpoint as a product now, distinguished by itemType.
-    fireEvent.click(screen.getByRole("button", { name: /bench part/i }));
   }
 
   function fillRequiredFields() {
@@ -113,7 +111,7 @@ describe("Item image upload (T33)", () => {
   }
 
   it("an uploaded photo is included in the saved payload", async () => {
-    await openModalAsPart();
+    await openModal();
 
     const file = new File(["fake"], "part.jpg", { type: "image/jpeg" });
     const fileInput = document.querySelector('input[type="file"]');
@@ -150,27 +148,27 @@ describe("Item image upload (T33)", () => {
     ));
   });
 
-  // One endpoint for both kinds of stock (owner request, 2026-09-04). What kept
-  // the routes apart — bench defaults (sellOnline:false, isActive:false,
-  // useInRepairs:true) and the POS vocabulary — is now the server's job: a part
-  // payload is handed to the POS handler that still owns all of it. So the URL
-  // is shared and `itemType` is what tells them apart. The bench defaults are
-  // pinned server-side in backend-eaz/tests/unifiedItemEndpoint.test.js.
-  it("sends a bench part to /products, tagged as a part", async () => {
-    await openModalAsPart();
+  // One item type (owner request, 2026-09-04): no product/part choice at all.
+  // Everything is created through /products, sold online and in store, and
+  // carries the fields that used to be bench-only. The channel flags and those
+  // fields are pinned server-side in
+  // backend-eaz/tests/unifiedItemEndpoint.test.js.
+  it("creates every item through /products, with the shared fields", async () => {
+    await openModal();
     fillRequiredFields();
     fireEvent.click(screen.getByRole("button", { name: /^add item$/i }));
 
     await waitFor(() => expect(mockPost).toHaveBeenCalled());
     expect(mockPost.mock.calls[0][0]).toBe("/products");
-    // Still the bench vocabulary, and now explicitly flagged.
+    // The product vocabulary, carrying what used to be bench-only.
     expect(mockPost.mock.calls[0][1]).toEqual(
       expect.objectContaining({
-        itemType: "part",
-        quantity: expect.anything(),
+        price: 9000,
         costPrice: 5000,
-        sellingPrice: 9000,
+        useInRepairs: true,
       }),
     );
+    // The type toggle is gone entirely.
+    expect(mockPost.mock.calls[0][1].itemType).toBeUndefined();
   });
 });
