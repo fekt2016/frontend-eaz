@@ -1,27 +1,23 @@
 "use client";
 
 /*
- * The Marketplace "Add" modal (owner request, 2026-08-30): use the PRODUCT
- * form, and let it accept parts too.
+ * The Marketplace "Add" modal: ONE form and ONE endpoint for both kinds of
+ * stock — shop products and bench parts.
  *
  * It previously rendered its own part-shaped form that always posted to
  * /pos/inventory, so adding a shop product from the Marketplace was not
- * possible — you had to leave for /commerce/products/new. Now one form covers
- * both, via ProductForm's `allowPart`.
+ * possible. The form was unified 2026-08-30 (ProductForm's `allowPart`); the
+ * endpoint followed 2026-09-04 (owner request).
  *
- * THE ENDPOINT STILL DIFFERS, deliberately. Bench parts and shop products are
- * one collection, but they are not the same thing to CREATE:
+ * Everything now goes to /products and declares itself with `itemType`. A part
+ * payload is handed on by productController to the POS handler that owns the
+ * bench defaults — sellOnline:false, isActive:false, useInRepairs:true — plus
+ * the quantity→stock / sellingPrice→price mapping and the INVENTORY_* audit
+ * action. So a bench part is still built exactly as before and is still not
+ * published to the storefront; only the URL it arrives at has changed.
  *
- *   POST /pos/inventory  sets sellOnline:false, isActive:false, useInRepairs:true
- *   POST /products       sets none of those
- *
- * Those bench defaults exist so a new part is not silently published to the
- * public storefront. Routing both through /products for the sake of a single
- * endpoint would do exactly that — and it would fail quietly, because
- * createProduct destructures a whitelist and would drop costPrice, supplier,
- * barcode, compatibleWith and lowStockThreshold without complaint.
+ * /pos/inventory stays for the POS screens that call it directly.
  */
-
 import { useState } from "react";
 import { X } from "lucide-react";
 import ProductForm from "@/components/commerce/ProductForm";
@@ -41,15 +37,12 @@ export default function ItemModal({ item, suppliers = [], onClose, onSave }) {
     setSaving(true);
     setError("");
     try {
-      const { itemType, ...payload } = data;
-      if (itemType === "part") {
-        if (editing) await api.patch(`/pos/inventory/${item._id}`, payload);
-        else await api.post("/pos/inventory", payload);
-      } else if (editing) {
-        await api.patch(`/products/${item._id}`, payload);
-      } else {
-        await api.post("/products", payload);
-      }
+      // One destination for both kinds of stock (owner request, 2026-09-04).
+      // `itemType` rides along in the body: /products hands a part to the POS
+      // handler that owns the bench defaults, so nothing about how a part is
+      // built has changed — only the URL it arrives at.
+      if (editing) await api.patch(`/products/${item._id}`, data);
+      else await api.post("/products", data);
       onSave();
     } catch (err) {
       setError(errorMessage(err));

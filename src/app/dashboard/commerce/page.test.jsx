@@ -97,7 +97,7 @@ describe("Item image upload (T33)", () => {
     await renderSettled();
     fireEvent.click(screen.getByRole("button", { name: /add product/i }));
     expect(await screen.findByText("Add to inventory")).toBeInTheDocument();
-    // Bench part, so the save goes to /pos/inventory with its bench defaults.
+    // Bench part — same endpoint as a product now, distinguished by itemType.
     fireEvent.click(screen.getByRole("button", { name: /bench part/i }));
   }
 
@@ -129,7 +129,7 @@ describe("Item image upload (T33)", () => {
     fireEvent.click(screen.getByRole("button", { name: /^add item$/i }));
 
     await waitFor(() => expect(mockPost).toHaveBeenCalledWith(
-      "/pos/inventory",
+      "/products",
       expect.objectContaining({ images: ["https://res.cloudinary.com/demo/part.jpg"] }),
     ));
   });
@@ -150,20 +150,27 @@ describe("Item image upload (T33)", () => {
     ));
   });
 
-  // Bench parts and shop products are one collection but NOT the same thing to
-  // create: /pos/inventory sets sellOnline:false, isActive:false,
-  // useInRepairs:true so a new part is not silently published to the shop.
-  // /products sets none of those. This pins the routing that keeps them apart.
-  it("routes a bench part to /pos/inventory, not /products", async () => {
+  // One endpoint for both kinds of stock (owner request, 2026-09-04). What kept
+  // the routes apart — bench defaults (sellOnline:false, isActive:false,
+  // useInRepairs:true) and the POS vocabulary — is now the server's job: a part
+  // payload is handed to the POS handler that still owns all of it. So the URL
+  // is shared and `itemType` is what tells them apart. The bench defaults are
+  // pinned server-side in backend-eaz/tests/unifiedItemEndpoint.test.js.
+  it("sends a bench part to /products, tagged as a part", async () => {
     await openModalAsPart();
     fillRequiredFields();
     fireEvent.click(screen.getByRole("button", { name: /^add item$/i }));
 
     await waitFor(() => expect(mockPost).toHaveBeenCalled());
-    expect(mockPost.mock.calls[0][0]).toBe("/pos/inventory");
-    // The bench vocabulary, not the product one.
+    expect(mockPost.mock.calls[0][0]).toBe("/products");
+    // Still the bench vocabulary, and now explicitly flagged.
     expect(mockPost.mock.calls[0][1]).toEqual(
-      expect.objectContaining({ quantity: expect.anything(), costPrice: 5000, sellingPrice: 9000 }),
+      expect.objectContaining({
+        itemType: "part",
+        quantity: expect.anything(),
+        costPrice: 5000,
+        sellingPrice: 9000,
+      }),
     );
   });
 });
