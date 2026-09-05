@@ -26,8 +26,11 @@ export function useCreateShipment() {
 export function useAdvanceShipment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, stage, note }) =>
-      api.patch(`/shipments/${id}/stage`, { stage, note }).then((r) => r.data),
+    // `date` matters: a stage is usually entered after the fact ("it actually
+    // sailed on Monday"), and the customer's timeline shows when things happened,
+    // not when staff got round to clicking.
+    mutationFn: ({ id, stage, note, date }) =>
+      api.patch(`/shipments/${id}/stage`, { stage, note, date }).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.shipments.all });
       qc.invalidateQueries({ queryKey: qk.orders.all });
