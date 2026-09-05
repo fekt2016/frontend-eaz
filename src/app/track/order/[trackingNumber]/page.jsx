@@ -52,12 +52,39 @@ function pickupStageLabel(pickup, status) {
   return null;
 }
 
+/**
+ * The order's own delivery events and its pre-order stages, as one journey.
+ *
+ * They are two arrays for good reasons — one is per-order, the other belongs to
+ * a shipment batch shared by many customers — but that is our filing problem,
+ * not the customer's. Read separately, the delivery timeline is EMPTY for a
+ * pre-order until the goods land, so someone who paid weeks ago was told "no
+ * tracking updates yet" while their phone was somewhere in the Indian Ocean.
+ */
+function buildTimeline(tracking) {
+  const delivery = (tracking?.history || []).map((h) => ({
+    kind: "delivery",
+    at: h.timestamp,
+    status: h.status,
+    note: h.note,
+    location: h.location,
+  }));
+  const preorder = (tracking?.preorder?.history || []).map((h) => ({
+    kind: "preorder",
+    at: h.date,
+    label: h.label,
+  }));
+  return [...preorder, ...delivery].sort((a, b) => new Date(a.at) - new Date(b.at));
+}
+
 export default function OrderTrackingDetailPage() {
   const { trackingNumber } = useParams();
   const { data: tracking, isLoading: loading, error } = useOrderTracking(trackingNumber);
 
   const isPickupOrder = tracking?.shippingMethod === "bus_station_pickup";
   const stage = pickupStageLabel(tracking?.pickup, tracking?.status);
+  // Both journeys as one list — see buildTimeline for why they arrive separately.
+  const timeline = buildTimeline(tracking);
 
   return (
     <div className="min-h-screen bg-white dark:bg-ink text-gray-900 dark:text-slate-100 px-4 pt-28 pb-24">
@@ -198,18 +225,32 @@ export default function OrderTrackingDetailPage() {
 
               <div className="mt-6">
                 <p className="text-xs font-semibold text-gray-600 dark:text-slate-500 uppercase tracking-wider mb-4">Tracking History</p>
-                {tracking.history.length === 0 ? (
-                  <p className="text-sm text-gray-600 dark:text-slate-500">No tracking updates yet — the order has been placed and is awaiting payment.</p>
+                {timeline.length === 0 ? (
+                  <p className="text-sm text-gray-600 dark:text-slate-500">
+                    {tracking.preorder
+                      ? "No movement to report yet — your pre-order is confirmed and we'll log each stage here as it happens."
+                      : "No tracking updates yet — the order has been placed and is awaiting payment."}
+                  </p>
                 ) : (
                   <ol className="relative border-l border-gray-200 dark:border-slate-700 ml-2 space-y-6">
-                    {tracking.history.map((h, i) => (
+                    {timeline.map((h, i) => (
                       <li key={i} className="ml-6">
-                        <span className="absolute -left-[9px] mt-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 bg-brand-500" />
+                        <span
+                          className={`absolute -left-[9px] mt-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 ${
+                            h.kind === "preorder" ? "bg-blue-500" : "bg-brand-500"
+                          }`}
+                        />
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusBadge(h.status).classes}`}>
-                            {statusBadge(h.status).label}
-                          </span>
-                          <span className="text-xs text-gray-600 dark:text-slate-500">{fmtDate(h.timestamp)}</span>
+                          {h.kind === "preorder" ? (
+                            <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
+                              {h.label}
+                            </span>
+                          ) : (
+                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusBadge(h.status).classes}`}>
+                              {statusBadge(h.status).label}
+                            </span>
+                          )}
+                          <span className="text-xs text-gray-600 dark:text-slate-500">{fmtDate(h.at)}</span>
                         </div>
                         {h.note && <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">{h.note}</p>}
                         {h.location && (

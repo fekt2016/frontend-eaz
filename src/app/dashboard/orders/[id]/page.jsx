@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api, errorMessage } from "@/lib/api";
 import { sanitizeText } from "@/lib/sanitize";
 import { formatGhs, formatShippingMethod } from "@/lib/shop";
+import PreorderProgress from "@/components/shop/PreorderProgress";
 import { StatusBadge, fmtDate } from "@/components/dashboard/customer/CustomerCards";
 import { Button } from "@/components/ui";
 
@@ -478,6 +479,14 @@ export default function CustomerOrderDetailPage() {
           {deliveryFee > 0 && (
             <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">{formatGhs(deliveryFee)}</p>
           )}
+        </div>
+      )}
+
+      {/* Where a pre-ordered line actually is. Opening your own pre-order and
+          seeing only a status and a price is the complaint this answers. */}
+      {order.preorder && (
+        <div className="mb-6">
+          <PreorderProgress preorder={order.preorder} />
         </div>
       )}
 

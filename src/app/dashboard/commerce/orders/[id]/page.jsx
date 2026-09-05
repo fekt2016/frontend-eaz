@@ -8,6 +8,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Send } from "lucide-react";
 import { formatGhs, formatShippingMethod } from "@/lib/shop";
 import { useOrder, useUpdateOrderStatus, useAddTrackingEvent } from "@/hooks/queries/useOrders";
+import PreorderProgress from "@/components/shop/PreorderProgress";
 import {
   Badge, Button, Card, EmptyState, Skeleton,
 } from "@/components/ui";
@@ -159,13 +160,32 @@ export default function AdminOrderDetailPage() {
           <Row label="Delivery Fee" value={deliveryFee > 0 ? formatGhs(deliveryFee) : "Free"} />
         </div>
 
+        {/* A pre-order is the reason this order is not moving, so staff need it
+            up front — with the batch, which is the first thing support reaches
+            for when a customer calls to ask where their item is. */}
+        {order.preorder && (
+          <div className="mb-6">
+            <PreorderProgress preorder={order.preorder} />
+            <p className="mt-2 text-xs text-gray-600">
+              {order.preorder.batch
+                ? `On batch ${order.preorder.batch.reference} — ${order.preorder.batch.name}`
+                : "Not on a shipment batch yet — attach it under Incoming shipments, or this customer sees “awaiting shipment” however far the goods have travelled."}
+            </p>
+          </div>
+        )}
+
         <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Items</h2>
           <div className="space-y-3">
             {order.items?.map((item, i) => (
               <div key={item._id || i} className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {item.name}
+                    {item.isPreorder && !item.preorderReleasedAt && (
+                      <Badge tone="info" className="ml-2">Pre-order</Badge>
+                    )}
+                  </p>
                   <p className="text-xs text-gray-600">Qty {item.qty} × {formatGhs(item.price)}</p>
                 </div>
                 <p className="text-sm font-semibold text-gray-900 shrink-0">
