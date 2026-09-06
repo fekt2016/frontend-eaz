@@ -70,6 +70,13 @@ export default function PreorderProgress({ preorder }) {
           Expected in Ghana around {expected}
         </p>
       )}
+      {/* The road below is drawn from the moment of payment, so without this a
+          customer reads five steps and assumes five things have happened. */}
+      {currentIndex < 0 && (
+        <p className="mt-2 text-xs text-gray-600 dark:text-slate-400">
+          No steps completed yet — we update each one as your order moves.
+        </p>
+      )}
 
       <ol className="mt-4 space-y-3">
         {STEPS.map((step, i) => {
@@ -85,7 +92,7 @@ export default function PreorderProgress({ preorder }) {
                     ? "bg-blue-600 text-white dark:bg-blue-500"
                     : active
                       ? "bg-blue-100 text-blue-700 ring-2 ring-blue-500 dark:bg-blue-500/20 dark:text-blue-300"
-                      : "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-600"
+                      : "border border-dashed border-gray-300 text-gray-400 dark:border-slate-700 dark:text-slate-600"
                 }`}
               >
                 {done ? <Check size={12} aria-hidden="true" /> : <Icon size={12} aria-hidden="true" />}
@@ -96,8 +103,8 @@ export default function PreorderProgress({ preorder }) {
                     active
                       ? "font-semibold text-gray-900 dark:text-white"
                       : done
-                        ? "text-gray-600 dark:text-slate-300"
-                        : "text-gray-600 dark:text-slate-500"
+                        ? "text-gray-700 dark:text-slate-300"
+                        : "text-gray-400 dark:text-slate-500"
                   }`}
                 >
                   {step.label}
