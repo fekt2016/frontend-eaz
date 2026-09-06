@@ -312,8 +312,9 @@ export default function AdminOrderDetailPage() {
   // Any line still waiting on its batch holds the whole order: there is no
   // partial shipment, so nothing goes out until everything has landed.
   const preorderHeld = (order?.items || []).some((i) => i.isPreorder && !i.preorderReleasedAt);
-  // Terminal on the server too — canTransition refuses every move out of these,
-  // so a status control here could only ever be refused.
+  // Terminal on the server too — canTransition refuses every move out of these.
+  // Nothing further is recorded against such an order, so both the status row
+  // and the tracking form go: the history is the complete record.
   const settled = ["delivered", "cancelled"].includes(order?.status);
 
   if (authLoading || !isAllowed) return null;
@@ -325,9 +326,7 @@ export default function AdminOrderDetailPage() {
   const handleTrackingUpdate = (e) => {
     e.preventDefault();
     addTracking.mutate(
-      // No status on a settled order: the server would refuse it, and the note
-      // is the only part still worth recording.
-      { id, status: settled ? "" : trackStatus, note: trackNote, location: trackLocation },
+      { id, status: trackStatus, note: trackNote, location: trackLocation },
       {
         onSuccess: () => { setTrackNote(""); setTrackLocation(""); },
         onError: (err) => alert(errorMessage(err, "Update failed")),
@@ -380,7 +379,7 @@ export default function AdminOrderDetailPage() {
                     form below rather than to the customer's read-only view — and
                     while a pre-order is held that form is not on the page, so the
                     number is plain text rather than a link to nowhere. */}
-                {preorderHeld ? (
+                {preorderHeld || settled ? (
                   <span className="font-mono font-semibold text-gray-900">{order.trackingNumber}</span>
                 ) : (
                   <Link
@@ -518,8 +517,8 @@ export default function AdminOrderDetailPage() {
           <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
             <h2 className="font-semibold text-gray-900 text-sm mb-2">Status</h2>
             <p className="text-xs text-gray-600 dark:text-slate-400">
-              This order is {order.status} — the journey is over, so there is no status left
-              to set. A note can still be added below for the record.
+              This order is {order.status} — the journey is over. Nothing further is
+              recorded against it; the history below is the complete record.
             </p>
           </div>
         ) : (
@@ -542,22 +541,21 @@ export default function AdminOrderDetailPage() {
         </div>
         )}
 
+        {!settled && (
         <div id="tracking-update" className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6 scroll-mt-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Add tracking update</h2>
           <form onSubmit={handleTrackingUpdate} className="space-y-3">
             <div className="grid sm:grid-cols-2 gap-3">
-              {!settled && (
-                <label className="block">
-                  <span className="text-xs font-medium text-gray-500">Status</span>
-                  <select
-                    value={trackStatus}
-                    onChange={(e) => setTrackStatus(e.target.value)}
-                    className={`mt-1 w-full ${fieldCls}`}
-                  >
-                    {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </label>
-              )}
+              <label className="block">
+                <span className="text-xs font-medium text-gray-500">Status</span>
+                <select
+                  value={trackStatus}
+                  onChange={(e) => setTrackStatus(e.target.value)}
+                  className={`mt-1 w-full ${fieldCls}`}
+                >
+                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </label>
               <label className="block">
                 <span className="text-xs font-medium text-gray-500">Location (optional)</span>
                 <input
@@ -584,6 +582,7 @@ export default function AdminOrderDetailPage() {
             </Button>
           </form>
         </div>
+        )}
         </>
         )}
 

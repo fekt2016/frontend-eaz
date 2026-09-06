@@ -407,21 +407,24 @@ describe("Staff order detail — a settled order (T45)", () => {
     expect(screen.queryByText("Update Status")).toBeNull();
   });
 
-  it("still lets staff record a note for the record", () => {
+  it("takes the tracking form away too — nothing more is recorded", () => {
     mockOrder.mockReturnValue(makeOrder({ status: "delivered" }));
     render(<AdminOrderDetailPage />);
 
-    // The status picker goes; the note stays.
+    expect(screen.queryByText("Add tracking update")).toBeNull();
+    expect(screen.queryByPlaceholderText(/Handed to courier/i)).toBeNull();
     expect(screen.queryByLabelText(/^Status$/i)).toBeNull();
-    fireEvent.change(screen.getByPlaceholderText(/Handed to courier/i), {
-      target: { value: "Customer confirmed receipt by phone" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /Add tracking update/i }));
+    // The history is still there — it is the record.
+    expect(screen.getByText("Tracking history")).toBeInTheDocument();
+  });
 
-    expect(trackingMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "", note: "Customer confirmed receipt by phone" }),
-      expect.anything(),
-    );
+  it("stops linking the tracking number at a form that is gone", () => {
+    mockOrder.mockReturnValue(makeOrder({ status: "delivered", trackingNumber: "EZWTRK-123" }));
+    render(<AdminOrderDetailPage />);
+
+    const anchors = [...document.querySelectorAll('a[href="#tracking-update"]')];
+    expect(anchors).toHaveLength(0);
+    expect(screen.getByText("EZWTRK-123")).toBeInTheDocument();
   });
 
   it("leaves a live order's controls alone", () => {
@@ -430,6 +433,6 @@ describe("Staff order detail — a settled order (T45)", () => {
 
     expect(screen.getByText("Update Status")).toBeInTheDocument();
     expect(statusButton("shipped")).not.toBeDisabled();
-    expect(screen.getByLabelText(/^Status$/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Handed to courier/i)).toBeInTheDocument();
   });
 });
