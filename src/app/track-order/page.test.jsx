@@ -34,20 +34,20 @@ describe("Track order lookup — pre-order position", () => {
     mockResult.mockReturnValue(baseOrder({
       items: [{ name: "Imported Phone", qty: 1, price: 500000, isPreorder: true }],
       preorder: {
-        stage: "in_ghana",
-        label: "Arrived in Ghana — clearing customs",
+        stage: "port_ghana",
+        label: "Arrived at the port in Ghana",
         origin: "China",
         items: [{ name: "Imported Phone", qty: 1 }],
         history: [
-          { stage: "preparing", label: "Preparing with our supplier", date: "2026-07-10T00:00:00Z" },
-          { stage: "in_ghana", label: "Arrived in Ghana", date: "2026-09-01T00:00:00Z" },
+          { stage: "production", label: "In production", date: "2026-07-10T00:00:00Z" },
+          { stage: "port_ghana", label: "Arrived at the port in Ghana", date: "2026-09-01T00:00:00Z" },
         ],
       },
     }));
 
     render(<TrackOrderPage />);
 
-    expect(screen.getAllByText(/Arrived in Ghana/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Arrived at the port in Ghana/).length).toBeGreaterThan(0);
     expect(screen.getByText("10 July 2026")).toBeInTheDocument();
     expect(screen.getByText("1 September 2026")).toBeInTheDocument();
   });

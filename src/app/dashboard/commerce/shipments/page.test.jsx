@@ -16,6 +16,7 @@ vi.mock("@/hooks/queries/useShipments", async () => {
   const actual = await vi.importActual("@/hooks/queries/useShipments");
   return {
     SHIPMENT_STAGES: actual.SHIPMENT_STAGES,
+    CUSTOMER_LABEL_FOR: actual.CUSTOMER_LABEL_FOR,
     useShipments: () => ({ data: mockShipments(), isLoading: false }),
     useCreateShipment: () => ({ mutate: vi.fn(), isPending: false }),
     useAdvanceShipment: () => ({ mutate: advanceMutate, isPending: false }),
@@ -33,7 +34,7 @@ const shipment = (over = {}) => ({
   _id: "s1",
   name: "March iPhone batch",
   reference: "SHP-202609-00001",
-  stage: "in_transit",
+  stage: "shipped",
   containerNumber: "CMAU1234567",
   expectedArrival: "2026-10-12T00:00:00Z",
   waitingLines: 1,
@@ -101,12 +102,12 @@ describe("Shipments — moving a batch along", () => {
     render(<ShipmentsPage />);
     fireEvent.click(screen.getByText("Edit stage"));
 
-    fireEvent.change(screen.getByLabelText(/Stage/), { target: { value: "arrived_port" } });
+    fireEvent.change(screen.getByLabelText(/Stage/), { target: { value: "port_ghana" } });
     fireEvent.change(screen.getByLabelText(/When it happened/), { target: { value: "2026-09-01" } });
     fireEvent.click(screen.getByText("Save stage"));
 
     expect(advanceMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "s1", stage: "arrived_port", date: "2026-09-01" }),
+      expect.objectContaining({ id: "s1", stage: "port_ghana", date: "2026-09-01" }),
       expect.anything(),
     );
   });
@@ -116,7 +117,7 @@ describe("Shipments — moving a batch along", () => {
     fireEvent.click(screen.getByText("Edit stage"));
 
     const select = screen.getByLabelText(/Stage/);
-    // Every operational stage is offered, including ones already passed.
+    // Every stage is offered, including ones already passed and the one it is on.
     expect(within(select).getByText("In production")).toBeInTheDocument();
 
     fireEvent.change(select, { target: { value: "production" } });
@@ -130,11 +131,52 @@ describe("Shipments — moving a batch along", () => {
 
   it("keeps the one-click move for the common case", () => {
     render(<ShipmentsPage />);
-    fireEvent.click(screen.getByText(/Move to Arrived at port/));
+    fireEvent.click(screen.getByText(/Move to Arrived at the port in Ghana/));
 
     expect(advanceMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ stage: "arrived_port" }),
+      expect.objectContaining({ stage: "port_ghana" }),
       expect.anything(),
     );
+  });
+});
+
+// Staff could move a batch but never see what they had already recorded on it —
+// the dated log existed on the server and nothing rendered it.
+describe("Shipments — the batch's own history", () => {
+  const withHistory = () => shipment({
+    stageHistory: [
+      { stage: "production", note: "Deposit paid", date: "2026-03-02T00:00:00Z", updatedBy: { name: "Kofi", role: "staff" } },
+      { stage: "shipped", note: "", date: "2026-07-19T00:00:00Z", updatedBy: { name: "Ama", role: "admin" } },
+    ],
+  });
+
+  it("lists each stage with its note and who recorded it", () => {
+    mockShipments.mockReturnValue([withHistory()]);
+    render(<ShipmentsPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /History/i }));
+
+    expect(screen.getAllByText("In production").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Deposit paid/).textContent).toMatch(/Kofi/);
+    expect(screen.getByText(/by Ama/)).toBeInTheDocument();
+  });
+
+  it("shows what each stage told the customer", () => {
+    mockShipments.mockReturnValue([withHistory()]);
+    render(<ShipmentsPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /History/i }));
+
+    expect(screen.getByText(/Customer sees: In production/)).toBeInTheDocument();
+    expect(screen.getByText(/Customer sees: Shipped/)).toBeInTheDocument();
+  });
+
+  it("says so when a batch has not moved yet", () => {
+    mockShipments.mockReturnValue([shipment({ stageHistory: [] })]);
+    render(<ShipmentsPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /History/i }));
+
+    expect(screen.getByText(/has not moved since it was created/)).toBeInTheDocument();
   });
 });

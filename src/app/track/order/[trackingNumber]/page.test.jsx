@@ -36,25 +36,25 @@ describe("Tracking detail — pre-order in the timeline", () => {
   it("lists the pre-order stages in Tracking History", () => {
     mockTracking.mockReturnValue(base({
       history: [
-        { status: "paid", note: "Preparing with our supplier", timestamp: "2026-06-05T00:00:00Z", preorderStage: "preparing" },
-        { status: "paid", note: "On its way", timestamp: "2026-07-20T00:00:00Z", preorderStage: "on_the_way" },
+        { status: "paid", note: "In production", timestamp: "2026-06-05T00:00:00Z", preorderStage: "production" },
+        { status: "paid", note: "Shipped — on its way to Ghana", timestamp: "2026-07-20T00:00:00Z", preorderStage: "shipped" },
       ],
       preorder: {
-        stage: "in_ghana",
-        label: "Arrived in Ghana — clearing customs",
+        stage: "port_ghana",
+        label: "Arrived at the port in Ghana",
         origin: "China",
         items: [{ name: "iPhone 15 Pro", qty: 1 }],
         history: [
-          { stage: "preparing", label: "Preparing with our supplier", date: "2026-06-05T00:00:00Z" },
-          { stage: "on_the_way", label: "On its way", date: "2026-07-20T00:00:00Z" },
+          { stage: "production", label: "In production", date: "2026-06-05T00:00:00Z" },
+          { stage: "shipped", label: "Shipped — on its way to Ghana", date: "2026-07-20T00:00:00Z" },
         ],
       },
     }));
 
     render(<TrackingDetailPage />);
 
-    expect(screen.getByText("Preparing with our supplier")).toBeInTheDocument();
-    expect(screen.getAllByText("On its way").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("In production").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Shipped/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/No tracking updates yet/)).toBeNull();
   });
 
@@ -62,13 +62,13 @@ describe("Tracking detail — pre-order in the timeline", () => {
     mockTracking.mockReturnValue(base({
       history: [
         { status: "shipped", note: "Out for delivery", timestamp: "2026-08-01T00:00:00Z" },
-        { status: "paid", note: "Preparing with our supplier", timestamp: "2026-06-05T00:00:00Z", preorderStage: "preparing" },
+        { status: "paid", note: "In production", timestamp: "2026-06-05T00:00:00Z", preorderStage: "production" },
       ],
       preorder: {
         stage: "at_shop",
-        label: "At our shop — preparing your order",
+        label: "At our warehouse — preparing your order",
         origin: "China",
-        history: [{ stage: "preparing", label: "Preparing with our supplier", date: "2026-06-05T00:00:00Z" }],
+        history: [{ stage: "production", label: "In production", date: "2026-06-05T00:00:00Z" }],
       },
     }));
 
@@ -77,7 +77,7 @@ describe("Tracking detail — pre-order in the timeline", () => {
     const items = document.querySelectorAll("ol.relative li");
     expect(items).toHaveLength(2);
     // The supplier stage predates the dispatch, so it comes first.
-    expect(items[0].textContent).toMatch(/Preparing with our supplier/);
+    expect(items[0].textContent).toMatch(/In production/);
     expect(items[1].textContent).toMatch(/Out for delivery/);
   });
 
@@ -116,13 +116,13 @@ describe("Tracking detail — one source for the journey", () => {
   it("does not double up a stage that is in both payloads", () => {
     mockTracking.mockReturnValue(base({
       history: [
-        { status: "paid", note: "On its way", timestamp: "2026-07-20T00:00:00Z", preorderStage: "on_the_way" },
+        { status: "paid", note: "Shipped — on its way to Ghana", timestamp: "2026-07-20T00:00:00Z", preorderStage: "shipped" },
       ],
       preorder: {
-        stage: "on_the_way",
-        label: "On its way",
+        stage: "shipped",
+        label: "Shipped — on its way to Ghana",
         origin: "China",
-        history: [{ stage: "on_the_way", label: "On its way", date: "2026-07-20T00:00:00Z" }],
+        history: [{ stage: "shipped", label: "Shipped — on its way to Ghana", date: "2026-07-20T00:00:00Z" }],
       },
     }));
 

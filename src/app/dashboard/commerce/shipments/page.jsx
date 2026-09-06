@@ -2,11 +2,13 @@
 
 import { errorMessage } from "@/lib/api";
 import { useState } from "react";
-import { Ship, Plus, PackageCheck, Link2, SlidersHorizontal } from "lucide-react";
+import { Ship, Plus, PackageCheck, Link2, SlidersHorizontal, History } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import {
-  useShipments, useCreateShipment, useAdvanceShipment, useAttachOrdersToShipment, SHIPMENT_STAGES,
+  useShipments, useCreateShipment, useAdvanceShipment, useAttachOrdersToShipment,
+  SHIPMENT_STAGES, CUSTOMER_LABEL_FOR,
 } from "@/hooks/queries/useShipments";
+import BatchHistory from "@/components/commerce/BatchHistory";
 import { useOrders } from "@/hooks/queries/useOrders";
 import {
   Alert, Button, Card, EmptyState, Input, PageHeader, Select, Skeleton,
@@ -28,6 +30,21 @@ function fmtDate(value) {
 /** Today, as the yyyy-mm-dd a date input wants. */
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * The batch's raw `stageHistory` in the shape BatchHistory renders. The list
+ * endpoint returns the stored entries, so the labels are added here.
+ */
+function historyEntries(shipment) {
+  return (shipment.stageHistory || []).map((e) => ({
+    stage: e.stage,
+    label: labelFor(e.stage),
+    note: e.note || "",
+    date: e.date,
+    updatedBy: e.updatedBy?.name || "",
+    customerLabel: CUSTOMER_LABEL_FOR[e.stage] || "",
+  }));
 }
 
 /** The pre-order lines on an order that are still waiting, for the picker's label. */
@@ -121,6 +138,9 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
           <Button variant="ghost" size="sm" onClick={() => openPanel("stage")}>
             <SlidersHorizontal size={13} aria-hidden="true" /> Edit stage
           </Button>
+          <Button variant="ghost" size="sm" onClick={() => openPanel("history")}>
+            <History size={13} aria-hidden="true" /> History
+          </Button>
           {next ? (
             <Button variant="secondary" size="sm" onClick={() => move(next.key)} disabled={advance.isPending}>
               Move to {next.label} →
@@ -167,17 +187,25 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
             />
           </div>
           <p className="text-xs text-gray-600 dark:text-slate-400">
-            Picking a stage the batch has already passed corrects it — anything after that
-            stage is dropped from what customers see.
+            Saving the stage it is already on corrects that stage&apos;s date or note — use it
+            to record when the goods really went into production. Picking an earlier stage
+            moves it back, and anything after that stage is dropped from what customers see.
           </p>
-          <Button
-            size="sm"
-            loading={advance.isPending}
-            disabled={stage === shipment.stage}
-            onClick={() => move(stage, date, note)}
-          >
+          <Button size="sm" loading={advance.isPending} onClick={() => move(stage, date, note)}>
             Save stage
           </Button>
+        </div>
+      )}
+
+      {panel === "history" && (
+        <div className="mt-4 rounded-xl border border-gray-100 dark:border-slate-800 p-3">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
+            Shipping history
+          </p>
+          <BatchHistory
+            entries={historyEntries(shipment)}
+            emptyHint="Nothing recorded yet — this batch has not moved since it was created."
+          />
         </div>
       )}
 

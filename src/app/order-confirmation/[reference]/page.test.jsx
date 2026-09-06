@@ -61,17 +61,17 @@ describe("Order confirmation — tracking number (T62)", () => {
     mockOrder.mockReturnValue(baseOrder({
       items: [{ name: "Imported Phone", qty: 1, price: 500000, isPreorder: true }],
       preorder: {
-        stage: "on_the_way",
-        label: "On its way",
+        stage: "shipped",
+        label: "Shipped — on its way to Ghana",
         origin: "China",
         items: [{ name: "Imported Phone", qty: 1 }],
-        history: [{ stage: "preparing", label: "Preparing with our supplier", date: "2026-07-10T00:00:00Z" }],
+        history: [{ stage: "production", label: "In production", date: "2026-07-10T00:00:00Z" }],
       },
     }));
 
     render(<OrderConfirmationPage params={{ reference: "ORD_1" }} />);
 
-    expect(screen.getAllByText("On its way").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Shipped/).length).toBeGreaterThan(0);
     expect(screen.getByText("Coming from China")).toBeInTheDocument();
     expect(screen.getByText("10 July 2026")).toBeInTheDocument();
   });

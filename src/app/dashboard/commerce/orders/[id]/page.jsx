@@ -9,18 +9,14 @@ import { Send } from "lucide-react";
 import { formatGhs, formatShippingMethod } from "@/lib/shop";
 import { useOrder, useUpdateOrderStatus, useAddTrackingEvent } from "@/hooks/queries/useOrders";
 import PreorderProgress from "@/components/shop/PreorderProgress";
+import BatchHistory from "@/components/commerce/BatchHistory";
+import { useAdvanceShipment, SHIPMENT_STAGES } from "@/hooks/queries/useShipments";
 import {
   Badge, Button, Card, EmptyState, Skeleton,
 } from "@/components/ui";
 import { controlBase, controlSizes, controlBorder } from "@/components/ui/controlStyles";
 
 const STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
-
-/* Stages an order cannot reach while a pre-order line on it is still waiting on
- * stock — the server refuses them (orderController's PREORDER_HELD_STATUSES);
- * this list only spares staff a rejected click. Paying and cancelling stay open.
- * Keep the two in step. */
-const PREORDER_HELD = ["processing", "shipped", "delivered"];
 
 /* Same semantic mapping as the staff dashboard's RecentOrdersList so a status
  * reads the same colour wherever it appears. */
@@ -51,6 +47,103 @@ function Row({ label, value }) {
     <div className="flex justify-between gap-4 py-2.5 border-b border-gray-100 last:border-0">
       <span className="text-sm text-gray-500">{label}</span>
       <span className="text-sm font-medium text-gray-900 text-right">{value}</span>
+    </div>
+  );
+}
+
+/** Today, as the yyyy-mm-dd a date input wants. */
+function todayInput() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * The batch this pre-order is riding on — its internal journey, and the control
+ * to move it — on the customer's own order.
+ *
+ * Support works from the order, not from the batch list: someone on the phone
+ * has this page open, and making them go and find the right container to record
+ * "it cleared customs today" is how a batch goes a fortnight without an update.
+ * The move still belongs to the batch, so every other customer on it moves too.
+ */
+function BatchPanel({ batch, expectedArrival }) {
+  const advance = useAdvanceShipment();
+  const [open, setOpen] = useState(false);
+  const [stage, setStage] = useState(batch.stage);
+  const [date, setDate] = useState(todayInput());
+  const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+
+  const save = () => {
+    setError("");
+    advance.mutate(
+      { id: batch.id, stage, date, note: note || undefined },
+      {
+        onSuccess: () => { setOpen(false); setNote(""); },
+        onError: (err) => setError(errorMessage(err, "Could not update the shipment.")),
+      },
+    );
+  };
+
+  return (
+    <div className="mt-3 rounded-2xl border border-gray-100 dark:border-slate-800 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+            {batch.name} <span className="font-mono text-xs text-gray-600 dark:text-slate-400">{batch.reference}</span>
+          </p>
+          <p className="mt-0.5 text-xs text-gray-600 dark:text-slate-400">
+            {batch.stageLabel}
+            {batch.containerNumber ? ` · ${batch.containerNumber}` : ""}
+            {expectedArrival ? ` · expected ${new Date(expectedArrival).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => { setStage(batch.stage); setDate(todayInput()); setOpen((v) => !v); }}>
+          {open ? "Cancel" : "Update stage"}
+        </Button>
+      </div>
+
+      {open && (
+        <div className="mt-3 space-y-3 rounded-xl border border-gray-100 dark:border-slate-800 p-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="block">
+              <span className="text-xs font-medium text-gray-500">Stage</span>
+              <select value={stage} onChange={(e) => setStage(e.target.value)} className={`mt-1 w-full ${fieldCls}`}>
+                {SHIPMENT_STAGES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-500">When it happened</span>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={`mt-1 w-full ${fieldCls}`} />
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-500">Note</span>
+              <input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Internal — customers never see this"
+                className={`mt-1 w-full ${fieldCls}`}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-gray-600 dark:text-slate-400">
+            The date is what customers see, and moving the batch updates every order
+            riding on it. Saving the stage it is already on corrects that stage&apos;s date
+            or note; picking an earlier one moves it back, dropping everything after it
+            from what customers see.
+          </p>
+          {error && <p className="text-xs text-error dark:text-error-dark">{error}</p>}
+          <Button size="sm" loading={advance.isPending} onClick={save}>
+            Save stage
+          </Button>
+        </div>
+      )}
+
+      <div className="mt-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
+          Shipping history
+        </p>
+        <BatchHistory entries={batch.history} emptyHint="Nothing recorded on this batch yet." />
+      </div>
     </div>
   );
 }
@@ -87,7 +180,7 @@ export default function AdminOrderDetailPage() {
   const handleTrackingUpdate = (e) => {
     e.preventDefault();
     addTracking.mutate(
-      { id, status: preorderHeld ? "" : trackStatus, note: trackNote, location: trackLocation },
+      { id, status: trackStatus, note: trackNote, location: trackLocation },
       {
         onSuccess: () => { setTrackNote(""); setTrackLocation(""); },
         onError: (err) => alert(errorMessage(err, "Update failed")),
@@ -137,13 +230,19 @@ export default function AdminOrderDetailPage() {
               <p className="text-gray-500 text-sm mt-0.5">
                 Tracking number{" "}
                 {/* This page is admin/staff only, so the number goes to the update
-                    form below rather than to the customer's read-only view. */}
-                <Link
-                  href="#tracking-update"
-                  className="font-mono font-semibold text-brand-ink hover:underline"
-                >
-                  {order.trackingNumber}
-                </Link>{" "}
+                    form below rather than to the customer's read-only view — and
+                    while a pre-order is held that form is not on the page, so the
+                    number is plain text rather than a link to nowhere. */}
+                {preorderHeld ? (
+                  <span className="font-mono font-semibold text-gray-900">{order.trackingNumber}</span>
+                ) : (
+                  <Link
+                    href="#tracking-update"
+                    className="font-mono font-semibold text-brand-ink hover:underline"
+                  >
+                    {order.trackingNumber}
+                  </Link>
+                )}{" "}
                 <Link
                   href={`/track/order/${order.trackingNumber}`}
                   className="text-xs text-gray-600 hover:underline"
@@ -175,11 +274,14 @@ export default function AdminOrderDetailPage() {
         {order.preorder && (
           <div className="mb-6">
             <PreorderProgress preorder={order.preorder} />
-            <p className="mt-2 text-xs text-gray-600">
-              {order.preorder.batch
-                ? `On batch ${order.preorder.batch.reference} — ${order.preorder.batch.name}`
-                : "Not on a shipment batch yet — attach it under Incoming shipments, or this customer sees “awaiting shipment” however far the goods have travelled."}
-            </p>
+            {order.preorder.batch ? (
+              <BatchPanel batch={order.preorder.batch} expectedArrival={order.preorder.expectedArrival} />
+            ) : (
+              <p className="mt-2 text-xs text-gray-600">
+                Not on a shipment batch yet — attach it under Incoming shipments, or this
+                customer sees &ldquo;awaiting shipment&rdquo; however far the goods have travelled.
+              </p>
+            )}
           </div>
         )}
 
@@ -216,14 +318,23 @@ export default function AdminOrderDetailPage() {
           {order.paidAt && <Row label="Paid At" value={formatDate(order.paidAt)} />}
         </div>
 
+        {/* Local fulfilment does not exist yet for a held pre-order: the goods are
+            still on a container. Both controls are hidden rather than disabled —
+            there is nothing here staff can usefully do until release, and an
+            empty form invites the click the server would only refuse. */}
+        {preorderHeld ? (
+          <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
+            <h2 className="font-semibold text-gray-900 text-sm mb-2">Local tracking</h2>
+            <p className="rounded-xl bg-warning-surface px-3 py-2 text-xs text-warning dark:bg-warning-surface-dark dark:text-warning-dark">
+              Held until release. This order is waiting on pre-order stock — follow it on
+              the batch above. Releasing it once the goods reach our warehouse starts the
+              ordinary status and tracking updates.
+            </p>
+          </div>
+        ) : (
+        <>
         <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Update Status</h2>
-          {preorderHeld && (
-            <p className="mb-3 rounded-xl bg-warning-surface px-3 py-2 text-xs text-warning dark:bg-warning-surface-dark dark:text-warning-dark">
-              Held: this order is waiting on pre-order stock. Release it once the batch
-              reaches the shop and these stages open up.
-            </p>
-          )}
           <div className="flex flex-wrap gap-2">
             {STATUSES.map((s) => (
               <Button
@@ -231,7 +342,7 @@ export default function AdminOrderDetailPage() {
                 size="sm"
                 variant={s === order.status ? "primary" : "secondary"}
                 onClick={() => handleStatus(s)}
-                disabled={updating || s === order.status || (preorderHeld && PREORDER_HELD.includes(s))}
+                disabled={updating || s === order.status}
                 className="capitalize"
               >
                 {s}
@@ -247,16 +358,11 @@ export default function AdminOrderDetailPage() {
               <label className="block">
                 <span className="text-xs font-medium text-gray-500">Status</span>
                 <select
-                  value={preorderHeld ? "" : trackStatus}
+                  value={trackStatus}
                   onChange={(e) => setTrackStatus(e.target.value)}
-                  disabled={preorderHeld}
-                  className={`mt-1 w-full ${fieldCls} disabled:opacity-60`}
+                  className={`mt-1 w-full ${fieldCls}`}
                 >
-                  {/* While held, the event can still carry a note — it just may
-                      not move the order. */}
-                  {preorderHeld
-                    ? <option value="">Held until release</option>
-                    : STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </label>
               <label className="block">
@@ -285,6 +391,8 @@ export default function AdminOrderDetailPage() {
             </Button>
           </form>
         </div>
+        </>
+        )}
 
         <div className="rounded-2xl border border-gray-100 bg-paper p-5">
           <h2 className="font-semibold text-gray-900 text-sm mb-4">Tracking history</h2>

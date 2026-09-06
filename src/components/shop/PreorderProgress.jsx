@@ -1,11 +1,15 @@
-import { Factory, Ship, MapPin, Store, Check } from "lucide-react";
+import { Factory, Warehouse, Ship, Anchor, Store, Check } from "lucide-react";
 
 /**
  * T45 — where a customer's pre-ordered item actually is.
  *
- * Four steps, not the eight staff work with: "at origin port" and "in transit"
- * are the same news to someone waiting. Nothing identifying the supplier, the
- * container or an internal note reaches this component — the API does not send it.
+ * Five steps, not the eight staff work with: "ordered" and "in production" are
+ * the same news to someone waiting, and so are "landed" and "clearing customs".
+ * Nothing identifying the supplier, the container or an internal note reaches
+ * this component — the API does not send it.
+ *
+ * The road ends at our warehouse. Releasing the pre-order there is what starts
+ * the ordinary local delivery tracking, which is a different journey.
  *
  * The journey starts abroad, so the whole road is drawn from the moment the
  * order is placed — including before a batch is assigned, where every step is
@@ -13,10 +17,11 @@ import { Factory, Ship, MapPin, Store, Check } from "lucide-react";
  * money going" for someone who just paid in full for something not yet made.
  */
 const STEPS = [
-  { key: "preparing",  label: "Preparing",      icon: Factory, blurb: "Being prepared with our supplier" },
-  { key: "on_the_way", label: "On its way",     icon: Ship,    blurb: "Shipped and in transit" },
-  { key: "in_ghana",   label: "Arrived in Ghana", icon: MapPin, blurb: "Landed and clearing customs" },
-  { key: "at_shop",    label: "At our shop",    icon: Store,   blurb: "With us — preparing your order" },
+  { key: "production",          label: "In production",           icon: Factory,   blurb: "Being made by our supplier" },
+  { key: "container_warehouse", label: "At the container warehouse", icon: Warehouse, blurb: "Made, and waiting for a container" },
+  { key: "shipped",             label: "Shipped",                 icon: Ship,      blurb: "On the water, heading for Ghana" },
+  { key: "port_ghana",          label: "Arrived at the port in Ghana", icon: Anchor, blurb: "Landed and clearing customs" },
+  { key: "at_shop",             label: "At our warehouse",        icon: Store,     blurb: "With us — preparing your order" },
 ];
 
 function fmtDate(value) {
@@ -45,7 +50,7 @@ export default function PreorderProgress({ preorder }) {
       <p className="text-sm font-semibold text-gray-900 dark:text-white">
         {preorder.label}
       </p>
-      {origin && currentIndex < 2 && (
+      {origin && currentIndex < 3 && (
         <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
           Coming from {origin}
         </p>
@@ -90,7 +95,7 @@ export default function PreorderProgress({ preorder }) {
                 {active && (
                   <p className="text-xs text-gray-500 dark:text-slate-400">
                     {step.blurb}
-                    {step.key === "preparing" && origin ? ` in ${origin}` : ""}
+                    {step.key === "production" && origin ? ` in ${origin}` : ""}
                   </p>
                 )}
                 {reached && (

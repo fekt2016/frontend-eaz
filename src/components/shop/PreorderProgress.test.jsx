@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import PreorderProgress from "./PreorderProgress";
 
-// T45: what a customer waiting on goods from China is shown. Four steps, not the
+// T45: what a customer waiting on goods from China is shown. Five steps, not the
 // eight staff work with — and none of the supplier/container/internal detail,
 // which the API does not send in the first place.
 describe("PreorderProgress (T45)", () => {
@@ -15,8 +15,8 @@ describe("PreorderProgress (T45)", () => {
     render(
       <PreorderProgress
         preorder={{
-          stage: "on_the_way",
-          label: "On its way",
+          stage: "shipped",
+          label: "Shipped — on its way to Ghana",
           expectedArrival: "2026-10-12T00:00:00Z",
           items: [{ name: "iPhone 17", qty: 2 }],
         }}
@@ -25,16 +25,19 @@ describe("PreorderProgress (T45)", () => {
 
     // Both the headline and the step it has reached say this — that is the design,
     // so assert presence rather than uniqueness.
-    expect(screen.getAllByText("On its way").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Shipped/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Expected in Ghana around 12 October 2026/)).toBeInTheDocument();
     expect(screen.getByText(/iPhone 17 × 2/)).toBeInTheDocument();
   });
 
-  it("shows all four steps, so the customer can see what is still to come", () => {
-    render(<PreorderProgress preorder={{ stage: "preparing", label: "Preparing with our supplier" }} />);
+  it("shows all five steps, so the customer can see what is still to come", () => {
+    render(<PreorderProgress preorder={{ stage: "production", label: "In production" }} />);
 
-    for (const step of ["Preparing", "On its way", "Arrived in Ghana", "At our shop"]) {
-      expect(screen.getByText(step)).toBeInTheDocument();
+    for (const step of [
+      "In production", "At the container warehouse", "Shipped",
+      "Arrived at the port in Ghana", "At our warehouse",
+    ]) {
+      expect(screen.getAllByText(step).length).toBeGreaterThan(0);
     }
   });
 
@@ -49,7 +52,7 @@ describe("PreorderProgress (T45)", () => {
     );
 
     expect(screen.getByText("Confirmed — awaiting shipment")).toBeInTheDocument();
-    expect(container.querySelectorAll("ol li")).toHaveLength(4);
+    expect(container.querySelectorAll("ol li")).toHaveLength(5);
     // Nothing reached: no step is marked done.
     expect(container.querySelector(".bg-blue-600")).toBeNull();
   });
@@ -57,19 +60,19 @@ describe("PreorderProgress (T45)", () => {
   it("names where the goods are coming from while they are still abroad", () => {
     render(
       <PreorderProgress
-        preorder={{ stage: "preparing", label: "Preparing with our supplier", origin: "China" }}
+        preorder={{ stage: "production", label: "In production", origin: "China" }}
       />,
     );
 
     expect(screen.getByText("Coming from China")).toBeInTheDocument();
-    expect(screen.getByText(/Being prepared with our supplier in China/)).toBeInTheDocument();
+    expect(screen.getByText(/Being made by our supplier in China/)).toBeInTheDocument();
   });
 
   it("drops the origin line once the goods are in Ghana", () => {
     // Past customs it is no longer the useful fact — where it is now is.
     render(
       <PreorderProgress
-        preorder={{ stage: "in_ghana", label: "Arrived in Ghana — clearing customs", origin: "China" }}
+        preorder={{ stage: "port_ghana", label: "Arrived at the port in Ghana", origin: "China" }}
       />,
     );
 
@@ -80,12 +83,12 @@ describe("PreorderProgress (T45)", () => {
     render(
       <PreorderProgress
         preorder={{
-          stage: "on_the_way",
-          label: "On its way",
+          stage: "shipped",
+          label: "Shipped — on its way to Ghana",
           origin: "China",
           history: [
-            { stage: "preparing", label: "Preparing with our supplier", date: "2026-08-02T00:00:00Z" },
-            { stage: "on_the_way", label: "On its way", date: "2026-09-01T00:00:00Z" },
+            { stage: "production", label: "In production", date: "2026-08-02T00:00:00Z" },
+            { stage: "shipped", label: "Shipped — on its way to Ghana", date: "2026-09-01T00:00:00Z" },
           ],
         }}
       />,
@@ -99,7 +102,7 @@ describe("PreorderProgress (T45)", () => {
   });
 
   it("does not invent an arrival date it was not given", () => {
-    render(<PreorderProgress preorder={{ stage: "in_ghana", label: "Arrived in Ghana — clearing customs" }} />);
+    render(<PreorderProgress preorder={{ stage: "port_ghana", label: "Arrived at the port in Ghana" }} />);
     expect(screen.queryByText(/Expected in Ghana around/)).toBeNull();
   });
 });
