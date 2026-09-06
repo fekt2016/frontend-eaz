@@ -4,8 +4,12 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 // T34: main product images were a URL-only textarea; now reuses the same
 // StringListEditor + Cloudinary UploadButton the variant/gallery fields use.
 const mockUpload = vi.fn();
+const mockPost = vi.fn();
 vi.mock("@/lib/api", () => ({
-  api: { upload: (...args) => mockUpload(...args) },
+  api: {
+    upload: (...args) => mockUpload(...args),
+    post: (...args) => mockPost(...args),
+  },
 }));
 
 import ProductForm from "./ProductForm";
@@ -148,17 +152,68 @@ describe("ProductForm — per-variant pre-order (edit modal)", () => {
     expect(screen.getByDisplayValue("V1-128")).toBeInTheDocument();
     expect(screen.getByDisplayValue("V2-256")).toBeInTheDocument();
 
-    // One pre-order toggle per variant.
-    const toggles = screen.getAllByText("Pre-order this variant");
-    expect(toggles).toHaveLength(2);
+    // One pre-order control per variant — three-state, because "follow the
+    // product" is not the same answer as "never pre-order this one".
+    const controls = screen
+      .getAllByRole("combobox")
+      .filter((el) => Array.from(el.options || []).some((o) => o.value === "on"));
+    expect(controls).toHaveLength(2);
 
     // Flag only the first (0-stock) variant.
-    fireEvent.click(toggles[0]);
+    fireEvent.change(controls[0], { target: { value: "on" } });
     fireEvent.click(screen.getByText("Save"));
 
     const payload = onSubmit.mock.calls[0][0];
     expect(payload.variants[0].preorder.enabled).toBe(true);
-    expect(payload.variants[1].preorder.enabled).toBe(false);
+    // The untouched variant stays UNSET. Submitting `false` here used to mean
+    // "never pre-order this one", which switched a product-level pre-order off
+    // for every variant the first time an admin saved the product.
+    expect(payload.variants[1].preorder.enabled).toBeNull();
+  });
+
+  it("keeps a variant unset so a product-level pre-order still reaches it", () => {
+    const onSubmit = vi.fn();
+    render(
+      <ProductForm
+        submitLabel="Save"
+        onSubmit={onSubmit}
+        initial={{
+          name: "Phone",
+          category: "Phones",
+          price: 50000,
+          preorder: { enabled: true },
+          variants: [{ sku: "V1", attributes: { storage: "128GB" }, stock: 0 }],
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByText("Save"));
+    expect(onSubmit.mock.calls[0][0].variants[0].preorder.enabled).toBeNull();
+  });
+
+  it("lets a variant opt out explicitly", () => {
+    const onSubmit = vi.fn();
+    render(
+      <ProductForm
+        submitLabel="Save"
+        onSubmit={onSubmit}
+        initial={{
+          name: "Phone",
+          category: "Phones",
+          price: 50000,
+          preorder: { enabled: true },
+          variants: [{ sku: "V1", attributes: { storage: "128GB" }, stock: 0 }],
+        }}
+      />
+    );
+
+    const control = screen
+      .getAllByRole("combobox")
+      .find((el) => Array.from(el.options || []).some((o) => o.value === "off"));
+    fireEvent.change(control, { target: { value: "off" } });
+    fireEvent.click(screen.getByText("Save"));
+
+    expect(onSubmit.mock.calls[0][0].variants[0].preorder.enabled).toBe(false);
   });
 
   it("pre-fills a variant's pre-order fields when it is already flagged", () => {
@@ -187,5 +242,170 @@ describe("ProductForm — per-variant pre-order (edit modal)", () => {
       note: "ships from abroad",
       maxQty: 4,
     });
+  });
+});
+
+
+// The SKU field derives itself from the product's own details rather than
+// waiting on a button — the generator functions shipped in c8753d7 were never
+// wired to any UI, so until now the field was purely manual.
+describe("ProductForm — automatic SKU fill", () => {
+  beforeEach(() => {
+    mockPost.mockReset();
+    mockUpload.mockReset();
+  });
+
+  const skuField = () => screen.getByPlaceholderText("e.g. EZW-WOO-001");
+
+  it("fills the SKU from the product name, sending the derived prefix", async () => {
+    mockPost.mockResolvedValue({ data: { sku: "EZW-WOO-001" } });
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. Wooden Dining Table"), {
+      target: { value: "Wooden Dining Table" },
+    });
+
+    await waitFor(
+      () => expect(skuField()).toHaveValue("EZW-WOO-001"),
+      { timeout: 3000 }
+    );
+    expect(mockPost).toHaveBeenCalledWith("/products/generate-sku", {
+      mode: "product",
+      prefix: "EZW-WOO",
+    });
+  });
+
+  it("never overwrites a SKU the user typed themselves", async () => {
+    mockPost.mockResolvedValue({ data: { sku: "EZW-WOO-001" } });
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+
+    fireEvent.change(skuField(), { target: { value: "MY-OWN-SKU" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. Wooden Dining Table"), {
+      target: { value: "Wooden Dining Table" },
+    });
+
+    await new Promise((r) => setTimeout(r, 900));
+    expect(skuField()).toHaveValue("MY-OWN-SKU");
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("leaves an existing product's saved SKU alone", async () => {
+    mockPost.mockResolvedValue({ data: { sku: "EZW-NEW-009" } });
+    render(
+      <ProductForm
+        submitLabel="Save"
+        onSubmit={vi.fn()}
+        initial={{ name: "Wooden Dining Table", category: "Furniture", price: 25000, sku: "EZW-WOO-001" }}
+      />
+    );
+
+    await new Promise((r) => setTimeout(r, 900));
+    expect(skuField()).toHaveValue("EZW-WOO-001");
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("fills a variant's SKU from its attributes once the parent SKU exists", async () => {
+    mockPost.mockImplementation((_url, body) =>
+      Promise.resolve({
+        data: { sku: body.mode === "variant" ? "EZW-WOO-001-BLA" : "EZW-WOO-001" },
+      })
+    );
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. Wooden Dining Table"), {
+      target: { value: "Wooden Dining Table" },
+    });
+    await waitFor(() => expect(skuField()).toHaveValue("EZW-WOO-001"), { timeout: 3000 });
+
+    fireEvent.click(screen.getByText("Add variant"));
+    fireEvent.change(screen.getAllByPlaceholderText("Value (e.g. Black)")[0], {
+      target: { value: "Black" },
+    });
+
+    await waitFor(
+      () =>
+        expect(screen.getByPlaceholderText("auto-generated from attributes")).toHaveValue(
+          "EZW-WOO-001-BLA"
+        ),
+      { timeout: 3000 }
+    );
+    expect(mockPost).toHaveBeenCalledWith("/products/generate-sku", {
+      mode: "variant",
+      parentSku: "EZW-WOO-001",
+      suffix: "BLA",
+    });
+  });
+});
+
+// The storefront only splits colour and size into separate rows when every
+// variant declares the same attribute keys. Keys are free text here, so "color"
+// on one variant and "Color" on the next silently costs the shopper that picker
+// — with nothing on the form to say why. These cover the guard.
+describe("ProductForm — variant attribute keys", () => {
+  beforeEach(() => {
+    mockPost.mockReset();
+    mockUpload.mockReset();
+  });
+
+  function addVariantWith(key, value, index) {
+    fireEvent.click(screen.getByText("Add variant"));
+    const keys = screen.getAllByPlaceholderText("Key (e.g. color)");
+    const values = screen.getAllByPlaceholderText("Value (e.g. Black)");
+    fireEvent.change(keys[index], { target: { value: key } });
+    fireEvent.change(values[index], { target: { value } });
+  }
+
+  const warning = () => screen.queryByText(/don't share the same attributes/i);
+
+  it("offers the keys already used on this product, so the next variant reuses them", () => {
+    const { container } = render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("storage", "128GB", 0);
+
+    const list = container.querySelector("datalist#variant-attribute-keys");
+    expect(list).toBeInTheDocument();
+    expect([...list.querySelectorAll("option")].map((o) => o.value)).toContain("storage");
+    // And the key inputs actually point at it.
+    expect(screen.getAllByPlaceholderText("Key (e.g. color)")[0]).toHaveAttribute("list", "variant-attribute-keys");
+  });
+
+  it("stays quiet while every variant declares the same keys", () => {
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("color", "Black", 0);
+    addVariantWith("color", "Blue", 1);
+    expect(warning()).not.toBeInTheDocument();
+  });
+
+  it("warns when the keys diverge, naming what the shop will do instead", () => {
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("color", "Black", 0);
+    addVariantWith("Color", "Blue", 1);   // capital C — a different key
+    expect(warning()).toBeInTheDocument();
+  });
+
+  it("does not warn on a single variant — there is no picker to lose yet", () => {
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("color", "Black", 0);
+    expect(warning()).not.toBeInTheDocument();
+  });
+
+  it("aligns the keys across variants on request, without touching existing values", () => {
+    render(<ProductForm submitLabel="Create" onSubmit={vi.fn()} />);
+    addVariantWith("color", "Black", 0);
+    fireEvent.click(screen.getByText("Add variant"));
+    // Second variant: replace its seeded colour row with a different key.
+    const keys = screen.getAllByPlaceholderText("Key (e.g. color)");
+    fireEvent.change(keys[1], { target: { value: "storage" } });
+    fireEvent.change(screen.getAllByPlaceholderText("Value (e.g. Black)")[1], { target: { value: "128GB" } });
+    expect(warning()).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(/give every variant the same attributes/i));
+
+    // Both keys now present on both variants, and the typed values survive.
+    const allKeys = screen.getAllByPlaceholderText("Key (e.g. color)").map((i) => i.value);
+    expect(allKeys.filter((k) => k === "color")).toHaveLength(2);
+    expect(allKeys.filter((k) => k === "storage")).toHaveLength(2);
+    const allValues = screen.getAllByPlaceholderText("Value (e.g. Black)").map((i) => i.value);
+    expect(allValues).toContain("Black");
+    expect(allValues).toContain("128GB");
   });
 });

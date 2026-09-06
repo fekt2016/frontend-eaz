@@ -320,3 +320,194 @@ describe("ProductDetail — pre-order (T45)", () => {
     expect(screen.queryByRole("button", { name: "Pre-order" })).toBeNull();
   });
 });
+
+// Colour and size used to share one row of buttons, each labelled with every
+// attribute at once — "Natural Titanium 128GB". Three colours by three sizes
+// meant nine such buttons. They are now one row per attribute.
+const VARIANT_PRODUCT = {
+  ...PRODUCT,
+  stock: 0,
+  variants: [
+    { sku: "P-BLA128", attributes: { color: "Black", storage: "128GB" }, stock: 3, price: null },
+    { sku: "P-BLA256", attributes: { color: "Black", storage: "256GB" }, stock: 0, price: 520000 },
+    // Blue was never stocked in 128GB — the pairing must be shown as unavailable.
+    { sku: "P-BLU256", attributes: { color: "Blue", storage: "256GB" }, stock: 5, price: 520000 },
+  ],
+};
+
+describe("ProductDetail — choosing colour and size separately", () => {
+  beforeEach(() => {
+    mockProduct.mockReturnValue(VARIANT_PRODUCT);
+    mockReviews.mockReturnValue([]);
+  });
+
+  const btn = (name) => screen.getByRole("button", { name });
+
+  it("gives each attribute its own labelled row of values", () => {
+    render(<ProductDetail slug="iphone-13" />);
+
+    const colours = screen.getByRole("group", { name: "Color" });
+    const sizes = screen.getByRole("group", { name: "Storage" });
+    // Values only — not "Black 128GB" crammed into one label.
+    expect(within(colours).getByRole("button", { name: "Black" })).toBeInTheDocument();
+    expect(within(colours).getByRole("button", { name: "Blue" })).toBeInTheDocument();
+    expect(within(sizes).getByRole("button", { name: "128GB" })).toBeInTheDocument();
+    expect(within(sizes).getByRole("button", { name: "256GB" })).toBeInTheDocument();
+  });
+
+  it("asks for the rest of the choice before a variant resolves", () => {
+    render(<ProductDetail slug="iphone-13" />);
+
+    fireEvent.click(btn("Black"));
+    expect(btn("Black")).toHaveAttribute("aria-pressed", "true");
+    // Colour alone is not a variant — the page must not act as though it is.
+    expect(screen.getByText(/choose storage to continue/i)).toBeInTheDocument();
+  });
+
+  it("resolves the variant once both are chosen, and prices it", () => {
+    render(<ProductDetail slug="iphone-13" />);
+
+    fireEvent.click(btn("Blue"));
+    fireEvent.click(btn("256GB"));
+    expect(screen.getByText("5 in stock")).toBeInTheDocument();
+    expect(screen.getAllByText(/GH₵5,200/).length).toBeGreaterThan(0);
+  });
+
+  it("marks a pairing that was never stocked, rather than hiding it", () => {
+    render(<ProductDetail slug="iphone-13" />);
+
+    fireEvent.click(btn("128GB"));
+    // Blue has no 128GB — struck through, still visible, still clickable.
+    expect(btn("Blue").className).toMatch(/line-through/);
+  });
+
+  it("moves the other attribute instead of dead-ending on an impossible pairing", () => {
+    render(<ProductDetail slug="iphone-13" />);
+
+    fireEvent.click(btn("Black"));
+    fireEvent.click(btn("128GB"));
+    fireEvent.click(btn("Blue"));           // Blue has no 128GB
+    // Storage follows to the one Blue actually comes in.
+    expect(btn("256GB")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("5 in stock")).toBeInTheDocument();
+  });
+
+  it("keeps a 0-stock combination selectable — it may be pre-orderable", () => {
+    render(<ProductDetail slug="iphone-13" />);
+
+    fireEvent.click(btn("Black"));
+    fireEvent.click(btn("256GB"));
+    expect(btn("256GB").className).not.toMatch(/line-through/);
+    expect(screen.getByText("0 in stock")).toBeInTheDocument();
+  });
+
+  it("falls back to whole-variant buttons when variants describe different attributes", () => {
+    mockProduct.mockReturnValue({
+      ...PRODUCT,
+      variants: [
+        { sku: "S-ORI", attributes: { grade: "Original" }, stock: 2, price: null },
+        { sku: "S-MIX", attributes: { color: "Black", storage: "128GB" }, stock: 1, price: null },
+      ],
+    });
+    render(<ProductDetail slug="iphone-13" />);
+
+    // A grid would imply "Original 128GB", which was never stocked.
+    expect(screen.queryByRole("group", { name: "Color" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Original" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Black 128GB" })).toBeInTheDocument();
+  });
+});
+
+// A variant's picture is how you PICK it, not gallery content: folding it into
+// the carousel both hid the choice and made the gallery change under the shopper.
+const PHOTOGRAPHED_PRODUCT = {
+  ...PRODUCT,
+  images: ["/hero.png"],
+  gallery: { images: ["/hero.png", "/angle.png"], videos: [] },
+  variants: [
+    { sku: "P-BLA128", attributes: { color: "Black", storage: "128GB" }, stock: 3, price: null, images: ["/black.png"] },
+    { sku: "P-BLA256", attributes: { color: "Black", storage: "256GB" }, stock: 2, price: null, images: ["/black.png"] },
+    { sku: "P-BLU256", attributes: { color: "Blue", storage: "256GB" }, stock: 5, price: null, images: ["/blue.png"] },
+  ],
+};
+
+describe("ProductDetail — variant image is the selector, not gallery content", () => {
+  beforeEach(() => {
+    mockProduct.mockReturnValue(PHOTOGRAPHED_PRODUCT);
+    mockReviews.mockReturnValue([]);
+  });
+
+  it("shows the colour values as image swatches you can click", () => {
+    render(<ProductDetail slug="iphone-13" />);
+    const colours = screen.getByRole("group", { name: "Color" });
+
+    const black = within(colours).getByRole("button", { name: "Black" });
+    expect(within(black).getByRole("img")).toHaveAttribute("alt", "Black");
+    fireEvent.click(black);
+    expect(black).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("leaves the gallery on the product's own media when a variant is chosen", () => {
+    render(<ProductDetail slug="iphone-13" />);
+    fireEvent.click(within(screen.getByRole("group", { name: "Color" })).getByRole("button", { name: "Blue" }));
+    fireEvent.click(within(screen.getByRole("group", { name: "Storage" })).getByRole("button", { name: "256GB" }));
+
+    // The variant picture is on its swatch; it must not have replaced the gallery.
+    const main = document.querySelector("main") || document.body;
+    const gallerySrcs = [...main.querySelectorAll("img")].map((i) => i.getAttribute("src") || "");
+    expect(gallerySrcs.some((s) => s.includes("hero"))).toBe(true);
+  });
+
+  it("keeps storage as text buttons, since both storages look the same", () => {
+    render(<ProductDetail slug="iphone-13" />);
+    const sizes = screen.getByRole("group", { name: "Storage" });
+    const btn = within(sizes).getByRole("button", { name: "128GB" });
+    expect(within(btn).queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("falls back to text buttons when nothing is photographed", () => {
+    mockProduct.mockReturnValue({
+      ...PHOTOGRAPHED_PRODUCT,
+      variants: PHOTOGRAPHED_PRODUCT.variants.map((v) => ({ ...v, images: [] })),
+    });
+    render(<ProductDetail slug="iphone-13" />);
+    const black = within(screen.getByRole("group", { name: "Color" })).getByRole("button", { name: "Black" });
+    expect(within(black).queryByRole("img")).not.toBeInTheDocument();
+  });
+});
+
+// No colour choice means no thumbnails: pictures that differ only by caption
+// make near-identical squares where plain text reads better.
+describe("ProductDetail — no colour means no swatches", () => {
+  beforeEach(() => { mockReviews.mockReturnValue([]); });
+
+  it("keeps a grade-only product on text buttons even though it is photographed", () => {
+    mockProduct.mockReturnValue({
+      ...PRODUCT,
+      variants: [
+        { sku: "S-ORI", attributes: { grade: "Original Pull" }, stock: 2, price: null, images: ["/o.png"] },
+        { sku: "S-INC", attributes: { grade: "Incell Copy" }, stock: 3, price: null, images: ["/c.png"] },
+      ],
+    });
+    render(<ProductDetail slug="iphone-13" />);
+
+    const grades = screen.getByRole("group", { name: "Grade" });
+    const btn = within(grades).getByRole("button", { name: "Original Pull" });
+    expect(within(btn).queryByRole("img")).not.toBeInTheDocument();
+    expect(btn).toHaveTextContent("Original Pull");
+  });
+
+  it("keeps the mixed-shape fallback list on labels when there is no colour", () => {
+    mockProduct.mockReturnValue({
+      ...PRODUCT,
+      variants: [
+        { sku: "M-1", attributes: { grade: "Original" }, stock: 2, price: null, images: ["/o.png"] },
+        { sku: "M-2", attributes: { model: "A12", capacity: "5000mAh" }, stock: 1, price: null, images: ["/a.png"] },
+      ],
+    });
+    render(<ProductDetail slug="iphone-13" />);
+
+    const btn = screen.getByRole("button", { name: "Original" });
+    expect(within(btn).queryByRole("img")).not.toBeInTheDocument();
+  });
+});

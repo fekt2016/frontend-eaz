@@ -5,19 +5,16 @@ import Link from "next/link";
 import { AlertTriangle, ChevronLeft, ChevronRight, Search, ShoppingBag } from "lucide-react";
 import { formatGhs, stockBadge, canPreorder, isPreorderable } from "@/lib/shop";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useShopProducts } from "@/hooks/queries/useProducts";
+import { useShopProducts, useShopCategories } from "@/hooks/queries/useProducts";
 import StarRule from "@/components/common/StarRule";
 import ProductImage from "@/components/shop/ProductImage";
 import ProductStats from "@/components/shop/ProductStats";
 
-const CATEGORIES = [
-  "Phones",
-  "Phone Cases & Covers",
-  "Chargers & Cables",
-  "Power Banks",
-  "Earphones & Headphones",
-  "Screen Protectors"
-];
+// The browse bar used to be this list, hardcoded. Categories are typed freely
+// on the item form, so anything outside the six names had no button and could
+// not be browsed to — repair parts especially, which carry their own taxonomy
+// (Screen, Battery, …). The bar is now built from the categories actually in
+// use, busiest first, so a new one earns its button by being used.
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
@@ -32,6 +29,10 @@ export default function ShopGrid({ activeCategory = "" }) {
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
   const [preorder, setPreorder] = useState(false);
+  // A failed/empty categories fetch simply means no chips — the grid, search and
+  // sort all still work, and "All" is rendered separately below.
+  const { data: categoryRows = [] } = useShopCategories();
+  const categories = categoryRows.map((c) => c.category).filter(Boolean);
 
   const { data, isLoading: loading, error: queryError } = useShopProducts({
     page, limit: 10, sort,
@@ -65,7 +66,7 @@ export default function ShopGrid({ activeCategory = "" }) {
             >
               All
             </Link>
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={cat}
                 href={`/shop/category/${encodeURIComponent(cat)}`}

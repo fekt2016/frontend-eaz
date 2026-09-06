@@ -80,6 +80,36 @@
 
 ## P2 — Improvements
 
+- [ ] **T138 (frontend) · UI for per-unit (IMEI/serial) tracking** — P1, blocked on the backend half
+  - **Issue:** Nothing in the dashboard can record or show which physical handset is which.
+    Stock is a single number everywhere it appears, so a serialised product looks identical to a
+    box of cables. Backend scope, schema and phasing live in **`backend-eaz/tasks.md` → T138**;
+    build against that model, do not invent a parallel shape.
+  - **Screens to build** (matching the backend's three phases):
+    1. **Receiving** — capture IMEIs when stock arrives. There is no intake screen today; stock is
+       set by typing a number into the product form. Reuse `hooks/useBarcodeScanner.js` so staff
+       scan the IMEI barcode off the box instead of typing 15 digits. Validate Luhn client-side
+       for instant feedback, but never rely on it — the API validates too.
+    2. **Unit list per product** — `dashboard/commerce`: which units are in stock, sold, returned,
+       written off; filter by status; search by IMEI.
+    3. **Sale flow** — POS (`dashboard/pos/sell`) and the online order view pick/show the specific
+       unit sold, and the refund flow returns that unit.
+  - **UI notes:**
+    - `serialised` products need a visibly different stock cell — a count alone is misleading once
+      units exist. The Marketplace list is `src/app/dashboard/commerce/page.jsx`.
+    - IMEI is staff-only. Keep it off customer-facing order views and the public
+      `track-order` / by-reference pages.
+    - Money stays in pesewas; render any unit cost with `formatGhs` from `lib/shop.js`.
+    - New data fetching goes through **react-query** hooks in `hooks/queries/`, per the house rule.
+    - Reuse `components/ui/Table.jsx` for the unit list rather than hand-rolling another
+      grid-based pseudo-table.
+  - **Acceptance:**
+    - [ ] Staff can record IMEIs on arrival, by scanner or by hand
+    - [ ] A product's units are listable and searchable by IMEI
+    - [ ] POS and online sales show which unit went out; refunds return that unit
+    - [ ] Non-serialised products' screens are visually and behaviourally unchanged
+    - [ ] No IMEI appears on any customer-facing or public page
+
 - [~] **T98 · Six public pages ship with no metadata** (audit ref EZ-013)
   - **Issue:** No `export const metadata` and no `generateMetadata` on `src/app/hosting/page.jsx`,
     `seo/page.jsx`, `repair/page.jsx`, `reviews/page.jsx`, `services/web-design/page.jsx`,

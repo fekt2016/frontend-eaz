@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CheckCircle2, Loader2, TriangleAlert } from "lucide-react";
 import { formatGhs, formatShippingMethod } from "@/lib/shop";
 import { useOrderByReference } from "@/hooks/queries/useOrders";
+import PreorderProgress from "@/components/shop/PreorderProgress";
 
 export default function OrderConfirmationPage({ params }) {
   const reference = params.reference;
@@ -126,6 +127,9 @@ export default function OrderConfirmationPage({ params }) {
                 order is — we&apos;ll email you as soon as it reaches our shop.
               </p>
             )}
+            {/* Where those items actually are. Seconds after paying in full for
+                something not yet made, the position matters more than the copy. */}
+            <PreorderProgress preorder={order.preorder} />
             <Link
               href={`/track/order/${order.trackingNumber}`}
               className="mt-3 inline-block text-sm font-semibold text-brand-ink dark:text-brand-400 hover:underline"

@@ -19,6 +19,18 @@ export function useProducts(params = {}, options = {}) {
   });
 }
 
+// The shop's browse bar. The categories are whatever the stock actually uses —
+// they are typed freely on the item form, so a hardcoded list would leave a new
+// category with no button. Returns [{ category, count }], busiest first.
+export function useShopCategories(options = {}) {
+  return useQuery({
+    queryKey: qk.products.categories,
+    queryFn: () => api.get("/products/categories").then((r) => r.data ?? []),
+    staleTime: 5 * 60_000, // stock is added far less often than the shop is opened
+    ...options,
+  });
+}
+
 // Paginated shop listing for the storefront grid — returns the full envelope
 // { data, total, pages, page } so the grid can render pagination.
 export function useShopProducts(params = {}, options = {}) {

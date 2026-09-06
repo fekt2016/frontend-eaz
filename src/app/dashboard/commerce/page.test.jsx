@@ -93,12 +93,10 @@ describe("Item image upload (T33)", () => {
     mockUser.mockReturnValue({ role: "staff" });
   });
 
-  async function openModalAsPart() {
+  async function openModal() {
     await renderSettled();
     fireEvent.click(screen.getByRole("button", { name: /add product/i }));
     expect(await screen.findByText("Add to inventory")).toBeInTheDocument();
-    // Bench part, so the save goes to /pos/inventory with its bench defaults.
-    fireEvent.click(screen.getByRole("button", { name: /bench part/i }));
   }
 
   function fillRequiredFields() {
@@ -113,7 +111,7 @@ describe("Item image upload (T33)", () => {
   }
 
   it("an uploaded photo is included in the saved payload", async () => {
-    await openModalAsPart();
+    await openModal();
 
     const file = new File(["fake"], "part.jpg", { type: "image/jpeg" });
     const fileInput = document.querySelector('input[type="file"]');
@@ -129,7 +127,7 @@ describe("Item image upload (T33)", () => {
     fireEvent.click(screen.getByRole("button", { name: /^add item$/i }));
 
     await waitFor(() => expect(mockPost).toHaveBeenCalledWith(
-      "/pos/inventory",
+      "/products",
       expect.objectContaining({ images: ["https://res.cloudinary.com/demo/part.jpg"] }),
     ));
   });
@@ -150,20 +148,27 @@ describe("Item image upload (T33)", () => {
     ));
   });
 
-  // Bench parts and shop products are one collection but NOT the same thing to
-  // create: /pos/inventory sets sellOnline:false, isActive:false,
-  // useInRepairs:true so a new part is not silently published to the shop.
-  // /products sets none of those. This pins the routing that keeps them apart.
-  it("routes a bench part to /pos/inventory, not /products", async () => {
-    await openModalAsPart();
+  // One item type (owner request, 2026-09-04): no product/part choice at all.
+  // Everything is created through /products, sold online and in store, and
+  // carries the fields that used to be bench-only. The channel flags and those
+  // fields are pinned server-side in
+  // backend-eaz/tests/unifiedItemEndpoint.test.js.
+  it("creates every item through /products, with the shared fields", async () => {
+    await openModal();
     fillRequiredFields();
     fireEvent.click(screen.getByRole("button", { name: /^add item$/i }));
 
     await waitFor(() => expect(mockPost).toHaveBeenCalled());
-    expect(mockPost.mock.calls[0][0]).toBe("/pos/inventory");
-    // The bench vocabulary, not the product one.
+    expect(mockPost.mock.calls[0][0]).toBe("/products");
+    // The product vocabulary, carrying what used to be bench-only.
     expect(mockPost.mock.calls[0][1]).toEqual(
-      expect.objectContaining({ quantity: expect.anything(), costPrice: 5000, sellingPrice: 9000 }),
+      expect.objectContaining({
+        price: 9000,
+        costPrice: 5000,
+        useInRepairs: true,
+      }),
     );
+    // The type toggle is gone entirely.
+    expect(mockPost.mock.calls[0][1].itemType).toBeUndefined();
   });
 });

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Loader2, Search } from "lucide-react";
 import { formatGhs } from "@/lib/shop";
 import { useTrackOrder } from "@/hooks/queries/useOrders";
+import PreorderProgress from "@/components/shop/PreorderProgress";
 
 const inputCls =
   "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-gray-400 dark:focus:border-slate-500 transition bg-white dark:bg-slate-900";
@@ -114,6 +115,12 @@ export default function TrackOrderPage() {
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badge.classes}`}>{badge.label}</span>
               </div>
+
+              {/* A pre-ordered line is the whole story for this order until the
+                  goods land, so it sits above the items rather than below the
+                  totals. "Paid" on its own told a customer nothing about an item
+                  still being made in China. */}
+              <PreorderProgress preorder={order.preorder} />
 
               <ul className="divide-y divide-gray-100 dark:divide-slate-800 border-b border-gray-100 dark:border-slate-800 my-4">
                 {order.items.map((item) => (

@@ -26,8 +26,12 @@ export function useCreateShipment() {
 export function useAdvanceShipment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, stage, note }) =>
-      api.patch(`/shipments/${id}/stage`, { stage, note }).then((r) => r.data),
+    // `date` matters: a stage is usually entered after the fact ("it actually
+    // sailed on Monday"), and the customer's timeline shows when things happened,
+    // not when staff got round to clicking. Sending the stage the batch is
+    // already on corrects that stage's date or note rather than moving it.
+    mutationFn: ({ id, stage, note, date }) =>
+      api.patch(`/shipments/${id}/stage`, { stage, note, date }).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.shipments.all });
       qc.invalidateQueries({ queryKey: qk.orders.all });
@@ -49,12 +53,25 @@ export function useAttachOrdersToShipment() {
 
 // Mirrors models/Shipment.js — keep the two in step.
 export const SHIPMENT_STAGES = [
-  { key: "ordered",        label: "Ordered with supplier" },
-  { key: "production",     label: "In production" },
-  { key: "ready_supplier", label: "Ready at supplier" },
-  { key: "at_port_origin", label: "At origin port" },
-  { key: "in_transit",     label: "In transit" },
-  { key: "arrived_port",   label: "Arrived at port" },
-  { key: "customs",        label: "Clearing customs" },
-  { key: "at_shop",        label: "Received at shop" },
+  { key: "production",          label: "In production" },
+  { key: "container_warehouse", label: "At the container warehouse" },
+  { key: "shipped",             label: "Shipped" },
+  { key: "port_ghana",          label: "Arrived at the port in Ghana" },
+  { key: "at_shop",             label: "Arrived at our warehouse" },
 ];
+
+/**
+ * What each stage says to the customer — the model's CUSTOMER_STAGES wording,
+ * mirrored here so the batch list can show staff exactly what their own update
+ * told the customer. Keep the two in step.
+ *
+ * The order page does not use this: there the server labels each entry, which is
+ * the authority. This is for the raw `stageHistory` the shipments list returns.
+ */
+export const CUSTOMER_LABEL_FOR = {
+  production:          "In production",
+  container_warehouse: "At the container warehouse",
+  shipped:             "Shipped — on its way to Ghana",
+  port_ghana:          "Arrived at the port in Ghana",
+  at_shop:             "At our warehouse — preparing your order",
+};

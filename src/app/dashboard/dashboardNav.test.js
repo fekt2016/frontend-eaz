@@ -18,13 +18,22 @@ describe("marketplaceNav (T24)", () => {
   });
 });
 
-// T45: releasing pre-orders is a recurring job someone has to go looking for, so
-// it gets its own entry rather than living inside one order's detail page.
-describe("marketplaceNav — pre-orders (T45)", () => {
-  it("links to the pre-order release queue", () => {
-    const entry = marketplaceNav.find((n) => n.href === "/dashboard/commerce/preorders");
+// The pre-order release queue had its own entry (T45). It is now a view of the
+// staff order list: the same order rows plus one button, and as a second
+// implementation of "list orders" it had drifted — no search, no pagination,
+// against an endpoint capped at 10. Being hard to forget was the one thing the
+// entry gave, and a count badge on Orders does that better: a nav item looks
+// identical whether nobody or twelve people are waiting.
+describe("marketplaceNav — pre-orders folded into the order list", () => {
+  it("no longer has a dedicated pre-orders entry", () => {
+    expect(marketplaceNav.map((n) => n.href)).not.toContain("/dashboard/commerce/preorders");
+    expect(marketplaceNav.filter((n) => /pre-?order/i.test(n.label))).toHaveLength(0);
+  });
+
+  it("keeps the staff order list, which is where releasing now happens", () => {
+    const entry = posNav.find((n) => n.href === "/dashboard/pos/orders");
     expect(entry).toBeDefined();
-    expect(entry.label).toBe("Pre-orders");
+    expect(entry.roles).toEqual(expect.arrayContaining(["superadmin", "admin", "staff"]));
   });
 });
 

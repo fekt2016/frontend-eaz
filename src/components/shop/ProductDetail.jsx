@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Eye, Minus, Package, Play, Plus, Search, ShoppingBag } from "lucide-react";
-import { formatCount, formatGhs, stockBadge, placeholderToPng, preorderAvailability, isVariantPreorderable } from "@/lib/shop";
+import {
+  formatCount, formatGhs, stockBadge, placeholderToPng, preorderAvailability, resolvePreorder,
+  variantAttributeGroups, findVariantByAttributes, isAttributeValueAvailable, selectAttributeValue,
+  attributeValueImage, swatchAttributeKey, variantsShowImages,
+} from "@/lib/shop";
 import { api } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useProductBySlug } from "@/hooks/queries/useProducts";
@@ -40,6 +44,10 @@ export default function ProductDetail({ slug }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [qty, setQty] = useState(1);
   const [selectedSku, setSelectedSku] = useState(null);
+  // Chosen value per attribute, e.g. { color: "Black", storage: "128GB" }. The
+  // resolved SKU stays the source of truth for price/stock/cart; this only
+  // drives which one that is.
+  const [attrSelection, setAttrSelection] = useState({});
   const [activeTab, setActiveTab] = useState(TABS.DESCRIPTION);
   const tabPanelRef = useRef(null);
   const { addItem, openCart } = useCart();
@@ -136,11 +144,11 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   // fallback — products without gallery data look exactly like before).
   // Image sources pass through placeholderToPng so placehold.co SVGs load via next/image.
   const heroImages = product.images?.length ? product.images : [FALLBACK_IMAGE];
-  const galleryImages = selectedVariant?.images?.length
-    ? selectedVariant.images
-    : product.gallery?.images?.length
-      ? product.gallery.images
-      : heroImages;
+  // The gallery stays the product's own media. A variant's image is how you
+  // PICK that variant (the swatches below the price), so folding it into the
+  // carousel here would both hide the choice and make the gallery contents
+  // change under the shopper as they browse options.
+  const galleryImages = product.gallery?.images?.length ? product.gallery.images : heroImages;
   const galleryVideos = product.gallery?.videos || [];
   const media = [
     ...galleryImages.map((src) => ({ type: "image", src: placeholderToPng(src) })),
@@ -156,27 +164,47 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
   // `preorderable` is the only thing standing between "Out of Stock" and a sale.
   // It is scoped to the selected variant: a 0-stock size that is not itself
   // flagged must not be pre-orderable just because a sibling size is.
-  const preorderable = isVariantPreorderable(product, selectedVariant) && displayStock <= 0;
-  const badge = stockBadge(displayStock, isVariantPreorderable(product, selectedVariant));
+  // The terms that apply to THIS selection — the variant's own when it has
+  // opted in, the product's when the variant is unset. One resolution feeds the
+  // button, the cap and the copy, so they can never disagree with each other.
+  const preorderTerms = resolvePreorder(product, selectedVariant);
+  const preorderable = Boolean(preorderTerms) && displayStock <= 0;
+  const badge = stockBadge(displayStock, Boolean(preorderTerms));
   const inStock = displayStock > 0;
-  // A pre-order draws on no stock, so the quantity ceiling is the product's own
+  // A pre-order draws on no stock, so the quantity ceiling is the resolved
   // cap instead — the server enforces the same number at checkout.
   const maxQty = preorderable
-    ? Math.min(selectedVariant?.preorder?.maxQty ?? product.preorder?.maxQty ?? 10, 10)
+    ? Math.min(preorderTerms.maxQty ?? 10, 10)
     : Math.min(displayStock, 10);
   const orderable = inStock || preorderable;
-  const availabilityCopy = preorderAvailability(product);
+  const availabilityCopy = preorderAvailability(product, selectedVariant);
 
   const selectVariant = (variant) => {
     setSelectedSku(variant.sku);
+    setAttrSelection(variant.attributes ? { ...variant.attributes } : {});
+    setActiveIndex(0);
+  };
+
+  // One row per attribute when every variant describes the same ones. Mixed
+  // shapes (a product with both {grade} and {color,storage} variants) cannot be
+  // laid out as a grid without implying pairings that do not exist, so those
+  // fall back to the original list of whole variants.
+  const attributeGroups = hasVariants ? variantAttributeGroups(product.variants) : null;
+  const swatchKey = attributeGroups ? swatchAttributeKey(attributeGroups, product.variants) : null;
+  // Same rule for the mixed-shape fallback list below: pictures only for colour.
+  const fallbackShowsImages = hasVariants && !attributeGroups && variantsShowImages(product.variants);
+
+  const chooseAttribute = (key, value) => {
+    const next = selectAttributeValue(product.variants, attrSelection, key, value);
+    setAttrSelection(next);
+    const match = findVariantByAttributes(product.variants, next);
+    setSelectedSku(match ? match.sku : null);
     setActiveIndex(0);
   };
 
   const handleAddToCart = () => {
     if (!product || (hasVariants && !selectedVariant)) return;
-    const preorder = preorderable
-      ? { maxQty: selectedVariant?.preorder?.maxQty ?? product.preorder?.maxQty }
-      : null;
+    const preorder = preorderable ? { maxQty: preorderTerms.maxQty ?? undefined } : null;
     addItem(product, qty, selectedVariant || undefined, preorder);
     openCart();
   };
@@ -358,7 +386,107 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
 
             {/* Full description and specs live in the tabs below the grid (T39). */}
 
-            {hasVariants && (
+            {hasVariants && attributeGroups && (
+              <div className="mb-8 space-y-5">
+                {attributeGroups.map((group) => {
+                  // Exactly one axis shows pictures, and it is colour whenever
+                  // the product has one. Every variant carries its own photo, so
+                  // judging per-axis would give storage swatches too — a black
+                  // phone beside a blue one on a row that chooses neither.
+                  const showSwatches = group.key === swatchKey;
+                  return (
+                  <div key={group.key}>
+                    <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2">
+                      {group.label}
+                      {attrSelection[group.key] && (
+                        <span className="text-brand-500"> — {attrSelection[group.key]}</span>
+                      )}
+                    </p>
+                    <div className="flex flex-wrap gap-2" role="group" aria-label={group.label}>
+                      {group.values.map((value) => {
+                        const selected = String(attrSelection[group.key]) === String(value);
+                        // Greyed out only when the pairing was never stocked —
+                        // never for being out of stock, since a 0-stock variant
+                        // can still be pre-orderable.
+                        const available = isAttributeValueAvailable(
+                          product.variants, attrSelection, group.key, value
+                        );
+                        // Swatches only on the axis that actually changes the
+                        // picture. Storage rarely does, so it stays as text.
+                        const swatch = showSwatches
+                          ? attributeValueImage(product.variants, group.key, value)
+                          : null;
+
+                        if (swatch) {
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => chooseAttribute(group.key, value)}
+                              aria-pressed={selected}
+                              aria-label={value}
+                              title={available ? value : `${value} — not available with the current selection`}
+                              className={`relative rounded-xl border-2 p-0.5 transition ${
+                                selected
+                                  ? "border-brand-500"
+                                  : available
+                                    ? "border-transparent hover:border-gray-300 dark:hover:border-slate-600"
+                                    : "border-transparent opacity-40"
+                              }`}
+                            >
+                              <ProductImage
+                                src={placeholderToPng(swatch)}
+                                alt={value}
+                                width={56}
+                                height={56}
+                                className="h-14 w-14 rounded-lg object-cover"
+                              />
+                            </button>
+                          );
+                        }
+
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => chooseAttribute(group.key, value)}
+                            aria-pressed={selected}
+                            title={available ? undefined : `Not available with the current selection`}
+                            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                              selected
+                                ? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400"
+                                : available
+                                  ? "border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500"
+                                  : "border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-600 line-through"
+                            }`}
+                          >
+                            {value}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  );
+                })}
+                {selectedVariant ? (
+                  <p className="text-xs text-gray-600 dark:text-slate-500">
+                    {selectedVariant.stock} in stock
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-600 dark:text-slate-500">
+                    Choose {attributeGroups
+                      .filter((g) => !attrSelection[g.key])
+                      .map((g) => g.label.toLowerCase())
+                      .join(" and ")} to continue.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Variants that do not share a common set of attributes cannot be
+                laid out as rows without implying combinations that were never
+                stocked, so they keep the original whole-variant list. */}
+            {hasVariants && !attributeGroups && (
               <div className="mb-8">
                 <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2">
                   Options
@@ -369,19 +497,39 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                 <div className="flex flex-wrap gap-2">
                   {product.variants.map((v) => {
                     const selected = selectedSku === v.sku;
+                    // Pictures only when these variants are a colour choice.
+                    const swatch = fallbackShowsImages ? v.images?.[0] : null;
                     return (
                       <button
                         key={v.sku}
                         type="button"
                         onClick={() => selectVariant(v)}
                         aria-pressed={selected}
-                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                          selected
-                            ? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400"
-                            : "border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500"
-                        }`}
+                        aria-label={variantLabel(v)}
+                        title={variantLabel(v)}
+                        className={
+                          swatch
+                            ? `relative rounded-xl border-2 p-0.5 transition ${
+                                selected ? "border-brand-500" : "border-transparent hover:border-gray-300 dark:hover:border-slate-600"
+                              }`
+                            : `rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                                selected
+                                  ? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400"
+                                  : "border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-gray-400 dark:hover:border-slate-500"
+                              }`
+                        }
                       >
-                        {variantLabel(v)}
+                        {swatch ? (
+                          <ProductImage
+                            src={placeholderToPng(swatch)}
+                            alt={variantLabel(v)}
+                            width={56}
+                            height={56}
+                            className="h-14 w-14 rounded-lg object-cover"
+                          />
+                        ) : (
+                          variantLabel(v)
+                        )}
                       </button>
                     );
                   })}
@@ -444,7 +592,7 @@ const hasVariants = Array.isArray(product.variants) && product.variants.length >
                 <p className="text-xs text-blue-600 dark:text-blue-300 mt-3">
                   Pre-order — you pay now and we ship as soon as it arrives.
                   {availabilityCopy ? ` ${availabilityCopy}.` : ""}
-                  {product.preorder?.maxQty ? ` Limit ${product.preorder.maxQty} per order.` : ""}
+                  {preorderTerms?.maxQty ? ` Limit ${preorderTerms.maxQty} per order.` : ""}
                 </p>
               ) : (
                 <p className="text-xs text-gray-600 dark:text-slate-500 mt-3">

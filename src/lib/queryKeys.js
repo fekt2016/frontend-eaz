@@ -12,6 +12,8 @@ export const qk = {
     // T45 — the pre-order release queue. Under "orders" so releasing one, which
     // invalidates the prefix, refreshes the lists that show the same order.
     preorders: ["orders", "preorders"],
+    // Count behind the nav badge. Under "orders" too, so a release updates it.
+    preorderCount: ["orders", "preorders", "count"],
   },
   // T45 — incoming stock batches (a container from a supplier).
   shipments: {
@@ -39,6 +41,7 @@ export const qk = {
     all: ["products"],
     admin: ["products", "admin"],
     list: (params = {}) => ["products", "list", params],
+    categories: ["products", "categories"],
     detail: (slug) => ["products", "detail", slug],
     // T109 — admin get-by-id. Distinct from `detail`, which is keyed by SLUG
     // and served by the public route; this one is keyed by _id and can return

@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import UploadButton from "@/components/common/UploadButton";
 import { api } from "@/lib/api";
 import { productSkuBase, variantSkuSuffix } from "@/lib/sku";
+import { useDebounce } from "@/hooks/useDebounce";
+import { variantAttributeGroups } from "@/lib/shop";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700";
+
+// Attribute rows ({key,value}[]) as the plain object the SKU suffix builder
+// and the API both expect. Rows missing either half are not yet meaningful.
+const attrRowsToObject = (rows = []) =>
+  Object.fromEntries(
+    rows
+      .filter((a) => a.key.trim() && a.value.trim())
+      .map((a) => [a.key.trim(), a.value.trim()])
+  );
 
 // Mirrors the `shortDescription` maxlength on the backend Product model (T39).
 const SHORT_DESCRIPTION_MAX = 200;
@@ -88,24 +99,20 @@ const attributesToRows = (attributes) =>
   Object.entries(attributes || {}).map(([key, value]) => ({ key, value }));
 
 /*
- * `allowPart` (owner request, 2026-08-30): the Marketplace "Add" modal now uses
- * THIS form rather than its own part-shaped one, so the form has to cover bench
- * parts as well as shop products.
+ * One item type (owner request, 2026-09-04).
  *
- * The two are one collection already, but they are NOT the same thing to
- * create. The POS path sets deliberate bench defaults — sellOnline:false,
- * isActive:false, useInRepairs:true — so a new part is not silently listed in
- * the public shop. POST /products sets none of those. So the form is unified
- * while the ENDPOINT still differs, and `itemType` is what the caller routes on.
- * Collapsing both onto /products would quietly put every new bench part on the
- * storefront.
+ * There is no longer a "shop product" vs "bench part" choice. The Product model
+ * had already called that split the wrong question — "Behaviour, not type. The
+ * old split forced 'is it a Product or a Part?' when the real questions are
+ * where it can be sold and whether it can go on a repair job" — and the owner's
+ * answer is that everything is sold in both channels.
  *
- * Existing callers (new + edit product pages) pass no `allowPart` and are
- * unchanged: the toggle and the bench fields simply do not render.
+ * So every item created here is listed online, offered in store, AND selectable
+ * on a repair job. The fields that used to be bench-only (cost price, barcode,
+ * supplier, low-stock threshold, compatible-with, notes) now show for every
+ * item; the model always had somewhere to put them.
  */
-export default function ProductForm({ initial, submitLabel, submitting, onSubmit, allowPart = false, suppliers = [] }) {
-  const [itemType, setItemType] = useState(initial?.itemType || "product");
-  const isPart = allowPart && itemType === "part";
+export default function ProductForm({ initial, submitLabel, submitting, onSubmit, suppliers = [] }) {
 
   // Bench-part fields. Absent from the shop product shape entirely, so they are
   // only collected — and only sent — when the part type is selected.
@@ -119,6 +126,8 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     Array.isArray(initial?.compatibleWith) ? initial.compatibleWith.join(", ") : ""
   );
   const [notes, setNotes] = useState(initial?.notes || "");
+  // Defaults on: an item nobody can put on a job is the exception, not the rule.
+  const [useInRepairs, setUseInRepairs] = useState(initial?.useInRepairs ?? true);
 
   const [name, setName] = useState(initial?.name || "");
   const [slug, setSlug] = useState(initial?.slug || "");
@@ -128,6 +137,9 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   );
   const [stock, setStock] = useState(initial?.stock ?? "");
   const [sku, setSku] = useState(initial?.sku || "");
+  // A SKU the user typed themselves is never overwritten by the auto-fill. A
+  // product that arrives with one already saved counts as user-owned too.
+  const [skuTouched, setSkuTouched] = useState(Boolean(initial?.sku));
   const [description, setDescription] = useState(initial?.description || "");
   const [shortDescription, setShortDescription] = useState(initial?.shortDescription || "");
   const [images, setImages] = useState(initial?.images || []);
@@ -135,6 +147,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   const [variants, setVariants] = useState(() =>
     (Array.isArray(initial?.variants) ? initial.variants : []).map((v) => ({
       sku: v.sku || "",
+      skuTouched: Boolean(v.sku),
       attributes: attributesToRows(v.attributes),
       stock: v.stock ?? "",
       images: Array.isArray(v.images) ? v.images : [],
@@ -143,7 +156,9 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       // Per-variant pre-order, independent of the product-level flag — a
       // single 0-stock size can be pre-ordered while its siblings stay in stock.
       preorder: {
-        enabled: v.preorder?.enabled ?? false,
+        // null = unset: this variant follows the product-level pre-order. Kept
+        // distinct from an explicit false ("never"), which overrides it.
+        enabled: typeof v.preorder?.enabled === "boolean" ? v.preorder.enabled : null,
         availableFrom: v.preorder?.availableFrom ? new Date(v.preorder.availableFrom).toISOString().slice(0, 10) : "",
         note: v.preorder?.note || "",
         maxQty: v.preorder?.maxQty ?? "",
@@ -168,6 +183,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setPriceGhs((Number(initial.price || 0) / 100).toFixed(2));
     setStock(initial.stock ?? "");
     setSku(initial.sku || "");
+    setSkuTouched(Boolean(initial.sku));
     setDescription(initial.description || "");
     setShortDescription(initial.shortDescription || "");
     setImages(initial.images || []);
@@ -175,12 +191,13 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setVariants(
       (Array.isArray(initial.variants) ? initial.variants : []).map((v) => ({
         sku: v.sku || "",
+        skuTouched: Boolean(v.sku),
         attributes: attributesToRows(v.attributes),
         stock: v.stock ?? "",
         images: Array.isArray(v.images) ? v.images : [],
         priceGhs: v.price != null ? (Number(v.price) / 100).toFixed(2) : "",
         preorder: {
-          enabled: v.preorder?.enabled ?? false,
+          enabled: typeof v.preorder?.enabled === "boolean" ? v.preorder.enabled : null,
           availableFrom: v.preorder?.availableFrom ? new Date(v.preorder.availableFrom).toISOString().slice(0, 10) : "",
           note: v.preorder?.note || "",
           maxQty: v.preorder?.maxQty ?? "",
@@ -195,6 +212,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     );
     setPreorderNote(initial.preorder?.note || "");
     setPreorderMaxQty(initial.preorder?.maxQty ?? "");
+    setUseInRepairs(initial.useInRepairs ?? true);
   }, [initial]);
 
   const updateVariant = (vi, key, value) =>
@@ -204,8 +222,8 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
     setVariants((prev) => [
       ...prev,
       {
-        sku: "", attributes: [{ key: "color", value: "" }], stock: "", images: [], priceGhs,
-        preorder: { enabled: false, availableFrom: "", note: "", maxQty: "" },
+        sku: "", skuTouched: false, attributes: [{ key: "color", value: "" }], stock: "", images: [], priceGhs,
+        preorder: { enabled: null, availableFrom: "", note: "", maxQty: "" },
       },
     ]);
 
@@ -232,30 +250,124 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       )
     );
 
-  // One-click SKU generators — the API guarantees the returned number/suffix is
-  // unique (see services/skuGenerator.js). Errors keep the current value.
-  const generateProductSku = async () => {
-    try {
-      const res = await api.post("/products/generate-sku", { mode: "product", prefix: productSkuBase(name) });
-      if (res?.data?.sku) setSku(res.data.sku);
-    } catch { /* keep current sku */ }
-  };
+  /*
+   * Attribute-key consistency.
+   *
+   * The storefront only splits colour and size into separate rows when EVERY
+   * variant declares the SAME attribute keys (lib/shop.js variantAttributeGroups).
+   * Keys here are free text, so "color" on one variant and "Color" on the next
+   * silently drops the shopper back to one row of combined labels — with nothing
+   * on this form to say why. The check below is the storefront's own function, so
+   * the warning cannot drift from the behaviour it predicts.
+   */
+  const attributeKeysInUse = [
+    ...new Set(
+      variants.flatMap((v) => v.attributes.map((a) => a.key.trim()).filter(Boolean))
+    ),
+  ];
+  const pickerGroups = variantAttributeGroups(
+    variants.map((v) => ({ attributes: attrRowsToObject(v.attributes) }))
+  );
+  // Only worth flagging once there is a picker to lose.
+  const keysAreInconsistent = variants.length > 1 && !pickerGroups;
 
-  const generateVariantSku = async (vi) => {
-    try {
-      const attributes = Object.fromEntries(
-        variants[vi].attributes
-          .filter((a) => a.key.trim() && a.value.trim())
-          .map((a) => [a.key.trim(), a.value.trim()])
-      );
-      const res = await api.post("/products/generate-sku", {
-        mode: "variant",
-        parentSku: sku.trim(),
-        suffix: variantSkuSuffix(attributes),
+  /** Give every variant a row for each key any variant uses, so the shapes match. */
+  const alignAttributeKeys = () =>
+    setVariants((prev) => {
+      const keys = [
+        ...new Set(prev.flatMap((v) => v.attributes.map((a) => a.key.trim()).filter(Boolean))),
+      ];
+      return prev.map((v) => {
+        const have = v.attributes.map((a) => a.key.trim());
+        const missing = keys.filter((k) => !have.includes(k)).map((key) => ({ key, value: "" }));
+        // Existing rows keep their order and values; only the gaps are filled.
+        return missing.length ? { ...v, attributes: [...v.attributes, ...missing] } : v;
       });
-      if (res?.data?.sku) updateVariant(vi, "sku", res.data.sku);
-    } catch { /* keep current sku */ }
-  };
+    });
+
+  // --- Automatic SKU fill -------------------------------------------------
+  // The SKU writes itself from the product's own details: the name gives the
+  // EZW-<BRAND> base, a variant's attributes give its suffix, and the API picks
+  // the number so the result is unique (services/skuGenerator.js). Generation
+  // is debounced because it costs a query, and it never runs against a SKU the
+  // user typed themselves. Errors leave the field as it is.
+  const debouncedName = useDebounce(name, 500);
+  const productSkuSeq = useRef(0);
+
+  useEffect(() => {
+    if (skuTouched) return;
+    const base = debouncedName.trim();
+    if (!base) return;
+    const seq = ++productSkuSeq.current;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.post("/products/generate-sku", {
+          mode: "product",
+          prefix: productSkuBase(base),
+        });
+        // Ignore a slow reply the user has already typed past.
+        if (!cancelled && seq === productSkuSeq.current && res?.data?.sku) {
+          setSku(res.data.sku);
+        }
+      } catch { /* keep current sku */ }
+    })();
+    return () => { cancelled = true; };
+  }, [debouncedName, skuTouched]);
+
+  // A variant's SKU hangs off the parent's, so it refills whenever the parent
+  // SKU or the variant's own attributes change. The signature keeps the effect
+  // from re-firing on unrelated variant edits (stock, price, images).
+  const variantSkuSig = variants
+    .map((v) => (v.skuTouched ? "" : variantSkuSuffix(attrRowsToObject(v.attributes))))
+    .join("|");
+  const debouncedVariantSig = useDebounce(variantSkuSig, 500);
+  const variantSkuSeq = useRef(0);
+
+  useEffect(() => {
+    const parent = sku.trim();
+    if (!parent) return;
+    const pending = variants
+      .map((v, vi) => ({ vi, suffix: v.skuTouched ? "" : variantSkuSuffix(attrRowsToObject(v.attributes)) }))
+      .filter((x) => x.suffix);
+    if (!pending.length) return;
+
+    const seq = ++variantSkuSeq.current;
+    let cancelled = false;
+    (async () => {
+      // Sequential, not parallel: the API only knows about saved SKUs, so two
+      // unsaved siblings can be handed the same string. Tracking what this form
+      // has already claimed lets us step past a clash the way the server does.
+      const claimed = new Set(variants.map((v) => v.sku.trim()).filter(Boolean));
+      for (const { vi, suffix } of pending) {
+        if (cancelled || seq !== variantSkuSeq.current) return;
+        try {
+          const res = await api.post("/products/generate-sku", {
+            mode: "variant",
+            parentSku: parent,
+            suffix,
+          });
+          let next = res?.data?.sku;
+          if (!next) continue;
+          if (claimed.has(next)) {
+            let i = 2;
+            while (claimed.has(`${next}-${i}`)) i += 1;
+            next = `${next}-${i}`;
+          }
+          claimed.add(next);
+          if (!cancelled && seq === variantSkuSeq.current) {
+            setVariants((prev) =>
+              prev.map((v, i) => (i === vi && !v.skuTouched ? { ...v, sku: next } : v))
+            );
+          }
+        } catch { /* keep current sku */ }
+      }
+    })();
+    return () => { cancelled = true; };
+    // `variants` is intentionally absent — the signature stands in for the parts
+    // of it that matter, so editing stock or price does not regenerate SKUs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedVariantSig, sku]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -267,47 +379,21 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       return;
     }
 
-    // A bench part is created through POST /pos/inventory, which speaks a
-    // different vocabulary to the Product model: quantity→stock,
-    // sellingPrice→price, and category doubles as partCategory. Send its shape,
-    // not the product one, or every bench field is silently dropped by the
-    // controller's whitelist.
-    if (isPart) {
-      const costPesewas = Math.round((parseFloat(costGhs) || 0) * 100);
-      if (costPesewas <= 0) {
-        setError("A bench part needs a cost price above GH₵ 0.00.");
-        return;
-      }
-      onSubmit({
-        itemType: "part",
-        name: name.trim(),
-        category: category.trim(),
-        quantity: stock === "" || stock == null ? 0 : parseInt(stock, 10) || 0,
-        sellingPrice: pesewas,
-        costPrice: costPesewas,
-        lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
-        sku: sku.trim(),
-        barcode: barcode.trim(),
-        supplier: supplier || undefined,
-        compatibleWith: compatibleWith
-          .split(",")
-          .map((v) => v.trim())
-          .filter(Boolean),
-        description: description.trim(),
-        images: images.filter(Boolean),
-        notes: notes.trim(),
-      });
-      return;
-    }
-
     onSubmit({
-      itemType: "product",
       name: name.trim(),
       slug: slug.trim() || undefined,
       category: category.trim(),
       price: pesewas,
       stock: stock === "" || stock == null ? 0 : parseInt(stock, 10) || 0,
       sku: sku.trim(),
+      // Formerly bench-only. Sent for every item now — createProduct reads them.
+      costPrice: Math.round((parseFloat(costGhs) || 0) * 100),
+      barcode: barcode.trim(),
+      lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
+      supplier: supplier || undefined,
+      compatibleWith: compatibleWith.split(",").map((v) => v.trim()).filter(Boolean),
+      notes: notes.trim(),
+      useInRepairs,
       description: description.trim(),
       shortDescription: shortDescription.trim(),
       images: images.filter(Boolean),
@@ -319,19 +405,18 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
       variants: variants
         .map((v) => ({
           sku: v.sku.trim(),
-          attributes: Object.fromEntries(
-            v.attributes
-              .filter((a) => a.key.trim() && a.value.trim())
-              .map((a) => [a.key.trim(), a.value.trim()])
-          ),
+          attributes: attrRowsToObject(v.attributes),
           stock: v.stock === "" || v.stock == null ? 0 : parseInt(v.stock, 10) || 0,
           images: v.images.filter(Boolean),
           price:
             v.priceGhs === "" || v.priceGhs == null
               ? null
               : Math.round((parseFloat(v.priceGhs) || 0) * 100),
+          // Three states, not two. Sending `false` for a variant nobody touched
+          // used to mean "never pre-order this one", which switched off a
+          // product-level pre-order for every variant on the first admin save.
           preorder: {
-            enabled: v.preorder?.enabled ?? false,
+            enabled: typeof v.preorder?.enabled === "boolean" ? v.preorder.enabled : null,
             availableFrom: v.preorder?.availableFrom || null,
             note: (v.preorder?.note || "").trim(),
             maxQty:
@@ -358,44 +443,6 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {allowPart && (
-          // Deliberately NOT wrapped in <Field>: that renders a <label>, and a
-          // label around two buttons is both invalid and actively harmful —
-          // every button inherits the label's text as part of its accessible
-          // name, so a screen reader (and any name-based query) cannot tell
-          // "Shop product" from "Bench part". A fieldset/legend is the correct
-          // grouping for a choice between controls.
-          <fieldset className="sm:col-span-2">
-            <legend className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
-              What is this?
-            </legend>
-            <div className="flex gap-2">
-              {[
-                { value: "product", label: "Shop product" },
-                { value: "part", label: "Bench part" },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setItemType(opt.value)}
-                  aria-pressed={itemType === opt.value}
-                  className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                    itemType === opt.value
-                      ? "border-brand-300 bg-brand-50 text-brand-ink dark:border-brand-500/50 dark:bg-brand-500/10 dark:text-brand-400"
-                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-500">
-              {isPart
-                ? "Bench stock: used in repairs, not listed in the shop until you opt it in."
-                : "Shop product: listed online once active."}
-            </p>
-          </fieldset>
-        )}
 
         <Field label="Name *">
           <input
@@ -445,18 +492,18 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
             placeholder="0"
           />
         </Field>
-        <Field label="SKU">
+        <Field label="SKU" hint="Fills itself from the name — type to override.">
           <input
             className={inputClass}
             value={sku}
-            onChange={(e) => setSku(e.target.value)}
-            placeholder="optional"
+            onChange={(e) => { setSku(e.target.value); setSkuTouched(true); }}
+            placeholder="e.g. EZW-WOO-001"
           />
         </Field>
 
-        {isPart && (
-          <>
-            <Field label="Cost price (GH₵) *" hint="What you pay the supplier.">
+        {/* Shown for every item — see the header note. */}
+        <>
+            <Field label="Cost price (GH₵)" hint="What you pay the supplier. Leave blank if unknown.">
               <input
                 className={inputClass}
                 type="number" step="0.01" min="0"
@@ -504,7 +551,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
               </Field>
             </div>
             <div className="sm:col-span-2">
-              <Field label="Bench notes">
+              <Field label="Internal notes" hint="Never shown to customers.">
                 <input
                   className={inputClass}
                   value={notes}
@@ -513,8 +560,26 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
                 />
               </Field>
             </div>
+
+            {/* Channels. Everything is sold online and in store (owner request,
+                2026-09-04); whether an item can also go on a repair job is the
+                one genuine per-item choice left, so it stays a control rather
+                than a hardcoded default. */}
+            <div className="sm:col-span-2">
+              <label className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-900"
+                  checked={useInRepairs}
+                  onChange={(e) => setUseInRepairs(e.target.checked)}
+                />
+                <span className="text-sm text-gray-900 dark:text-white">Use in repairs</span>
+              </label>
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-500">
+                Selectable as a part on a repair job. Sold online and in store either way.
+              </p>
+            </div>
           </>
-        )}
       </div>
 
       {/* T39: shown in the buy column on the product page; the full description
@@ -562,6 +627,31 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
           <span className="text-xs text-gray-600 dark:text-slate-500">Optional — each has its own SKU, attributes, and stock</span>
         </div>
 
+        {/* Keys already used on this product, offered on every key input so the
+            second variant reuses "color" rather than inviting "Color". */}
+        <datalist id="variant-attribute-keys">
+          {attributeKeysInUse.map((k) => <option key={k} value={k} />)}
+        </datalist>
+
+        {/* The storefront can only show separate colour/size rows when every
+            variant declares the same keys. Silently losing that is the failure
+            this warns about — it is the storefront's own check, not a guess. */}
+        {keysAreInconsistent && (
+          <div className="rounded-xl border border-warning/30 bg-warning-surface dark:bg-warning-surface-dark px-4 py-3">
+            <p className="text-xs font-semibold text-warning dark:text-warning-dark">
+              Variants don&apos;t share the same attributes
+            </p>
+            <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">
+              The shop will show one button per variant with every value in the label
+              (&ldquo;Black 128GB&rdquo;) instead of separate Colour and Size rows. Give every
+              variant the same attribute keys to get the picker.
+            </p>
+            <button type="button" onClick={alignAttributeKeys} className={`${btnGhostClass} mt-2`}>
+              <Plus size={12} /> Give every variant the same attributes
+            </button>
+          </div>
+        )}
+
         {variants.length === 0 && (
           <p className="rounded-xl border border-dashed border-gray-300 dark:border-slate-600 px-4 py-3 text-xs text-gray-600 dark:text-slate-500">
             No variants — the product is sold as a single SKU using the stock above.
@@ -589,8 +679,14 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
                 <input
                   className={inputClass}
                   value={v.sku}
-                  onChange={(e) => updateVariant(vi, "sku", e.target.value)}
-                  placeholder="e.g. EZW-SPG-001-BLK"
+                  onChange={(e) =>
+                    setVariants((prev) =>
+                      prev.map((x, i) =>
+                        i === vi ? { ...x, sku: e.target.value, skuTouched: true } : x
+                      )
+                    )
+                  }
+                  placeholder="auto-generated from attributes"
                 />
               </Field>
               <Field label="Stock">
@@ -628,6 +724,7 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
                       value={a.key}
                       onChange={(e) => updateAttribute(vi, ai, "key", e.target.value)}
                       placeholder="Key (e.g. color)"
+                      list="variant-attribute-keys"
                     />
                     <input
                       className={`${inputClass} flex-1`}
@@ -666,19 +763,28 @@ export default function ProductForm({ initial, submitLabel, submitting, onSubmit
 
             {/* Per-variant pre-order — independent of the product-level flag. */}
             <div className="rounded-lg border border-gray-100 dark:border-slate-800 p-3 space-y-3">
-              <label className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={v.preorder?.enabled ?? false}
-                  onChange={(e) => updateVariant(vi, "preorder", { ...v.preorder, enabled: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 dark:border-slate-600"
-                />
-                Pre-order this variant
-              </label>
+              <Field label="Pre-order">
+                <select
+                  className={inputClass}
+                  value={v.preorder?.enabled === true ? "on" : v.preorder?.enabled === false ? "off" : "inherit"}
+                  onChange={(e) =>
+                    updateVariant(vi, "preorder", {
+                      ...v.preorder,
+                      enabled: e.target.value === "on" ? true : e.target.value === "off" ? false : null,
+                    })
+                  }
+                >
+                  <option value="inherit">
+                    Follow the product{preorderEnabled ? " (pre-order is on)" : " (pre-order is off)"}
+                  </option>
+                  <option value="on">Pre-order this variant</option>
+                  <option value="off">Never pre-order this variant</option>
+                </select>
+              </Field>
               <p className="text-xs text-gray-500 dark:text-slate-500 -mt-1">
                 Lets this single size be bought when its stock is zero, even if sibling variants are in stock.
               </p>
-              {v.preorder?.enabled && (
+              {v.preorder?.enabled === true && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-slate-800">
                   <Field label="Expected availability">
                     <input
