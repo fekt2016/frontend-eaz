@@ -70,6 +70,18 @@ export function useUpdatePreorderLine() {
   });
 }
 
+// Record where a pre-order has got to, on the order itself — for the single
+// order that is not part of any container. A line riding on a batch is refused
+// server-side: the batch drives it, so that update belongs to the batch.
+export function useSetPreorderStage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, stage, date, note }) =>
+      api.patch(`/orders/${id}/preorder-stage`, { stage, date, note }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.orders.all }),
+  });
+}
+
 // The logged-in customer's own shop orders (matched by phone/email server-side).
 export function useMyOrders(options = {}) {
   return useQuery({

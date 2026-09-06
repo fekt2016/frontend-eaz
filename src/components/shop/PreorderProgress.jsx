@@ -11,10 +11,11 @@ import { Factory, Warehouse, Ship, Anchor, Store, Check } from "lucide-react";
  * The road ends at our warehouse. Releasing the pre-order there is what starts
  * the ordinary local delivery tracking, which is a different journey.
  *
- * The journey starts abroad, so the whole road is drawn from the moment the
- * order is placed — including before a batch is assigned, where every step is
- * still pending. Drawing the road claims no progress; it answers "where is my
- * money going" for someone who just paid in full for something not yet made.
+ * Only the stages that have actually been RECORDED are shown. Drawing the road
+ * ahead was read as five updates that had already happened — a step nobody had
+ * touched is indistinguishable from one that is simply waiting, however it is
+ * styled, because the customer has no way to know which is which. So the list
+ * starts empty and grows as staff record each stage.
  */
 const STEPS = [
   { key: "production",          label: "In production",           icon: Factory,   blurb: "Being made by our supplier" },
@@ -51,6 +52,9 @@ export default function PreorderProgress({ preorder }) {
   const origin = preorder.origin || "";
   // When each stage was actually reached, keyed for lookup against the steps.
   const dates = new Map((preorder.history || []).map((h) => [h.stage, h.date]));
+  // What staff wrote for the customer against a stage — "held at the port,
+  // about three more days" — which is usually the thing they most want to read.
+  const notes = new Map((preorder.history || []).filter((h) => h.note).map((h) => [h.stage, h.note]));
 
   return (
     <div className="mt-5 rounded-xl border border-blue-200 dark:border-blue-500/30 bg-blue-50/60 dark:bg-blue-500/10 p-4">
@@ -70,16 +74,15 @@ export default function PreorderProgress({ preorder }) {
           Expected in Ghana around {expected}
         </p>
       )}
-      {/* The road below is drawn from the moment of payment, so without this a
-          customer reads five steps and assumes five things have happened. */}
       {currentIndex < 0 && (
         <p className="mt-2 text-xs text-gray-600 dark:text-slate-400">
-          No steps completed yet — we update each one as your order moves.
+          No updates yet — we&apos;ll post each stage here as your order moves.
         </p>
       )}
 
+      {/* Recorded stages only — never the ones still to come. */}
       <ol className="mt-4 space-y-3">
-        {STEPS.map((step, i) => {
+        {STEPS.slice(0, currentIndex + 1).map((step, i) => {
           const done = i < currentIndex;
           const active = i === currentIndex;
           const reached = fmtMoment(dates.get(step.key));
@@ -117,6 +120,11 @@ export default function PreorderProgress({ preorder }) {
                 )}
                 {reached && (
                   <p className="text-xs text-gray-500 dark:text-slate-500">{reached}</p>
+                )}
+                {notes.get(step.key) && (
+                  <p className="mt-0.5 text-xs text-gray-600 dark:text-slate-300">
+                    {notes.get(step.key)}
+                  </p>
                 )}
               </div>
             </li>

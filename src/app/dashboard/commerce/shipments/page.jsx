@@ -27,24 +27,6 @@ function fmtDate(value) {
     : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** Now, as the yyyy-mm-ddThh:mm a datetime-local input wants (local clock). */
-function nowInput() {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-    + `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-/**
- * A datetime-local value is a wall clock with no zone, so send the instant it
- * means on THIS machine — otherwise the server reads it in its own timezone and
- * a stage recorded at 9am appears at some other hour on the customer's page.
- */
-function asInstant(value) {
-  if (!value) return undefined;
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
-}
 
 /**
  * The batch's raw `stageHistory` in the shape BatchHistory renders. The list
@@ -83,7 +65,6 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
   const attach = useAttachOrdersToShipment();
   const [panel, setPanel] = useState(null);
   const [stage, setStage] = useState(shipment.stage);
-  const [date, setDate] = useState(nowInput());
   const [note, setNote] = useState("");
   const [picked, setPicked] = useState([]);
 
@@ -101,16 +82,15 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
   const openPanel = (which) => {
     onError("");
     setStage(shipment.stage);
-    setDate(nowInput());
     setNote("");
     setPicked([]);
     setPanel((cur) => (cur === which ? null : which));
   };
 
-  const move = (toStage, when, why) => {
+  const move = (toStage, why) => {
     onError("");
     advance.mutate(
-      { id: shipment._id, stage: toStage, date: asInstant(when), note: why || undefined },
+      { id: shipment._id, stage: toStage, note: why || undefined },
       {
         onSuccess: () => setPanel(null),
         onError: (err) => onError(errorMessage(err, "Could not update the shipment.")),
@@ -180,32 +160,25 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
 
       {panel === "stage" && (
         <div className="mt-4 space-y-3 rounded-xl border border-gray-100 dark:border-slate-800 p-3">
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Select label="Stage" value={stage} onChange={(e) => setStage(e.target.value)}>
               {SHIPMENT_STAGES.map((s) => (
                 <option key={s.key} value={s.key}>{s.label}</option>
               ))}
             </Select>
             <Input
-              label="When it happened"
-              type="datetime-local"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              hint="Customers see this date and time."
-            />
-            <Input
-              label="Note"
+              label="Message to the customer"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Internal — customers never see this"
+              placeholder="Shown to the customer, e.g. Held at the port"
             />
           </div>
           <p className="text-xs text-gray-600 dark:text-slate-400">
-            Saving the stage it is already on corrects that stage&apos;s date or note — use it
-            to record when the goods really went into production. Picking an earlier stage
-            moves it back, and anything after that stage is dropped from what customers see.
+            Each stage is stamped with the time you save it. Saving the stage it is already
+            on re-stamps it; picking an earlier stage moves the batch back, and anything after
+            that stage is dropped from what customers see.
           </p>
-          <Button size="sm" loading={advance.isPending} onClick={() => move(stage, date, note)}>
+          <Button size="sm" loading={advance.isPending} onClick={() => move(stage, note)}>
             Save stage
           </Button>
         </div>
@@ -352,9 +325,9 @@ export default function ShipmentsPage() {
               onChange={(e) => setForm({ ...form, expectedArrival: e.target.value })}
             />
             <Input
-              label="Note"
+              label="Message to the customer"
               value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })}
-              placeholder="Internal — customers never see this"
+              placeholder="Shown to the customer, e.g. Held at the port"
             />
           </div>
           <Button type="submit" size="sm" loading={createShipment.isPending}>

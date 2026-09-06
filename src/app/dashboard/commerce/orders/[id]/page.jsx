@@ -9,7 +9,7 @@ import { Send } from "lucide-react";
 import { formatGhs, formatShippingMethod } from "@/lib/shop";
 import {
   useOrder, useUpdateOrderStatus, useAddTrackingEvent,
-  useUpdatePreorderLine, useReleasePreorder,
+  useUpdatePreorderLine, useReleasePreorder, useSetPreorderStage,
 } from "@/hooks/queries/useOrders";
 import PreorderProgress from "@/components/shop/PreorderProgress";
 import BatchHistory from "@/components/commerce/BatchHistory";
@@ -54,24 +54,6 @@ function Row({ label, value }) {
   );
 }
 
-/** Now, as the yyyy-mm-ddThh:mm a datetime-local input wants (local clock). */
-function nowInput() {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-    + `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-/**
- * A datetime-local value is a wall clock with no zone, so send the instant it
- * means on THIS machine — otherwise the server reads it in its own timezone and
- * a stage recorded at 9am appears at some other hour on the customer's page.
- */
-function asInstant(value) {
-  if (!value) return undefined;
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
-}
 
 /**
  * The batch this pre-order is riding on — its internal journey, and the control
@@ -82,23 +64,31 @@ function asInstant(value) {
  * "it cleared customs today" is how a batch goes a fortnight without an update.
  * The move still belongs to the batch, so every other customer on it moves too.
  */
-function BatchPanel({ batch, expectedArrival }) {
+function JourneyPanel({ orderId, journey, expectedArrival }) {
   const advance = useAdvanceShipment();
+  const setStageOnOrder = useSetPreorderStage();
   const [open, setOpen] = useState(false);
-  const [stage, setStage] = useState(batch.stage);
-  const [date, setDate] = useState(nowInput());
+  const [stage, setStage] = useState(journey.stage || SHIPMENT_STAGES[0].key);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
+  const onBatch = journey.source === "batch";
+  const saving = onBatch ? advance.isPending : setStageOnOrder.isPending;
+
   const save = () => {
     setError("");
-    advance.mutate(
-      { id: batch.id, stage, date: asInstant(date), note: note || undefined },
-      {
-        onSuccess: () => { setOpen(false); setNote(""); },
-        onError: (err) => setError(errorMessage(err, "Could not update the shipment.")),
-      },
-    );
+    const done = {
+      onSuccess: () => { setOpen(false); setNote(""); },
+      onError: (err) => setError(errorMessage(err, "Could not record the stage.")),
+    };
+    // One source drives one journey: a line on a batch moves WITH the batch, so
+    // every other customer on that container moves too. A line on its own is
+    // recorded against the order and affects nobody else.
+    if (onBatch) {
+      advance.mutate({ id: journey.batch.id, stage, note: note || undefined }, done);
+    } else {
+      setStageOnOrder.mutate({ id: orderId, stage, note: note || undefined }, done);
+    }
   };
 
   return (
@@ -106,22 +96,31 @@ function BatchPanel({ batch, expectedArrival }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-gray-900 dark:text-white">
-            {batch.name} <span className="font-mono text-xs text-gray-600 dark:text-slate-400">{batch.reference}</span>
+            {onBatch ? journey.batch.name : "This order's own journey"}
+            {onBatch && (
+              <span className="ml-2 font-mono text-xs text-gray-600 dark:text-slate-400">
+                {journey.batch.reference}
+              </span>
+            )}
           </p>
           <p className="mt-0.5 text-xs text-gray-600 dark:text-slate-400">
-            {batch.stageLabel}
-            {batch.containerNumber ? ` · ${batch.containerNumber}` : ""}
+            {journey.stageLabel || "Nothing recorded yet"}
+            {onBatch && journey.batch.containerNumber ? ` · ${journey.batch.containerNumber}` : ""}
             {expectedArrival ? ` · expected ${new Date(expectedArrival).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => { setStage(batch.stage); setDate(nowInput()); setOpen((v) => !v); }}>
-          {open ? "Cancel" : "Update stage"}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => { setStage(journey.stage || SHIPMENT_STAGES[0].key); setOpen((v) => !v); }}
+        >
+          {open ? "Cancel" : journey.stage ? "Update stage" : "Record a stage"}
         </Button>
       </div>
 
       {open && (
         <div className="mt-3 space-y-3 rounded-xl border border-gray-100 dark:border-slate-800 p-3">
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="text-xs font-medium text-gray-500">Stage</span>
               <select value={stage} onChange={(e) => setStage(e.target.value)} className={`mt-1 w-full ${fieldCls}`}>
@@ -129,34 +128,30 @@ function BatchPanel({ batch, expectedArrival }) {
               </select>
             </label>
             <label className="block">
-              <span className="text-xs font-medium text-gray-500">When it happened</span>
-              <input
-                type="datetime-local"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className={`mt-1 w-full ${fieldCls}`}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs font-medium text-gray-500">Note</span>
+              <span className="text-xs font-medium text-gray-500">Message to the customer</span>
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Internal — customers never see this"
+                placeholder="Shown to the customer, e.g. Held at the port"
                 className={`mt-1 w-full ${fieldCls}`}
               />
             </label>
           </div>
+          {stage === "at_shop" && (
+            <p className="rounded-xl bg-warning-surface px-3 py-2 text-xs text-warning dark:bg-warning-surface-dark dark:text-warning-dark">
+              Saving this releases the order: the goods are here, so it leaves the pre-order
+              queue, the customer is emailed, and the ordinary status and tracking updates open up.
+            </p>
+          )}
           <p className="text-xs text-gray-600 dark:text-slate-400">
-            The date and time are what customers see, and moving the batch updates every order
-            riding on it. Saving the stage it is already on corrects that stage&apos;s date
-            or note; picking an earlier one moves it back, dropping everything after it
-            from what customers see.
+            {onBatch
+              ? "Stamped with the time you save it, and this moves every order on the batch."
+              : "Stamped with the time you save it. This order only."}
+            {" "}Saving the stage it is already on corrects that stage&apos;s date or note;
+            picking an earlier one moves it back, dropping everything after it.
           </p>
           {error && <p className="text-xs text-error dark:text-error-dark">{error}</p>}
-          <Button size="sm" loading={advance.isPending} onClick={save}>
-            Save stage
-          </Button>
+          <Button size="sm" loading={saving} onClick={save}>Save stage</Button>
         </div>
       )}
 
@@ -164,7 +159,10 @@ function BatchPanel({ batch, expectedArrival }) {
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
           Shipping history
         </p>
-        <BatchHistory entries={batch.history} emptyHint="Nothing recorded on this batch yet." />
+        <BatchHistory
+          entries={journey.history}
+          emptyHint="Nothing recorded yet — record the first stage above and the customer sees it."
+        />
       </div>
     </div>
   );
@@ -418,13 +416,12 @@ export default function AdminOrderDetailPage() {
           <div className="mb-6">
             <PreorderProgress preorder={order.preorder} />
             <PreorderLines orderId={id} items={order.items} />
-            {order.preorder.batch ? (
-              <BatchPanel batch={order.preorder.batch} expectedArrival={order.preorder.expectedArrival} />
-            ) : (
-              <p className="mt-2 text-xs text-gray-600">
-                Not on a shipment batch yet — attach it under Incoming shipments, or this
-                customer sees &ldquo;awaiting shipment&rdquo; however far the goods have travelled.
-              </p>
+            {order.preorder.journey && (
+              <JourneyPanel
+                orderId={id}
+                journey={order.preorder.journey}
+                expectedArrival={order.preorder.expectedArrival}
+              />
             )}
           </div>
         )}

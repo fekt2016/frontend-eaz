@@ -30,21 +30,23 @@ describe("PreorderProgress (T45)", () => {
     expect(screen.getByText(/iPhone 17 × 2/)).toBeInTheDocument();
   });
 
-  it("shows all five steps, so the customer can see what is still to come", () => {
-    render(<PreorderProgress preorder={{ stage: "production", label: "In production" }} />);
+  it("shows only the stages that have actually been recorded", () => {
+    const { container } = render(
+      <PreorderProgress preorder={{ stage: "shipped", label: "Shipped — on its way to Ghana" }} />,
+    );
 
-    for (const step of [
-      "In production", "At the container warehouse", "Shipped",
-      "Arrived at the port in Ghana", "At our warehouse",
-    ]) {
-      expect(screen.getAllByText(step).length).toBeGreaterThan(0);
-    }
+    // Reached: production, container warehouse, shipped.
+    expect(container.querySelectorAll("ol li")).toHaveLength(3);
+    expect(screen.getAllByText("In production").length).toBeGreaterThan(0);
+    // Never the ones still to come — a step nobody has touched reads as one
+    // that has already happened, whatever it is styled like.
+    expect(screen.queryByText("Arrived at the port in Ghana")).toBeNull();
+    expect(screen.queryByText("At our warehouse")).toBeNull();
   });
 
-  it("draws the road ahead before a batch is assigned, claiming no progress", () => {
-    // The journey starts abroad and the customer has already paid in full, so
-    // show where the item is going — but with nothing ticked off, because the
-    // order has not moved yet.
+  it("shows no stages at all until one is recorded", () => {
+    // Reported from a real order: five drawn steps read as five updates that had
+    // already happened. Nothing is drawn until staff record something.
     const { container } = render(
       <PreorderProgress
         preorder={{ stage: null, label: "Confirmed — awaiting shipment", origin: "China" }}
@@ -52,13 +54,8 @@ describe("PreorderProgress (T45)", () => {
     );
 
     expect(screen.getByText("Confirmed — awaiting shipment")).toBeInTheDocument();
-    expect(container.querySelectorAll("ol li")).toHaveLength(5);
-    // Nothing reached: no step is marked done.
-    expect(container.querySelector(".bg-blue-600")).toBeNull();
-    // And it must not LOOK reached either. A filled circle reads as a completed
-    // step, so every pending one is an empty dashed outline, and it says so.
-    expect(container.querySelectorAll("ol li .border-dashed")).toHaveLength(5);
-    expect(screen.getByText(/No steps completed yet/)).toBeInTheDocument();
+    expect(container.querySelectorAll("ol li")).toHaveLength(0);
+    expect(screen.getByText(/No updates yet/)).toBeInTheDocument();
   });
 
   it("names where the goods are coming from while they are still abroad", () => {
@@ -130,23 +127,57 @@ describe("PreorderProgress — a step that has not happened must not look like o
     );
 
     const steps = [...container.querySelectorAll("ol li")];
-    // production is done, shipped is active, the last two have not happened.
+    // Reached only: production, container warehouse, shipped — the last is the
+    // current position, the earlier ones are ticked.
+    expect(steps).toHaveLength(3);
     expect(steps[0].querySelector(".bg-blue-600")).not.toBeNull();
-    expect(steps[3].querySelector(".border-dashed")).not.toBeNull();
-    expect(steps[4].querySelector(".border-dashed")).not.toBeNull();
-    // No dashed outline on anything that has actually been recorded.
-    expect(steps[0].querySelector(".border-dashed")).toBeNull();
+    expect(steps.at(-1).querySelector(".ring-blue-500")).not.toBeNull();
   });
 
-  it("does not claim progress on a pre-order with no batch yet", () => {
+  it("does not claim progress on a pre-order with nothing recorded", () => {
     const { container } = render(
       <PreorderProgress preorder={{ stage: null, label: "Confirmed — awaiting shipment" }} />,
     );
 
-    expect(container.querySelectorAll("ol li .border-dashed")).toHaveLength(5);
+    expect(container.querySelectorAll("ol li")).toHaveLength(0);
     expect(container.querySelector(".bg-blue-600")).toBeNull();
-    // No dates either — a date against a step is the other thing that reads as
-    // "this happened".
-    expect(container.querySelectorAll("ol li p")).toHaveLength(5);
+  });
+});
+
+// The note staff write with a stage is a message FOR the customer, so it belongs
+// under the stage it explains.
+describe("PreorderProgress — the message staff wrote", () => {
+  it("shows it under the stage it belongs to", () => {
+    render(
+      <PreorderProgress
+        preorder={{
+          stage: "port_ghana",
+          label: "Arrived at the port in Ghana",
+          history: [
+            { stage: "production", label: "In production", date: "2026-08-02T00:00:00Z", note: "" },
+            { stage: "shipped", label: "Shipped", date: "2026-09-01T00:00:00Z", note: "" },
+            { stage: "port_ghana", label: "Arrived at the port in Ghana", date: "2026-09-20T00:00:00Z", note: "Held at the port — about three more days" },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Held at the port — about three more days")).toBeInTheDocument();
+  });
+
+  it("shows nothing extra when staff wrote no message", () => {
+    render(
+      <PreorderProgress
+        preorder={{
+          stage: "shipped",
+          label: "Shipped",
+          history: [{ stage: "shipped", label: "Shipped", date: "2026-09-01T00:00:00Z", note: "" }],
+        }}
+      />,
+    );
+
+    const step = [...document.querySelectorAll("ol li")].at(-1);
+    // Its label, its blurb and its date — and nothing invented in between.
+    expect(step.querySelectorAll("p")).toHaveLength(3);
   });
 });

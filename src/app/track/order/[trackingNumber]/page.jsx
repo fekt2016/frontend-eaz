@@ -70,10 +70,11 @@ function buildTimeline(tracking) {
       kind: h.preorderStage ? "preorder" : "delivery",
       at: h.timestamp,
       status: h.status,
-      // A batch entry's note IS its stage label ("On its way"), so it reads as
-      // the badge rather than as a note underneath it.
+      // A stage entry's note IS its label ("Shipped"), so that reads as the
+      // badge, and `detail` — what staff wrote for the customer — reads as the
+      // line underneath, exactly where a courier note would sit.
       label: h.preorderStage ? h.note : "",
-      note: h.preorderStage ? "" : h.note,
+      note: h.preorderStage ? (h.detail || "") : h.note,
       location: h.location,
     }))
     .sort((a, b) => new Date(a.at) - new Date(b.at));

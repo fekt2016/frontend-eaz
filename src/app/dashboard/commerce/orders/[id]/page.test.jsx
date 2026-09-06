@@ -20,6 +20,7 @@ const statusMutate = vi.fn();
 const trackingMutate = vi.fn();
 const lineMutate = vi.fn();
 const releaseMutate = vi.fn();
+const stageMutate = vi.fn();
 const mockOrder = vi.fn();
 vi.mock("@/hooks/queries/useOrders", () => ({
   useOrder: () => ({ data: mockOrder(), isLoading: false }),
@@ -27,6 +28,7 @@ vi.mock("@/hooks/queries/useOrders", () => ({
   useAddTrackingEvent: () => ({ mutate: trackingMutate, isPending: false }),
   useUpdatePreorderLine: () => ({ mutate: lineMutate, isPending: false }),
   useReleasePreorder: () => ({ mutate: releaseMutate, isPending: false }),
+  useSetPreorderStage: () => ({ mutate: stageMutate, isPending: false }),
 }));
 
 const advanceMutate = vi.fn();
@@ -62,6 +64,7 @@ beforeEach(() => {
   advanceMutate.mockClear();
   lineMutate.mockClear();
   releaseMutate.mockClear();
+  stageMutate.mockClear();
   mockBatches.mockReturnValue([]);
 });
 
@@ -114,13 +117,17 @@ describe("Staff order detail — pre-order hold (T45)", () => {
 // Support works from the customer's order, so the batch's internal journey — and
 // the control that moves it — have to be here, not only on the batch list.
 describe("Staff order detail — the shipping batch (T45)", () => {
-  const batch = {
-    id: "ship1",
-    reference: "SHP-202609-00001",
-    name: "March iPhone batch",
-    containerNumber: "CMAU1234567",
+  const journey = {
+    source: "batch",
+    itemId: "line1",
     stage: "port_ghana",
     stageLabel: "Arrived at the port in Ghana",
+    batch: {
+      id: "ship1",
+      reference: "SHP-202609-00001",
+      name: "March iPhone batch",
+      containerNumber: "CMAU1234567",
+    },
     history: [
       { stage: "production", label: "In production", note: "", date: "2026-03-02T00:00:00Z", updatedBy: "Kofi", customerLabel: "In production" },
       { stage: "port_ghana", label: "Arrived at the port in Ghana", note: "Duties paid", date: "2026-08-14T00:00:00Z", updatedBy: "Ama", customerLabel: "Arrived at the port in Ghana" },
@@ -128,7 +135,7 @@ describe("Staff order detail — the shipping batch (T45)", () => {
   };
   const withBatch = () => makeOrder({
     items: [waiting],
-    preorder: { batch, expectedArrival: "2026-09-01T00:00:00Z", stage: "port_ghana", label: "Arrived at the port in Ghana", origin: "China", history: [], items: [] },
+    preorder: { journey, expectedArrival: "2026-09-01T00:00:00Z", stage: "port_ghana", label: "Arrived at the port in Ghana", origin: "China", history: [], items: [] },
   });
 
   it("shows the batch's internal stages, notes and who entered them", () => {
@@ -153,29 +160,49 @@ describe("Staff order detail — the shipping batch (T45)", () => {
     render(<AdminOrderDetailPage />);
 
     fireEvent.click(screen.getByRole("button", { name: /Update stage/i }));
-    fireEvent.change(screen.getByDisplayValue("Arrived at the port in Ghana"), { target: { value: "at_shop" } });
-    fireEvent.change(screen.getByLabelText(/When it happened/i), { target: { value: "2026-08-20T14:05" } });
+    fireEvent.change(screen.getByLabelText(/^Stage$/i), { target: { value: "at_shop" } });
     fireEvent.click(screen.getByRole("button", { name: /Save stage/i }));
 
-    expect(advanceMutate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "ship1",
-        stage: "at_shop",
-        date: new Date("2026-08-20T14:05").toISOString(),
-      }),
-      expect.anything(),
-    );
+    const [sent] = advanceMutate.mock.calls[0];
+    expect(sent).toMatchObject({ id: "ship1", stage: "at_shop" });
+    // Stamped server-side when saved — staff record a stage as it happens.
+    expect(sent.date).toBeUndefined();
   });
 
-  it("says where to attach an order that is on no batch at all", () => {
+  it("offers to record the first stage on an order that is on no batch", () => {
     mockOrder.mockReturnValue(makeOrder({
       items: [waiting],
-      preorder: { stage: null, label: "Confirmed — awaiting shipment", origin: "China", history: [], items: [] },
+      preorder: {
+        journey: { source: "order", itemId: "line1", stage: "", stageLabel: "", batch: null, history: [] },
+        stage: null, label: "Confirmed — awaiting shipment", origin: "China", history: [], items: [],
+      },
     }));
     render(<AdminOrderDetailPage />);
 
-    expect(screen.getByText(/Not on a shipment batch yet/)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Update stage/i })).toBeNull();
+    expect(screen.getByText("This order's own journey")).toBeInTheDocument();
+    expect(screen.getAllByText(/Nothing recorded yet/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /Record a stage/i })).toBeInTheDocument();
+  });
+
+  it("records that stage against the order, not a batch", () => {
+    mockOrder.mockReturnValue(makeOrder({
+      items: [waiting],
+      preorder: {
+        journey: { source: "order", itemId: "line1", stage: "", stageLabel: "", batch: null, history: [] },
+        stage: null, label: "Confirmed — awaiting shipment", origin: "China", history: [], items: [],
+      },
+    }));
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Record a stage/i }));
+    fireEvent.change(screen.getByLabelText(/^Stage$/i), { target: { value: "shipped" } });
+    fireEvent.click(screen.getByRole("button", { name: /Save stage/i }));
+
+    const [sent] = stageMutate.mock.calls[0];
+    expect(sent).toMatchObject({ id: "order1", stage: "shipped" });
+    expect(sent.date).toBeUndefined();
+    // It must NOT move a batch — no other customer is involved.
+    expect(advanceMutate).not.toHaveBeenCalled();
   });
 });
 
@@ -272,5 +299,29 @@ describe("Staff order detail — editing the pre-order line (T45)", () => {
     render(<AdminOrderDetailPage />);
 
     expect(screen.queryByText("Pre-order lines")).toBeNull();
+  });
+});
+
+// Recording "Arrived at our warehouse" releases the order, so the form has to
+// say so before it is saved — it is not an undoable stage like the others.
+describe("Staff order detail — the last stage releases (T45)", () => {
+  const heldOnItsOwn = () => makeOrder({
+    items: [waiting],
+    preorder: {
+      journey: { source: "order", itemId: "line1", stage: "shipped", stageLabel: "Shipped", batch: null, history: [] },
+      stage: "shipped", label: "Shipped", origin: "China", history: [], items: [],
+    },
+  });
+
+  it("warns before the stage that releases", () => {
+    mockOrder.mockReturnValue(heldOnItsOwn());
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Update stage/i }));
+    expect(screen.queryByText(/Saving this releases the order/)).toBeNull();
+
+    fireEvent.change(screen.getByLabelText(/^Stage$/i), { target: { value: "at_shop" } });
+
+    expect(screen.getByText(/Saving this releases the order/)).toBeInTheDocument();
   });
 });

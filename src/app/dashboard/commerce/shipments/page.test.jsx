@@ -98,22 +98,18 @@ describe("Shipments — attaching pre-orders to a batch", () => {
 });
 
 describe("Shipments — moving a batch along", () => {
-  it("sends the date the stage actually happened, not the click time", () => {
+  it("stamps the stage when it is saved, with no date to pick", () => {
     render(<ShipmentsPage />);
     fireEvent.click(screen.getByText("Edit stage"));
 
+    expect(screen.queryByLabelText(/When it happened/)).toBeNull();
+
     fireEvent.change(screen.getByLabelText(/Stage/), { target: { value: "port_ghana" } });
-    fireEvent.change(screen.getByLabelText(/When it happened/), { target: { value: "2026-09-01T09:30" } });
     fireEvent.click(screen.getByText("Save stage"));
 
-    expect(advanceMutate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "s1",
-        stage: "port_ghana",
-        date: new Date("2026-09-01T09:30").toISOString(),
-      }),
-      expect.anything(),
-    );
+    const [sent] = advanceMutate.mock.calls[0];
+    expect(sent).toMatchObject({ id: "s1", stage: "port_ghana" });
+    expect(sent.date).toBeUndefined();
   });
 
   it("lets staff correct a stage backwards, not only advance", () => {
