@@ -16,6 +16,12 @@ import { controlBase, controlSizes, controlBorder } from "@/components/ui/contro
 
 const STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
+/* Stages an order cannot reach while a pre-order line on it is still waiting on
+ * stock — the server refuses them (orderController's PREORDER_HELD_STATUSES);
+ * this list only spares staff a rejected click. Paying and cancelling stay open.
+ * Keep the two in step. */
+const PREORDER_HELD = ["processing", "shipped", "delivered"];
+
 /* Same semantic mapping as the staff dashboard's RecentOrdersList so a status
  * reads the same colour wherever it appears. */
 const STATUS_TONES = {
@@ -68,6 +74,9 @@ export default function AdminOrderDetailPage() {
   const addTracking = useAddTrackingEvent();
   const updating = updateStatus.isPending;
   const saving = addTracking.isPending;
+  // Any line still waiting on its batch holds the whole order: there is no
+  // partial shipment, so nothing goes out until everything has landed.
+  const preorderHeld = (order?.items || []).some((i) => i.isPreorder && !i.preorderReleasedAt);
 
   if (authLoading || !isAllowed) return null;
 
@@ -78,7 +87,7 @@ export default function AdminOrderDetailPage() {
   const handleTrackingUpdate = (e) => {
     e.preventDefault();
     addTracking.mutate(
-      { id, status: trackStatus, note: trackNote, location: trackLocation },
+      { id, status: preorderHeld ? "" : trackStatus, note: trackNote, location: trackLocation },
       {
         onSuccess: () => { setTrackNote(""); setTrackLocation(""); },
         onError: (err) => alert(errorMessage(err, "Update failed")),
@@ -209,6 +218,12 @@ export default function AdminOrderDetailPage() {
 
         <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Update Status</h2>
+          {preorderHeld && (
+            <p className="mb-3 rounded-xl bg-warning-surface px-3 py-2 text-xs text-warning dark:bg-warning-surface-dark dark:text-warning-dark">
+              Held: this order is waiting on pre-order stock. Release it once the batch
+              reaches the shop and these stages open up.
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             {STATUSES.map((s) => (
               <Button
@@ -216,7 +231,7 @@ export default function AdminOrderDetailPage() {
                 size="sm"
                 variant={s === order.status ? "primary" : "secondary"}
                 onClick={() => handleStatus(s)}
-                disabled={updating || s === order.status}
+                disabled={updating || s === order.status || (preorderHeld && PREORDER_HELD.includes(s))}
                 className="capitalize"
               >
                 {s}
@@ -232,13 +247,16 @@ export default function AdminOrderDetailPage() {
               <label className="block">
                 <span className="text-xs font-medium text-gray-500">Status</span>
                 <select
-                  value={trackStatus}
+                  value={preorderHeld ? "" : trackStatus}
                   onChange={(e) => setTrackStatus(e.target.value)}
-                  className={`mt-1 w-full ${fieldCls}`}
+                  disabled={preorderHeld}
+                  className={`mt-1 w-full ${fieldCls} disabled:opacity-60`}
                 >
-                  {STATUSES.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
+                  {/* While held, the event can still carry a note — it just may
+                      not move the order. */}
+                  {preorderHeld
+                    ? <option value="">Held until release</option>
+                    : STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </label>
               <label className="block">

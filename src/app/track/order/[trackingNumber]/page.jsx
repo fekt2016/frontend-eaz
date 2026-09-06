@@ -53,28 +53,30 @@ function pickupStageLabel(pickup, status) {
 }
 
 /**
- * The order's own delivery events and its pre-order stages, as one journey.
+ * The order's delivery events and its pre-order stages, as one journey.
  *
- * They are two arrays for good reasons — one is per-order, the other belongs to
- * a shipment batch shared by many customers — but that is our filing problem,
- * not the customer's. Read separately, the delivery timeline is EMPTY for a
- * pre-order until the goods land, so someone who paid weeks ago was told "no
- * tracking updates yet" while their phone was somewhere in the Indian Ocean.
+ * They now arrive as ONE array: the batch writes each stage it reaches into the
+ * order's own tracking history (backend `syncPreorderJourney`), so the merge is
+ * real data rather than a display trick — every page reading the history shows
+ * the same journey, and so does anything exported from it.
+ *
+ * `preorderStage` is what distinguishes the two, and it is why the batch's
+ * stages must not be re-read from `preorder.history` here: that would list each
+ * stage twice, once from each source.
  */
 function buildTimeline(tracking) {
-  const delivery = (tracking?.history || []).map((h) => ({
-    kind: "delivery",
-    at: h.timestamp,
-    status: h.status,
-    note: h.note,
-    location: h.location,
-  }));
-  const preorder = (tracking?.preorder?.history || []).map((h) => ({
-    kind: "preorder",
-    at: h.date,
-    label: h.label,
-  }));
-  return [...preorder, ...delivery].sort((a, b) => new Date(a.at) - new Date(b.at));
+  return (tracking?.history || [])
+    .map((h) => ({
+      kind: h.preorderStage ? "preorder" : "delivery",
+      at: h.timestamp,
+      status: h.status,
+      // A batch entry's note IS its stage label ("On its way"), so it reads as
+      // the badge rather than as a note underneath it.
+      label: h.preorderStage ? h.note : "",
+      note: h.preorderStage ? "" : h.note,
+      location: h.location,
+    }))
+    .sort((a, b) => new Date(a.at) - new Date(b.at));
 }
 
 export default function OrderTrackingDetailPage() {

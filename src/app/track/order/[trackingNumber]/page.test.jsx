@@ -31,8 +31,14 @@ const base = (over = {}) => ({
 beforeEach(() => mockTracking.mockReturnValue(base()));
 
 describe("Tracking detail — pre-order in the timeline", () => {
+  // The batch writes its stages into the order's own tracking history, so they
+  // arrive in `history` carrying a `preorderStage` — not as a second array.
   it("lists the pre-order stages in Tracking History", () => {
     mockTracking.mockReturnValue(base({
+      history: [
+        { status: "paid", note: "Preparing with our supplier", timestamp: "2026-06-05T00:00:00Z", preorderStage: "preparing" },
+        { status: "paid", note: "On its way", timestamp: "2026-07-20T00:00:00Z", preorderStage: "on_the_way" },
+      ],
       preorder: {
         stage: "in_ghana",
         label: "Arrived in Ghana — clearing customs",
@@ -54,7 +60,10 @@ describe("Tracking detail — pre-order in the timeline", () => {
 
   it("orders the two journeys together by date", () => {
     mockTracking.mockReturnValue(base({
-      history: [{ status: "shipped", note: "Out for delivery", timestamp: "2026-08-01T00:00:00Z" }],
+      history: [
+        { status: "shipped", note: "Out for delivery", timestamp: "2026-08-01T00:00:00Z" },
+        { status: "paid", note: "Preparing with our supplier", timestamp: "2026-06-05T00:00:00Z", preorderStage: "preparing" },
+      ],
       preorder: {
         stage: "at_shop",
         label: "At our shop — preparing your order",
@@ -96,6 +105,29 @@ describe("Tracking detail — pre-order in the timeline", () => {
     render(<TrackingDetailPage />);
 
     expect(screen.getByText("Out for delivery")).toBeInTheDocument();
+    expect(document.querySelectorAll("ol.relative li")).toHaveLength(1);
+  });
+});
+
+// The stages used to be merged in for display only, from a second array. Now the
+// batch writes them into the order's own history, and reading both would list
+// every stage twice.
+describe("Tracking detail — one source for the journey", () => {
+  it("does not double up a stage that is in both payloads", () => {
+    mockTracking.mockReturnValue(base({
+      history: [
+        { status: "paid", note: "On its way", timestamp: "2026-07-20T00:00:00Z", preorderStage: "on_the_way" },
+      ],
+      preorder: {
+        stage: "on_the_way",
+        label: "On its way",
+        origin: "China",
+        history: [{ stage: "on_the_way", label: "On its way", date: "2026-07-20T00:00:00Z" }],
+      },
+    }));
+
+    render(<TrackingDetailPage />);
+
     expect(document.querySelectorAll("ol.relative li")).toHaveLength(1);
   });
 });
