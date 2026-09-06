@@ -298,6 +298,7 @@ export default function AdminOrderDetailPage() {
   const [trackStatus, setTrackStatus] = useState("processing");
   const [trackNote, setTrackNote] = useState("");
   const [trackLocation, setTrackLocation] = useState("");
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAllowed) router.replace("/dashboard");
@@ -311,6 +312,9 @@ export default function AdminOrderDetailPage() {
   // Any line still waiting on its batch holds the whole order: there is no
   // partial shipment, so nothing goes out until everything has landed.
   const preorderHeld = (order?.items || []).some((i) => i.isPreorder && !i.preorderReleasedAt);
+  // Terminal on the server too — canTransition refuses every move out of these,
+  // so a status control here could only ever be refused.
+  const settled = ["delivered", "cancelled"].includes(order?.status);
 
   if (authLoading || !isAllowed) return null;
 
@@ -321,7 +325,9 @@ export default function AdminOrderDetailPage() {
   const handleTrackingUpdate = (e) => {
     e.preventDefault();
     addTracking.mutate(
-      { id, status: trackStatus, note: trackNote, location: trackLocation },
+      // No status on a settled order: the server would refuse it, and the note
+      // is the only part still worth recording.
+      { id, status: settled ? "" : trackStatus, note: trackNote, location: trackLocation },
       {
         onSuccess: () => { setTrackNote(""); setTrackLocation(""); },
         onError: (err) => alert(errorMessage(err, "Update failed")),
@@ -471,9 +477,52 @@ export default function AdminOrderDetailPage() {
               the batch above. Releasing it once the goods reach our warehouse starts the
               ordinary status and tracking updates.
             </p>
+
+            {/* Cancelling stays available while the rest is hidden: a customer
+                may want out while their goods are still months away, and the
+                fulfilment controls being gone must not trap them in the order.
+                Two steps, because cancelling is terminal — there is no way back
+                from it. */}
+            <div className="mt-4 border-t border-gray-100 dark:border-slate-800 pt-3">
+              {confirmingCancel ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-700 dark:text-slate-300">
+                    Cancel this order? It cannot be undone. The customer paid in full up
+                    front, so cancelling does <strong>not</strong> return their money —
+                    refund them separately.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      loading={updating}
+                      onClick={() => handleStatus("cancelled")}
+                    >
+                      Yes, cancel this order
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setConfirmingCancel(false)}>
+                      Keep it
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button variant="secondary" size="sm" onClick={() => setConfirmingCancel(true)}>
+                  Cancel order
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
         <>
+        {settled ? (
+          <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
+            <h2 className="font-semibold text-gray-900 text-sm mb-2">Status</h2>
+            <p className="text-xs text-gray-600 dark:text-slate-400">
+              This order is {order.status} — the journey is over, so there is no status left
+              to set. A note can still be added below for the record.
+            </p>
+          </div>
+        ) : (
         <div className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Update Status</h2>
           <div className="flex flex-wrap gap-2">
@@ -491,21 +540,24 @@ export default function AdminOrderDetailPage() {
             ))}
           </div>
         </div>
+        )}
 
         <div id="tracking-update" className="rounded-2xl border border-gray-100 bg-paper p-5 mb-6 scroll-mt-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-3">Add tracking update</h2>
           <form onSubmit={handleTrackingUpdate} className="space-y-3">
             <div className="grid sm:grid-cols-2 gap-3">
-              <label className="block">
-                <span className="text-xs font-medium text-gray-500">Status</span>
-                <select
-                  value={trackStatus}
-                  onChange={(e) => setTrackStatus(e.target.value)}
-                  className={`mt-1 w-full ${fieldCls}`}
-                >
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </label>
+              {!settled && (
+                <label className="block">
+                  <span className="text-xs font-medium text-gray-500">Status</span>
+                  <select
+                    value={trackStatus}
+                    onChange={(e) => setTrackStatus(e.target.value)}
+                    className={`mt-1 w-full ${fieldCls}`}
+                  >
+                    {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </label>
+              )}
               <label className="block">
                 <span className="text-xs font-medium text-gray-500">Location (optional)</span>
                 <input

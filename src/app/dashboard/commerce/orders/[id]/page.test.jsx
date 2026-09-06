@@ -325,3 +325,111 @@ describe("Staff order detail — the last stage releases (T45)", () => {
     expect(screen.getByText(/Saving this releases the order/)).toBeInTheDocument();
   });
 });
+
+// Hiding the fulfilment controls on a held pre-order took the only cancel
+// button with them — trapping a customer who wants out while their goods are
+// still months away. The server always allowed it.
+describe("Staff order detail — cancelling a held pre-order (T45)", () => {
+  const heldOrder = () => makeOrder({ items: [waiting] });
+
+  it("offers cancel even though the status section is hidden", () => {
+    mockOrder.mockReturnValue(heldOrder());
+    render(<AdminOrderDetailPage />);
+
+    expect(screen.queryByText("Update Status")).toBeNull();
+    expect(screen.getByRole("button", { name: /Cancel order/i })).toBeInTheDocument();
+  });
+
+  it("asks before doing something terminal", () => {
+    mockOrder.mockReturnValue(heldOrder());
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Cancel order/i }));
+
+    expect(statusMutate).not.toHaveBeenCalled();
+    expect(screen.getByText(/cannot be undone/i)).toBeInTheDocument();
+    // And says plainly that it does not return the customer's money.
+    expect(screen.getByText(/cannot be undone/i).textContent).toMatch(/does not return their money/i);
+  });
+
+  it("cancels once confirmed", () => {
+    mockOrder.mockReturnValue(heldOrder());
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Cancel order/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Yes, cancel this order/i }));
+
+    expect(statusMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "order1", status: "cancelled" }),
+      expect.anything(),
+    );
+  });
+
+  it("lets staff back out of the confirmation", () => {
+    mockOrder.mockReturnValue(heldOrder());
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Cancel order/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Keep it/i }));
+
+    expect(statusMutate).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /Cancel order/i })).toBeInTheDocument();
+  });
+
+  it("does not duplicate cancel once the order is released", () => {
+    mockOrder.mockReturnValue(makeOrder({ items: [released] }));
+    render(<AdminOrderDetailPage />);
+
+    // The ordinary status row is back, and it already carries cancelled.
+    expect(screen.getByText("Update Status")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Cancel order/i })).toBeNull();
+    expect(statusButton("cancelled")).toBeInTheDocument();
+  });
+});
+
+// Delivered and cancelled are terminal on the server — canTransition refuses
+// every move out of them — so a status control on such an order is a row of
+// buttons that can only fail.
+describe("Staff order detail — a settled order (T45)", () => {
+  it("hides the status controls once delivered", () => {
+    mockOrder.mockReturnValue(makeOrder({ status: "delivered" }));
+    render(<AdminOrderDetailPage />);
+
+    expect(screen.queryByText("Update Status")).toBeNull();
+    expect(statusButton("processing")).toBeUndefined();
+    expect(screen.getByText(/the journey is over/i)).toBeInTheDocument();
+  });
+
+  it("hides them on a cancelled order too", () => {
+    mockOrder.mockReturnValue(makeOrder({ status: "cancelled" }));
+    render(<AdminOrderDetailPage />);
+
+    expect(screen.queryByText("Update Status")).toBeNull();
+  });
+
+  it("still lets staff record a note for the record", () => {
+    mockOrder.mockReturnValue(makeOrder({ status: "delivered" }));
+    render(<AdminOrderDetailPage />);
+
+    // The status picker goes; the note stays.
+    expect(screen.queryByLabelText(/^Status$/i)).toBeNull();
+    fireEvent.change(screen.getByPlaceholderText(/Handed to courier/i), {
+      target: { value: "Customer confirmed receipt by phone" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Add tracking update/i }));
+
+    expect(trackingMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "", note: "Customer confirmed receipt by phone" }),
+      expect.anything(),
+    );
+  });
+
+  it("leaves a live order's controls alone", () => {
+    mockOrder.mockReturnValue(makeOrder({ status: "processing" }));
+    render(<AdminOrderDetailPage />);
+
+    expect(screen.getByText("Update Status")).toBeInTheDocument();
+    expect(statusButton("shipped")).not.toBeDisabled();
+    expect(screen.getByLabelText(/^Status$/i)).toBeInTheDocument();
+  });
+});
