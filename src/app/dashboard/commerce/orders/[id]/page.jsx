@@ -181,7 +181,12 @@ function JourneyPanel({ orderId, journey, expectedArrival }) {
  * difference without moving anything — this form says so out loud rather than
  * letting staff assume the order is settled.
  */
-function PreorderLines({ orderId, items }) {
+// Mirrors IN_GHANA_STAGES in the backend's orderController: releasing hands
+// goods over, so it may not happen while they are still abroad. The server
+// refuses it either way; this stops staff clicking into that refusal.
+const IN_GHANA = ["port_ghana", "at_shop"];
+
+function PreorderLines({ orderId, items, stage }) {
   const { data: batches = [] } = useShipments();
   const update = useUpdatePreorderLine();
   const release = useReleasePreorder();
@@ -190,6 +195,8 @@ function PreorderLines({ orderId, items }) {
 
   const waiting = (items || []).filter((i) => i.isPreorder && !i.preorderReleasedAt);
   if (!waiting.length) return null;
+
+  const inGhana = IN_GHANA.includes(stage);
 
   const valueFor = (item, field) =>
     draft[item._id]?.[field] ?? (field === "qty" ? item.qty : item.shipment || "");
@@ -277,12 +284,19 @@ function PreorderLines({ orderId, items }) {
       )}
 
       <div className="mt-4 border-t border-gray-100 dark:border-slate-800 pt-3">
-        <Button variant="secondary" size="sm" loading={release.isPending} onClick={doRelease}>
+        <Button
+          variant="secondary"
+          size="sm"
+          loading={release.isPending}
+          disabled={!inGhana}
+          onClick={doRelease}
+        >
           Release now
         </Button>
         <p className="mt-1.5 text-xs text-gray-600 dark:text-slate-400">
-          Only once the goods are physically here. Releasing moves stock, tells the customer,
-          and starts the ordinary local tracking.
+          {inGhana
+            ? "Releasing moves stock, tells the customer their item has arrived, and starts the ordinary local tracking."
+            : "Not until the goods are in Ghana. Record the pre-order as arrived at the port, or at our warehouse, first."}
         </p>
       </div>
     </div>
@@ -420,7 +434,11 @@ export default function AdminOrderDetailPage() {
         {order.preorder && (
           <div className="mb-6">
             <PreorderProgress preorder={order.preorder} />
-            <PreorderLines orderId={id} items={order.items} />
+            <PreorderLines
+              orderId={id}
+              items={order.items}
+              stage={order.preorder.journey?.stage || ""}
+            />
             {order.preorder.journey && (
               <JourneyPanel
                 orderId={id}

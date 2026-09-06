@@ -283,9 +283,15 @@ describe("Staff order detail — editing the pre-order line (T45)", () => {
     expect(screen.getByText(/GH₵500.00 is owed back .* issue a refund/)).toBeInTheDocument();
   });
 
-  it("releases the order from here", () => {
+  it("releases the order from here, once the goods are in Ghana", () => {
     mockBatches.mockReturnValue(batches);
-    mockOrder.mockReturnValue(held());
+    mockOrder.mockReturnValue(makeOrder({
+      items: [line],
+      preorder: {
+        journey: { source: "order", itemId: "line1", stage: "port_ghana", stageLabel: "At the port", batch: null, history: [] },
+        stage: "port_ghana", label: "At the port", origin: "China", history: [], items: [],
+      },
+    }));
     render(<AdminOrderDetailPage />);
 
     fireEvent.click(screen.getByRole("button", { name: /Release now/i }));
@@ -434,5 +440,42 @@ describe("Staff order detail — a settled order (T45)", () => {
     expect(screen.getByText("Update Status")).toBeInTheDocument();
     expect(statusButton("shipped")).not.toBeDisabled();
     expect(screen.getByPlaceholderText(/Handed to courier/i)).toBeInTheDocument();
+  });
+});
+
+// Releasing hands goods over, so the server refuses it while they are abroad.
+// The button must not invite the click that can only be refused.
+describe("Staff order detail — release waits for Ghana (T45)", () => {
+  const atStage = (stage) => makeOrder({
+    items: [{ ...waiting, _id: "line1" }],
+    preorder: {
+      journey: { source: "order", itemId: "line1", stage, stageLabel: stage, batch: null, history: [] },
+      stage, label: stage, origin: "China", history: [], items: [],
+    },
+  });
+
+  it("is disabled while the goods are still abroad", () => {
+    mockOrder.mockReturnValue(atStage("shipped"));
+    render(<AdminOrderDetailPage />);
+
+    expect(screen.getByRole("button", { name: /Release now/i })).toBeDisabled();
+    expect(screen.getByText(/Not until the goods are in Ghana/i)).toBeInTheDocument();
+  });
+
+  it("is disabled when nothing has been recorded yet", () => {
+    mockOrder.mockReturnValue(atStage(""));
+    render(<AdminOrderDetailPage />);
+
+    expect(screen.getByRole("button", { name: /Release now/i })).toBeDisabled();
+  });
+
+  it("opens up once it reaches the port", () => {
+    mockOrder.mockReturnValue(atStage("port_ghana"));
+    render(<AdminOrderDetailPage />);
+
+    const button = screen.getByRole("button", { name: /Release now/i });
+    expect(button).not.toBeDisabled();
+    fireEvent.click(button);
+    expect(releaseMutate).toHaveBeenCalledWith("order1", expect.anything());
   });
 });
