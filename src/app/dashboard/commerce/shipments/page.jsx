@@ -27,9 +27,23 @@ function fmtDate(value) {
     : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** Today, as the yyyy-mm-dd a date input wants. */
-function todayInput() {
-  return new Date().toISOString().slice(0, 10);
+/** Now, as the yyyy-mm-ddThh:mm a datetime-local input wants (local clock). */
+function nowInput() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    + `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/**
+ * A datetime-local value is a wall clock with no zone, so send the instant it
+ * means on THIS machine — otherwise the server reads it in its own timezone and
+ * a stage recorded at 9am appears at some other hour on the customer's page.
+ */
+function asInstant(value) {
+  if (!value) return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
 /**
@@ -69,7 +83,7 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
   const attach = useAttachOrdersToShipment();
   const [panel, setPanel] = useState(null);
   const [stage, setStage] = useState(shipment.stage);
-  const [date, setDate] = useState(todayInput());
+  const [date, setDate] = useState(nowInput());
   const [note, setNote] = useState("");
   const [picked, setPicked] = useState([]);
 
@@ -87,7 +101,7 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
   const openPanel = (which) => {
     onError("");
     setStage(shipment.stage);
-    setDate(todayInput());
+    setDate(nowInput());
     setNote("");
     setPicked([]);
     setPanel((cur) => (cur === which ? null : which));
@@ -96,7 +110,7 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
   const move = (toStage, when, why) => {
     onError("");
     advance.mutate(
-      { id: shipment._id, stage: toStage, date: when || undefined, note: why || undefined },
+      { id: shipment._id, stage: toStage, date: asInstant(when), note: why || undefined },
       {
         onSuccess: () => setPanel(null),
         onError: (err) => onError(errorMessage(err, "Could not update the shipment.")),
@@ -174,10 +188,10 @@ function ShipmentCard({ shipment, waitingOrders, onError }) {
             </Select>
             <Input
               label="When it happened"
-              type="date"
+              type="datetime-local"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              hint="Customers see this date."
+              hint="Customers see this date and time."
             />
             <Input
               label="Note"

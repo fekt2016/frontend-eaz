@@ -57,6 +57,19 @@ export function useReleasePreorder() {
   });
 }
 
+// Correct one waiting pre-order line: how many, and which batch it rides on.
+// The response's `meta` carries what the change did to the money — a pre-order
+// is paid up front, so a quantity change leaves a difference to settle, and the
+// server deliberately does not move it.
+export function useUpdatePreorderLine() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, itemId, qty, shipment }) =>
+      api.patch(`/orders/${id}/preorder-line`, { itemId, qty, shipment }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.orders.all }),
+  });
+}
+
 // The logged-in customer's own shop orders (matched by phone/email server-side).
 export function useMyOrders(options = {}) {
   return useQuery({

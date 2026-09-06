@@ -31,6 +31,16 @@ function fmtDate(value) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
+/** A stage the batch actually reached, which staff record to the minute. */
+function fmtMoment(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-GB", {
+    day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit",
+  });
+}
+
 export default function PreorderProgress({ preorder }) {
   if (!preorder) return null;
 
@@ -65,7 +75,7 @@ export default function PreorderProgress({ preorder }) {
         {STEPS.map((step, i) => {
           const done = i < currentIndex;
           const active = i === currentIndex;
-          const reached = fmtDate(dates.get(step.key));
+          const reached = fmtMoment(dates.get(step.key));
           const Icon = step.icon;
           return (
             <li key={step.key} className="flex items-start gap-3">

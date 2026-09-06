@@ -18,19 +18,25 @@ vi.mock("@/context/AuthContext", () => ({
 
 const statusMutate = vi.fn();
 const trackingMutate = vi.fn();
+const lineMutate = vi.fn();
+const releaseMutate = vi.fn();
 const mockOrder = vi.fn();
 vi.mock("@/hooks/queries/useOrders", () => ({
   useOrder: () => ({ data: mockOrder(), isLoading: false }),
   useUpdateOrderStatus: () => ({ mutate: statusMutate, isPending: false }),
   useAddTrackingEvent: () => ({ mutate: trackingMutate, isPending: false }),
+  useUpdatePreorderLine: () => ({ mutate: lineMutate, isPending: false }),
+  useReleasePreorder: () => ({ mutate: releaseMutate, isPending: false }),
 }));
 
 const advanceMutate = vi.fn();
+const mockBatches = vi.fn(() => []);
 vi.mock("@/hooks/queries/useShipments", async () => {
   const actual = await vi.importActual("@/hooks/queries/useShipments");
   return {
     SHIPMENT_STAGES: actual.SHIPMENT_STAGES,
     useAdvanceShipment: () => ({ mutate: advanceMutate, isPending: false }),
+    useShipments: () => ({ data: mockBatches(), isLoading: false }),
   };
 });
 
@@ -54,6 +60,9 @@ beforeEach(() => {
   statusMutate.mockClear();
   trackingMutate.mockClear();
   advanceMutate.mockClear();
+  lineMutate.mockClear();
+  releaseMutate.mockClear();
+  mockBatches.mockReturnValue([]);
 });
 
 describe("Staff order detail — pre-order hold (T45)", () => {
@@ -145,11 +154,15 @@ describe("Staff order detail — the shipping batch (T45)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Update stage/i }));
     fireEvent.change(screen.getByDisplayValue("Arrived at the port in Ghana"), { target: { value: "at_shop" } });
-    fireEvent.change(screen.getByLabelText(/When it happened/i), { target: { value: "2026-08-20" } });
+    fireEvent.change(screen.getByLabelText(/When it happened/i), { target: { value: "2026-08-20T14:05" } });
     fireEvent.click(screen.getByRole("button", { name: /Save stage/i }));
 
     expect(advanceMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "ship1", stage: "at_shop", date: "2026-08-20" }),
+      expect.objectContaining({
+        id: "ship1",
+        stage: "at_shop",
+        date: new Date("2026-08-20T14:05").toISOString(),
+      }),
       expect.anything(),
     );
   });
@@ -163,5 +176,101 @@ describe("Staff order detail — the shipping batch (T45)", () => {
 
     expect(screen.getByText(/Not on a shipment batch yet/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Update stage/i })).toBeNull();
+  });
+});
+
+// Staff needed a form for the single customer, not just the whole container:
+// the one who ordered two instead of three, or whose line went onto the wrong
+// batch. Quantity is money on a pre-order paid up front, so the form has to say
+// what the change left owing.
+describe("Staff order detail — editing the pre-order line (T45)", () => {
+  const batches = [
+    { _id: "ship1", reference: "SHP-202609-00001", name: "March iPhone batch" },
+    { _id: "ship2", reference: "SHP-202610-00002", name: "April batch" },
+  ];
+  const line = { ...waiting, _id: "line1", shipment: "ship1" };
+
+  const held = () => makeOrder({ items: [line], preorder: { stage: null, label: "Confirmed", origin: "China", history: [], items: [] } });
+
+  it("saves a new quantity for that line", () => {
+    mockBatches.mockReturnValue(batches);
+    mockOrder.mockReturnValue(held());
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.change(screen.getByLabelText(/Quantity/i), { target: { value: "3" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Save$/ }));
+
+    expect(lineMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: "line1", qty: 3 }),
+      expect.anything(),
+    );
+  });
+
+  it("moves the line to another batch", () => {
+    mockBatches.mockReturnValue(batches);
+    mockOrder.mockReturnValue(held());
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.change(screen.getByLabelText(/On batch/i), { target: { value: "ship2" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Save$/ }));
+
+    expect(lineMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: "line1", shipment: "ship2" }),
+      expect.anything(),
+    );
+  });
+
+  it("takes the line off a batch entirely", () => {
+    mockBatches.mockReturnValue(batches);
+    mockOrder.mockReturnValue(held());
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.change(screen.getByLabelText(/On batch/i), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Save$/ }));
+
+    expect(lineMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: "line1", shipment: null }),
+      expect.anything(),
+    );
+  });
+
+  it("says what a quantity change left the customer owing", () => {
+    mockBatches.mockReturnValue(batches);
+    mockOrder.mockReturnValue(held());
+    lineMutate.mockImplementation((_vars, opts) => opts.onSuccess({ meta: { difference: 150000 } }));
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /^Save$/ }));
+
+    expect(screen.getByText(/GH₵1,500.00 is still to collect/)).toBeInTheDocument();
+  });
+
+  it("says what is owed back when the quantity drops", () => {
+    mockBatches.mockReturnValue(batches);
+    mockOrder.mockReturnValue(held());
+    lineMutate.mockImplementation((_vars, opts) => opts.onSuccess({ meta: { difference: -50000 } }));
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /^Save$/ }));
+
+    expect(screen.getByText(/GH₵500.00 is owed back .* issue a refund/)).toBeInTheDocument();
+  });
+
+  it("releases the order from here", () => {
+    mockBatches.mockReturnValue(batches);
+    mockOrder.mockReturnValue(held());
+    render(<AdminOrderDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Release now/i }));
+
+    expect(releaseMutate).toHaveBeenCalledWith("order1", expect.anything());
+  });
+
+  it("is not offered once the line is released", () => {
+    mockBatches.mockReturnValue(batches);
+    mockOrder.mockReturnValue(makeOrder({ items: [released] }));
+    render(<AdminOrderDetailPage />);
+
+    expect(screen.queryByText("Pre-order lines")).toBeNull();
   });
 });

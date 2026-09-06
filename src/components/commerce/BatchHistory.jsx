@@ -16,7 +16,9 @@ function fmtDate(value) {
   const d = new Date(value);
   return Number.isNaN(d.getTime())
     ? "—"
-    : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    : d.toLocaleString("en-GB", {
+        day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit",
+      });
 }
 
 export default function BatchHistory({ entries = [], emptyHint = "" }) {

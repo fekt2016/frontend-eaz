@@ -103,11 +103,15 @@ describe("Shipments — moving a batch along", () => {
     fireEvent.click(screen.getByText("Edit stage"));
 
     fireEvent.change(screen.getByLabelText(/Stage/), { target: { value: "port_ghana" } });
-    fireEvent.change(screen.getByLabelText(/When it happened/), { target: { value: "2026-09-01" } });
+    fireEvent.change(screen.getByLabelText(/When it happened/), { target: { value: "2026-09-01T09:30" } });
     fireEvent.click(screen.getByText("Save stage"));
 
     expect(advanceMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "s1", stage: "port_ghana", date: "2026-09-01" }),
+      expect.objectContaining({
+        id: "s1",
+        stage: "port_ghana",
+        date: new Date("2026-09-01T09:30").toISOString(),
+      }),
       expect.anything(),
     );
   });

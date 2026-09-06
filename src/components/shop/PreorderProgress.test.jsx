@@ -94,11 +94,11 @@ describe("PreorderProgress (T45)", () => {
       />,
     );
 
-    expect(screen.getByText("2 August 2026")).toBeInTheDocument();
-    expect(screen.getByText("1 September 2026")).toBeInTheDocument();
+    expect(screen.getByText(/^2 August 2026 at /)).toBeInTheDocument();
+    expect(screen.getByText(/^1 September 2026 at /)).toBeInTheDocument();
     // Exactly two — the stages it has not reached carry no date, and no arrival
     // estimate was given to invent a third.
-    expect(screen.getAllByText(/^\d{1,2} \w+ 2026$/)).toHaveLength(2);
+    expect(screen.getAllByText(/^\d{1,2} \w+ 2026 at \d{1,2}:\d{2}$/)).toHaveLength(2);
   });
 
   it("does not invent an arrival date it was not given", () => {

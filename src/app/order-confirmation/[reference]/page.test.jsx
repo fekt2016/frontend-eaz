@@ -73,7 +73,7 @@ describe("Order confirmation — tracking number (T62)", () => {
 
     expect(screen.getAllByText(/Shipped/).length).toBeGreaterThan(0);
     expect(screen.getByText("Coming from China")).toBeInTheDocument();
-    expect(screen.getByText("10 July 2026")).toBeInTheDocument();
+    expect(screen.getByText(/^10 July 2026 at /)).toBeInTheDocument();
   });
 
   it("says nothing about pre-orders for an ordinary order", () => {

@@ -48,8 +48,8 @@ describe("Track order lookup — pre-order position", () => {
     render(<TrackOrderPage />);
 
     expect(screen.getAllByText(/Arrived at the port in Ghana/).length).toBeGreaterThan(0);
-    expect(screen.getByText("10 July 2026")).toBeInTheDocument();
-    expect(screen.getByText("1 September 2026")).toBeInTheDocument();
+    expect(screen.getByText(/^10 July 2026 at /)).toBeInTheDocument();
+    expect(screen.getByText(/^1 September 2026 at /)).toBeInTheDocument();
   });
 
   it("draws the road from China before a batch is assigned", () => {

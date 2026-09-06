@@ -7,10 +7,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 import { Send } from "lucide-react";
 import { formatGhs, formatShippingMethod } from "@/lib/shop";
-import { useOrder, useUpdateOrderStatus, useAddTrackingEvent } from "@/hooks/queries/useOrders";
+import {
+  useOrder, useUpdateOrderStatus, useAddTrackingEvent,
+  useUpdatePreorderLine, useReleasePreorder,
+} from "@/hooks/queries/useOrders";
 import PreorderProgress from "@/components/shop/PreorderProgress";
 import BatchHistory from "@/components/commerce/BatchHistory";
-import { useAdvanceShipment, SHIPMENT_STAGES } from "@/hooks/queries/useShipments";
+import { useAdvanceShipment, useShipments, SHIPMENT_STAGES } from "@/hooks/queries/useShipments";
 import {
   Badge, Button, Card, EmptyState, Skeleton,
 } from "@/components/ui";
@@ -51,9 +54,23 @@ function Row({ label, value }) {
   );
 }
 
-/** Today, as the yyyy-mm-dd a date input wants. */
-function todayInput() {
-  return new Date().toISOString().slice(0, 10);
+/** Now, as the yyyy-mm-ddThh:mm a datetime-local input wants (local clock). */
+function nowInput() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    + `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/**
+ * A datetime-local value is a wall clock with no zone, so send the instant it
+ * means on THIS machine — otherwise the server reads it in its own timezone and
+ * a stage recorded at 9am appears at some other hour on the customer's page.
+ */
+function asInstant(value) {
+  if (!value) return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
 /**
@@ -69,14 +86,14 @@ function BatchPanel({ batch, expectedArrival }) {
   const advance = useAdvanceShipment();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState(batch.stage);
-  const [date, setDate] = useState(todayInput());
+  const [date, setDate] = useState(nowInput());
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
   const save = () => {
     setError("");
     advance.mutate(
-      { id: batch.id, stage, date, note: note || undefined },
+      { id: batch.id, stage, date: asInstant(date), note: note || undefined },
       {
         onSuccess: () => { setOpen(false); setNote(""); },
         onError: (err) => setError(errorMessage(err, "Could not update the shipment.")),
@@ -97,7 +114,7 @@ function BatchPanel({ batch, expectedArrival }) {
             {expectedArrival ? ` · expected ${new Date(expectedArrival).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => { setStage(batch.stage); setDate(todayInput()); setOpen((v) => !v); }}>
+        <Button variant="ghost" size="sm" onClick={() => { setStage(batch.stage); setDate(nowInput()); setOpen((v) => !v); }}>
           {open ? "Cancel" : "Update stage"}
         </Button>
       </div>
@@ -113,7 +130,12 @@ function BatchPanel({ batch, expectedArrival }) {
             </label>
             <label className="block">
               <span className="text-xs font-medium text-gray-500">When it happened</span>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={`mt-1 w-full ${fieldCls}`} />
+              <input
+                type="datetime-local"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className={`mt-1 w-full ${fieldCls}`}
+              />
             </label>
             <label className="block">
               <span className="text-xs font-medium text-gray-500">Note</span>
@@ -126,7 +148,7 @@ function BatchPanel({ batch, expectedArrival }) {
             </label>
           </div>
           <p className="text-xs text-gray-600 dark:text-slate-400">
-            The date is what customers see, and moving the batch updates every order
+            The date and time are what customers see, and moving the batch updates every order
             riding on it. Saving the stage it is already on corrects that stage&apos;s date
             or note; picking an earlier one moves it back, dropping everything after it
             from what customers see.
@@ -143,6 +165,127 @@ function BatchPanel({ batch, expectedArrival }) {
           Shipping history
         </p>
         <BatchHistory entries={batch.history} emptyHint="Nothing recorded on this batch yet." />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Correct the pre-order lines on this order: how many, and which batch each
+ * rides on — plus the release that ends the wait.
+ *
+ * The batch panel above moves a whole container. This is the single customer:
+ * the one who ordered two instead of three, or whose line went onto the wrong
+ * container. Taking a line OFF a batch is here too; nothing could do that.
+ *
+ * A pre-order is paid in full up front, so a quantity change leaves money owed
+ * one way or the other. The server recomputes the totals and reports the
+ * difference without moving anything — this form says so out loud rather than
+ * letting staff assume the order is settled.
+ */
+function PreorderLines({ orderId, items }) {
+  const { data: batches = [] } = useShipments();
+  const update = useUpdatePreorderLine();
+  const release = useReleasePreorder();
+  const [draft, setDraft] = useState({});
+  const [result, setResult] = useState(null);
+
+  const waiting = (items || []).filter((i) => i.isPreorder && !i.preorderReleasedAt);
+  if (!waiting.length) return null;
+
+  const valueFor = (item, field) =>
+    draft[item._id]?.[field] ?? (field === "qty" ? item.qty : item.shipment || "");
+
+  const edit = (item, field, value) =>
+    setDraft((d) => ({ ...d, [item._id]: { ...d[item._id], [field]: value } }));
+
+  const save = (item) => {
+    setResult(null);
+    const qty = Number(valueFor(item, "qty"));
+    const shipment = valueFor(item, "shipment");
+    update.mutate(
+      { id: orderId, itemId: item._id, qty, shipment: shipment || null },
+      {
+        onSuccess: (res) => {
+          setDraft((d) => ({ ...d, [item._id]: undefined }));
+          setResult({ tone: "ok", difference: res?.meta?.difference ?? 0 });
+        },
+        onError: (err) => setResult({ tone: "error", message: errorMessage(err, "Could not update the line.") }),
+      },
+    );
+  };
+
+  const doRelease = () => {
+    setResult(null);
+    release.mutate(orderId, {
+      onError: (err) => setResult({ tone: "error", message: errorMessage(err, "Could not release.") }),
+    });
+  };
+
+  return (
+    <div className="mt-3 rounded-2xl border border-gray-100 dark:border-slate-800 p-4">
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Pre-order lines</h3>
+      <p className="mt-0.5 text-xs text-gray-600 dark:text-slate-400">
+        Changing a quantity changes what this customer owes — the figure is reported here,
+        but no money moves. Settle it with a refund or by collecting the difference.
+      </p>
+
+      <div className="mt-3 space-y-3">
+        {waiting.map((item) => (
+          <div key={item._id} className="rounded-xl border border-gray-100 dark:border-slate-800 p-3">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{item.name}</p>
+            <p className="text-xs text-gray-600 dark:text-slate-400">{formatGhs(item.price)} each</p>
+            <div className="mt-2 grid gap-3 sm:grid-cols-[6rem_1fr_auto] sm:items-end">
+              <label className="block">
+                <span className="text-xs font-medium text-gray-500">Quantity</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={valueFor(item, "qty")}
+                  onChange={(e) => edit(item, "qty", e.target.value)}
+                  className={`mt-1 w-full ${fieldCls}`}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-gray-500">On batch</span>
+                <select
+                  value={valueFor(item, "shipment")}
+                  onChange={(e) => edit(item, "shipment", e.target.value)}
+                  className={`mt-1 w-full ${fieldCls}`}
+                >
+                  <option value="">(not on a batch)</option>
+                  {batches.map((b) => (
+                    <option key={b._id} value={b._id}>{b.reference} — {b.name}</option>
+                  ))}
+                </select>
+              </label>
+              <Button size="sm" loading={update.isPending} onClick={() => save(item)}>Save</Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {result?.tone === "error" && (
+        <p className="mt-3 text-xs text-error dark:text-error-dark">{result.message}</p>
+      )}
+      {result?.tone === "ok" && (
+        <p className="mt-3 rounded-xl bg-warning-surface px-3 py-2 text-xs text-warning dark:bg-warning-surface-dark dark:text-warning-dark">
+          {result.difference > 0
+            ? `Saved. ${formatGhs(result.difference)} is still to collect from this customer.`
+            : result.difference < 0
+              ? `Saved. ${formatGhs(-result.difference)} is owed back to this customer — issue a refund.`
+              : "Saved. The order total is unchanged."}
+        </p>
+      )}
+
+      <div className="mt-4 border-t border-gray-100 dark:border-slate-800 pt-3">
+        <Button variant="secondary" size="sm" loading={release.isPending} onClick={doRelease}>
+          Release now
+        </Button>
+        <p className="mt-1.5 text-xs text-gray-600 dark:text-slate-400">
+          Only once the goods are physically here. Releasing moves stock, tells the customer,
+          and starts the ordinary local tracking.
+        </p>
       </div>
     </div>
   );
@@ -274,6 +417,7 @@ export default function AdminOrderDetailPage() {
         {order.preorder && (
           <div className="mb-6">
             <PreorderProgress preorder={order.preorder} />
+            <PreorderLines orderId={id} items={order.items} />
             {order.preorder.batch ? (
               <BatchPanel batch={order.preorder.batch} expectedArrival={order.preorder.expectedArrival} />
             ) : (
