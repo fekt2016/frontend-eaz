@@ -4,11 +4,15 @@ import { qk } from "@/lib/queryKeys";
 
 // ── Shipping Settings (singleton) ──────────────────────────────────────────
 
+// Opted out of the app-wide polling default for the same reason as useSettings:
+// business-settings re-seeds its form from this data on every identity change,
+// so a poll landing mid-edit would discard what the admin was typing.
 export function useShippingSettings(options = {}) {
   return useQuery({
     queryKey: qk.shipping.settings,
     queryFn: () => api.get("/admin/shipping/settings").then((r) => r.data),
     staleTime: 60_000,
+    refetchInterval: false,
     ...options,
   });
 }
@@ -184,11 +188,14 @@ export function useShippingTiers(options = {}) {
 
 // ── Courier Rate (singleton) ───────────────────────────────────────────────
 
+// Opted out for the same reason as useShippingSettings above — business-settings
+// seeds its courier-rate form from this, and a poll mid-edit would reset it.
 export function useCourierRate(options = {}) {
   return useQuery({
     queryKey: qk.shipping.courierRate,
     queryFn: () => api.get("/admin/shipping/courier-rate").then((r) => r.data),
     staleTime: 60_000,
+    refetchInterval: false,
     ...options,
   });
 }
