@@ -50,7 +50,7 @@ describe("Track repair page (order tracking)", () => {
   });
 
   it("shows a not-found message when the token doesn't match a job", async () => {
-    mockGet.mockRejectedValueOnce(new Error("We couldn't find a repair for that link."));
+    mockGet.mockRejectedValue(new Error("We couldn't find a repair for that link."));
     renderPage();
     expect(await screen.findByText("Repair not found")).toBeInTheDocument();
     expect(screen.getByText("We couldn't find a repair for that link.")).toBeInTheDocument();

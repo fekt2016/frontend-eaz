@@ -86,6 +86,20 @@ async function renderWithJob(job) {
   await waitFor(() => expect(mockGet).toHaveBeenCalledWith("/pos/jobs/job1"));
   // Let the fetched job settle into state before interacting.
   await screen.findByText(job.jobNumber ? new RegExp(job.jobNumber) : /./);
+
+  // ...and specifically into the FORM, which the job number appearing does not
+  // prove. The money fields start as "" and are filled by a separate effect, so
+  // a click landing between those two moments submits `Number("")` — zero — and
+  // the failure reads "expected +0 to be 2500", which looks like a money bug
+  // rather than a race. Waiting on the field itself closes the window.
+  if (job.laborCost != null) {
+    const expected = String(job.laborCost / 100);
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("spinbutton").some((i) => i.value === expected),
+      ).toBe(true),
+    );
+  }
 }
 
 describe("Job detail page — Cancel Job confirmation (T18)", () => {
