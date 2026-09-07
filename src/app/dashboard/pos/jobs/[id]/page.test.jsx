@@ -92,11 +92,27 @@ async function renderWithJob(job) {
   // a click landing between those two moments submits `Number("")` — zero — and
   // the failure reads "expected +0 to be 2500", which looks like a money bug
   // rather than a race. Waiting on the field itself closes the window.
+  // The STATUS select is the general signal that seeding has finished: the whole
+  // form, including which action buttons exist, is driven from local state that
+  // one effect fills in. "Cancel Job" is gated on `status`, so a click arriving
+  // before that effect runs fails with "unable to find a button named /cancel
+  // job/i" — which reads as the button being missing rather than early.
+  if (job.status && job.status !== "ready") {
+    await waitFor(() =>
+      expect(
+        screen.queryAllByRole("combobox").some((el) => el.value === job.status),
+      ).toBe(true),
+    );
+  }
+
+  // Money is seeded by the same effect but worth asserting separately: these
+  // fields start as "" and submit as Number("") — zero — so a click landing
+  // early produces "expected +0 to be 2500", which reads as a money bug.
   if (job.laborCost != null) {
     const expected = String(job.laborCost / 100);
     await waitFor(() =>
       expect(
-        screen.getAllByRole("spinbutton").some((i) => i.value === expected),
+        screen.queryAllByRole("spinbutton").some((i) => i.value === expected),
       ).toBe(true),
     );
   }
